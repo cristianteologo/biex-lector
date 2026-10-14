@@ -14,7 +14,11 @@ ap.add_argument("--sha", help="commit de cristianteologo/biex-lector para jsDeli
 ap.add_argument("--cargador", action="store_true", help="genera la página index.html del sitio headless")
 ap.add_argument("--completo", default=PAGES); ap.add_argument("--respaldo", default=HEADLESS)
 ap.add_argument("--base"); ap.add_argument("--base2")
+ap.add_argument("antiguos", nargs="*", help="forma antigua: URL de jsDelivr fijada a un commit (se toma su SHA); el resto se ignora")
 a = ap.parse_args()
+for u in a.antiguos:
+    m = re.match(r"https://cdn\.jsdelivr\.net/gh/cristianteologo/biex-lector@([0-9a-f]{7,40})/?$", u)
+    if m and not a.sha: a.sha = m.group(1)
 jsd = "https://cdn.jsdelivr.net/gh/cristianteologo/biex-lector@%s/" % a.sha if a.sha else None
 gh = "https://rawcdn.githack.com/cristianteologo/biex-lector/%s/" % a.sha if a.sha else None
 d = pathlib.Path(__file__).parent
