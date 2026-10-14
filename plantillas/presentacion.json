@@ -1,0 +1,22 @@
+{
+  "_uso": "Plantilla de la presentación de apertura. Cambiar textos aquí no requiere tocar intro.js. Lo que falte toma los valores de base. Para otra presentación: copiar este archivo con otro nombre y cargar intro.js con data-config=\"plantillas/otro.json\".",
+  "marca": {
+    "sello": "BiEx",
+    "titulo": "BIBLIA EXACTA",
+    "lema": "Del griego al español, palabra por palabra",
+    "nombre": "BiEx – Biblia Exacta"
+  },
+  "textos": {
+    "sonido": "Sonido",
+    "tocar": "Toca para oír",
+    "saltar": "Saltar",
+    "saltarTitulo": "Saltar la presentación (Esc)",
+    "aria": "Presentación de BiEx – Biblia Exacta"
+  },
+  "_versos": "Ruta a una lista de versos (por defecto los destacados del lector) o una lista propia: [{\"n\": \"Hebreos\", \"t\": \"Ἑβραίους\", \"cap\": 1, \"v\": 1, \"p\": [{\"g\": \"…\", \"tl\": \"…\", \"tr\": \"…\"}]}]",
+  "versos": "datos/destacados.json",
+  "palabras": [3, 8],
+  "coreografias": ["remolino", "lluvia", "brasas", "horizonte"],
+  "aperturas": ["iris", "puerta", "velo"],
+  "tonos": [146.83, 155.56, 130.81, 164.81, 174.61]
+}

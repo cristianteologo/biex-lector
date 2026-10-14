@@ -3,7 +3,10 @@
    la paleta según la hora del día, la coreografía de la luz, la tonalidad de la música y la forma de abrirse al sitio.
    Versión completa: el verso aparece en unciales continuas, como en un códice; se separa en palabras, cada una con su
    transliteración y su traducción; todo se vuelve luz y forma la marca. Versión breve: la luz forma la marca.
-   El sonido es opcional: los navegadores solo dejan sonar después de un toque, así que se ofrece un botón. */
+   Sonido activado por defecto: se intenta desde el primer instante y, si el navegador lo retiene hasta un gesto, suena con el
+   primer toque, clic o tecla en cualquier parte. Apagarlo vale solo para esa visita.
+   Plantilla: los textos, los versos y las variaciones salen de plantillas/presentacion.json (o del archivo que indique data-config);
+   lo que falte toma los valores de CFG_BASE. Todo se dibuja a la densidad real de la pantalla (hasta 3×), sin ampliar imágenes. */
 (function () {
   "use strict";
   if (window.__biexIntro) return;
@@ -12,6 +15,7 @@
   const guion = document.currentScript;
   const BASE = guion && guion.src ? guion.src.replace(/[?#].*$/, "").replace(/[^/]*$/, "") : "./";
   let MODO = (guion && guion.getAttribute("data-modo")) || "completa";
+  const CFG_URL = (guion && guion.getAttribute("data-config")) || "plantillas/presentacion.json";
   const REDUCIDO = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (REDUCIDO) MODO = "quieta";
 
@@ -44,19 +48,42 @@
     return k > 1.05 && k < 4 ? k : 1;
   }
 
-  // ------------------------------------------------------------------ variaciones de esta vez
+  // ------------------------------------------------------------------ plantilla (valores de base; plantillas/presentacion.json los reemplaza)
+  const CFG_BASE = {
+    marca: { sello: "BiEx", titulo: "BIBLIA EXACTA", lema: "Del griego al español, palabra por palabra", nombre: "BiEx – Biblia Exacta" },
+    textos: { sonido: "Sonido", tocar: "Toca para oír", saltar: "Saltar", saltarTitulo: "Saltar la presentación (Esc)", aria: "Presentación de BiEx – Biblia Exacta" },
+    versos: "datos/destacados.json", // o una lista propia: [{ n, t, cap, v, p: [{ g, tl, tr }] }]
+    palabras: [3, 8],
+    coreografias: ["remolino", "lluvia", "brasas", "horizonte"],
+    aperturas: ["iris", "puerta", "velo"],
+    tonos: [146.83, 155.56, 130.81, 164.81, 174.61], // re, mi bemol, do, mi, fa
+    paletas: {
+      alba: { fondo: ["#170c16", "#040205"], oro: "#f1c992", luz: "#fff1de", nucleo: "#fff8ee", tenue: "#c9a99b", chispas: ["#f6d4a8", "#f1b3a0", "#fff3e0"] },
+      dia: { fondo: ["#0e1322", "#020306"], oro: "#e8cf94", luz: "#fff5dc", nucleo: "#fffaf0", tenue: "#a7aec0", chispas: ["#e8cf94", "#fff1cf", "#cdb37a"] },
+      ocaso: { fondo: ["#1c0d07", "#040201"], oro: "#f0b469", luz: "#ffe2b2", nucleo: "#fff4e2", tenue: "#bf9f8a", chispas: ["#f2b062", "#ff9d70", "#ffe0a8"] },
+      noche: { fondo: ["#0a1230", "#010208"], oro: "#dfcb9f", luz: "#eef3ff", nucleo: "#ffffff", tenue: "#9aa4bf", chispas: ["#dfcb9f", "#bccbff", "#ffffff"] },
+    },
+  };
+  let CFG = CFG_BASE;
+  function mezclar(base, extra) {
+    if (!extra || typeof extra !== "object" || Array.isArray(extra)) return extra === undefined ? base : extra;
+    const r = Object.assign({}, base);
+    Object.keys(extra).forEach((k) => { if (k.charAt(0) !== "_") r[k] = base && typeof base[k] === "object" && !Array.isArray(base[k]) ? mezclar(base[k], extra[k]) : extra[k]; });
+    return r;
+  }
+  const lista = (x, d) => (Array.isArray(x) && x.length ? x : d);
+  const lista2 = (x, d) => (Array.isArray(x) && x.length === 2 && x.every((n) => typeof n === "number") ? x : d);
+
+  // ------------------------------------------------------------------ variaciones de esta vez (se fijan al leer la plantilla)
   const hora = new Date().getHours();
   const MOMENTO = hora >= 5 && hora < 9 ? "alba" : hora >= 9 && hora < 17 ? "dia" : hora >= 17 && hora < 20 ? "ocaso" : "noche";
-  const PALETAS = {
-    alba: { fondo: ["#170c16", "#040205"], oro: "#f1c992", luz: "#fff1de", nucleo: "#fff8ee", tenue: "#c9a99b", chispas: ["#f6d4a8", "#f1b3a0", "#fff3e0"] },
-    dia: { fondo: ["#0e1322", "#020306"], oro: "#e8cf94", luz: "#fff5dc", nucleo: "#fffaf0", tenue: "#a7aec0", chispas: ["#e8cf94", "#fff1cf", "#cdb37a"] },
-    ocaso: { fondo: ["#1c0d07", "#040201"], oro: "#f0b469", luz: "#ffe2b2", nucleo: "#fff4e2", tenue: "#bf9f8a", chispas: ["#f2b062", "#ff9d70", "#ffe0a8"] },
-    noche: { fondo: ["#0a1230", "#010208"], oro: "#dfcb9f", luz: "#eef3ff", nucleo: "#ffffff", tenue: "#9aa4bf", chispas: ["#dfcb9f", "#bccbff", "#ffffff"] },
-  };
-  const P = PALETAS[MOMENTO];
-  const CORO = variar("coreografia", ["remolino", "lluvia", "brasas", "horizonte"]);
-  const APERTURA = variar("apertura", ["iris", "puerta", "velo"]);
-  const TONO = variar("tono", [146.83, 155.56, 130.81, 164.81, 174.61]); // re, mi bemol, do, mi, fa
+  let P = CFG_BASE.paletas[MOMENTO], CORO = "remolino", APERTURA = "iris", TONO = 146.83;
+  function fijarVariaciones() {
+    P = mezclar(CFG_BASE.paletas[MOMENTO], (CFG.paletas || {})[MOMENTO]);
+    CORO = variar("coreografia", lista(CFG.coreografias, CFG_BASE.coreografias));
+    APERTURA = variar("apertura", lista(CFG.aperturas, CFG_BASE.aperturas));
+    TONO = variar("tono", lista(CFG.tonos, CFG_BASE.tonos));
+  }
 
   // ------------------------------------------------------------------ escena
   const cortina = () => document.getElementById("biex-cortina");
@@ -69,23 +96,23 @@
   const ICO_SALTAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6l7 6-7 6zM13 6l7 6-7 6z"/></svg>';
   raiz.innerHTML = "<style>" +
     ":host{all:initial}" +
-    ".esc{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;overflow:hidden;background:" + P.fondo[1] + ";color:#ece5d6;font:400 14px/1.4 'BiEx Rotulo',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}" +
+    ".esc{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;overflow:hidden;background:var(--fondo,#020306);color:#ece5d6;font:400 14px/1.4 'BiEx Rotulo',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}" +
     "canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}" +
     ".sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}" +
     ".ui{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));opacity:0;transition:opacity .9s .5s}" +
     ".ui.v{opacity:1}.ui.f{opacity:0;transition:opacity .3s}" +
     "button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-height:38px;padding:0 15px;border-radius:999px;border:1px solid rgba(232,207,148,.3);background:rgba(6,6,10,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:rgba(236,229,214,.86);font:500 10.5px/1 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.24em;text-transform:uppercase;transition:border-color .2s,color .2s,box-shadow .3s}" +
-    "button:hover{border-color:rgba(232,207,148,.75);color:#fff}button:focus-visible{outline:2px solid " + P.oro + ";outline-offset:3px}" +
+    "button:hover{border-color:rgba(232,207,148,.75);color:#fff}button:focus-visible{outline:2px solid var(--oro,#e8cf94);outline-offset:3px}" +
     "button[hidden]{display:none}button svg{width:16px;height:16px;flex:none}.son[aria-pressed=true] .off,.son[aria-pressed=false] .on{display:none}" +
     ".son.pulso{animation:pulso 1.8s ease-in-out infinite}@keyframes pulso{50%{box-shadow:0 0 0 7px rgba(232,207,148,.12);border-color:rgba(232,207,148,.85);color:#fff}}" +
-    ".prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,transparent," + P.oro + ");opacity:.55;pointer-events:none}" +
+    ".prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,transparent,var(--oro,#e8cf94));opacity:.55;pointer-events:none}" +
     "@media (max-width:420px){button{padding:0 12px;letter-spacing:.18em}}" +
     "@media (prefers-reduced-motion:reduce){.son.pulso{animation:none}}" +
     "</style>" +
-    '<div class="esc" role="dialog" aria-modal="true" aria-label="Presentación de BiEx – Biblia Exacta">' +
+    '<div class="esc" role="dialog" aria-modal="true" aria-label="' + CFG_BASE.textos.aria + '">' +
     '<canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
-    '<div class="ui"><button class="son" type="button" aria-pressed="false" title="Sonido">' + ICO_SON + '<span>Sonido</span></button>' +
-    '<button class="sal" type="button" title="Saltar la presentación (Esc)"><span>Saltar</span>' + ICO_SALTAR + "</button></div>" +
+    '<div class="ui"><button class="son" type="button" aria-pressed="true" title="Sonido">' + ICO_SON + '<span>' + CFG_BASE.textos.sonido + '</span></button>' +
+    '<button class="sal" type="button" title="' + CFG_BASE.textos.saltarTitulo + '"><span>' + CFG_BASE.textos.saltar + '</span>' + ICO_SALTAR + "</button></div>" +
     '<div class="prog"></div></div>';
   const esc = raiz.querySelector(".esc"), cv = raiz.querySelector("canvas"), cx = cv.getContext("2d");
   const ui = raiz.querySelector(".ui"), btnSon = raiz.querySelector(".son"), btnSal = raiz.querySelector(".sal"), prog = raiz.querySelector(".prog"), sr = raiz.querySelector(".sr");
@@ -99,9 +126,12 @@
     esc.style.transform = K === 1 ? "" : "scale(" + 1 / K + ")";
     W = Math.max(1, Math.round(host.clientWidth * K));
     H = Math.max(1, Math.round(host.clientHeight * K));
-    DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+    // densidad real de la pantalla hasta 3× (alta definición); solo en pantallas gigantes se limita a ~20 megapíxeles
+    DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 3, Math.sqrt(2e7 / (W * H))));
     cv.width = Math.round(W * DPR);
     cv.height = Math.round(H * DPR);
+    cx.imageSmoothingEnabled = true;
+    try { cx.imageSmoothingQuality = "high"; } catch (e) { /* navegador antiguo */ }
   }
   medir();
   const MOVIL = W < 640;
@@ -114,7 +144,16 @@
     try { const ff = new FontFace(f, "url(" + BASE + "fuentes/" + u + ")", d); return ff.load().then((x) => { document.fonts.add(x); return x; }).catch(() => null); }
     catch (e) { return null; }
   })), espera(2600)]);
-  const datos = MODO === "completa" ? Promise.race([fetch(BASE + "datos/destacados.json").then((r) => (r.ok ? r.json() : [])).catch(() => []), espera(2600).then(() => [])]) : Promise.resolve([]);
+  const url = (u) => (/^https?:\/\//.test(u) ? u : BASE + String(u).replace(/^\.?\//, ""));
+  const traer = (u, ms) => Promise.race([fetch(url(u), { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null), espera(ms).then(() => null)]);
+  // La plantilla y los versos se piden a la vez; si la plantilla trae sus propios versos, se usan esos
+  const versosBase = MODO === "completa" ? traer(CFG_BASE.versos, 2600) : Promise.resolve(null);
+  const plantilla = traer(CFG_URL, 2200).then((c) => { if (c && typeof c === "object" && !Array.isArray(c)) CFG = mezclar(CFG_BASE, c); return CFG; });
+  const datos = MODO !== "completa" ? Promise.resolve([]) : plantilla.then((c) => {
+    if (Array.isArray(c.versos)) return c.versos;
+    if (typeof c.versos === "string" && c.versos !== CFG_BASE.versos) return traer(c.versos, 2600).then((x) => x || []);
+    return versosBase.then((x) => x || []);
+  });
   const F_GR = '"BiEx Codice", "Gentium Book Plus", "Gentium Plus", Georgia, serif';
   const F_TI = '"BiEx Titulo", "Cormorant Garamond", "BiEx Codice", Georgia, serif';
   const F_RO = '"BiEx Rotulo", Jost, "BiEx Codice", system-ui, sans-serif';
@@ -128,7 +167,8 @@
   };
   const unciales = (g) => g.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\p{L}]/gu, "").toUpperCase().replace(/Σ/g, "Ϲ");
   function elegirVerso(lista) {
-    const ok = (Array.isArray(lista) ? lista : []).filter((d) => d && d.p && d.p.length >= 3 && d.p.length <= 8 && d.p.every((w) => w.g && glosaPrincipal(w.tr).trim()));
+    const [pMin, pMax] = lista2(CFG.palabras, CFG_BASE.palabras);
+    const ok = (Array.isArray(lista) ? lista : []).filter((d) => d && Array.isArray(d.p) && d.p.length >= pMin && d.p.length <= pMax && d.p.every((w) => w && w.g && glosaPrincipal(w.tr).trim()));
     if (!ok.length) return null;
     const clave = (d) => d.c + d.cap + ":" + d.v;
     const vistos = LS.get("biex:intro:versos", []);
@@ -168,11 +208,16 @@
     return { c, w, asc, desc, pad, kr, an: w + pad * 2, al: asc + desc + pad * 2 };
   }
   // x: borde izquierdo del texto (ya a la escala e); yBase: línea de base
+  // Alta definición: el tamaño de destino sale de los píxeles reales del sprite (sin reescalados de redondeo) y, a escala 1,
+  // la posición cae justo en un píxel físico para que los bordes no se emborronen.
   function ponerSprite(s, x, yBase, alfa, e) {
     if (!s || alfa <= 0.003) return;
     e = e || 1;
     cx.globalAlpha = Math.min(1, alfa);
-    cx.drawImage(s.c, x - s.pad * e, yBase - (s.asc + s.pad) * e, s.an * e, s.al * e);
+    const kr = s.kr || DPR, w = (s.c.width / kr) * e, h = (s.c.height / kr) * e;
+    let dx = x - s.pad * e, dy = yBase - (s.asc + s.pad) * e;
+    if (Math.abs(e * kr - DPR) < 0.01) { dx = Math.round(dx * DPR) / DPR; dy = Math.round(dy * DPR) / DPR; }
+    cx.drawImage(s.c, dx, dy, w, h);
   }
   // Puntos del trazo de un sprite (para que la luz forme las letras)
   const lector = document.createElement("canvas"), lectorCx = lector.getContext("2d", { willReadFrequently: true });
@@ -196,8 +241,9 @@
   const th = new Float32Array(NP), rr = new Float32Array(NP), rO = new Float32Array(NP), om = new Float32Array(NP);
   const md = new Uint8Array(NP), col = new Uint8Array(NP), et = new Int16Array(NP);
   // modos: 0 deriva · 1 viaja a un destino · 2 fijada al destino · 3 suelta · 4 en órbita
-  const brillos = P.chispas.map((c) => {
-    const s = document.createElement("canvas"), n = 64; s.width = s.height = n;
+  let brillos = [];
+  const hacerBrillos = () => P.chispas.map((c) => {
+    const s = document.createElement("canvas"), n = 128; s.width = s.height = n;
     const g = s.getContext("2d"), gr = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
     gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.12, c); gr.addColorStop(0.35, c + "55"); gr.addColorStop(1, c + "00");
     g.fillStyle = gr; g.fillRect(0, 0, n, n); return s;
@@ -218,7 +264,6 @@
       }
     }
   }
-  sembrar();
   // Mandar partículas a destinos (lista plana x, y, etiqueta) a partir del tiempo dado
   function enviar(dest, T, cuando, viaje, fraccion) {
     const n = dest.length / 3;
@@ -309,13 +354,20 @@
     const lay = { letras: [], palabras: [], marca: null };
     const cxm = W / 2;
     // Marca
-    const fm = lim(Math.min(W / (MOVIL ? 11 : 9.2), H / 7.5), 26, 104);
-    const espM = fm * 0.16;
+    // el tamaño se ajusta al largo del título de la plantilla (pensado para «BIBLIA EXACTA», 13 letras)
+    let fm = lim(Math.min(W / (MOVIL ? 11 : 9.2), H / 7.5) * Math.min(1.25, Math.sqrt(13 / Math.max(4, Array.from(CFG.marca.titulo).length))), 22, 104);
+    const tituloM = (f, res) => sprite(CFG.marca.titulo, "500 " + Math.round(f) + "px " + F_TI, P.oro, f * 0.16,
+      { esp: f * 0.16, degradado: [[0, P.nucleo], [0.45, P.luz], [0.62, P.oro], [1, P.oro]], colorHalo: P.oro, res: res || 1 });
+    let tit = tituloM(fm);
+    for (let i = 0; i < 6 && tit.w > W * 0.88; i++) { fm *= Math.max(0.6, (W * 0.86) / tit.w); tit = tituloM(fm); }
+    let lemaF = lim(fm * 0.3, 15, 30), lem = sprite(CFG.marca.lema, "italic 400 " + Math.round(lemaF) + "px " + F_TI, P.luz, 5);
+    for (let i = 0; i < 4 && lem.w > W * 0.9; i++) { lemaF *= (W * 0.88) / lem.w; lem = sprite(CFG.marca.lema, "italic 400 " + Math.round(lemaF) + "px " + F_TI, P.luz, 5); }
     lay.marca = {
-      biex: sprite("BiEx", "500 " + Math.round(fm * 0.2) + "px " + F_RO, P.oro, 6, { esp: fm * 0.2 * 0.55 }),
-      titulo: sprite("BIBLIA EXACTA", "500 " + Math.round(fm) + "px " + F_TI, P.oro, fm * 0.16,
-        { esp: espM, degradado: [[0, P.nucleo], [0.45, P.luz], [0.62, P.oro], [1, P.oro]], colorHalo: P.oro }),
-      lema: sprite("Del griego al español, palabra por palabra", "italic 400 " + Math.round(lim(fm * 0.3, 15, 30)) + "px " + F_TI, P.luz, 5),
+      biex: sprite(CFG.marca.sello, "500 " + Math.round(fm * 0.2) + "px " + F_RO, P.oro, 6, { esp: fm * 0.2 * 0.55 }),
+      titulo: tit,
+      // para el leve crecimiento al abrirse: más resolución, así nunca se amplía una imagen
+      grande: tituloM(fm, 1.08),
+      lema: lem,
       fm,
     };
     lay.marca.y = H * 0.5 + fm * 0.32;
@@ -559,34 +611,74 @@
   }
   window.__biexIntroSonido = { montarSonido, partitura: () => partitura(), plan: () => PLAN };
 
-  // ------------------------------------------------------------------ control de sonido
-  let sonando = false, T = 0, fin = false;
-  const prefSon = LS.get("biex:intro:sonido", null);
-  function marcarSon(on, invitar) {
-    btnSon.setAttribute("aria-pressed", on ? "true" : "false");
-    btnSon.classList.toggle("pulso", !!invitar);
-    btnSon.querySelector("span").textContent = on ? "Sonido" : invitar ? "Activar sonido" : "Sonido";
+  // ------------------------------------------------------------------ control de sonido (activado por defecto)
+  // Se intenta sonar desde el primer instante. Si el navegador lo retiene hasta un gesto, el botón queda encendido con el aviso
+  // «Toca para oír» y suena con el primer toque, clic o tecla en cualquier parte de la presentación. Si alguien lo apaga,
+  // queda apagado solo durante esa visita; la siguiente vuelve a empezar con sonido.
+  let sonando = false, T = 0, fin = false, apagado = false;
+  const SS = {
+    get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } },
+  };
+  try { localStorage.removeItem("biex:intro:sonido"); } catch (e) { /* preferencia antigua: ya no se usa */ }
+  apagado = SS.get("biex:intro:silencio") === "1";
+  function marcarSon(estado) { // "on" · "espera" · "off"
+    btnSon.setAttribute("aria-pressed", estado === "off" ? "false" : "true");
+    btnSon.classList.toggle("pulso", estado === "espera");
+    btnSon.querySelector("span").textContent = estado === "espera" ? CFG.textos.tocar : CFG.textos.sonido;
+    btnSon.title = estado === "on" ? "Silenciar" : CFG.textos.sonido;
   }
-  function encender(manual) {
-    if (sonando || fin) return;
-    if (!SON) { SON = crearSonido(); if (!SON) { btnSon.hidden = true; return; } SON.cargar(partitura()); }
-    const arrancar = () => {
-      if (sonando || fin || SON.ctx.state !== "running") return;
-      sonando = true; SON.programar(T); marcarSon(true, false);
-    };
+  // iPhone y iPad: que suene aunque el interruptor de silencio esté puesto
+  function sesionAudio(tipo) { try { if (navigator.audioSession) navigator.audioSession.type = tipo; } catch (e) { /* no disponible */ } }
+  function arrancar() {
+    if (sonando || fin || apagado || !SON || SON.ctx.state !== "running") return;
+    sonando = true; SON.programar(T); marcarSon("on"); escuchas(false);
+  }
+  function encender(conGesto) {
+    if (sonando || fin || apagado) return;
+    sesionAudio("playback");
+    if (!SON) {
+      SON = crearSonido();
+      if (!SON) { btnSon.hidden = true; escuchas(false); return; }
+      SON.cargar(partitura());
+      try { SON.ctx.addEventListener("statechange", arrancar); } catch (e) { /* sin eventos */ }
+    }
+    if (conGesto) { // un sonido vacío dentro del gesto deja el audio abierto en Safari
+      try { const b = SON.ctx.createBuffer(1, 1, SON.ctx.sampleRate), f = SON.ctx.createBufferSource(); f.buffer = b; f.connect(SON.ctx.destination); f.start(0); } catch (e) { /* nada */ }
+    }
     try { const pr = SON.ctx.resume(); if (pr && pr.then) pr.then(arrancar).catch(() => {}); } catch (e) { /* sin permiso aún */ }
-    setTimeout(() => { arrancar(); if (!sonando && !manual) marcarSon(false, true); }, 260);
-    if (manual) LS.set("biex:intro:sonido", "si");
+    arrancar();
+    setTimeout(() => { arrancar(); if (!sonando && !fin && !apagado) marcarSon("espera"); }, 280);
   }
   function apagar() {
-    if (!sonando) { marcarSon(false, false); LS.set("biex:intro:sonido", "no"); return; }
-    sonando = false; SON.callar(0.5); setTimeout(() => { try { SON.ctx.suspend(); } catch (e) { /* nada */ } }, 600);
-    SON.cargar(partitura()); marcarSon(false, false); LS.set("biex:intro:sonido", "no");
+    apagado = true; SS.set("biex:intro:silencio", "1"); escuchas(false);
+    if (sonando) { sonando = false; SON.callar(0.5); setTimeout(() => { try { if (apagado) SON.ctx.suspend(); } catch (e) { /* nada */ } }, 600); SON.cargar(partitura()); }
+    marcarSon("off");
   }
-  btnSon.addEventListener("click", (e) => { e.stopPropagation(); if (sonando) apagar(); else { if (SON && SON.ctx.state === "suspended") SON.cargar(partitura()); encender(true); } });
+  btnSon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (sonando) apagar();
+    else { apagado = false; SS.set("biex:intro:silencio", "0"); encender(true); }
+  });
   btnSal.addEventListener("click", (e) => { e.stopPropagation(); terminar(true); });
-  // Quien ya eligió sonido lo recupera con cualquier toque
-  esc.addEventListener("pointerdown", (e) => { if (prefSon === "si" && !sonando && !(e.target.closest && e.target.closest("button"))) encender(true); });
+  // Primer gesto en cualquier parte (menos los botones, que tienen su propia acción): abre el sonido
+  const GESTOS = ["pointerup", "touchend", "mousedown", "click", "keydown"];
+  function alGesto(e) {
+    if (sonando || apagado || fin) return;
+    const camino = e.composedPath ? e.composedPath() : [];
+    const enBoton = camino.indexOf(btnSon) >= 0 || camino.indexOf(btnSal) >= 0;
+    if (e.type === "keydown") {
+      if (e.key === "Escape" || e.key === "Esc" || e.key === "Tab") return;
+      if (enBoton && (e.key === "Enter" || e.key === " " || e.key === "Spacebar")) return; // el botón enfocado hace lo suyo
+    } else if (enBoton) return;
+    encender(true);
+  }
+  let escuchando = false;
+  function escuchas(on) {
+    if (on === escuchando) return;
+    escuchando = on;
+    GESTOS.forEach((t) => (on ? document.addEventListener(t, alGesto, { capture: true, passive: true }) : document.removeEventListener(t, alGesto, { capture: true })));
+  }
   const teclas = (e) => { if (e.key === "Escape") { e.preventDefault(); terminar(true); } };
   document.addEventListener("keydown", teclas, true);
   const visibilidad = () => { if (document.hidden && T > 0.4) terminar(true, true); };
@@ -609,9 +701,10 @@
     document.removeEventListener("keydown", teclas, true);
     document.removeEventListener("visibilitychange", visibilidad);
     window.removeEventListener("resize", alCambiarTam);
+    escuchas(false);
     document.documentElement.style.overflow = desborde;
     const c = cortina(); if (c) c.remove();
-    setTimeout(() => { if (SON) { try { SON.ctx.close(); } catch (e) { /* nada */ } } }, sonando ? 2800 : 50);
+    setTimeout(() => { if (SON) { try { SON.ctx.close(); } catch (e) { /* nada */ } } sesionAudio("auto"); }, sonando ? 2800 : 50);
     host.remove();
     try { window.dispatchEvent(new CustomEvent("biex:intro-fin")); } catch (e) { /* nada */ }
   }
@@ -780,7 +873,7 @@
     const M = L.marca, nit = tramo(T, p.nitida[0], p.nitida[1]);
     const crece = 1 + 0.06 * curva(ab);
     if (nit > 0) {
-      ponerSprite(M.titulo, cxm - (M.titulo.w * crece) / 2, M.y, nit, crece);
+      ponerSprite(crece > 1.0005 ? M.grande : M.titulo, cxm - (M.titulo.w * crece) / 2, M.y, nit, crece);
       const br = tramo(T, p.brillo[0], p.brillo[1]);
       if (br > 0 && br < 1 && MODO !== "quieta" && ab === 0) {
         // reflejo que recorre las letras
@@ -793,7 +886,7 @@
         g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255,1)"); g.addColorStop(1, "rgba(255,255,255,0)");
         rg.fillStyle = g; rg.fillRect(0, 0, wpx, hpx);
         cx.globalCompositeOperation = "lighter";
-        ponerSprite({ c: M.reflejo, pad: s.pad, asc: s.asc, an: s.an, al: s.al }, cxm - s.w / 2, M.y, 0.9 * Math.sin(Math.PI * br));
+        ponerSprite({ c: M.reflejo, pad: s.pad, asc: s.asc, an: s.an, al: s.al, kr: s.kr }, cxm - s.w / 2, M.y, 0.9 * Math.sin(Math.PI * br));
         cx.globalCompositeOperation = "source-over";
       }
       const bi = tramo(T, p.lema[0] - 0.3, p.lema[1] - 0.3);
@@ -831,18 +924,24 @@
   // ------------------------------------------------------------------ arranque
   (async function () {
     try {
-      const [, lista] = await Promise.all([fuentes, datos]);
+      const [, lista] = await Promise.all([fuentes, datos, plantilla]);
+      fijarVariaciones();
+      esc.style.setProperty("--fondo", P.fondo[1]); esc.style.setProperty("--oro", P.oro);
+      esc.setAttribute("aria-label", CFG.textos.aria);
+      btnSal.title = CFG.textos.saltarTitulo; btnSal.querySelector("span").textContent = CFG.textos.saltar;
+      brillos = hacerBrillos();
+      sembrar();
       if (MODO === "completa") {
         V = elegirVerso(lista);
         if (!V) MODO = "breve";
       }
       componer();
       planear();
-      sr.textContent = "BiEx – Biblia Exacta. " + (V ? V.n + " " + V.cap + ":" + V.v + ": " + V.p.map((w) => w.g + " (" + glosaPrincipal(w.tr) + ")").join(" ") + ". " : "") + "Del griego al español, palabra por palabra.";
+      sr.textContent = CFG.marca.nombre + ". " + (V ? V.n + " " + V.cap + ":" + V.v + ": " + V.p.map((w) => w.g + " (" + glosaPrincipal(w.tr) + ")").join(" ") + ". " : "") + CFG.marca.lema + ".";
       ui.classList.add("v");
       if (MODO === "quieta") btnSon.hidden = true;
-      else if (prefSon !== "no") encender(false);
-      else marcarSon(false, false);
+      else if (apagado) marcarSon("off");
+      else { marcarSon("on"); escuchas(true); encender(false); }
       try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ }
       rafId = requestAnimationFrame(cuadro);
     } catch (e) {

@@ -35,6 +35,7 @@
     s.src = "__BASE__intro.js?v=__V__";
     s.async = true;
     s.setAttribute("data-modo", modo);
+    if ("__CONFIG__") s.setAttribute("data-config", "__CONFIG__");
     s.onerror = quitar;
     document.head.appendChild(s);
   } catch (e) { /* sin almacenamiento o sin permiso: el sitio sigue sin presentación */ }

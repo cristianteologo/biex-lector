@@ -3,6 +3,7 @@ Uso habitual (solo cambia el commit fijado para la red de respaldo):
   python3 generar_insercion.py --sha SHA > insercion.html
   python3 generar_insercion.py --cargador --sha SHA > index.html
   python3 generar_insercion.py --intro > intro.html   (presentación de apertura y datos estructurados)
+  python3 generar_insercion.py --intro --config plantillas/otra.json > intro.html   (otra plantilla de textos y versos)
 Opciones: --completo URL (página propia del lector; por defecto GitHub Pages), --base URL y --base2 URL (de dónde carga app.js,
 app.css y los datos el lector armado dentro de la página; por defecto GitHub Pages y jsDelivr fijado al SHA), --respaldo URL
 (copia en Wix headless). La inserción se minimiza (sin sangrías ni comentarios de línea) y debe quedar por debajo de 15 000 caracteres."""
@@ -16,6 +17,7 @@ ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDe
 ap.add_argument("--sha", help="commit del repositorio para jsDelivr / githack")
 ap.add_argument("--cargador", action="store_true", help="genera la página index.html del sitio headless")
 ap.add_argument("--intro", action="store_true", help="genera el código de la presentación de apertura (comienzo del cuerpo, todas las páginas)")
+ap.add_argument("--config", default="", help="con --intro: plantilla de la presentación (por defecto plantillas/presentacion.json)")
 ap.add_argument("--completo", default=PAGES); ap.add_argument("--respaldo", default=HEADLESS)
 ap.add_argument("--base"); ap.add_argument("--base2")
 ap.add_argument("antiguos", nargs="*", help="forma antigua: URL de jsDelivr fijada a un commit (se toma su SHA); el resto se ignora")
@@ -35,6 +37,8 @@ if a.intro:
     import hashlib
     v = hashlib.sha1((d / ".." / "intro.js").read_bytes()).hexdigest()[:10]
     t = (d / "intro.plantilla.html").read_text(encoding="utf-8").replace("__BASE__", barra(a.base or a.completo)).replace("__V__", v)
+    if not re.fullmatch(r"[A-Za-z0-9_./-]*", a.config) or ".." in a.config: sys.exit("--config: ruta no válida")
+    t = t.replace('    if ("__CONFIG__") s.setAttribute("data-config", "__CONFIG__");\n', "" if not a.config else '    s.setAttribute("data-config", "%s");\n' % a.config)
     t = re.sub(r"/\*.*?\*/\n", "", t, count=1, flags=re.S)
     out = "\n".join(l.strip() for l in t.splitlines() if l.strip() and not l.strip().startswith("//")) + "\n"
     sys.stdout.write(out); sys.stderr.write("caracteres: %d (límite de Wix: 15000)\n" % len(out))
