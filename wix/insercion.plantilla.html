@@ -3,7 +3,7 @@
    que despliega, a pantalla completa, el griego y el análisis de ese libro. */
 (function () {
   if (window.__biexLector) return; window.__biexLector = true;
-  var BASE = "__BASE__", COMPLETO = "__COMPLETO__";
+  var BASES = ["__BASE__", "__BASE2__"], COMPLETO = "__COMPLETO__";
   var PAGINAS = {
     "blank": ["MAT", "Mateo"], "blank-3": ["JHN", "Juan"], "blank-17": ["ROM", "Romanos"], "17tt": ["TIT", "Tito"],
     "blank-15": ["PHM", "Filemón"], "19ih": ["HEB", "Hebreos"], "21k1p": ["1PE", "1 Pedro"], "1yj": ["1JN", "1 Juan"],
@@ -22,7 +22,7 @@
   raiz.innerHTML =
     '<style>' +
     ':host{all:initial}' +
-    '.p{position:fixed;z-index:2147483000;right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:14px;padding:9px 22px 9px 9px;border-radius:999px;border:1px solid #c9a865;background:rgba(9,9,10,.94);color:#ece5d6;cursor:pointer;box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 0 rgba(201,168,101,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);text-align:left;font:inherit;transition:transform .2s,box-shadow .2s,opacity .3s;animation:biexEntra .6s cubic-bezier(.2,.8,.2,1) both,biexLatido 2.4s ease-out 1.2s 2}' +
+    '.p{position:fixed;z-index:2147483000;right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:14px;padding:9px 22px 9px 9px;border-radius:999px;border:1px solid #c9a865;background:rgba(9,9,10,.94);color:#ece5d6;cursor:pointer;box-shadow:0 14px 44px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);text-align:left;font:inherit;transition:transform .2s,box-shadow .2s;animation:biexEntra .6s cubic-bezier(.2,.8,.2,1) both,biexLatido 2.4s ease-out 1.2s 2}' +
     '.p[hidden]{display:none}' +
     '.p:hover{transform:translateY(-2px);box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 0 4px rgba(201,168,101,.18)}' +
     '.p:focus-visible{outline:2px solid #e8cf94;outline-offset:3px}' +
@@ -30,61 +30,106 @@
     '.t{display:grid;gap:3px}' +
     '.t small{font:500 10px/1.2 Jost,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#c9a865}' +
     '.t b{font:500 17px/1.15 "Cormorant Garamond",Georgia,serif;letter-spacing:.04em;color:#ece5d6;white-space:nowrap}' +
-    '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s}' +
+    '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s;font:400 16px/1.5 Jost,system-ui,sans-serif;color:#ece5d6}' +
     '.v.a{display:block}.v.b{opacity:1}' +
-    '.v iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#09090a}' +
-    '.c{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font:400 15px/1.4 "Cormorant Garamond",Georgia,serif;letter-spacing:.2em;text-transform:uppercase;color:#9d968a}' +
+    '.v iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent;z-index:1}' +
+    '.e{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;text-align:center;pointer-events:none}.e a{pointer-events:auto}' +
+    '.c{font:400 15px/1.4 "Cormorant Garamond",Georgia,serif;letter-spacing:.2em;text-transform:uppercase;color:#9d968a}' +
+    '.g{width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,168,101,.26);border-top-color:#c9a865;animation:biexGiro 1s linear infinite}' +
+    '.m{max-width:34em;display:grid;gap:14px;justify-items:center;font-size:15px;color:#d6cebd}' +
+    '.m[hidden],.k[hidden]{display:none}' +
+    '.m a,.k a{display:inline-block;padding:11px 20px;border-radius:999px;background:#c9a865;color:#0b0a08;text-decoration:none;font-weight:500;letter-spacing:.08em;font-size:13px;text-transform:uppercase}' +
+    '.k a{background:none;color:#c9a865;border:1px solid rgba(201,168,101,.4)}' +
+    '.m small{color:#9d968a;font-size:12px;word-break:break-all}' +
+    '.x{position:absolute;z-index:3;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,101,.4);background:rgba(9,9,10,.9);color:#ece5d6;font:300 26px/1 system-ui,sans-serif;cursor:pointer}' +
+    '.v.listo .x,.v.listo .e{display:none}' +
     '@media (max-width:640px){.p{right:auto;left:50%;transform:translateX(-50%);width:max-content;bottom:max(16px,env(safe-area-inset-bottom));padding:8px 18px 8px 8px;gap:11px;max-width:calc(100vw - 24px)}.t small{letter-spacing:.16em}.p:hover{transform:translateX(-50%)}.s{width:38px;height:38px;font-size:21px}.t b{font-size:15.5px;white-space:normal}.p{animation:biexEntraM .6s cubic-bezier(.2,.8,.2,1) both,biexLatido 2.4s ease-out 1.2s 2}}' +
     '@keyframes biexEntra{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
     '@keyframes biexEntraM{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}' +
-    '@keyframes biexLatido{0%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 0 rgba(201,168,101,.55)}100%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 18px rgba(201,168,101,0)}}' +
-    '@media (prefers-reduced-motion:reduce){.p{animation:none}}' +
+    '@keyframes biexLatido{0%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 0 rgba(201,168,101,.5)}100%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 18px rgba(201,168,101,0)}}' +
+    '@keyframes biexGiro{to{transform:rotate(360deg)}}' +
+    '@media (prefers-reduced-motion:reduce){.p,.g{animation:none}}' +
     '@media print{.p,.v{display:none!important}}' +
     '</style>' +
     '<button class="p" type="button" hidden><span class="s" aria-hidden="true">α</span><span class="t"><small>Lector y analizador · BiEx</small><b></b></span></button>' +
-    '<div class="v" role="dialog" aria-modal="true" aria-label="Lector y analizador de BiEx"><div class="c">Abriendo el códice…</div></div>';
+    '<div class="v" role="dialog" aria-modal="true" aria-label="Lector y analizador de BiEx">' +
+    '<div class="e"><div class="g"></div><div class="c">Abriendo el códice…</div><div class="k" hidden><a target="_blank" rel="noopener">Abrir en una pestaña nueva</a></div>' +
+    '<div class="m" hidden><span>No se pudo abrir el lector dentro de esta página.</span><a target="_blank" rel="noopener">Abrir el lector en una pestaña nueva</a><small></small></div></div>' +
+    '<button class="x" type="button" aria-label="Cerrar">×</button></div>';
   var pastilla = raiz.querySelector(".p"), velo = raiz.querySelector(".v"), titulo = raiz.querySelector(".t b");
-  var marco = null, actual = null, desborde = "";
+  var estado = raiz.querySelector(".c"), giro = raiz.querySelector(".g"), atajo = raiz.querySelector(".k"), aviso = raiz.querySelector(".m");
+  var marco = null, actual = null, listo = false, reloj = null, reloj2 = null, errores = [], desborde = "";
 
+  // Página que carga la aplicación dentro del marco; informa a esta página cuando arranca o cuando algo falla
   function documento(inicio) {
+    var q = JSON.stringify;
     return '<!doctype html><html lang="es" data-theme="dark"><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><base href="about:srcdoc">' +
       '<title>BiEx · Lector y analizador</title>' +
-      '<link rel="stylesheet" href="' + FUENTES + '"><link rel="stylesheet" href="' + BASE + 'app.css">' +
-      '<script>window.BIEX_BASE=' + JSON.stringify(BASE) + ';window.BIEX_EMBED=true;window.BIEX_COMPLETO=' + JSON.stringify(COMPLETO) + ';' +
+      '<script>function biexAvisa(m){try{parent.postMessage({biex:"error",m:String(m).slice(0,240)},"*")}catch(e){}}' +
+      'addEventListener("error",function(e){var t=e.target;biexAvisa(t&&t!==window&&(t.src||t.href)?"No cargó "+(t.src||t.href):(e.message||"error")+" "+(e.filename||"")+":"+(e.lineno||""))},true);' +
+      'addEventListener("unhandledrejection",function(e){biexAvisa("Promesa: "+(e.reason&&e.reason.message||e.reason))});' +
+      'window.BIEX_BASE=' + q(BASES[0]) + ';window.BIEX_BASES=' + q(BASES) + ';window.BIEX_EMBED=true;window.BIEX_COMPLETO=' + q(COMPLETO) + ';' +
       'try{var t=localStorage.getItem("biex:tema");if(t){t=JSON.parse(t);if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}}catch(e){}' +
-      'try{history.replaceState(null,"",location.href.split("#")[0]+' + JSON.stringify(inicio) + ')}catch(e){location.hash=' + JSON.stringify(inicio) + '}<\/script>' +
-      '</head><body><div id="app"></div><script src="' + BASE + 'app.js"><\/script></body></html>';
+      'try{history.replaceState(null,"",location.href.split("#")[0]+' + q(inicio) + ')}catch(e){location.hash=' + q(inicio) + '}<\/script>' +
+      '<link rel="stylesheet" href="' + FUENTES + '">' +
+      '<link rel="stylesheet" href="' + BASES[0] + 'app.css" onerror="this.onerror=null;this.href=' + esc(q(BASES[1] + 'app.css')) + '">' +
+      '</head><body><div id="app"></div>' +
+      '<script src="' + BASES[0] + 'app.js" onerror="var s=document.createElement(&quot;script&quot;);s.src=' + esc(q(BASES[1] + 'app.js')) + ';document.body.appendChild(s)"><\/script></body></html>';
+  }
+  function mostrarEstado(t) { estado.textContent = t; estado.hidden = false; giro.hidden = false; aviso.hidden = true; }
+  function intentar(n, inicio) {
+    listo = false; velo.classList.remove("listo");
+    clearTimeout(reloj); clearTimeout(reloj2);
+    if (marco) marco.remove();
+    marco = document.createElement("iframe");
+    marco.title = "Lector y analizador de BiEx";
+    marco.setAttribute("allow", "clipboard-write");
+    if (n === 1) marco.srcdoc = documento(inicio);
+    else marco.src = COMPLETO + "?incrustado=1" + inicio;
+    var este = marco;
+    function siguiente() { if (listo || marco !== este) return; if (n === 1 && COMPLETO) intentar(2, inicio); else fallo(); }
+    // Si el marco terminó de cargar y la aplicación no avisó que arrancó, se pasa a la vía siguiente
+    marco.addEventListener("load", function () { setTimeout(siguiente, 1500); });
+    velo.appendChild(marco);
+    mostrarEstado(n === 1 ? "Abriendo el códice…" : "Abriendo por otra vía…");
+    atajo.hidden = true;
+    reloj2 = setTimeout(function () { if (!listo) atajo.hidden = false; }, 3500);
+    reloj = setTimeout(siguiente, 15000);
+  }
+  function fallo() {
+    clearTimeout(reloj); clearTimeout(reloj2);
+    if (marco) { marco.remove(); marco = null; }
+    estado.hidden = true; giro.hidden = true; atajo.hidden = true; aviso.hidden = false;
+    aviso.querySelector("small").textContent = errores.length ? "Detalle: " + errores.slice(-4).join(" · ") : "";
   }
   function abrir() {
     var pg = pagina(); if (!pg) return;
     var inicio = pg[0] ? "#/" + pg[0] + "/1" : "#/libros";
-    if (!marco) {
-      marco = document.createElement("iframe");
-      marco.title = "Lector y analizador de BiEx";
-      marco.setAttribute("allow", "clipboard-write");
-      marco.srcdoc = documento(inicio);
-      velo.appendChild(marco);
-      marco.addEventListener("load", function () { var c = velo.querySelector(".c"); if (c) c.remove(); });
-    } else if (marco.contentWindow && pg[0] !== actual) {
-      try { marco.contentWindow.location.hash = inicio; } catch (e) { /* ignorar */ }
-    }
+    var enlace = COMPLETO + inicio;
+    atajo.querySelector("a").href = enlace; aviso.querySelector("a").href = enlace;
+    if (!marco || !listo) { errores = []; intentar(1, inicio); }
+    else if (pg[0] !== actual) { try { marco.contentWindow.postMessage({ biex: "ir", hash: inicio }, "*"); } catch (e) { /* ignorar */ } }
     actual = pg[0];
     desborde = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     velo.classList.add("a");
-    requestAnimationFrame(function () { velo.classList.add("b"); try { marco.focus(); } catch (e) { /* ignorar */ } });
+    requestAnimationFrame(function () { velo.classList.add("b"); try { marco && marco.focus(); } catch (e) { /* ignorar */ } });
   }
   function cerrar() {
     velo.classList.remove("b");
     setTimeout(function () { velo.classList.remove("a"); }, 250);
     document.documentElement.style.overflow = desborde;
+    if (!listo) { clearTimeout(reloj); clearTimeout(reloj2); if (marco) { marco.remove(); marco = null; } }
     try { pastilla.focus(); } catch (e) { /* ignorar */ }
   }
   pastilla.addEventListener("click", abrir);
+  raiz.querySelector(".x").addEventListener("click", cerrar);
   window.addEventListener("message", function (e) {
-    if (!marco || e.source !== marco.contentWindow || !e.data || e.data.biex !== "cerrar") return;
-    cerrar();
+    if (!marco || e.source !== marco.contentWindow || !e.data) return;
+    if (e.data.biex === "listo") { listo = true; clearTimeout(reloj); clearTimeout(reloj2); velo.classList.add("listo"); }
+    else if (e.data.biex === "cerrar") cerrar();
+    else if (e.data.biex === "error" && !/fonts\.googleapis/.test(e.data.m)) errores.push(String(e.data.m));
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && velo.classList.contains("a")) cerrar(); });
 

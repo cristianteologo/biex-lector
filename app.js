@@ -2,8 +2,17 @@
 (function () {
   "use strict";
   const BASE = window.BIEX_BASE || "";
-  const EMBED = !!window.BIEX_EMBED;
-  const COMPLETO = window.BIEX_COMPLETO || "";
+  // Fuentes de los datos en orden de preferencia (si la primera falla se usa la siguiente)
+  const BASES = Array.isArray(window.BIEX_BASES) && window.BIEX_BASES.length ? window.BIEX_BASES : [BASE];
+  // Dentro del sitio oficial: el lector se abre en un marco a pantalla completa (srcdoc o ?incrustado=1)
+  const POR_URL = /[?&]incrustado=1/.test(location.search);
+  const EMBED = !!window.BIEX_EMBED || POR_URL;
+  const COMPLETO = window.BIEX_COMPLETO || (POR_URL ? location.origin + location.pathname : "");
+  const alPadre = (msg) => { if (!EMBED) return; try { window.parent.postMessage(msg, "*"); } catch (e) { /* ignorar */ } };
+  if (EMBED) {
+    window.addEventListener("error", (e) => alPadre({ biex: "error", m: String(e.message || "error") + " " + (e.filename || "") + ":" + (e.lineno || "") }));
+    window.addEventListener("message", (e) => { if (e.source === window.parent && e.data && e.data.biex === "ir" && typeof e.data.hash === "string") location.hash = e.data.hash; });
+  }
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   const h = (tag, attrs, ...kids) => {
@@ -52,7 +61,16 @@
 
   // ------------------------------------------------------------------ datos
   const cache = {};
-  const cargar = (ruta) => (cache[ruta] = cache[ruta] || fetch(BASE + ruta).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).catch((e) => { delete cache[ruta]; throw e; }));
+  let baseOk = 0;
+  function traer(ruta, k) {
+    return fetch(BASES[k] + ruta).then((r) => { if (!r.ok) throw new Error(r.status); baseOk = k; return r.json(); })
+      .catch((e) => {
+        alPadre({ biex: "error", m: "No cargó " + BASES[k] + ruta + " (" + (e && e.message) + ")" });
+        if (k + 1 < BASES.length) return traer(ruta, k + 1);
+        throw e;
+      });
+  }
+  const cargar = (ruta) => (cache[ruta] = cache[ruta] || traer(ruta, baseOk).catch((e) => { delete cache[ruta]; throw e; }));
   let D = null, T = null;
   const lectura = (c) => cargar("datos/libros/" + c + ".json");
   const analisis = (c) => cargar("datos/analisis/" + c + ".json");
@@ -884,6 +902,7 @@
   }
   marco();
   vista().replaceChildren(cargando("Abriendo el códice…"));
+  alPadre({ biex: "listo" });
   cargar("datos/avance.json").then((d) => {
     D = d;
     const act = $("#actualizado");
