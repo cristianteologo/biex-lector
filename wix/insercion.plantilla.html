@@ -1,55 +1,55 @@
 <script>
-/* BiEx · Lector y analizador dentro del sitio oficial: en cada página de libro de la Nueva Voluntad aparece un acceso
-   que despliega, a pantalla completa, el griego y el análisis de ese libro. */
+/* BiEx · Lector y analizador dentro del sitio oficial: en Inicio, Información, Nueva Voluntad y cada libro aparece un acceso discreto
+   que abre, a pantalla completa, el griego y el análisis. La vista móvil de Wix se dibuja a 320 px ampliados; el lector se contraescala
+   para verse al tamaño real del teléfono. Vías: página propia del lector → lector armado aquí → copia de respaldo → aviso con enlace. */
 (function () {
   if (window.__biexLector) return; window.__biexLector = true;
-  var BASES = ["__BASE__", "__BASE2__"], COMPLETO = "__COMPLETO__";
-  var PAGINAS = {
-    "blank": ["MAT", "Mateo"], "blank-3": ["JHN", "Juan"], "blank-17": ["ROM", "Romanos"], "17tt": ["TIT", "Tito"],
-    "blank-15": ["PHM", "Filemón"], "19ih": ["HEB", "Hebreos"], "21k1p": ["1PE", "1 Pedro"], "1yj": ["1JN", "1 Juan"],
-    "24yb": ["2JN", "2 Juan"], "25yg": ["3JN", "3 Juan"], "blank-13": ["JUD", "Judas"], "27jhr": ["REV", "Revelación"],
-    "nueva-voluntad": ["", "Nueva Voluntad"]
-  };
+  var BASES = ["__BASE__", "__BASE2__"], COMPLETO = "__COMPLETO__", RESPALDO = "__RESPALDO__";
+  var LIB = { "blank": ["MAT", "Mateo"], "blank-3": ["JHN", "Juan"], "blank-17": ["ROM", "Romanos"], "17tt": ["TIT", "Tito"], "blank-15": ["PHM", "Filemón"], "19ih": ["HEB", "Hebreos"],
+    "21k1p": ["1PE", "1 Pedro"], "1yj": ["1JN", "1 Juan"], "24yb": ["2JN", "2 Juan"], "25yg": ["3JN", "3 Juan"], "blank-13": ["JUD", "Judas"], "27jhr": ["REV", "Revelación"] };
+  var OTRAS = { "nueva-voluntad": ["#/libros", "Los 27 libros en griego"], "biex": ["#/", "La Nueva Voluntad en griego"], "": ["#/", "La Nueva Voluntad en griego"], "info": ["#/", "La Nueva Voluntad en griego"] };
   var FUENTES = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&family=Jost:wght@400;500&display=swap";
-  function pagina() { var p = location.pathname.replace(/\/+$/, "").split("/").pop(); return PAGINAS[p] || null; }
+  function pagina() {
+    var p = location.pathname.replace(/\/+$/, "").split("/").pop();
+    if (LIB[p]) return ["#/" + LIB[p][0] + "/1", LIB[p][1] + " en griego, palabra por palabra", LIB[p][1]];
+    return OTRAS[p] ? [OTRAS[p][0], OTRAS[p][1], ""] : null;
+  }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // Cuánto amplía el navegador la página (vista móvil de Wix a 320 px); 1 en escritorio
+  function escala() {
+    var vv = window.visualViewport, k = (vv && vv.scale) || 1, w = document.documentElement.clientWidth || innerWidth;
+    if (k < 1.05) { var m = document.querySelector('meta[name="viewport"]'); if (m && /width=\s*\d/.test(m.content) && screen.width) k = (innerWidth > innerHeight ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) / w; }
+    return k > 1.05 && k < 4 ? k : 1;
+  }
 
   var f = document.createElement("link"); f.rel = "stylesheet"; f.href = FUENTES; document.head.appendChild(f);
   var anfitrion = document.createElement("div"); anfitrion.id = "biex-lector";
   anfitrion.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;z-index:2147483000;";
   document.body.appendChild(anfitrion);
   var raiz = anfitrion.attachShadow ? anfitrion.attachShadow({ mode: "open" }) : anfitrion;
-  raiz.innerHTML =
-    '<style>' +
+  raiz.innerHTML = '<style>' +
     ':host{all:initial}' +
-    '.p{position:fixed;z-index:2147483000;right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:14px;padding:9px 22px 9px 9px;border-radius:999px;border:1px solid #c9a865;background:rgba(9,9,10,.94);color:#ece5d6;cursor:pointer;box-shadow:0 14px 44px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);text-align:left;font:inherit;transition:transform .2s,box-shadow .2s;animation:biexEntra .6s cubic-bezier(.2,.8,.2,1) both,biexLatido 2.4s ease-out 1.2s 2}' +
-    '.p[hidden]{display:none}' +
-    '.p:hover{transform:translateY(-2px);box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 0 4px rgba(201,168,101,.18)}' +
-    '.p:focus-visible{outline:2px solid #e8cf94;outline-offset:3px}' +
-    '.s{width:42px;height:42px;flex:none;border-radius:50%;border:1px solid #c9a865;display:grid;place-items:center;font:400 24px/1 "Gentium Book Plus",Georgia,serif;color:#e8cf94;background:radial-gradient(circle at 50% 35%,rgba(201,168,101,.22),transparent 70%)}' +
-    '.t{display:grid;gap:3px}' +
-    '.t small{font:500 10px/1.2 Jost,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#c9a865}' +
-    '.t b{font:500 17px/1.15 "Cormorant Garamond",Georgia,serif;letter-spacing:.04em;color:#ece5d6;white-space:nowrap}' +
-    '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s;font:400 16px/1.5 Jost,system-ui,sans-serif;color:#ece5d6}' +
+    '.p{position:fixed;z-index:2147483000;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;padding:5px 16px 5px 5px;border-radius:999px;border:1px solid rgba(201,168,101,.75);background:rgba(9,9,10,.93);color:#ece5d6;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-align:left;font:inherit;transition:padding .3s,gap .3s,box-shadow .2s;animation:biexEntra .5s ease-out both}' +
+    '.p[hidden]{display:none}.p:hover{box-shadow:0 12px 32px rgba(0,0,0,.5),0 0 0 3px rgba(201,168,101,.2)}.p:focus-visible{outline:2px solid #e8cf94;outline-offset:3px}' +
+    '.s{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid #c9a865;display:grid;place-items:center;font:400 19px/1 "Gentium Book Plus",Georgia,serif;color:#e8cf94;background:radial-gradient(circle at 50% 35%,rgba(201,168,101,.22),transparent 70%)}' +
+    '.t{display:grid;gap:1px;max-width:24em;overflow:hidden;transition:max-width .3s,opacity .25s}' +
+    '.t small{font:500 8.5px/1.25 Jost,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#c9a865;white-space:nowrap}' +
+    '.t b{font:500 14.5px/1.2 "Cormorant Garamond",Georgia,serif;letter-spacing:.03em;color:#ece5d6;white-space:nowrap}' +
+    '.p.min{padding:5px;gap:0}.p.min .t{max-width:0;opacity:0}' +
+    '@media (max-width:640px){.p{right:0;left:0;margin:0 auto;width:max-content;bottom:max(14px,env(safe-area-inset-bottom))}}' +
+    '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s;font:400 16px/1.5 Jost,system-ui,sans-serif;color:#ece5d6;overflow:hidden}' +
     '.v.a{display:block}.v.b{opacity:1}' +
-    '.v iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent;z-index:1}' +
+    '.v iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block;background:transparent;z-index:1;transform-origin:0 0}' +
     '.e{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;text-align:center;pointer-events:none}.e a{pointer-events:auto}' +
     '.c{font:400 15px/1.4 "Cormorant Garamond",Georgia,serif;letter-spacing:.2em;text-transform:uppercase;color:#9d968a}' +
-    '.g{width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,168,101,.26);border-top-color:#c9a865;animation:biexGiro 1s linear infinite}' +
-    '.m{max-width:34em;display:grid;gap:14px;justify-items:center;font-size:15px;color:#d6cebd}' +
-    '.m[hidden],.k[hidden]{display:none}' +
+    '.g{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,101,.26);border-top-color:#c9a865;animation:biexGiro 1s linear infinite}' +
+    '.m{max-width:34em;display:grid;gap:14px;justify-items:center;font-size:15px;color:#d6cebd}.m[hidden],.k[hidden]{display:none}' +
     '.m a,.k a{display:inline-block;padding:11px 20px;border-radius:999px;background:#c9a865;color:#0b0a08;text-decoration:none;font-weight:500;letter-spacing:.08em;font-size:13px;text-transform:uppercase}' +
-    '.k a{background:none;color:#c9a865;border:1px solid rgba(201,168,101,.4)}' +
-    '.m small{color:#9d968a;font-size:12px;word-break:break-all}' +
-    '.x{position:absolute;z-index:3;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,101,.4);background:rgba(9,9,10,.9);color:#ece5d6;font:300 26px/1 system-ui,sans-serif;cursor:pointer}' +
+    '.k a{background:none;color:#c9a865;border:1px solid rgba(201,168,101,.4)}.m small{color:#9d968a;font-size:12px;word-break:break-all}' +
+    '.x{position:absolute;z-index:3;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,101,.4);background:rgba(9,9,10,.9);color:#ece5d6;font:300 24px/1 system-ui,sans-serif;cursor:pointer}' +
     '.v.listo .x,.v.listo .e{display:none}' +
-    '@media (max-width:640px){.p{right:auto;left:50%;transform:translateX(-50%);width:max-content;bottom:max(16px,env(safe-area-inset-bottom));padding:8px 18px 8px 8px;gap:11px;max-width:calc(100vw - 24px)}.t small{letter-spacing:.16em}.p:hover{transform:translateX(-50%)}.s{width:38px;height:38px;font-size:21px}.t b{font-size:15.5px;white-space:normal}.p{animation:biexEntraM .6s cubic-bezier(.2,.8,.2,1) both,biexLatido 2.4s ease-out 1.2s 2}}' +
-    '@keyframes biexEntra{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}' +
-    '@keyframes biexEntraM{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}' +
-    '@keyframes biexLatido{0%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 0 rgba(201,168,101,.5)}100%{box-shadow:0 14px 44px rgba(0,0,0,.55),0 0 0 18px rgba(201,168,101,0)}}' +
-    '@keyframes biexGiro{to{transform:rotate(360deg)}}' +
-    '@media (prefers-reduced-motion:reduce){.p,.g{animation:none}}' +
-    '@media print{.p,.v{display:none!important}}' +
+    '@keyframes biexEntra{from{opacity:0}to{opacity:1}}@keyframes biexGiro{to{transform:rotate(360deg)}}' +
+    '@media (prefers-reduced-motion:reduce){.p,.g{animation:none}}@media print{.p,.v{display:none!important}}' +
     '</style>' +
     '<button class="p" type="button" hidden><span class="s" aria-hidden="true">α</span><span class="t"><small>Lector y analizador · BiEx</small><b></b></span></button>' +
     '<div class="v" role="dialog" aria-modal="true" aria-label="Lector y analizador de BiEx">' +
@@ -60,7 +60,6 @@
   var estado = raiz.querySelector(".c"), giro = raiz.querySelector(".g"), atajo = raiz.querySelector(".k"), aviso = raiz.querySelector(".m");
   var marco = null, actual = null, listo = false, reloj = null, reloj2 = null, errores = [], desborde = "";
 
-  // Página que carga la aplicación dentro del marco; informa a esta página cuando arranca o cuando algo falla
   function documento(inicio) {
     var q = JSON.stringify;
     return '<!doctype html><html lang="es" data-theme="dark"><head><meta charset="utf-8">' +
@@ -77,23 +76,31 @@
       '</head><body><div id="app"></div>' +
       '<script src="' + BASES[0] + 'app.js" onerror="var s=document.createElement(&quot;script&quot;);s.src=' + esc(q(BASES[1] + 'app.js')) + ';document.body.appendChild(s)"><\/script></body></html>';
   }
+  // Tamaño real: el acceso y el aviso se reducen con zoom; el marco se agranda y se reduce con una transformación
+  function escalar() {
+    var k = escala(), z = k === 1 ? "" : String(1 / k);
+    pastilla.style.zoom = z; raiz.querySelector(".e").style.zoom = z; raiz.querySelector(".x").style.zoom = z;
+    if (marco) { marco.style.width = marco.style.height = k === 1 ? "" : (100 * k) + "%"; marco.style.transform = k === 1 ? "" : "scale(" + (1 / k) + ")"; }
+  }
   function mostrarEstado(t) { estado.textContent = t; estado.hidden = false; giro.hidden = false; aviso.hidden = true; }
   function intentar(n, inicio) {
     listo = false; velo.classList.remove("listo");
     clearTimeout(reloj); clearTimeout(reloj2);
-    if (marco) marco.remove();
+    if (marco) { marco.remove(); marco = null; }
+    var vias = [COMPLETO && function (m) { m.src = COMPLETO + "?incrustado=1" + inicio; }, function (m) { m.srcdoc = documento(inicio); }, RESPALDO && function (m) { m.src = RESPALDO + "?incrustado=1" + inicio; }];
+    while (n < vias.length && !vias[n]) n++;
+    if (n >= vias.length) return fallo();
     marco = document.createElement("iframe");
     marco.title = "Lector y analizador de BiEx";
-    marco.setAttribute("allow", "clipboard-write");
-    // Primero la página propia del lector (otro dominio, sin interferencias de esta página); si no arranca, el lector armado aquí mismo
-    if (n === 1 && COMPLETO) marco.src = COMPLETO + "?incrustado=1" + inicio;
-    else { n = 2; marco.srcdoc = documento(inicio); }
+    marco.setAttribute("allow", "clipboard-write; web-share");
+    vias[n](marco);
     var este = marco;
-    function siguiente() { if (listo || marco !== este) return; if (n === 1) intentar(2, inicio); else fallo(); }
-    // Si el marco terminó de cargar y la aplicación no avisó que arrancó, se pasa a la vía siguiente
+    function siguiente() { if (!listo && marco === este) intentar(n + 1, inicio); }
+    // Si el marco cargó y la aplicación no avisó que arrancó, se prueba la vía siguiente
     marco.addEventListener("load", function () { setTimeout(siguiente, 1500); });
     velo.appendChild(marco);
-    mostrarEstado(n === 1 ? "Abriendo el códice…" : "Abriendo por otra vía…");
+    escalar();
+    mostrarEstado(n ? "Abriendo por otra vía…" : "Abriendo el códice…");
     atajo.hidden = true;
     reloj2 = setTimeout(function () { if (!listo) atajo.hidden = false; }, 3500);
     reloj = setTimeout(siguiente, 15000);
@@ -106,15 +113,15 @@
   }
   function abrir() {
     var pg = pagina(); if (!pg) return;
-    var inicio = pg[0] ? "#/" + pg[0] + "/1" : "#/libros";
-    var enlace = COMPLETO + inicio;
+    var enlace = (COMPLETO || RESPALDO) + pg[0];
     atajo.querySelector("a").href = enlace; aviso.querySelector("a").href = enlace;
-    if (!marco || !listo) { errores = []; intentar(1, inicio); }
-    else if (pg[0] !== actual) { try { marco.contentWindow.postMessage({ biex: "ir", hash: inicio }, "*"); } catch (e) { /* ignorar */ } }
+    if (!marco || !listo) { errores = []; intentar(0, pg[0]); }
+    else if (pg[0] !== actual) { try { marco.contentWindow.postMessage({ biex: "ir", hash: pg[0] }, "*"); } catch (e) { /* ignorar */ } }
     actual = pg[0];
     desborde = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     velo.classList.add("a");
+    escalar();
     requestAnimationFrame(function () { velo.classList.add("b"); try { marco && marco.focus(); } catch (e) { /* ignorar */ } });
   }
   function cerrar() {
@@ -122,7 +129,7 @@
     setTimeout(function () { velo.classList.remove("a"); }, 250);
     document.documentElement.style.overflow = desborde;
     if (!listo) { clearTimeout(reloj); clearTimeout(reloj2); if (marco) { marco.remove(); marco = null; } }
-    try { pastilla.focus(); } catch (e) { /* ignorar */ }
+    try { pastilla.focus({ preventScroll: true }); } catch (e) { /* ignorar */ }
   }
   pastilla.addEventListener("click", abrir);
   raiz.querySelector(".x").addEventListener("click", cerrar);
@@ -133,6 +140,15 @@
     else if (e.data.biex === "error" && !/fonts\.googleapis/.test(e.data.m)) errores.push(String(e.data.m));
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && velo.classList.contains("a")) cerrar(); });
+  window.addEventListener("resize", escalar);
+  if (window.visualViewport) visualViewport.addEventListener("resize", escalar);
+  // Al bajar por la página el acceso se recoge en su sello; al subir se despliega
+  var yAnt = window.scrollY || 0;
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY || 0;
+    if (y > yAnt + 6 && y > 140) pastilla.classList.add("min"); else if (y < yAnt - 6 || y < 80) pastilla.classList.remove("min");
+    yAnt = y;
+  }, { passive: true });
 
   var ultima = null;
   function revisar() {
@@ -142,9 +158,11 @@
     var pg = pagina();
     if (velo.classList.contains("a")) cerrar();
     if (!pg) { pastilla.hidden = true; return; }
-    titulo.innerHTML = pg[0] ? esc(pg[1]) + " en griego, palabra por palabra" : "Los 27 libros en griego, palabra por palabra";
-    pastilla.setAttribute("aria-label", pg[0] ? "Abrir el griego y el análisis de " + pg[1] : "Abrir el lector y analizador de los 27 libros");
+    titulo.innerHTML = esc(pg[1]);
+    pastilla.setAttribute("aria-label", pg[2] ? "Abrir el griego y el análisis de " + pg[2] : "Abrir el lector y analizador de la Nueva Voluntad");
+    pastilla.classList.remove("min");
     pastilla.hidden = false;
+    escalar();
   }
   revisar();
   setInterval(revisar, 700);

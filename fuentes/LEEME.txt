@@ -1,0 +1,4 @@
+Fuentes para los modos de lectura del lector de BiEx (licencia SIL Open Font License 1.1; textos de licencia en esta carpeta).
+- opendyslexic-regular.woff2, opendyslexic-bold.woff2: OpenDyslexic (Abbie Gonzalez), sin modificar; solo cambia el contenedor (OTF → WOFF2).
+- atkinson-next.woff2: Atkinson Hyperlegible Next (Braille Institute y colaboradores), reducida a los caracteres latinos que usa el lector.
+- biex-respaldo.woff2: Noto Sans (The Noto Project Authors), reducida a las letras con diacríticos de las transliteraciones que las otras dos no tienen.

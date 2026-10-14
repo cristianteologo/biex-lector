@@ -43,6 +43,9 @@
     lupa: '<circle cx="10" cy="10" r="5.5" ' + L1 + '/><path d="M14 14l5.5 5.5M7.5 10h5M10 7.5v5" ' + L1 + '/>',
     lista: '<path d="M8 6.5h12M8 12h12M8 17.5h12" ' + L1 + '/><circle cx="4.5" cy="6.5" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1" fill="currentColor"/>',
     filtros: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9" ' + L1 + '/><circle cx="15" cy="7" r="2" ' + L1 + '/><circle cx="9" cy="17" r="2" ' + L1 + '/>',
+    parrafo: '<path d="M4 6h16M4 10.5h16M4 15h16M4 19.5h10" ' + L1 + '/>',
+    compartir: '<circle cx="17.5" cy="5.5" r="2.5" ' + L1 + '/><circle cx="6.5" cy="12" r="2.5" ' + L1 + '/><circle cx="17.5" cy="18.5" r="2.5" ' + L1 + '/><path d="M8.7 10.7l6.6-3.9M8.7 13.3l6.6 3.9" ' + L1 + '/>',
+    seguir: '<path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
@@ -148,6 +151,25 @@
   // ------------------------------------------------------------------ preferencias
   let prefs = Object.assign({ tl: true, tr: true, mo: true, color: "clase", resalta: "", caja: "min", heroCaja: "may", disp: "versos" }, store.get("prefs", {}));
   const guardarPrefs = () => store.set("prefs", prefs);
+  const AP0 = { tam: 2, letra: "clasica", inter: "normal", mov: "si" };
+  let ap = Object.assign({}, AP0, store.get("ap", {}));
+  function aplicarAp() {
+    const r = document.documentElement;
+    r.setAttribute("data-tam", String(ap.tam));
+    r.setAttribute("data-letra", ap.letra);
+    r.setAttribute("data-inter", ap.inter);
+    r.setAttribute("data-mov", ap.mov);
+  }
+  aplicarAp();
+  const temaActual = () => document.documentElement.getAttribute("data-theme") || "dark";
+  function ponerTema(t) { document.documentElement.setAttribute("data-theme", t); store.set("tema", t); }
+  let avisoT = null;
+  function avisar(txt) {
+    let el = $(".aviso-flot");
+    if (!el) { el = h("div", { class: "aviso-flot", role: "status" }); document.body.append(el); }
+    el.textContent = txt; el.classList.add("si");
+    clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove("si"), 2200);
+  }
   // Griego: minúsculas con acentos (texto de la edición) o mayúsculas sin marcas (como los códices unciales)
   const gk = (s, caja) => ((caja || prefs.caja) === "may" ? uncial(s) : s);
   const spanGk = (s, attrs) => h("span", Object.assign({ lang: "grc", "data-gk": s }, attrs || {}), gk(s));
@@ -176,6 +198,12 @@
     }
     if (i < t.length) frag.append(t.slice(i));
     return frag;
+  }
+  // Glosa breve: la primera traducción y, aparte, las alternativas entre corchetes
+  function glosa(tr) {
+    const t = String(tr || "·"), k = t.indexOf(" [");
+    if (k < 0 || /^\S*\[/.test(t)) return [t];
+    return [t.slice(0, k), h("span", { class: "alt", text: t.slice(k + 1) })];
   }
   const nombreLibro = (b) => (b.t ? b.t + " [" + b.n + "]" : b.n);
   const libroDe = (c) => D.libros.find((b) => b.c === c);
@@ -233,15 +261,61 @@
   const cajaModal = (cab, cuerpo, pie) => h("div", { class: "m-caja" }, cab, h("div", { class: "m-cuerpo" }, cuerpo), pie || null);
   const cargandoModal = (tit) => () => cajaModal(cabModal(tit || "Cargando"), h("p", { class: "cargando", text: "Abriendo el análisis…" }));
 
+  // ------------------------------------------------------------------ compartir
+  const enlacePublico = (hh) => (EMBED && COMPLETO ? COMPLETO : location.href.split("#")[0]) + hh;
+  const textoPlano = (t) => String(t || "").replace(/[⟪⟫]/g, "").replace(/\*\*?/g, "");
+  async function compartir(titulo, texto, hh) {
+    const url = enlacePublico(hh);
+    try { if (navigator.share) { await navigator.share({ title: titulo, text: titulo + " — " + texto, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(titulo + " — " + texto + "\n" + url); avisar("Verso y enlace copiados"); }
+    catch (e) { avisar("No se pudo copiar; el enlace es " + url); }
+  }
+
+  // ------------------------------------------------------------------ lectura y apariencia
+  const NOMBRES_TAM = ["Pequeño", "Normal", "Grande", "Muy grande", "Máximo"];
+  function abrirApariencia() {
+    abrirModal(() => {
+      const ws = D && D.portada ? D.portada.p.slice(0, 5) : [];
+      const valor = { tam: () => ap.tam, letra: () => ap.letra, inter: () => ap.inter, mov: () => ap.mov, tema: temaActual, caja: () => prefs.caja };
+      const muestraGs = ws.map((w) => h("span", { class: "g", lang: "grc", "data-gk": w.g }, gk(w.g)));
+      const cambiar = {
+        tema: (v) => ponerTema(v),
+        caja: (v) => { prefs.caja = v; guardarPrefs(); aplicarCaja(); },
+      };
+      const nomTam = h("span", { text: NOMBRES_TAM[ap.tam - 1] });
+      const grupo = (k, ops, clase) => {
+        const btns = ops.map(([v, kids, etiqueta, extra]) => h("button", Object.assign({ type: "button", "aria-pressed": String(valor[k]() === v), "aria-label": etiqueta || null, title: etiqueta || null, onclick: () => {
+          if (cambiar[k]) cambiar[k](v); else { ap[k] = v; store.set("ap", ap); aplicarAp(); }
+          btns.forEach((b, j) => b.setAttribute("aria-pressed", String(ops[j][0] === v)));
+          if (k === "tam") nomTam.textContent = NOMBRES_TAM[v - 1];
+        } }, extra || {}), kids));
+        return h("div", { class: clase || "ap-ops", role: "group" }, btns);
+      };
+      const op = (b, sm, lang) => [h("b", { text: b, lang: lang || null }), sm ? h("small", { text: sm }) : null];
+      const fila = (tit, ...kids) => h("div", { class: "ap-fila" }, h("h4", {}, tit, ...(kids.length > 1 ? [kids.shift()] : [])), kids);
+      return cajaModal(cabModal("Lectura y apariencia", "Se guarda en este dispositivo"),
+        h("div", { class: "ap" },
+          h("div", { class: "ap-muestra", "aria-hidden": "true" },
+            h("div", { class: "ap-il" }, ws.map((w, i) => h("span", {}, muestraGs[i], h("span", { class: "t" }, glosa(w.tr))))),
+            h("p", { class: "e", text: "Así se verá el texto: toca cualquier palabra para abrir su análisis." })),
+          fila("Tamaño del texto", nomTam, grupo("tam", [1, 2, 3, 4, 5].map((n) => [n, h("span", { style: "font-size:" + [13, 16, 19, 23, 27][n - 1] + "px", text: "A" }), "Tamaño " + NOMBRES_TAM[n - 1].toLowerCase()]), "ap-tams")),
+          fila("Tipo de letra", grupo("letra", [
+            ["clasica", op("Clásica", "Gentium y Cormorant, la tipografía de la casa"), null, { class: "f-clasica" }],
+            ["clara", op("Lectura clara", "Atkinson Hyperlegible, pensada para la baja visión"), null, { class: "f-clara" }],
+            ["dislexia", op("Para dislexia", "OpenDyslexic, con más espacio entre palabras y sin cursivas"), null, { class: "f-dislexia" }]], "ap-ops ap-letras")),
+          fila("Interlineado", grupo("inter", [["normal", op("Normal")], ["amplio", op("Amplio", "Más aire entre las líneas")]])),
+          fila("Tema", grupo("tema", [["dark", op("Oscuro", "Negro, marfil y oro")], ["light", op("Pergamino", "Fondo claro, tinta oscura")]])),
+          fila("Griego", grupo("caja", [["min", op("αβγ", "Minúsculas con acentos y espíritus", "grc")], ["may", op("ΑΒΓ", "Mayúsculas sin marcas, como los códices unciales", "grc")]])),
+          fila("Movimiento", grupo("mov", [["si", op("Con animaciones")], ["no", op("Sin animaciones", "Todo aparece al instante")]])),
+          h("div", {}, h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura"))));
+    });
+  }
+
   // ------------------------------------------------------------------ marco
   const raiz = $("#app");
   function marco() {
     if (EMBED) document.documentElement.classList.add("incrustado");
-    const tema = h("button", { class: "btn-icono", type: "button", "aria-label": "Cambiar entre tema oscuro y claro", title: "Tema oscuro o claro", onclick: () => {
-      const actual = document.documentElement.getAttribute("data-theme") || "dark";
-      const nuevo = actual === "light" ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", nuevo); store.set("tema", nuevo);
-    } }, svg(ICO.tema));
+    const tema = h("button", { class: "btn-icono btn-aa", type: "button", "aria-label": "Lectura y apariencia: tamaño del texto, tipo de letra, interlineado y tema", title: "Lectura y apariencia", onclick: abrirApariencia }, "A", h("small", { text: "a" }));
     const buscar = h("button", { class: "btn-buscar", type: "button", "aria-label": "Buscar", onclick: abrirBusqueda }, svg(ICO.buscar), h("span", { text: "Buscar griego, español o cita" }));
     const extra = EMBED ? [
       COMPLETO ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(COMPLETO + location.hash, "_blank", "noopener") }, svg(ICO.externo)) : null,
@@ -278,7 +352,7 @@
     const jn = libroDe("JHN");
     const botones = P.p.map((w, i) => h("button", { type: "button", class: "il" + (prefs.heroCaja === "may" ? " may" : ""), style: "--i:" + i, "aria-pressed": "false",
       "aria-label": w.g + ": " + (w.tr || "sin traducción fijada") + ". Abrir el análisis", onclick: () => abrirPalabraPortada(i) },
-      h("span", { class: "g", lang: "grc", "data-gkh": w.g }, gk(w.g, prefs.heroCaja)), h("span", { class: "t", text: w.tr || "·" })));
+      h("span", { class: "g", lang: "grc", "data-gkh": w.g }, gk(w.g, prefs.heroCaja)), h("span", { class: "t" }, glosa(w.tr))));
     const cajaBtn = (k, t, et) => h("button", { type: "button", "aria-pressed": prefs.heroCaja === k ? "true" : "false", "aria-label": et, title: et, onclick: (e) => {
       prefs.heroCaja = k; guardarPrefs();
       for (const b of botones) { const g = $(".g", b); g.textContent = gk(g.dataset.gkh, k); b.classList.toggle("may", k === "may"); }
@@ -301,6 +375,7 @@
       "aria-label": nombreLibro(b) + ", " + pct(b.palabras) },
       h("i", { style: "height:" + Math.min(100, b.palabras).toFixed(1) + "%" }))));
     const liLogos = (P.p.find((w) => claveGr(w.g) === "λογοσ") || P.p[0]).li;
+    const ult = store.get("ultimo", null), ub = ult && libroDe(ult.c);
     const herr = (ico, t, p, a, href) => h("a", { class: "herr", href }, svg(ico), h("h3", { text: t }), h("p", { text: p }), h("span", { text: a }));
     vista().replaceChildren(
       h("section", { class: "hero" }, h("div", { class: "in" },
@@ -315,7 +390,8 @@
           h("div", { class: "interlineal" }, botones),
           h("p", { class: "pista", text: "Toca una palabra, en griego o en español, para abrir su análisis" })),
         h("div", { class: "acciones" },
-          h("a", { class: "btn oro", href: "#/JHN/1" }, svg(ICO.libro), "Leer Juan 1"),
+          ub ? h("a", { class: "btn oro", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, svg(ICO.seguir), "Seguir leyendo · " + ub.n + " " + ult.cap + (ult.v ? ":" + ult.v : "")) : null,
+          h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/JHN/1" }, svg(ICO.libro), "Leer Juan 1"),
           h("a", { class: "btn", href: "#/JHN/1/a" }, svg(ICO.lupa), "Analizar palabra por palabra"),
           h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros")))),
       h("section", { class: "cifras" }, h("div", { class: "in" },
@@ -380,7 +456,10 @@
     esc.versos = versos;
     const cuerpo = modo === "a" ? cuerpoAnalisis(b, cap, A.caps[cap] || [], versos) : cuerpoLectura(b, cap, versos);
     vista().replaceChildren(estructuraLibro(b, cap, modo, versos, cuerpo));
+    store.set("ultimo", { c, cap, m: modo, v: v || null });
     enfocar(v, i);
+    // Mientras se lee, se trae en segundo plano el análisis para que las palabras abran al instante
+    if (modo !== "a") setTimeout(() => { if (esc.libro === c) { analisis(c).catch(() => {}); tablas().catch(() => {}); } }, 2500);
   }
   function estructuraLibro(b, cap, modo, versos, cuerpo) {
     return h("div", { class: "libro" }, bandaLibro(b),
@@ -432,13 +511,13 @@
     const btnModo = (m, t) => h("button", { type: "button", "aria-pressed": (modo === "a") === (m === "a") ? "true" : "false", onclick: () => { if ((modo === "a") !== (m === "a")) location.hash = ir(m); } }, t);
     const prev = cap > 1 ? "#/" + b.c + "/" + (cap - 1) + (modo === "a" ? "/a" : "") : null;
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
-    const disp = modo !== "a" ? h("div", { class: "seg", role: "group", "aria-label": "Disposición del texto" },
-      [["versos", "Por versos"], ["continuo", "Continuo"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": prefs.disp === k ? "true" : "false", onclick: () => {
+    const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
+      [["versos", "Por versos", ICO.lista], ["continuo", "Continuo", ICO.parrafo]].map(([k, t, ico]) => h("button", { type: "button", "aria-pressed": prefs.disp === k ? "true" : "false", "aria-label": t, title: t, onclick: () => {
         if (prefs.disp === k) return; prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
-      } }, t))) : null;
+      } }, svg(ico), h("span", { class: "txt", text: t })))) : null;
     return h("div", { class: "barra-hoja" },
       h("div", { class: "seg", role: "group", "aria-label": "Modo" }, btnModo("l", "Lectura"), btnModo("a", "Análisis")),
-      h("button", { class: "btn-cap movil", type: "button", "aria-label": "Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
+      h("button", { class: "btn-cap movil", type: "button", "aria-label": "Capítulo " + cap + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
       disp,
       h("div", { class: "navcap" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
@@ -448,12 +527,28 @@
   function vistaNavegador(b, cap, versos) {
     return () => cajaModal(cabModal(b.n, "Capítulo " + cap + " de " + b.caps.length), h("div", { style: "display:grid;gap:22px" }, navContenido(b, cap, versos, () => cerrarModal())));
   }
-  function encabezado(b, cap) {
+  const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
+  function encabezado(b, cap, modo) {
     const C = b.caps[cap - 1];
     const partes = String(C.h || "").split(" [");
+    const flecha = (c, ico, et) => h("a", { class: "btn-icono", href: c ? rutaCap(b, c, modo) : null, "aria-label": et, title: et, "aria-disabled": c ? null : "true" }, svg(ico));
     return h("div", { class: "encab" },
-      C.h ? h("div", { class: "h" }, h("span", { lang: "he", text: partes[0] }), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
-      h("div", { class: "s", text: "Capítulo " + cap + " · " + pct(C.pct) + " de avance" }));
+      flecha(cap > 1 ? cap - 1 : 0, ICO.izq, "Capítulo anterior"),
+      h("div", { class: "encab-c" },
+        C.h ? h("div", { class: "h" }, h("span", { lang: "he", text: partes[0] }), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
+        h("div", { class: "s", text: "Capítulo " + cap + " de " + b.caps.length + " · " + pct(C.pct) + " de avance" })),
+      flecha(cap < b.caps.length ? cap + 1 : 0, ICO.der, "Capítulo siguiente"));
+  }
+  // Al terminar el capítulo: anterior y siguiente (o el libro siguiente)
+  function finCap(b, cap, modo) {
+    const i = D.libros.indexOf(b);
+    const sigLibro = cap >= b.caps.length && i < D.libros.length - 1 ? D.libros[i + 1] : null;
+    const antLibro = cap <= 1 && i > 0 ? D.libros[i - 1] : null;
+    const ant = cap > 1 ? h("a", { class: "btn", href: rutaCap(b, cap - 1, modo) }, svg(ICO.izq), h("span", { text: "Capítulo " + (cap - 1) }))
+      : antLibro ? h("a", { class: "btn", href: rutaCap(antLibro, antLibro.caps.length, modo) }, svg(ICO.izq), h("span", { text: antLibro.n })) : null;
+    const sig = cap < b.caps.length ? h("a", { class: "btn oro sig", href: rutaCap(b, cap + 1, modo) }, h("span", { text: "Capítulo " + (cap + 1) }), svg(ICO.der))
+      : sigLibro ? h("a", { class: "btn oro sig", href: rutaCap(sigLibro, 1, modo) }, h("span", { text: sigLibro.n }), svg(ICO.der)) : null;
+    return h("nav", { class: "fin-cap", "aria-label": "Seguir leyendo" }, ant, sig);
   }
 
   function cuerpoLectura(b, cap, versos) {
@@ -470,14 +565,14 @@
           onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
           h("sup", { text: x.v }), textoLectura(x.t, !!x.g)), " ");
       }
-      return [encabezado(b, cap), nota, h("div", { class: "continuo" }, parrafos)];
+      return [encabezado(b, cap, "l"), nota, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
     }
-    return [encabezado(b, cap), nota, h("div", { class: "lectura" }, versos.map((x) => h("div", {
+    return [encabezado(b, cap, "l"), nota, h("div", { class: "lectura" }, versos.map((x) => h("div", {
       class: "vl n-" + x.n + (x.p ? " p" : ""), id: "v" + x.v, role: "button", tabindex: "0",
       "aria-label": "Verso " + x.v + " (" + estadoEt(x.n) + "). Abrir su griego palabra por palabra",
       onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
       h("span", { class: "vn", title: estadoEt(x.n) + (x.n === "base" ? ": " + x.k + " % de las palabras ya traducidas" : ""), text: x.v }),
-      h("span", { class: "vt" }, textoLectura(x.t, !!x.g)))))];
+      h("span", { class: "vt" }, textoLectura(x.t, !!x.g))))), finCap(b, cap, "l")];
   }
   function abrirVerso(b, cap, v) {
     const versos = esc.versos || [];
@@ -491,6 +586,8 @@
     const el = document.getElementById("v" + v); if (el) el.classList.add("marcado");
     for (const t of $$('.tesela[data-v="' + v + '"]')) t.setAttribute("aria-current", "true");
     esc.vMarcado = v;
+    const u = store.get("ultimo", null);
+    if (u && u.c === esc.libro && u.cap === esc.cap) { u.v = v; store.set("ultimo", u); }
   }
 
   // ------------------------------------------------------------------ análisis
@@ -571,7 +668,7 @@
     }
     aplicarFilas(); pintar();
     esc.lista = lista;
-    return [lentes, claves, encabezado(b, cap), cont];
+    return [lentes, claves, encabezado(b, cap, "a"), cont, finCap(b, cap, "a")];
   }
   function abrirPalabraAnalisis(v, i) {
     const b = libroDe(esc.libro), cap = esc.cap;
@@ -689,7 +786,9 @@
           L ? h("div", { class: "chip-estado n-" + L.n }, h("i"), estadoEt(L.n) + (L.n === "base" ? " · " + L.k + " % de las palabras ya traducidas" : "")) : null,
           L ? h("p", { class: "fv-es" }, textoLectura(L.t, !!L.g)) : null,
           h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona)),
-        h("div", { class: "m-pie" }, h("a", { class: "btn chico oro", href: "#/" + b.c + "/" + cap + "/a/" + ctx.v }, svg(ICO.lupa), "Analizar el capítulo")));
+        h("div", { class: "m-pie" },
+          L ? h("button", { class: "btn chico", type: "button", onclick: () => compartir(nombreLibro(b) + " " + cap + ":" + ctx.v, textoPlano(L.t), "#/" + b.c + "/" + cap + "/l/" + ctx.v) }, svg(ICO.compartir), "Compartir") : null,
+          h("a", { class: "btn chico oro", href: "#/" + b.c + "/" + cap + "/a/" + ctx.v }, svg(ICO.lupa), "Analizar el capítulo")));
     };
   }
   function abrirBusqueda() {
