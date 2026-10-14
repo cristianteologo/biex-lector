@@ -122,7 +122,7 @@
   }
   function abrir(ruta) {
     var pg = pagina(); if (typeof ruta === "string") pg = [ruta, pg[1], pg[2]];
-    var enlace = (COMPLETO || RESPALDO) + pg[0];
+    var enlace = (RESPALDO || COMPLETO) + pg[0];
     atajo.querySelector("a").href = enlace; aviso.querySelector("a").href = enlace;
     if (!marco || !listo) { errores = []; intentar(0, pg[0]); }
     else if (pg[0] !== actual) { try { marco.contentWindow.postMessage({ biex: "ir", hash: pg[0] }, "*"); } catch (e) { /* ignorar */ } }
