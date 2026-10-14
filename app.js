@@ -7,7 +7,6 @@
   // Dentro del sitio oficial: el lector se abre en un marco a pantalla completa (srcdoc o ?incrustado=1)
   const POR_URL = /[?&]incrustado=1/.test(location.search);
   const EMBED = !!window.BIEX_EMBED || POR_URL;
-  const COMPLETO = window.BIEX_COMPLETO || (POR_URL ? location.origin + location.pathname : "");
   const alPadre = (msg) => { if (!EMBED) return; try { window.parent.postMessage(msg, "*"); } catch (e) { /* ignorar */ } };
   if (EMBED) {
     window.addEventListener("error", (e) => alPadre({ biex: "error", m: String(e.message || "error") + " " + (e.filename || "") + ":" + (e.lineno || "") }));
@@ -134,11 +133,19 @@
   const ABV = ["", "act.", "med.", "pas.", "med./pas."];
   const ABC = { N: "nom.", G: "gen.", D: "dat.", A: "ac.", V: "voc." };
   const ABG = { M: "m.", F: "f.", N: "n." };
-  function abreviar(m, clase, vz) {
+  // Tipo de aoristo según la forma visible (sigmático, temático, atemático o ambiguo)
+  const AOR_AB = ["", "sigm.", "tem.", "atem.", "amb."];
+  const tipoAor = (ao) => (ao && T && T.aoristo[ao]) || "";
+  // Descripción de la morfología de una palabra concreta, con su tipo de aoristo
+  const mdTok = (t) => {
+    const d = T.MD[t[2]] || "", ao = tipoAor(t[7]);
+    return ao ? d.replace(/aoristo( 2\.º)?/, "aoristo " + ao) : d;
+  };
+  function abreviar(m, clase, vz, ao) {
     if (!m || !m.code) return "";
     const cng = [ABC[m.case], m.number === "P" ? "pl." : m.number === "S" ? "sg." : "", ABG[m.gender]].filter(Boolean).join(" ");
     if (m.pos === "V") {
-      const parts = [AB[m.tense], ABM[m.mood], ABV[vz] || ""];
+      const parts = [AB[m.tense] + (m.tense === "A" && ao ? " " + AOR_AB[ao] : ""), ABM[m.mood], ABV[vz] || ""];
       if (m.person) parts.push(m.person + "." + (m.number === "P" ? "ª pl." : "ª sg."));
       if (m.case) parts.push(cng);
       return "v. " + parts.filter(Boolean).join(" ");
@@ -200,10 +207,16 @@
     return frag;
   }
   // Glosa breve: la primera traducción y, aparte, las alternativas entre corchetes
+  // Traducción principal arriba y alternativas debajo; si hay corchetes en medio («buen [buena] mensaje [noticia]»),
+  // arriba va la lectura sin corchetes («buen mensaje») y debajo la traducción completa
   function glosa(tr) {
     const t = String(tr || "·"), k = t.indexOf(" [");
     if (k < 0 || /^\S*\[/.test(t)) return [t];
-    return [t.slice(0, k), h("span", { class: "alt", text: t.slice(k + 1) })];
+    let limpio = t;
+    for (let i = 0; i < 4 && /\[[^\[\]]*\]/.test(limpio); i++) limpio = limpio.replace(/\s*\[[^\[\]]*\]/g, "");
+    limpio = limpio.replace(/\s{2,}/g, " ").trim();
+    if (!limpio || limpio.replace(/[\u1D2C-\u1DBF\u2070-\u209F*]+$/u, "") === t.slice(0, k)) return [t.slice(0, k), h("span", { class: "alt", text: t.slice(k + 1) })];
+    return [limpio, h("span", { class: "alt", text: t })];
   }
   const nombreLibro = (b) => (b.t ? b.t + " [" + b.n + "]" : b.n);
   const libroDe = (c) => D.libros.find((b) => b.c === c);
@@ -262,7 +275,9 @@
   const cargandoModal = (tit) => () => cajaModal(cabModal(tit || "Cargando"), h("p", { class: "cargando", text: "Abriendo el análisis…" }));
 
   // ------------------------------------------------------------------ compartir
-  const enlacePublico = (hh) => (EMBED && COMPLETO ? COMPLETO : location.href.split("#")[0]) + hh;
+  // Dentro del sitio oficial los enlaces llevan al sitio oficial (que abre el lector en ese punto), no al alojamiento del lector
+  const OFICIAL = "https://bibliaexacta.wixsite.com/biex/";
+  const enlacePublico = (hh) => (EMBED ? OFICIAL + "nueva-voluntad?lector=" + encodeURIComponent(String(hh || "").replace(/^#?\/?/, "")).replace(/%2F/g, "/") : location.href.split("#")[0] + hh);
   const textoPlano = (t) => String(t || "").replace(/[⟪⟫]/g, "").replace(/\*\*?/g, "");
   async function compartir(titulo, texto, hh) {
     const url = enlacePublico(hh);
@@ -318,7 +333,7 @@
     const tema = h("button", { class: "btn-icono btn-aa", type: "button", "aria-label": "Lectura y apariencia: tamaño del texto, tipo de letra, interlineado y tema", title: "Lectura y apariencia", onclick: abrirApariencia }, "A", h("small", { text: "a" }));
     const buscar = h("button", { class: "btn-buscar", type: "button", "aria-label": "Buscar", onclick: abrirBusqueda }, svg(ICO.buscar), h("span", { text: "Buscar griego, español o cita" }));
     const extra = EMBED ? [
-      COMPLETO ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(COMPLETO + location.hash, "_blank", "noopener") }, svg(ICO.externo)) : null,
+      EMBED ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(enlacePublico(location.hash), "_blank", "noopener") }, svg(ICO.externo)) : null,
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
     ] : [];
     raiz.replaceChildren(
@@ -330,10 +345,13 @@
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
         h("p", { text: "Ningún verso se da por terminado: la traducción sigue abierta a ajustes. Los versos sin traducción completa se leen como texto base, palabra por palabra; lo que aún no tiene traducción fijada se muestra en griego." }),
-        h("p", {}, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
+        h("div", { class: "autoria" },
+          h("span", { text: "Traducción, transliteración y análisis:" }),
+          h("strong", { text: "BiEx – Biblia Exacta ©™." }),
+          h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" }))),
+        h("p", { class: "creditos" }, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
           h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " (Biblica) y ",
-          h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature y Logos Bible Software), con licencia CC BY 4.0."),
-        h("p", {}, "Traducción, transliteración y análisis: BiEx – Biblia Exacta ©™. ", h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" })))),
+          h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature y Logos Bible Software), con licencia CC BY 4.0."))),
       modal);
     const tg = store.get("tema", null);
     if (tg === "light" || tg === "dark") document.documentElement.setAttribute("data-theme", tg);
@@ -345,11 +363,21 @@
   function navActual(clave) { for (const a of $$(".nav a")) a.setAttribute("aria-current", a.getAttribute("href") === clave ? "page" : "false"); }
 
   // ------------------------------------------------------------------ portada
+  // Verso destacado del día: rota cada día entre los tramos con traducción (Juan 1:1 si no hay otros)
+  let DEST = [];
+  function destacadoDelDia() {
+    const base = { c: "JHN", cap: 1, v: 1, i0: 0, p: D.portada.p };
+    const buenos = DEST.filter((d) => d.p && d.p.length >= 3 && d.p.length <= 9 && d.sinTr <= 1);
+    if (!buenos.length) return base;
+    const dia = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+    return buenos[dia % buenos.length];
+  }
   function portada(irLibros) {
     document.title = "BiEx · Lector y analizador de la Nueva Voluntad";
     navActual(irLibros ? "#/libros" : "#/");
-    const P = D.portada;
-    const jn = libroDe("JHN");
+    const P = destacadoDelDia();
+    esc.dest = P;
+    const lb = libroDe(P.c) || libroDe("JHN");
     const botones = P.p.map((w, i) => h("button", { type: "button", class: "il" + (prefs.heroCaja === "may" ? " may" : ""), style: "--i:" + i, "aria-pressed": "false",
       "aria-label": w.g + ": " + (w.tr || "sin traducción fijada") + ". Abrir el análisis", onclick: () => abrirPalabraPortada(i) },
       h("span", { class: "g", lang: "grc", "data-gkh": w.g }, gk(w.g, prefs.heroCaja)), h("span", { class: "t" }, glosa(w.tr))));
@@ -374,7 +402,7 @@
       href: "#/" + b.c + "/1", style: "flex:" + (b.nPal || b.total) + " 1 0", title: numLibro(b) + ". " + nombreLibro(b) + " · " + pct(b.palabras) + " de las palabras ya traducidas en el texto base",
       "aria-label": nombreLibro(b) + ", " + pct(b.palabras) },
       h("i", { style: "height:" + Math.min(100, b.palabras).toFixed(1) + "%" }))));
-    const liLogos = (P.p.find((w) => claveGr(w.g) === "λογοσ") || P.p[0]).li;
+    const liLogos = (D.portada.p.find((w) => claveGr(w.g) === "λογοσ") || D.portada.p[0]).li;
     const ult = store.get("ultimo", null), ub = ult && libroDe(ult.c);
     const herr = (ico, t, p, a, href) => h("a", { class: "herr", href }, svg(ico), h("h3", { text: t }), h("p", { text: p }), h("span", { text: a }));
     vista().replaceChildren(
@@ -385,14 +413,14 @@
           h("p", { text: "Lee cada libro en su estado actual de traducción y abre cualquier palabra para ver su forma, su transliteración, su lema, su análisis morfológico completo y todas las veces que aparece." })),
         h("div", { class: "codice" },
           h("div", { class: "codice-cab" },
-            h("span", { class: "ref" }, h("b", { text: (jn ? jn.t : "") + " 1:1" }), " · ", (jn ? jn.n : "Juan") + " 1:1"),
+            h("span", { class: "ref" }, h("b", { text: (lb.t || lb.n) + " " + P.cap + ":" + P.v }), " · ", lb.n + " " + P.cap + ":" + P.v),
             h("div", { class: "seg seg-hero", role: "group", "aria-label": "Escritura del griego" }, cajaBtn("may", "ΑΒΓ", "Mayúsculas, como los códices unciales"), cajaBtn("min", "αβγ", "Minúsculas con acentos y espíritus"))),
           h("div", { class: "interlineal" }, botones),
           h("p", { class: "pista", text: "Toca una palabra, en griego o en español, para abrir su análisis" })),
         h("div", { class: "acciones" },
           ub ? h("a", { class: "btn oro", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, svg(ICO.seguir), "Seguir leyendo · " + ub.n + " " + ult.cap + (ult.v ? ":" + ult.v : "")) : null,
-          h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/JHN/1" }, svg(ICO.libro), "Leer Juan 1"),
-          h("a", { class: "btn", href: "#/JHN/1/a" }, svg(ICO.lupa), "Analizar palabra por palabra"),
+          h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/" + P.c + "/" + P.cap + "/l/" + P.v }, svg(ICO.libro), "Leer " + lb.n + " " + P.cap),
+          h("a", { class: "btn", href: "#/" + P.c + "/" + P.cap + "/a/" + P.v }, svg(ICO.lupa), "Analizar palabra por palabra"),
           h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros")))),
       h("section", { class: "cifras" }, h("div", { class: "in" },
         h("div", { class: "c" }, h("b", { text: pct(D.palabras) }), h("span", { text: "de las palabras ya traducidas en el texto base" })),
@@ -417,18 +445,18 @@
     else window.scrollTo(0, 0);
   }
   async function abrirPalabraPortada(i) {
-    const P = D.portada, b = libroDe("JHN");
+    const P = esc.dest || { c: "JHN", cap: 1, v: 1, i0: 0, p: D.portada.p }, b = libroDe(P.c);
     const botones = $$(".interlineal .il");
     const marcar = (k) => botones.forEach((x, j) => x.setAttribute("aria-pressed", j === k ? "true" : "false"));
     marcar(i);
-    abrirModal(cargandoModal(refCorta(b, 1, 1)), () => marcar(-1));
+    abrirModal(cargandoModal(refCorta(b, P.cap, P.v)), () => marcar(-1));
     try {
-      const [toks, Lc] = await Promise.all([versoTokens("JHN", 1, 1), lectura("JHN")]);
-      let j = i;
-      if (toks.length !== P.p.length || T.F[toks[i][0]] !== P.p[i].g) j = Math.max(0, toks.findIndex((t) => T.F[t[0]] === P.p[i].g));
-      const L = (Lc.caps[1] || []).find((x) => x.v === 1);
+      const [toks, Lc] = await Promise.all([versoTokens(P.c, P.cap, P.v), lectura(P.c)]);
+      let j = (P.i0 || 0) + i;
+      if (!toks[j] || T.F[toks[j][0]] !== P.p[i].g) j = Math.max(0, toks.findIndex((t) => T.F[t[0]] === P.p[i].g));
+      const L = (Lc.caps[P.cap] || []).find((x) => x.v === P.v);
       if (!modal.open) return;
-      reemplazar(vistaPalabra({ b, cap: 1, v: 1, toks, i: j, L, desde: "portada", alMover: (k) => marcar(k) }));
+      reemplazar(vistaPalabra({ b, cap: P.cap, v: P.v, toks, i: j, L, desde: "portada", alMover: (k) => marcar(k - (P.i0 || 0)) }));
     } catch (e) { reemplazar(() => cajaModal(cabModal("No se pudo abrir"), fallo("No se pudo cargar el análisis."))); }
   }
 
@@ -551,7 +579,10 @@
     return h("nav", { class: "fin-cap", "aria-label": "Seguir leyendo" }, ant, sig);
   }
 
+  // Perícopas: las marcas § de BiEx cuando el capítulo las tiene; si no, los párrafos (¶) del texto griego
+  const iniciaPericopa = (usaP, x, k) => k === 0 || !!(usaP ? x.p : x.q);
   function cuerpoLectura(b, cap, versos) {
+    const usaP = versos.some((x) => x.p);
     const hayBase = versos.some((v) => v.g);
     const nota = hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se leen palabra por palabra; en ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada. Toca cualquier verso para abrir su griego palabra por palabra.") :
       h("p", { class: "nota-base", text: "Toca cualquier verso para abrir su griego palabra por palabra." });
@@ -559,16 +590,16 @@
     if (prefs.disp === "continuo") {
       const parrafos = [];
       let actual = null;
-      for (const x of versos) {
-        if (!actual || x.p) { actual = h("p"); parrafos.push(actual); }
+      versos.forEach((x, k) => {
+        if (!actual || iniciaPericopa(usaP, x, k)) { actual = h("p", { class: "peri" }, h("span", { class: "par", "aria-hidden": "true", text: "§" })); parrafos.push(actual); }
         actual.append(h("span", { class: "vs n-" + x.n, id: "v" + x.v, role: "button", tabindex: "0", title: refCorta(b, cap, x.v) + " · " + estadoEt(x.n),
           onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
           h("sup", { text: x.v }), textoLectura(x.t, !!x.g)), " ");
-      }
+      });
       return [encabezado(b, cap, "l"), nota, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
     }
-    return [encabezado(b, cap, "l"), nota, h("div", { class: "lectura" }, versos.map((x) => h("div", {
-      class: "vl n-" + x.n + (x.p ? " p" : ""), id: "v" + x.v, role: "button", tabindex: "0",
+    return [encabezado(b, cap, "l"), nota, h("div", { class: "lectura" }, versos.map((x, k) => h("div", {
+      class: "vl n-" + x.n + (iniciaPericopa(usaP, x, k) ? " p" : ""), id: "v" + x.v, role: "button", tabindex: "0",
       "aria-label": "Verso " + x.v + " (" + estadoEt(x.n) + "). Abrir su griego palabra por palabra",
       onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
       h("span", { class: "vn", title: estadoEt(x.n) + (x.n === "base" ? ": " + x.k + " % de las palabras ya traducidas" : ""), text: x.v }),
@@ -606,6 +637,9 @@
   const RESALTA = {
     "": ["Nada", () => true],
     aor: ["Verbos en aoristo", (m) => m.pos === "V" && m.tense === "A"],
+    aor1: ["Aoristos sigmáticos", (m, t) => m.tense === "A" && t[7] === 1],
+    aor2: ["Aoristos temáticos", (m, t) => m.tense === "A" && t[7] === 2],
+    aor3: ["Aoristos atemáticos", (m, t) => m.tense === "A" && t[7] === 3],
     part: ["Participios", (m) => m.pos === "V" && (m.mood === "P" || m.mood === "R")],
     inf: ["Infinitivos", (m) => m.pos === "V" && m.mood === "N"],
     imp: ["Imperativos", (m) => m.pos === "V" && m.mood === "M"],
@@ -621,11 +655,11 @@
   function tarjetaPalabra(t, alTocar, extra) {
     const m = T.P[t[2]], cl = T.MC[t[2]], tr = T.TR[t[3] || 0];
     const btn = h("button", Object.assign({ type: "button", class: "pal" + (t[6] ? " var" : "") + (prefs.caja === "may" ? " may" : ""), "aria-pressed": "false",
-      "aria-label": T.F[t[0]] + ", " + (tr || "sin traducción fijada") + ", " + (T.MD[t[2]] || "") + ". Abrir el análisis", onclick: alTocar }, extra || {}),
+      "aria-label": T.F[t[0]] + ", " + (tr || "sin traducción fijada") + ", " + mdTok(t) + ". Abrir el análisis", onclick: alTocar }, extra || {}),
       h("span", { class: "g" }, spanGk(T.F[t[0]]), punt(t[4]) ? h("sup", { text: punt(t[4]) }) : null),
       h("span", { class: "tl", text: T.FT[t[0]] }),
       h("span", { class: "tr" + (tr ? "" : " sin"), text: tr || "·" }),
-      h("span", { class: "mo", text: abreviar(m, cl, t[8]) }));
+      h("span", { class: "mo", text: abreviar(m, cl, t[8], t[7]) }));
     btn._t = t; btn._m = m; btn._cl = cl;
     const k = (COLOR[prefs.color] || COLOR.clase)(m, cl);
     if (k) btn.style.setProperty("--k", k);
@@ -710,16 +744,16 @@
       const nav = { prev: ctx.i > 0 ? () => mover(ctx.i - 1) : null, next: ctx.i < n - 1 ? () => mover(ctx.i + 1) : null, etiqueta: ["Palabra anterior", "Palabra siguiente"] };
       M.nav = nav;
       const vz = T.voz[t[8] || 0];
+      const ao = m.tense === "A" ? tipoAor(t[7]) : "";
+      const tiempo = (TIEMPO[m.tense] || "") + (ao ? " " + ao : m.second ? " (segundo)" : "");
       const chips = [[CLASE[cl], true]];
-      if (m.pos === "V") chips.push([TIEMPO[m.tense] + (m.second ? " (segundo)" : "")], [vz], [MODO[m.mood]]);
-      if (t[7]) chips.push(["aoristo " + T.aoristo[t[7]]]);
+      if (m.pos === "V") chips.push([tiempo], [vz], [MODO[m.mood]]);
       if (m.person) chips.push([m.person + ".ª persona"]);
       chips.push([CASO[m.case]], [NUM[m.number]], [GEN[m.gender]]);
       const filas = [];
       const fila = (a, x) => x && filas.push(h("dt", { text: a }), h("dd", { text: x }));
       fila("Categoría", mayus1(CLASE[cl] || ""));
-      if (m.pos === "V") { fila("Tiempo", mayus1((TIEMPO[m.tense] || "") + (m.second ? " (segundo)" : ""))); fila("Voz", mayus1(vz)); fila("Modo", mayus1(MODO[m.mood])); }
-      if (t[7]) fila("Aoristo", mayus1(T.aoristo[t[7]]));
+      if (m.pos === "V") { fila("Tiempo", mayus1(tiempo)); fila("Voz", mayus1(vz)); fila("Modo", mayus1(MODO[m.mood])); }
       if (m.person) fila("Persona", m.person + ".ª");
       fila("Caso", mayus1(CASO[m.case])); fila("Número", mayus1(NUM[m.number])); fila("Género", mayus1(GEN[m.gender]));
       fila("En la oración", mayus1(T.R[t[5] || 0]));
@@ -728,7 +762,7 @@
       const sin = T.ediciones.filter((_, k) => falta & (1 << k));
       const par = T.LP[li] || [];
       const tabla = h("table", { class: "paradigma" }, h("tbody", {}, par.slice(0, 14).map((r) => h("tr", { class: r[0] === t[0] && r[1] === t[2] ? "esta" : "" },
-        h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: abreviar(T.P[r[1]], T.MC[r[1]], 0) || T.MD[r[1]] }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))));
+        h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: abreviar(T.P[r[1]], T.MC[r[1]], 0, r[4]) || T.MD[r[1]] }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))));
       const lb = T.LB[li] || [];
       const pares = []; for (let k = 0; k < lb.length; k += 2) pares.push([lb[k], lb[k + 1]]);
       pares.sort((a, x) => x[1] - a[1]);
@@ -830,7 +864,7 @@
         trads.length ? h("div", { class: "chips" }, trads.map((x) => h("span", { class: "chip", text: T.TR[x] }))) : null),
       h("div", { class: "columnas" },
         h("div", { class: "tarjeta" }, h("h2", { text: "Formas" }), h("table", { class: "paradigma" }, h("tbody", {}, par.map((r) => h("tr", {},
-          h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: T.MD[r[1]] }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))))),
+          h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: mdTok([r[0], 0, r[1], 0, "", 0, 0, r[4]]) }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))))),
         h("div", { class: "tarjeta" }, h("h2", { text: "Por libro" }), h("div", { class: "barras" }, pares.map(([bi, n]) => {
           const b = D.libros[bi];
           return h("div", {}, h("a", { href: "#/" + b.c + "/1/a", text: b.t || b.n, title: nombreLibro(b) }), h("i", { style: "width:" + (100 * n / max).toFixed(1) + "%" }), h("em", { text: fmt(n) }));
@@ -861,7 +895,7 @@
     if (mostradas === 0) pinta();
   }
   function citaEl(x) {
-    const ref = (x.b.t || x.b.n) + " " + x.cap + ":" + x.v + " · " + x.b.n + " · " + T.MD[x.toks[x.i][2]];
+    const ref = (x.b.t || x.b.n) + " " + x.cap + ":" + x.v + " · " + x.b.n + " · " + mdTok(x.toks[x.i]);
     const g = h("span", { class: "gtx", lang: "grc" });
     x.toks.forEach((t, i) => { if (i) g.append(" "); g.append(i === x.i ? h("mark", {}, spanGk(T.F[t[0]])) : spanGk(T.F[t[0]]), punt(t[4])); });
     const tr = T.TR[x.toks[x.i][3] || 0];
@@ -937,7 +971,7 @@
     const salida = h("div", { class: "resultados" });
     const barra = h("div", { class: "progreso", hidden: true }, h("i"));
     const correr = async () => {
-      const f = { pos: $("#fm-clase").value, tense: $("#fm-tiempo").value, mood: $("#fm-modo").value, voice: $("#fm-voz").value, case: $("#fm-caso").value, number: $("#fm-num").value, gender: $("#fm-gen").value, person: $("#fm-pers").value };
+      const f = { aor: $("#fm-aor").value, pos: $("#fm-clase").value, tense: $("#fm-tiempo").value, mood: $("#fm-modo").value, voice: $("#fm-voz").value, case: $("#fm-caso").value, number: $("#fm-num").value, gender: $("#fm-gen").value, person: $("#fm-pers").value };
       const lk = claveGr(lema.value.trim());
       const lset = lk ? new Set(T.Lk.map((x, i) => (x === lk ? i : -1)).filter((i) => i >= 0)) : null;
       const okM = T.M.map((_, mi) => {
@@ -956,6 +990,7 @@
           if (!okM[t[2]]) return;
           if (lset && !lset.has(t[1])) return;
           if (f.voice && String(t[8] || 0) !== f.voice) return;
+          if (f.aor && String(t[7] || 0) !== f.aor) return;
           hall.push({ b, cap: +cap, v, toks, i, Lc });
         });
         $("i", barra).style.width = (100 * ++k / libs.length) + "%";
@@ -974,7 +1009,7 @@
       h("div", { class: "filtros-m" },
         h("label", {}, "Lema", lema),
         sel("fm-clase", "Categoría", Object.fromEntries(Object.entries(CLASE).filter(([k]) => k !== "X"))),
-        sel("fm-tiempo", "Tiempo", TIEMPO), sel("fm-modo", "Modo", MODO), sel("fm-voz", "Voz", { 1: "activa", 2: "media", 3: "pasiva", 4: "media o pasiva" }),
+        sel("fm-tiempo", "Tiempo", TIEMPO), sel("fm-aor", "Tipo de aoristo", { 1: "sigmático", 2: "temático", 3: "atemático", 4: "ambiguo" }), sel("fm-modo", "Modo", MODO), sel("fm-voz", "Voz", { 1: "activa", 2: "media", 3: "pasiva", 4: "media o pasiva" }),
         sel("fm-caso", "Caso", CASO), sel("fm-num", "Número", NUM), sel("fm-gen", "Género", GEN), sel("fm-pers", "Persona", { 1: "1.ª", 2: "2.ª", 3: "3.ª" }),
         h("label", {}, "Libro", libros)),
       h("div", {}, h("button", { class: "btn oro", type: "button", onclick: correr }, svg(ICO.filtros), "Buscar palabras")), barra, salida);
@@ -1002,10 +1037,10 @@
   marco();
   vista().replaceChildren(cargando("Abriendo el códice…"));
   alPadre({ biex: "listo" });
-  cargar("datos/avance.json").then((d) => {
-    D = d;
+  Promise.all([cargar("datos/avance.json"), cargar("datos/destacados.json").catch(() => [])]).then(([d, dest]) => {
+    D = d; DEST = Array.isArray(dest) ? dest : [];
     const act = $("#actualizado");
-    if (act) act.textContent = " Actualizado el " + new Date(D.generado).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }) + ".";
+    if (act) act.textContent = " · Actualizado el " + new Date(D.generado).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }) + ".";
     window.addEventListener("hashchange", enrutar);
     enrutar();
   }).catch(() => vista().replaceChildren(fallo("No se pudo cargar el avance.")));

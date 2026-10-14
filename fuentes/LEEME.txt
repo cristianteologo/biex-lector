@@ -2,3 +2,7 @@ Fuentes para los modos de lectura del lector de BiEx (licencia SIL Open Font Lic
 - opendyslexic-regular.woff2, opendyslexic-bold.woff2: OpenDyslexic (Abbie Gonzalez), sin modificar; solo cambia el contenedor (OTF → WOFF2).
 - atkinson-next.woff2: Atkinson Hyperlegible Next (Braille Institute y colaboradores), reducida a los caracteres latinos que usa el lector.
 - biex-respaldo.woff2: Noto Sans (The Noto Project Authors), reducida a las letras con diacríticos de las transliteraciones que las otras dos no tienen.
+Fuentes de la presentación de apertura del sitio oficial:
+- intro-codice.woff2 («BiEx Codice»): Gentium Book Plus (SIL International), reducida al griego y al latín que usa la presentación; por ser una versión modificada lleva otro nombre, como pide la licencia (nombres reservados «Gentium» y «SIL»).
+- intro-titulo.woff2, intro-titulo-it.woff2: Cormorant Garamond (The Cormorant Project Authors), redonda y cursiva, reducidas al latín.
+- intro-rotulo.woff2: Jost (The Jost Project Authors), reducida al latín.

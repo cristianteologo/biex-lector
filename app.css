@@ -266,10 +266,13 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .vl .vn::after { content: ""; position: absolute; right: -9px; top: .55em; width: 3px; height: 1.05em; border-radius: 2px; background: var(--e); }
 .vl .vt { font-size: 1.14rem; line-height: calc(1.75 * var(--lh)); overflow-wrap: anywhere; }
 .vl.p { margin-top: 18px; }
+.vl.p:first-child { margin-top: 0; }
 .vl.p .vn::before { content: "§"; position: absolute; right: 100%; margin-right: 4px; color: var(--tenue); font-size: .9em; }
 .vl.n-base .vt { color: var(--tinta-2); }
 .vl.marcado { background: var(--oro-suave); box-shadow: inset 2px 0 0 var(--oro); }
 .continuo { padding: 18px clamp(14px, 3.4vw, 46px) 40px; max-width: 860px; margin: 0 auto; }
+.continuo .par { font-family: var(--f-display); color: var(--oro); font-size: 1.15em; font-weight: 500; margin-right: .3em; }
+.continuo p + p { margin-top: 1.5em; }
 .continuo p { margin: 0 0 1.1em; font-size: 1.16rem; line-height: calc(1.9 * var(--lh)); text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
 .vs { cursor: pointer; border-radius: 6px; transition: background-color .15s; scroll-margin-top: 140px; }
 .vs:hover { background: var(--oro-suave); }
@@ -421,6 +424,9 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .pie .in { padding-top: 34px; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; font-family: var(--f-ui); font-size: .8rem; color: var(--tenue); line-height: 1.6; }
 .pie .marca-pie { font-family: var(--f-display); font-size: 1.1rem; letter-spacing: .3em; text-transform: uppercase; color: var(--tinta); margin-bottom: 6px; }
 .pie p { margin: 0; max-width: 92ch; }
+.pie .autoria { display: grid; gap: 3px; justify-items: center; text-align: center; margin-top: 14px; }
+.pie .autoria strong { font-family: var(--f-display); font-weight: 500; font-size: 1.05rem; letter-spacing: .12em; color: var(--tinta); }
+.pie .creditos { font-size: .4rem; line-height: 1.6; text-align: right; max-width: none; margin-top: 18px; color: var(--tenue); }
 
 /* ---------- movimiento */
 @media (prefers-reduced-motion: no-preference) {
