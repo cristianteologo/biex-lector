@@ -85,10 +85,11 @@
     marco = document.createElement("iframe");
     marco.title = "Lector y analizador de BiEx";
     marco.setAttribute("allow", "clipboard-write");
-    if (n === 1) marco.srcdoc = documento(inicio);
-    else marco.src = COMPLETO + "?incrustado=1" + inicio;
+    // Primero la página propia del lector (otro dominio, sin interferencias de esta página); si no arranca, el lector armado aquí mismo
+    if (n === 1 && COMPLETO) marco.src = COMPLETO + "?incrustado=1" + inicio;
+    else { n = 2; marco.srcdoc = documento(inicio); }
     var este = marco;
-    function siguiente() { if (listo || marco !== este) return; if (n === 1 && COMPLETO) intentar(2, inicio); else fallo(); }
+    function siguiente() { if (listo || marco !== este) return; if (n === 1) intentar(2, inicio); else fallo(); }
     // Si el marco terminó de cargar y la aplicación no avisó que arrancó, se pasa a la vía siguiente
     marco.addEventListener("load", function () { setTimeout(siguiente, 1500); });
     velo.appendChild(marco);
