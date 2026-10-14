@@ -8,6 +8,7 @@ El sitio en Wix carga estos archivos. Se generan automáticamente; no se editan 
 - `datos/avance.json`: índice de libros y cifras de avance.
 - `datos/libros/<LIBRO>.json`: texto de lectura de cada verso.
 - `datos/analisis/<LIBRO>.json` y `datos/tablas.json`: análisis palabra por palabra.
+- `wix/`: el código que se inserta en el sitio oficial para abrir el lector desde cada página de libro (`insercion.plantilla.html` y su generador).
 
 ## Créditos
 
