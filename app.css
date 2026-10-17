@@ -1134,3 +1134,6 @@ html.con-modal .barra { transform: none; }
   .cap-grupo { gap: 2px; } .cap-grupo .btn-icono { width: 30px; height: 30px; }
   .barra-hoja { gap: 8px 6px; }
 }
+.ms-desc { color: var(--tenue); font-family: var(--f-griego); opacity: .85; }
+.gc.gc-sin .gc-tx, .gc.gc-sin .gc-tx * { color: var(--tinta) !important; text-transform: none !important; letter-spacing: normal !important; }
+.gc .gc-tx, .gc .gc-tx * { transition: color .45s ease; }

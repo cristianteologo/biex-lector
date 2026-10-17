@@ -1431,7 +1431,19 @@
     if (TESTIGOS) return Promise.resolve(TESTIGOS);
     return cargar("datos/manuscritos/testigos.json").then((t) => { t.porId = new Map(t.testigos.map((x, i) => [x.id, Object.assign({ i }, x)])); TESTIGOS = t; return t; });
   }
-  const msCap = (c, cap) => cargar("datos/manuscritos/" + c + "/" + cap + ".json");
+  // En las transcripciones de CNTR, U+FFFD marca una letra que está pero no se puede identificar: se muestra «◌»
+  const DESC = "\u25CC";
+  const msCap = (c, cap) => cargar("datos/manuscritos/" + c + "/" + cap + ".json").then((d) => {
+    if (!d.__n) {
+      for (const x of Object.values(d)) {
+        if (!x || typeof x !== "object") continue;
+        for (const w of x.w || []) if (typeof w[2] === "string") w[2] = w[2].replace(/\uFFFD/g, DESC);
+        for (const v of x.v || []) if (typeof v[2] === "string") v[2] = v[2].replace(/\uFFFD/g, DESC);
+      }
+      Object.defineProperty(d, "__n", { value: true });
+    }
+    return d;
+  });
   async function msVerso(c, cap, v) { const [Tg, MC] = await Promise.all([testigos(), msCap(c, cap)]); return { Tg, X: MC[String(v)] || null }; }
   const idBase = (id) => String(id).replace(/[*c]$/, "");
   const siglaDe = (Tg, id) => { const t = Tg.porId.get(idBase(id)); const suf = /\*$/.test(id) ? "*" : /c$/.test(id) ? "ᶜ" : ""; return (t ? t.s : idBase(id)) + suf; };
@@ -1440,11 +1452,11 @@
   const SINAITICO = { MAT: 33, MRK: 34, LUK: 35, JHN: 36, ROM: 37, "1CO": 38, "2CO": 39, GAL: 40, EPH: 41, PHP: 42, COL: 43, "1TH": 44, "2TH": 45, HEB: 46, "1TI": 47, "2TI": 48, TIT: 49, PHM: 50, ACT: 51, JAS: 52, "1PE": 53, "2PE": 54, "1JN": 55, "2JN": 56, "3JN": 57, JUD: 58, REV: 59 };
   function enlacesImagen(id, c, cap, v) {
     const out = [];
-    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el Códice Sinaítico", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0"]);
-    if (id === "03") out.push(["Biblioteca Vaticana (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
-    if (id === "05") out.push(["Biblioteca Digital de Cambridge", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
+    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el Codex Sinaiticus [Códice Sinaítico]", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0"]);
+    if (id === "03") out.push(["DigiVatLib · Bibliotheca Apostolica Vaticana [Biblioteca Vaticana] (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
+    if (id === "05") out.push(["Cambridge Digital Library [Biblioteca Digital de Cambridge]", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
     const doc = /^P\d+$/.test(id) ? 10000 + +id.slice(1) : /^0\d+$/.test(id) ? 20000 + +id : null;
-    if (doc) out.push(["Imágenes y transcripción del INTF (Münster)", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
+    if (doc) out.push(["Imágenes y transcripción del Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual de la Nueva Voluntad], Münster", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
     return out;
   }
   const palBase = (toks, k) => (toks && toks[k] ? T.F[toks[k][0]] : "");
@@ -1527,7 +1539,7 @@
         }
         if (ch === "¯") { const u = w.lastChild; if (u && u.nodeType === 3 && u.nodeValue) { const l = u.nodeValue.slice(-1); u.nodeValue = u.nodeValue.slice(0, -1); w.append(h("span", { class: "ov", text: l })); } continue; }
         if (ch === "" || /[-]/.test(ch)) { w.append(h("span", { class: "abr", title: "abreviatura", text: "ΜΟΥ" })); hayLetras = true; continue; }
-        if (ch === "\uFFFD") { w.append("?"); hayLetras = true; continue; }
+        if (ch === DESC || ch === "\uFFFD") { w.append(h("span", { class: "ms-desc", title: "letra que no se puede identificar", text: DESC })); hayLetras = true; continue; }
         if (LETRA_MS.test(ch) || /[α-ω]/.test(ch)) {
           if (rec && tok[i + 1] !== "^") cerrarRec();
           const L = ch === "σ" || ch === "ς" || ch === "ϲ" ? "Ϲ" : ch.toUpperCase();
@@ -1658,7 +1670,7 @@
         det.append(h("div", { class: "mt-cuerpo" },
           h("p", { class: "nota-ui", text: x.t.co ? "Contiene: " + conNombres(x.t.co) + "." : "" }),
           diplomatica(x.txt, sep),
-          h("p", { class: "nota-ui mt-ley", text: "Transcripción letra por letra, con los cambios de línea del manuscrito. Raya: abreviatura (nombre sagrado o número). Punto debajo: letra dañada. [ ]: letras perdidas. ᶜ: corrección de otra mano." }),
+          h("p", { class: "nota-ui mt-ley", text: "Transcripción letra por letra, con los cambios de línea del manuscrito. Raya: abreviatura (nombre sagrado o número). Punto debajo: letra dañada. ◌: letra que está pero no se puede identificar. [ ]: letras perdidas. ᶜ: corrección de otra mano." }),
           im.length ? h("div", { class: "mt-img" }, im.map(([t, u]) => h("a", { class: "btn chico", href: u, target: "_blank", rel: "noopener" }, svg(ICO.externo), t))) : null));
       });
       return det;
@@ -1674,10 +1686,11 @@
         resumen.length + (resumen.length === 1 ? " manuscrito lo conserva" : " manuscritos lo conservan") + (vars.length ? "; " + vars.length + (vars.length === 1 ? " diferencia." : " diferencias.") : "; coinciden con el texto base.")),
       h("div", { class: "bloque" }, h("h4", { text: "En el tiempo" }), eje),
       h("div", { class: "bloque" }, h("h4", { text: "El texto base" + (vars.length ? " · toca una palabra marcada" : "") }), texto,
-        vars.length ? h("p", { class: "nota-ui ms-ley" }, h("span", { class: "ms-w v-om", text: "omitida" }), " ", h("span", { class: "ms-w v-sust", text: "cambiada" }), " ", h("span", { class: "ms-w v-orden", text: "de otro orden" }), " ", h("span", { class: "ms-add" }, signo("add", false)), " añadido") : null),
+        vars.length ? h("p", { class: "nota-ui ms-ley" }, h("span", { class: "ms-w v-om", text: "omitida" }), " ", h("span", { class: "ms-w v-sust", text: "cambiada" }), " ", h("span", { class: "ms-w v-orden", text: "de otro orden" }), " ", h("span", { class: "ms-add" }, signo("add", false)), " añadido",
+          vars.some((x) => String(x[2] || "").includes(DESC)) ? [" ", h("span", { class: "ms-desc", text: DESC }), " letra que no se puede identificar"] : null) : null),
       h("div", { class: "bloque" }, h("h4", { text: experto ? "Aparato" : "Diferencias" }), lista, experto && vars.length ? leyendaSignos() : null),
       h("div", { class: "bloque" }, h("h4", {}, "Cada manuscrito", sepBtn), filas),
-      eds);
+      eds || "");
   }
 
   // Diferencias de los manuscritos antiguos en una palabra concreta
@@ -1728,7 +1741,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "23a490b7e4", voz: "d336379a73" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "23a490b7e4", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2359,20 +2372,28 @@
       el.append(h("div", { class: "gp" }, carta));
       return (t) => carta.classList.toggle("vuelta", t >= 99 || t > 1.8);
     },
-    corchetes(el) {
+    corchetes(el, marcas) {
+      // cada estado entra cuando la voz lo nombra: el verso sin colores → con los colores de la edición → todas las
+      // ampliaciones → solo la primera → solo la palabra base (marcas de `voz/marcas.json`; sin voz, un reparto fijo)
       const txt = h("p", { class: "gc-tx vt" });
       const modo = h("div", { class: "gc-seg" }, ["Todas", "La primera", "Solo la base"].map((x) => h("span", { text: x })));
-      el.append(h("div", { class: "gc" }, modo, txt));
+      const caja = h("div", { class: "gc" }, modo, txt);
+      el.append(caja);
       let L = null, ult = "";
       lectura("MRK").then((Lc) => { L = (Lc.caps[2] || []).find((x) => x.v === 5) || null; ult = ""; }).catch(() => {});
-      const modos = [["todas", "Todas las ampliaciones"], ["primera", "Solo la primera"], ["base", "Solo la palabra base"]];
+      const ESTADOS = [["todas", false, -1], ["todas", true, -1], ["todas", true, 0], ["primera", true, 1], ["base", true, 2]];
+      const FIJAS = [0, 1.3, 3.3, 4.9, 6.3];
       return (t) => {
-        const k = t >= 99 ? 1 : Math.floor(t / 2.6) % modos.length;
+        const m = (marcas && marcas()) || FIJAS;
+        let k = 0; for (let i = 0; i < m.length && i < ESTADOS.length; i++) if (t >= m[i] - .08) k = i;
+        if (t >= 99) k = 3;
         const clave = k + (L ? "L" : "");
         if (clave === ult) return; ult = clave;
-        [...modo.children].forEach((c, i) => c.classList.toggle("on", i === k));
+        const [cor, colores, seg] = ESTADOS[k];
+        [...modo.children].forEach((c, i) => c.classList.toggle("on", i === seg));
+        caja.classList.toggle("gc-sin", !colores);
         if (!L) { txt.textContent = "…"; return; }
-        const antes = prefs.cor; prefs.cor = modos[k][0];
+        const antes = prefs.cor; prefs.cor = cor;
         try { txt.replaceChildren(txtVerso(L)); } finally { prefs.cor = antes; }
         txt.classList.remove("cambia"); void txt.offsetWidth; txt.classList.add("cambia");
       };
