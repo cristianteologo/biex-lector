@@ -5,11 +5,11 @@
 (function () {
   if (window.__biexLector) return; window.__biexLector = true;
   var BASES = ["__BASE__", "__BASE2__"], COMPLETO = "__COMPLETO__", RESPALDO = "__RESPALDO__";
-  var LIB = { "blank": ["MAT", "Mateo"], "2mm": ["MRK", "Marcos"], "3ll": ["LUK", "Lucas"], "blank-3": ["JHN", "Juan"], "5mh": ["ACT", "Hechos"], "blank-17": ["ROM", "Romanos"],
-    "7q1c": ["1CO", "1 Corintios"], "8q2c": ["2CO", "2 Corintios"], "9gg": ["GAL", "Gálatas"], "10ee": ["EPH", "Efesios"], "1ff": ["PHP", "Filipenses"], "12qc": ["COL", "Colosenses"],
-    "13t1t": ["1TH", "1 Tesalonicenses"], "blank-1": ["2TH", "2 Tesalonicenses"], "15t1t": ["1TI", "1 Timoteo"], "16t2t": ["2TI", "2 Timoteo"], "17tt": ["TIT", "Tito"], "blank-15": ["PHM", "Filemón"],
-    "19ih": ["HEB", "Hebreos"], "blank-2": ["JAS", "Santiago"], "21k1p": ["1PE", "1 Pedro"], "22k2p": ["2PE", "2 Pedro"], "1yj": ["1JN", "1 Juan"], "24yb": ["2JN", "2 Juan"], "25yg": ["3JN", "3 Juan"],
-    "blank-13": ["JUD", "Judas"], "27jhr": ["REV", "Revelación"] };
+  var LIB = { "blank": ["MAT", "Mateo", "Mattáy"], "2mm": ["MRK", "Marcos", "Μᾶrκος"], "3ll": ["LUK", "Lucas", "Lουκᾶς"], "blank-3": ["JHN", "Juan", "YÔḥānā́n"], "5mh": ["ACT", "Hechos", "Prάc̅ṣεις"], "blank-17": ["ROM", "Romanos", "῾Hrōmαῖοι"],
+    "7q1c": ["1CO", "1 Corintios", "1 Κοrίndsιοι"], "8q2c": ["2CO", "2 Corintios", "2 Κοrίndsιοι"], "9gg": ["GAL", "Gálatas", "Gαlάται"], "10ee": ["EPH", "Efesios", "Ἐfέsιοι"], "1ff": ["PHP", "Filipenses", "Fιlιppḗsιοι"], "12qc": ["COL", "Colosenses", "Κοlοssαεῖς"],
+    "13t1t": ["1TH", "1 Tesalonicenses", "1 Dsεssαlοnικεῖς"], "blank-1": ["2TH", "2 Tesalonicenses", "2 Dsεssαlοnικεῖς"], "15t1t": ["1TI", "1 Timoteo", "1 Τιmόdsεος"], "16t2t": ["2TI", "2 Timoteo", "2 Τιmόdsεος"], "17tt": ["TIT", "Tito", "Τίτος"], "blank-15": ["PHM", "Filemón", "Fιlḗmōn"],
+    "19ih": ["HEB", "Hebreos", "ʿIḇrî́m"], "blank-2": ["JAS", "Santiago", "Yaʿăqṓḇ"], "21k1p": ["1PE", "1 Pedro", "1 Pέτrος"], "22k2p": ["2PE", "2 Pedro", "2 Pέτrος"], "1yj": ["1JN", "1 Juan", "1 YÔḥānā́n"], "24yb": ["2JN", "2 Juan", "2 YÔḥānā́n"], "25yg": ["3JN", "3 Juan", "3 YÔḥānā́n"],
+    "blank-13": ["JUD", "Judas", "Yᵉhūḏā́h"], "27jhr": ["REV", "Revelación", "Ḥāzṓn Hiṯgallū́ṯ"] };
   var OTRAS = { "nueva-voluntad": ["#/libros", "Los 27 libros en griego"] };
   // Enlace compartido desde el lector: ?lector=JHN/3/a/16 abre el lector ahí mismo
   var PEDIDO = (function () {
@@ -20,7 +20,7 @@
   var FUENTES = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&family=Jost:wght@400;500&display=swap";
   function pagina() {
     var p = location.pathname.replace(/\/+$/, "").split("/").pop();
-    if (LIB[p]) return ["#/" + LIB[p][0] + "/1", LIB[p][1] + " en griego, palabra por palabra", LIB[p][1]];
+    if (LIB[p]) return ["#/" + LIB[p][0] + "/1", LIB[p][2] + " [" + LIB[p][1] + "] en griego", LIB[p][2] + " [" + LIB[p][1] + "]"];
     return OTRAS[p] ? [OTRAS[p][0], OTRAS[p][1], ""] : ["#/", "La Nueva Voluntad en griego", ""];
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -44,7 +44,7 @@
     '.s{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid #c9a865;display:grid;place-items:center;font:400 19px/1 "Gentium Book Plus",Georgia,serif;color:#e8cf94;background:radial-gradient(circle at 50% 35%,rgba(201,168,101,.22),transparent 70%)}' +
     '.t{display:grid;gap:1px;max-width:24em;overflow:hidden;transition:max-width .3s,opacity .25s}' +
     '.t small{font:500 8.5px/1.25 Jost,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#c9a865;white-space:nowrap}' +
-    '.t b{font:500 14.5px/1.2 "Cormorant Garamond",Georgia,serif;letter-spacing:.03em;color:#ece5d6;white-space:nowrap}' +
+    '.t b{font:400 15px/1.25 "Gentium Book Plus",Georgia,serif;letter-spacing:.01em;color:#ece5d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.p.min{padding:5px;gap:0}.p.min .t{max-width:0;opacity:0}' +
     '@media (max-width:640px){.p{right:0;left:0;margin:0 auto;width:max-content;bottom:max(14px,env(safe-area-inset-bottom))}}' +
     '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s;font:400 16px/1.5 Jost,system-ui,sans-serif;color:#ece5d6;overflow:hidden}' +
