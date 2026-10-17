@@ -3,8 +3,9 @@
    la paleta según la hora del día, la coreografía de la luz, la tonalidad de la música y la forma de abrirse al sitio.
    Versión completa: el verso aparece en unciales continuas, como en un códice; se separa en palabras, cada una con su
    transliteración y su traducción; todo se vuelve luz y forma la marca. Versión breve: la luz forma la marca.
-   Sonido activado por defecto: se intenta desde el primer instante y, si el navegador lo retiene hasta un gesto, suena con el
-   primer toque, clic o tecla en cualquier parte. Apagarlo vale solo para esa visita.
+   Sonido siempre activado, sin botón de silencio. Los navegadores no dejan sonar una página hasta que la persona la toca: si
+   el navegador ya lo permite, la presentación empieza sola con música; si no, aparece una puerta «Entrar» y el toque abre el
+   sonido y empieza la presentación desde el principio. Si nadie entra en 25 segundos, se retira sin contar para el día.
    Plantilla: los textos, los versos y las variaciones salen de plantillas/presentacion.json (o del archivo que indique data-config);
    lo que falte toma los valores de CFG_BASE. Todo se dibuja a la densidad real de la pantalla (hasta 3×), sin ampliar imágenes. */
 (function () {
@@ -51,7 +52,7 @@
   // ------------------------------------------------------------------ plantilla (valores de base; plantillas/presentacion.json los reemplaza)
   const CFG_BASE = {
     marca: { sello: "BiEx", titulo: "BIBLIA EXACTA", lema: "Del griego al español, palabra por palabra", nombre: "BiEx – Biblia Exacta" },
-    textos: { sonido: "Sonido", tocar: "Toca para oír", saltar: "Saltar", saltarTitulo: "Saltar la presentación (Esc)", aria: "Presentación de BiEx – Biblia Exacta" },
+    textos: { entrar: "Entrar", nota: "Con música · toca para comenzar", saltar: "Saltar", saltarTitulo: "Saltar la presentación (Esc)", aria: "Presentación de BiEx – Biblia Exacta" },
     versos: "datos/destacados.json", // o una lista propia: [{ n, t, cap, v, p: [{ g, tl, tr }] }]
     palabras: [3, 8],
     coreografias: ["remolino", "lluvia", "brasas", "horizonte"],
@@ -92,7 +93,7 @@
   host.style.cssText = "position:fixed;inset:0;z-index:2147483601;pointer-events:auto;contain:strict";
   (document.body || document.documentElement).appendChild(host);
   const raiz = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
-  const ICO_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+  const ICO_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
   const ICO_SALTAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6l7 6-7 6zM13 6l7 6-7 6z"/></svg>';
   raiz.innerHTML = "<style>" +
     ":host{all:initial}" +
@@ -103,19 +104,31 @@
     ".ui.v{opacity:1}.ui.f{opacity:0;transition:opacity .3s}" +
     "button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-height:38px;padding:0 15px;border-radius:999px;border:1px solid rgba(232,207,148,.3);background:rgba(6,6,10,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:rgba(236,229,214,.86);font:500 10.5px/1 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.24em;text-transform:uppercase;transition:border-color .2s,color .2s,box-shadow .3s}" +
     "button:hover{border-color:rgba(232,207,148,.75);color:#fff}button:focus-visible{outline:2px solid var(--oro,#e8cf94);outline-offset:3px}" +
-    "button[hidden]{display:none}button svg{width:16px;height:16px;flex:none}.son[aria-pressed=true] .off,.son[aria-pressed=false] .on{display:none}" +
-    ".son.pulso{animation:pulso 1.8s ease-in-out infinite}@keyframes pulso{50%{box-shadow:0 0 0 7px rgba(232,207,148,.12);border-color:rgba(232,207,148,.85);color:#fff}}" +
+    "button[hidden]{display:none}button svg{width:16px;height:16px;flex:none}.sal{margin-left:auto}" +
+    ".puerta{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(120% 80% at 50% 40%,rgba(232,207,148,.08),transparent 60%),var(--fondo,#020306);cursor:pointer;transition:opacity .6s ease}" +
+    ".puerta[hidden]{display:none}.puerta.fuera{opacity:0;pointer-events:none}" +
+    ".pu-in{display:grid;justify-items:center;gap:18px;padding:24px;text-align:center}" +
+    ".pu-sello{width:64px;height:64px;border:1px solid var(--oro,#e8cf94);border-radius:50%;display:grid;place-items:center;font:600 22px/1 'BiEx Titulo','Cormorant Garamond',Georgia,serif;color:var(--oro,#e8cf94)}" +
+    ".pu-tit{font:300 clamp(22px,5vw,34px)/1.1 'BiEx Titulo','Cormorant Garamond',Georgia,serif;letter-spacing:.42em;margin-right:-.42em;color:#f3ead6}" +
+    ".pu-btn{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:132px;height:132px;margin-top:10px;border-radius:50%;border:1px solid rgba(232,207,148,.7);background:rgba(232,207,148,.08);color:#fff;font:500 13px/1 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;cursor:pointer;transition:background .25s,transform .25s}" +
+    ".pu-btn:hover,.pu-btn:focus-visible{background:rgba(232,207,148,.18);transform:scale(1.04)}.pu-btn:focus-visible{outline:2px solid var(--oro,#e8cf94);outline-offset:6px}" +
+    ".pu-anillo{position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(232,207,148,.55);animation:anillo 2.4s ease-out infinite}" +
+    "@keyframes anillo{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.55);opacity:0}}" +
+    ".pu-tx{margin-right:-.32em}.pu-nota{display:inline-flex;align-items:center;gap:8px;font:400 12px/1.4 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,214,.72)}.pu-nota svg{width:16px;height:16px}" +
     ".prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,transparent,var(--oro,#e8cf94));opacity:.55;pointer-events:none}" +
     "@media (max-width:420px){button{padding:0 12px;letter-spacing:.18em}}" +
-    "@media (prefers-reduced-motion:reduce){.son.pulso{animation:none}}" +
+    "@media (prefers-reduced-motion:reduce){.pu-anillo{animation:none}}" +
     "</style>" +
     '<div class="esc" role="dialog" aria-modal="true" aria-label="' + CFG_BASE.textos.aria + '">' +
     '<canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
-    '<div class="ui"><button class="son" type="button" aria-pressed="true" title="Sonido">' + ICO_SON + '<span>' + CFG_BASE.textos.sonido + '</span></button>' +
-    '<button class="sal" type="button" title="' + CFG_BASE.textos.saltarTitulo + '"><span>' + CFG_BASE.textos.saltar + '</span>' + ICO_SALTAR + "</button></div>" +
+    '<div class="puerta" hidden><div class="pu-in"><span class="pu-sello">BiEx</span><span class="pu-tit">BIBLIA EXACTA</span>' +
+    '<button class="pu-btn" type="button"><span class="pu-anillo" aria-hidden="true"></span><span class="pu-tx">' + CFG_BASE.textos.entrar + '</span></button>' +
+    '<span class="pu-nota">' + ICO_SON + '<span>' + CFG_BASE.textos.nota + '</span></span></div></div>' +
+    '<div class="ui"><button class="sal" type="button" title="' + CFG_BASE.textos.saltarTitulo + '"><span>' + CFG_BASE.textos.saltar + '</span>' + ICO_SALTAR + "</button></div>" +
     '<div class="prog"></div></div>';
   const esc = raiz.querySelector(".esc"), cv = raiz.querySelector("canvas"), cx = cv.getContext("2d");
-  const ui = raiz.querySelector(".ui"), btnSon = raiz.querySelector(".son"), btnSal = raiz.querySelector(".sal"), prog = raiz.querySelector(".prog"), sr = raiz.querySelector(".sr");
+  const ui = raiz.querySelector(".ui"), btnSal = raiz.querySelector(".sal"), prog = raiz.querySelector(".prog"), sr = raiz.querySelector(".sr");
+  const puerta = raiz.querySelector(".puerta"), btnPuerta = raiz.querySelector(".pu-btn");
   const desborde = document.documentElement.style.overflow;
   document.documentElement.style.overflow = "hidden";
 
@@ -611,74 +624,71 @@
   }
   window.__biexIntroSonido = { montarSonido, partitura: () => partitura(), plan: () => PLAN };
 
-  // ------------------------------------------------------------------ control de sonido (activado por defecto)
-  // Se intenta sonar desde el primer instante. Si el navegador lo retiene hasta un gesto, el botón queda encendido con el aviso
-  // «Toca para oír» y suena con el primer toque, clic o tecla en cualquier parte de la presentación. Si alguien lo apaga,
-  // queda apagado solo durante esa visita; la siguiente vuelve a empezar con sonido.
-  let sonando = false, T = 0, fin = false, apagado = false;
-  const SS = {
-    get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
-    set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } },
-  };
-  try { localStorage.removeItem("biex:intro:sonido"); } catch (e) { /* preferencia antigua: ya no se usa */ }
-  apagado = SS.get("biex:intro:silencio") === "1";
-  function marcarSon(estado) { // "on" · "espera" · "off"
-    btnSon.setAttribute("aria-pressed", estado === "off" ? "false" : "true");
-    btnSon.classList.toggle("pulso", estado === "espera");
-    btnSon.querySelector("span").textContent = estado === "espera" ? CFG.textos.tocar : CFG.textos.sonido;
-    btnSon.title = estado === "on" ? "Silenciar" : CFG.textos.sonido;
-  }
+  // ------------------------------------------------------------------ sonido (siempre activado; sin botón de silencio)
+  let sonando = false, T = 0, fin = false, empezada = false;
+  try { localStorage.removeItem("biex:intro:sonido"); sessionStorage.removeItem("biex:intro:silencio"); } catch (e) { /* preferencias antiguas: ya no se usan */ }
   // iPhone y iPad: que suene aunque el interruptor de silencio esté puesto
   function sesionAudio(tipo) { try { if (navigator.audioSession) navigator.audioSession.type = tipo; } catch (e) { /* no disponible */ } }
   function arrancar() {
-    if (sonando || fin || apagado || !SON || SON.ctx.state !== "running") return;
-    sonando = true; SON.programar(T); marcarSon("on"); escuchas(false);
+    if (sonando || fin || !empezada || !SON || SON.ctx.state !== "running") return;
+    sonando = true; SON.programar(T);
   }
-  function encender(conGesto) {
-    if (sonando || fin || apagado) return;
+  function prepararSonido() {
+    if (SON) return SON;
+    SON = crearSonido();
+    if (SON) { SON.cargar(partitura()); try { SON.ctx.addEventListener("statechange", arrancar); } catch (e) { /* sin eventos */ } }
+    return SON;
+  }
+  // Abre el audio; con «conGesto», dentro del toque (todo síncrono hasta resume, como exigen Safari y Chrome)
+  function abrirSonido(conGesto) {
     sesionAudio("playback");
-    if (!SON) {
-      SON = crearSonido();
-      if (!SON) { btnSon.hidden = true; escuchas(false); return; }
-      SON.cargar(partitura());
-      try { SON.ctx.addEventListener("statechange", arrancar); } catch (e) { /* sin eventos */ }
-    }
+    const S = prepararSonido();
+    if (!S) return Promise.resolve(false);
     if (conGesto) { // un sonido vacío dentro del gesto deja el audio abierto en Safari
-      try { const b = SON.ctx.createBuffer(1, 1, SON.ctx.sampleRate), f = SON.ctx.createBufferSource(); f.buffer = b; f.connect(SON.ctx.destination); f.start(0); } catch (e) { /* nada */ }
+      try { const b = S.ctx.createBuffer(1, 1, S.ctx.sampleRate), f = S.ctx.createBufferSource(); f.buffer = b; f.connect(S.ctx.destination); f.start(0); } catch (e) { /* nada */ }
     }
-    try { const pr = SON.ctx.resume(); if (pr && pr.then) pr.then(arrancar).catch(() => {}); } catch (e) { /* sin permiso aún */ }
-    arrancar();
-    setTimeout(() => { arrancar(); if (!sonando && !fin && !apagado) marcarSon("espera"); }, 280);
+    let pr = null;
+    try { pr = S.ctx.resume(); } catch (e) { /* sin permiso aún */ }
+    const ya = () => S.ctx.state === "running";
+    return Promise.race([
+      pr && pr.then ? pr.then(ya, () => false) : Promise.resolve(ya()),
+      new Promise((ok) => setTimeout(() => ok(ya()), conGesto ? 700 : 280)),
+    ]);
   }
-  function apagar() {
-    apagado = true; SS.set("biex:intro:silencio", "1"); escuchas(false);
-    if (sonando) { sonando = false; SON.callar(0.5); setTimeout(() => { try { if (apagado) SON.ctx.suspend(); } catch (e) { /* nada */ } }, 600); SON.cargar(partitura()); }
-    marcarSon("off");
-  }
-  btnSon.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (sonando) apagar();
-    else { apagado = false; SS.set("biex:intro:silencio", "0"); encender(true); }
-  });
-  btnSal.addEventListener("click", (e) => { e.stopPropagation(); terminar(true); });
-  // Primer gesto en cualquier parte (menos los botones, que tienen su propia acción): abre el sonido
-  const GESTOS = ["pointerup", "touchend", "mousedown", "click", "keydown"];
-  function alGesto(e) {
-    if (sonando || apagado || fin) return;
+  // Puerta «Entrar»: el toque abre el sonido y empieza la presentación desde el principio
+  let relojPuerta = 0;
+  const GESTOS_PUERTA = ["click", "touchend", "keydown"];
+  function alEntrar(e) {
+    if (fin || empezada) return;
+    if (e.type === "keydown" && !(e.key === "Enter" || e.key === " " || e.key === "Spacebar")) return;
     const camino = e.composedPath ? e.composedPath() : [];
-    const enBoton = camino.indexOf(btnSon) >= 0 || camino.indexOf(btnSal) >= 0;
-    if (e.type === "keydown") {
-      if (e.key === "Escape" || e.key === "Esc" || e.key === "Tab") return;
-      if (enBoton && (e.key === "Enter" || e.key === " " || e.key === "Spacebar")) return; // el botón enfocado hace lo suyo
-    } else if (enBoton) return;
-    encender(true);
+    if (camino.indexOf(btnSal) >= 0) return;
+    if (e.cancelable) e.preventDefault();
+    GESTOS_PUERTA.forEach((t) => puerta.removeEventListener(t, alEntrar, true));
+    clearTimeout(relojPuerta);
+    abrirSonido(true);
+    puerta.classList.add("fuera");
+    setTimeout(() => { puerta.hidden = true; }, 650);
+    comenzar();
   }
-  let escuchando = false;
-  function escuchas(on) {
-    if (on === escuchando) return;
-    escuchando = on;
-    GESTOS.forEach((t) => (on ? document.addEventListener(t, alGesto, { capture: true, passive: true }) : document.removeEventListener(t, alGesto, { capture: true })));
+  function mostrarPuerta() {
+    puerta.hidden = false;
+    listo = true; const c = cortina(); if (c) c.remove();
+    GESTOS_PUERTA.forEach((t) => puerta.addEventListener(t, alEntrar, true));
+    try { btnPuerta.focus({ preventScroll: true }); } catch (e) { /* nada */ }
+    relojPuerta = setTimeout(() => { if (!empezada && !fin) { devolverTurno(); terminar(true, true); } }, 25000);
   }
+  // Si nadie entró, esta aparición no cuenta para el límite del día (el código del sitio guardó el registro anterior)
+  function devolverTurno() {
+    try { const p = sessionStorage.getItem("biex:intro:previo"); if (p != null) localStorage.setItem("biex:intro:registro", p); } catch (e) { /* sin almacenamiento */ }
+  }
+  function comenzar() {
+    if (empezada || fin) return;
+    empezada = true; T = 0; ultimo = 0;
+    rafId = requestAnimationFrame(cuadro);
+    arrancar(); setTimeout(arrancar, 320);
+  }
+  btnSal.addEventListener("click", (e) => { e.stopPropagation(); clearTimeout(relojPuerta); terminar(true); });
   const teclas = (e) => { if (e.key === "Escape") { e.preventDefault(); terminar(true); } };
   document.addEventListener("keydown", teclas, true);
   const visibilidad = () => { if (document.hidden && T > 0.4) terminar(true, true); };
@@ -690,6 +700,7 @@
     if (!PLAN) { cerrarTodo(); return; }
     if (fin) return;
     fin = true;
+    if (!empezada) { cerrarTodo(); return; }
     ui.classList.add("f");
     host.style.pointerEvents = "none";
     if (sonando && SON) { SON.callar(rapido ? 0.6 : 2.6); }
@@ -701,7 +712,7 @@
     document.removeEventListener("keydown", teclas, true);
     document.removeEventListener("visibilitychange", visibilidad);
     window.removeEventListener("resize", alCambiarTam);
-    escuchas(false);
+    clearTimeout(relojPuerta);
     document.documentElement.style.overflow = desborde;
     const c = cortina(); if (c) c.remove();
     setTimeout(() => { if (SON) { try { SON.ctx.close(); } catch (e) { /* nada */ } } sesionAudio("auto"); }, sonando ? 2800 : 50);
@@ -939,11 +950,16 @@
       planear();
       sr.textContent = CFG.marca.nombre + ". " + (V ? V.n + " " + V.cap + ":" + V.v + ": " + V.p.map((w) => w.g + " (" + glosaPrincipal(w.tr) + ")").join(" ") + ". " : "") + CFG.marca.lema + ".";
       ui.classList.add("v");
-      if (MODO === "quieta") btnSon.hidden = true;
-      else if (apagado) marcarSon("off");
-      else { marcarSon("on"); escuchas(true); encender(false); }
-      try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ }
-      rafId = requestAnimationFrame(cuadro);
+      puerta.querySelector(".pu-tx").textContent = CFG.textos.entrar || "Entrar";
+      puerta.querySelector(".pu-nota span").textContent = CFG.textos.nota || "";
+      if (MODO === "quieta") { comenzar(); try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ } }
+      else {
+        // si el navegador ya deja sonar, empieza sola con música; si no, la puerta «Entrar»
+        const ok = await abrirSonido(false);
+        if (fin) return;
+        if (ok) { comenzar(); try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ } }
+        else mostrarPuerta();
+      }
     } catch (e) {
       cerrarTodo();
     }

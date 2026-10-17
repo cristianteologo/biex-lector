@@ -20,6 +20,7 @@
       if (inicio && (r.c || 0) < 2 && n - (r.tc || 0) >= 288e5) modo = "completa";
       else if ((r.b || 0) < 2) modo = "breve";
       if (!modo) return;
+      sessionStorage.setItem("biex:intro:previo", JSON.stringify(r));
       if (modo === "completa") { r.c = (r.c || 0) + 1; r.tc = n; } else r.b = (r.b || 0) + 1;
       r.u = n;
       localStorage.setItem("biex:intro:registro", JSON.stringify(r));
