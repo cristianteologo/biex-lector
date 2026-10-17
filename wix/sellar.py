@@ -9,8 +9,8 @@ a = app.read_text(encoding="utf-8")
 for nombre in ("busqueda",):
     a, n = re.subn(r'(const VERSIONES = \{[^}]*\b' + nombre + r': ")[0-9a-f]*(")', lambda m: m.group(1) + huella(nombre + ".js") + m.group(2), a)
     if n != 1: raise SystemExit("No se encontró la huella de " + nombre + " en app.js")
-# narración de la guía (voz/<voz>/<paso>.m4a y voz/marcas.json): una huella para todos los archivos
-hv = hashlib.sha1(b"".join((x.read_bytes()) for x in sorted(list((r / "voz").rglob("*.m4a")) + list((r / "voz").rglob("*.opus")) + list((r / "voz").rglob("marcas.json"))))).hexdigest()[:10]
+# narración de la guía (voz/<voz>/<paso>.mp4 y .ogg y voz/marcas.json): una huella para todos los archivos
+hv = hashlib.sha1(b"".join((x.read_bytes()) for x in sorted(list((r / "voz").rglob("*.mp4")) + list((r / "voz").rglob("*.ogg")) + list((r / "voz").rglob("marcas.json"))))).hexdigest()[:10]
 a, n = re.subn(r'(const VERSIONES = \{[^}]*\bvoz: ")[0-9a-f]*(")', lambda m: m.group(1) + hv + m.group(2), a)
 if n != 1: raise SystemExit("No se encontró la huella de voz en app.js")
 app.write_text(a, encoding="utf-8")

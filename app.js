@@ -2441,8 +2441,8 @@
     const audio = new Audio(); audio.preload = "auto";
     let vozNom = store.get("guiaVozN", "dora"); if (!VOCES_GUIA.some((v) => v[0] === vozNom)) vozNom = "dora";
     let finVoz = 0, durPaso = DUR_PASO, sonando = false, terminado = false;
-    // AAC (m4a, 256 kbps) donde el navegador lo reproduce; si no (p. ej., Chromium sin códecs propietarios), Opus
-    const extVoz = (() => { try { return audio.canPlayType('audio/mp4; codecs="mp4a.40.2"') ? "m4a" : "opus"; } catch (e) { return "m4a"; } })();
+    // AAC 256 kbps en MP4 donde el navegador lo reproduce; si no (p. ej., Chromium sin códecs propietarios), Opus en Ogg
+    const extVoz = (() => { try { return audio.canPlayType('audio/mp4; codecs="mp4a.40.2"') ? "mp4" : "ogg"; } catch (e) { return "mp4"; } })();
     const urlVoz = (i) => BASES[baseOk] + "voz/" + vozNom + "/" + i + "." + extVoz + "?v=" + VERSIONES.voz;
     // marcas de tiempo de cada frase de la narración (para que la imagen cambie cuando la voz lo dice)
     let MARCAS = null;
