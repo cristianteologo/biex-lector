@@ -52,7 +52,7 @@
   // ------------------------------------------------------------------ plantilla (valores de base; plantillas/presentacion.json los reemplaza)
   const CFG_BASE = {
     marca: { sello: "BiEx", titulo: "BIBLIA EXACTA", lema: "Del griego al español, palabra por palabra", nombre: "BiEx – Biblia Exacta" },
-    textos: { entrar: "Entrar", nota: "Con música · toca para comenzar", saltar: "Saltar", saltarTitulo: "Saltar la presentación (Esc)", aria: "Presentación de BiEx – Biblia Exacta" },
+    textos: { entrar: "Entrar", nota: "Con música", saltar: "Saltar", saltarTitulo: "Saltar la presentación (Esc)", aria: "Presentación de BiEx – Biblia Exacta" },
     versos: "datos/destacados.json", // o una lista propia: [{ n, t, cap, v, p: [{ g, tl, tr }] }]
     palabras: [3, 8],
     coreografias: ["remolino", "lluvia", "brasas", "horizonte"],
@@ -110,19 +110,19 @@
     ".pu-in{display:grid;justify-items:center;gap:18px;padding:24px;text-align:center}" +
     ".pu-sello{width:64px;height:64px;border:1px solid var(--oro,#e8cf94);border-radius:50%;display:grid;place-items:center;font:600 22px/1 'BiEx Titulo','Cormorant Garamond',Georgia,serif;color:var(--oro,#e8cf94)}" +
     ".pu-tit{font:300 clamp(22px,5vw,34px)/1.1 'BiEx Titulo','Cormorant Garamond',Georgia,serif;letter-spacing:.42em;margin-right:-.42em;color:#f3ead6}" +
-    ".pu-btn{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:132px;height:132px;margin-top:10px;border-radius:50%;border:1px solid rgba(232,207,148,.7);background:rgba(232,207,148,.08);color:#fff;font:500 13px/1 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;cursor:pointer;transition:background .25s,transform .25s}" +
-    ".pu-btn:hover,.pu-btn:focus-visible{background:rgba(232,207,148,.18);transform:scale(1.04)}.pu-btn:focus-visible{outline:2px solid var(--oro,#e8cf94);outline-offset:6px}" +
-    ".pu-anillo{position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(232,207,148,.55);animation:anillo 2.4s ease-out infinite}" +
-    "@keyframes anillo{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.55);opacity:0}}" +
-    ".pu-tx{margin-right:-.32em}.pu-nota{display:inline-flex;align-items:center;gap:8px;font:400 12px/1.4 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,214,.72)}.pu-nota svg{width:16px;height:16px}" +
+    ".pu-btn{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:260px;height:110px;margin-top:6px;color:#fff;font:500 13px/1 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;cursor:pointer;transition:transform .35s ease,filter .35s ease}" +
+    ".pu-btn::before{content:'';position:absolute;inset:0;background:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgMTEwIj48ZGVmcz48ZmlsdGVyIGlkPSJmIiB4PSItOCUiIHk9Ii00MCUiIHdpZHRoPSIxMTYlIiBoZWlnaHQ9IjE4MCUiIGNvbG9yLWludGVycG9sYXRpb24tZmlsdGVycz0ic1JHQiI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9Ii4wMTggLjExIiBudW1PY3RhdmVzPSIzIiBzZWVkPSI4IiByZXN1bHQ9Im4iLz48ZmVEaXNwbGFjZW1lbnRNYXAgaW49IlNvdXJjZUdyYXBoaWMiIGluMj0ibiIgc2NhbGU9IjEyIiB4Q2hhbm5lbFNlbGVjdG9yPSJSIiB5Q2hhbm5lbFNlbGVjdG9yPSJHIiByZXN1bHQ9ImQiLz48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjAwNCAuNDIiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjMiIHJlc3VsdD0iYyIvPjxmZUNvbG9yTWF0cml4IGluPSJjIiB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMCAwIDAgMCAwICAwIDAgMCAwIDAgIDAgMCAwIDAgMCAgMCAwIDAgLTIuMiAyIiByZXN1bHQ9ImNtIi8+PGZlQ29tcG9zaXRlIGluPSJkIiBpbjI9ImNtIiBvcGVyYXRvcj0iaW4iIHJlc3VsdD0icyIvPjxmZUdhdXNzaWFuQmx1ciBpbj0icyIgc3RkRGV2aWF0aW9uPSIuNiIvPjwvZmlsdGVyPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmM2RmYTYiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iLjEyIiBzdG9wLWNvbG9yPSIjZjNkZmE2IiBzdG9wLW9wYWNpdHk9Ii40NSIvPjxzdG9wIG9mZnNldD0iLjQ1IiBzdG9wLWNvbG9yPSIjZTJjMjdjIiBzdG9wLW9wYWNpdHk9Ii43Ii8+PHN0b3Agb2Zmc2V0PSIuOCIgc3RvcC1jb2xvcj0iI2M5YTg2NSIgc3RvcC1vcGFjaXR5PSIuNSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2M5YTg2NSIgc3RvcC1vcGFjaXR5PSIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJiIiB4PSItMjAlIiB5PSItODAlIiB3aWR0aD0iMTQwJSIgaGVpZ2h0PSIyNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSI5Ii8+PC9maWx0ZXI+PC9kZWZzPjxlbGxpcHNlIGN4PSIxMzAiIGN5PSI1OCIgcng9IjExOCIgcnk9IjI0IiBmaWxsPSJ1cmwoI2cpIiBvcGFjaXR5PSIuMzgiIGZpbHRlcj0idXJsKCNiKSIvPjxwYXRoIGZpbHRlcj0idXJsKCNmKSIgZmlsbD0idXJsKCNnKSIgZD0iTTYgNjBDMzAgNDAgODAgMzQgMTMyIDM1YzUyIDEgOTggNiAxMjIgMTZjLTggNC00IDExIDAgMTVjLTM0IDE0LTkyIDE3LTE0MiAxNUM2NCA4MCAyNiA3NCA2IDYwWiIvPjwvc3ZnPgo=) center/100% 100% no-repeat;animation:respira 3.6s ease-in-out infinite}" +
+    "@keyframes respira{0%,100%{opacity:.82;transform:scaleX(.97)}50%{opacity:1;transform:scaleX(1.03)}}" +
+    ".pu-btn:hover,.pu-btn:focus-visible{transform:scale(1.04);filter:brightness(1.18)}.pu-btn:focus{outline:none}.pu-btn:focus-visible .pu-tx{text-shadow:0 0 16px rgba(255,243,214,.95),0 1px 12px rgba(0,0,0,.55)}" +
+    ".pu-tx{position:relative;margin-right:-.32em;text-shadow:0 1px 12px rgba(0,0,0,.55)}.pu-nota:empty,.pu-nota span:empty{display:none}.pu-nota{display:inline-flex;align-items:center;gap:8px;font:400 12px/1.4 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,214,.72)}.pu-nota svg{width:16px;height:16px}" +
     ".prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,transparent,var(--oro,#e8cf94));opacity:.55;pointer-events:none}" +
     "@media (max-width:420px){button{padding:0 12px;letter-spacing:.18em}}" +
-    "@media (prefers-reduced-motion:reduce){.pu-anillo{animation:none}}" +
+    "@media (prefers-reduced-motion:reduce){.pu-btn::before{animation:none}}" +
     "</style>" +
     '<div class="esc" role="dialog" aria-modal="true" aria-label="' + CFG_BASE.textos.aria + '">' +
     '<canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
     '<div class="puerta" hidden><div class="pu-in"><span class="pu-sello">BiEx</span><span class="pu-tit">BIBLIA EXACTA</span>' +
-    '<button class="pu-btn" type="button"><span class="pu-anillo" aria-hidden="true"></span><span class="pu-tx">' + CFG_BASE.textos.entrar + '</span></button>' +
+    '<button class="pu-btn" type="button"><span class="pu-tx">' + CFG_BASE.textos.entrar + '</span></button>' +
     '<span class="pu-nota">' + ICO_SON + '<span>' + CFG_BASE.textos.nota + '</span></span></div></div>' +
     '<div class="ui"><button class="sal" type="button" title="' + CFG_BASE.textos.saltarTitulo + '"><span>' + CFG_BASE.textos.saltar + '</span>' + ICO_SALTAR + "</button></div>" +
     '<div class="prog"></div></div>';

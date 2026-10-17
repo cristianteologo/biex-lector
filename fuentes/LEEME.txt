@@ -6,3 +6,7 @@ Fuentes de la presentación de apertura del sitio oficial:
 - intro-codice.woff2 («BiEx Codice»): Gentium Book Plus (SIL International), reducida al griego y al latín que usa la presentación; por ser una versión modificada lleva otro nombre, como pide la licencia (nombres reservados «Gentium» y «SIL»).
 - intro-titulo.woff2, intro-titulo-it.woff2: Cormorant Garamond (The Cormorant Project Authors), redonda y cursiva, reducidas al latín.
 - intro-rotulo.woff2: Jost (The Jost Project Authors), reducida al latín.
+
+BiEx Signos (incrustada en app.css): solo dos signos, 𝔓 (U+1D513) y ℵ (U+2135), tomados de Noto Sans Math
+(Copyright 2022 Google LLC), con licencia SIL Open Font License 1.1 (https://openfontlicense.org). Subconjunto
+renombrado; se distribuye con la misma licencia.

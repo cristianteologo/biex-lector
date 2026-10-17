@@ -32,7 +32,6 @@
   }
 
   var f = document.createElement("link"); f.rel = "stylesheet"; f.href = FUENTES; document.head.appendChild(f);
-  var f2 = document.createElement("link"); f2.rel = "stylesheet"; f2.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+Math&text=%F0%9D%94%93%E2%84%B5&display=swap"; document.head.appendChild(f2);
   var anfitrion = document.createElement("div"); anfitrion.id = "biex-lector";
   anfitrion.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;z-index:2147483000;";
   document.body.appendChild(anfitrion);
@@ -102,7 +101,7 @@
     if (n >= vias.length) return fallo();
     marco = document.createElement("iframe");
     marco.title = "Lector y analizador de BiEx";
-    marco.setAttribute("allow", "clipboard-write; web-share");
+    marco.setAttribute("allow", "clipboard-write; web-share; fullscreen"); marco.setAttribute("allowfullscreen", "");
     vias[n](marco);
     var este = marco;
     function siguiente() { if (!listo && marco === este) intentar(n + 1, inicio); }
@@ -135,6 +134,7 @@
     requestAnimationFrame(function () { velo.classList.add("b"); try { marco && marco.focus(); } catch (e) { /* ignorar */ } });
   }
   function cerrar() {
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {}); } catch (e) { /* ignorar */ }
     velo.classList.remove("b");
     setTimeout(function () { velo.classList.remove("a"); }, 250);
     document.documentElement.style.overflow = desborde;
@@ -147,10 +147,13 @@
     if (!marco || e.source !== marco.contentWindow || !e.data) return;
     if (e.data.biex === "listo") { listo = true; clearTimeout(reloj); clearTimeout(reloj2); velo.classList.add("listo"); }
     else if (e.data.biex === "cerrar") cerrar();
+    // lectura inmersiva: el lector lo pide con el primer toque (gesto de la persona); el navegador retira sus barras
+    else if (e.data.biex === "pantalla") { try { if (document.fullscreenEnabled && !document.fullscreenElement && velo.requestFullscreen) velo.requestFullscreen({ navigationUI: "hide" }).then(function () { setTimeout(escalar, 60); }, function () {}); } catch (er) { /* sin pantalla completa */ } }
     else if (e.data.biex === "error" && !/fonts\.googleapis/.test(e.data.m)) errores.push(String(e.data.m));
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && velo.classList.contains("a")) cerrar(); });
   window.addEventListener("resize", escalar);
+  document.addEventListener("fullscreenchange", function () { setTimeout(escalar, 60); });
   if (window.visualViewport) visualViewport.addEventListener("resize", escalar);
   // Al bajar por la página el acceso se recoge en su sello; al subir se despliega
   var yAnt = window.scrollY || 0;

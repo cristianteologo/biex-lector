@@ -19,10 +19,10 @@ El sitio en Wix carga estos archivos. Se generan automáticamente; no se editan 
 
 Texto griego y datos morfológicos: TAGNT de STEPBible.org (Tyndale House, Cambridge), MACULA Greek Linguistic Datasets (Biblica) y SBLGNT (Society of Biblical Literature y Logos Bible Software), con licencia CC BY 4.0.
 
-Transcripciones de los manuscritos: Center for New Testament Restoration (CNTR, Alan Bunning), con licencia CC BY-SA 4.0. Los datos derivados de `datos/manuscritos/` (colación frente al texto base) se publican con la misma licencia, CC BY-SA 4.0.
+Transcripciones de los manuscritos: Center for New Testament Restoration [Centro para la Restauración de la Nueva Voluntad] (CNTR, Alan Bunning), con licencia CC BY-SA 4.0. Los datos derivados de `datos/manuscritos/` (colación frente al texto base) se publican con la misma licencia, CC BY-SA 4.0.
 
 Buscador: para reconocer el vocabulario con que se recuerda un verso, el índice guarda raíces de palabras de Reina-Valera 1909 y 1865, World English Bible, King James Version y Berean Standard Bible (dominio público) y de la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0). Ninguno de esos textos se muestra.
 
-Fechas de escritura de la línea del tiempo: J. A. T. Robinson, *Redating the New Testament* (1976).
+Fechas de escritura de la línea del tiempo: John Arthur Thomas Robinson [J. A. T. Robinson], *Redating the New Testament* [Nueva datación de la Nueva Voluntad] (1976).
 
 Traducción, transliteración y análisis: BiEx – Biblia Exacta ©™. Todos los derechos reservados.
