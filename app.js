@@ -1209,7 +1209,7 @@
         }
         if (ch === "¯") { const u = w.lastChild; if (u && u.nodeType === 3 && u.nodeValue) { const l = u.nodeValue.slice(-1); u.nodeValue = u.nodeValue.slice(0, -1); w.append(h("span", { class: "ov", text: l })); } continue; }
         if (ch === "" || /[-]/.test(ch)) { w.append(h("span", { class: "abr", title: "abreviatura", text: "ΜΟΥ" })); hayLetras = true; continue; }
-        if (ch === "�") { w.append("?"); hayLetras = true; continue; }
+        if (ch === "\uFFFD") { w.append("?"); hayLetras = true; continue; }
         if (LETRA_MS.test(ch) || /[α-ω]/.test(ch)) {
           if (rec && tok[i + 1] !== "^") cerrarRec();
           const L = ch === "σ" || ch === "ς" || ch === "ϲ" ? "Ϲ" : ch.toUpperCase();
