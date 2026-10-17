@@ -1516,7 +1516,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "23a490b7e4" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "23a490b7e4", voz: "17270d3826" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2107,13 +2107,13 @@
         if (k === ult) return; ult = k;
         [...chips.children].forEach((c, i) => c.classList.toggle("on", i === k));
         const o = ords[k][0], LO = o === "tradicional" ? D.libros : CRONO.ordenes[o].map(libroDe);
-        lista.replaceChildren(...LO.slice(0, 5).map((b, i) => h("span", { style: "--i:" + i }, h("em", { text: String(i + 1).padStart(2, "0") }), h("b", { text: b.n }), fechaEscrito(b) ? h("small", { text: "c. " + fechaEscrito(b).replace(/^c\. /, "") }) : null)));
+        lista.replaceChildren(...LO.slice(0, 4).map((b, i) => h("span", { style: "--i:" + i }, h("em", { text: String(i + 1).padStart(2, "0") }), h("b", {}, b.t || b.n, b.t ? h("i", { text: b.n }) : null), fechaEscrito(b) ? h("small", { text: "c. " + fechaEscrito(b).replace(/^c\. /, "") }) : null)));
       };
     },
     verso(el) {
       const ws = (D.portada && D.portada.p ? D.portada.p : []).slice(0, 4);
       const lineas = h("div", { class: "gv-lineas" }, [0, 1, 2].map((i) => h("div", { class: "gv-l" }, h("em", { text: String(i + 1) }), h("span", {}, h("i"), h("i"), h("i")))));
-      const hoja = h("div", { class: "gv-hoja" }, ws.map((w) => h("span", { class: "gv-w" }, h("b", { lang: "grc", text: w.g }), h("small", { text: glosa(w.tr)[0] }))));
+      const hoja = h("div", { class: "gv-hoja" }, h("i", { class: "gv-asa" }), h("div", { class: "gv-ws" }, ws.map((w) => h("span", { class: "gv-w" }, h("b", { lang: "grc", text: w.g }), h("small", { text: glosa(w.tr)[0] })))));
       const dedo = h("span", { class: "g-dedo" });
       el.append(h("div", { class: "gv" }, lineas, hoja, dedo));
       return (t) => {
@@ -2133,7 +2133,8 @@
       return (t) => carta.classList.toggle("vuelta", t >= 99 || t > 1.8);
     },
     corchetes(el) {
-      const txt = h("p", { class: "gc-tx vt" }), modo = h("span", { class: "gc-modo" });
+      const txt = h("p", { class: "gc-tx vt" });
+      const modo = h("div", { class: "gc-seg" }, ["Todas", "La primera", "Solo la base"].map((x) => h("span", { text: x })));
       el.append(h("div", { class: "gc" }, modo, txt));
       let L = null, ult = "";
       lectura("MRK").then((Lc) => { L = (Lc.caps[2] || []).find((x) => x.v === 5) || null; ult = ""; }).catch(() => {});
@@ -2142,7 +2143,7 @@
         const k = t >= 99 ? 1 : Math.floor(t / 2.6) % modos.length;
         const clave = k + (L ? "L" : "");
         if (clave === ult) return; ult = clave;
-        modo.textContent = modos[k][1];
+        [...modo.children].forEach((c, i) => c.classList.toggle("on", i === k));
         if (!L) { txt.textContent = "…"; return; }
         const antes = prefs.cor; prefs.cor = modos[k][0];
         try { txt.replaceChildren(txtVerso(L)); } finally { prefs.cor = antes; }
@@ -2168,7 +2169,7 @@
       return (t) => { el.classList.toggle("p1", t >= 99 || t > 0.4); el.classList.toggle("p2", t >= 99 || t > 2.6); };
     },
     tiempo(el) {
-      const marcas = [[-6, "c. 6 " + ERA_A], [30, "c. 30"], [50, "50"], [68, "68"], [70, "70 " + ERA_D]];
+      const marcas = [[-6, "c. 6 " + ERA_A], [30, "c. 30"], [50, "50"], [70, "70 " + ERA_D]];
       const eje = h("div", { class: "gt-eje" }, marcas.map(([a, x]) => h("span", { class: a === 70 ? "clave" : "", style: "left:" + ((a + 8) / 80 * 100) + "%", text: x })), h("i", { class: "gt-cursor" }));
       el.append(h("div", { class: "gt" }, eje, h("p", { class: "gt-n", text: "Año 70: destrucción del templo" })));
       return (t) => {
@@ -2189,60 +2190,8 @@
       };
     },
   };
-  // Voz de la guía: la mejor voz en español del dispositivo (las neuronales o «naturales» primero; acento latinoamericano
-  // antes que el de España), frase por frase para que ningún navegador corte el final, y aviso cuando termina de hablar.
-  const VOZ = { lista: [] };
-  function cargarVoces() {
-    try { VOZ.lista = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter((x) => /^es(-|_|$)/i.test(x.lang)); } catch (e) { VOZ.lista = []; }
-    return VOZ.lista;
-  }
-  try { if (window.speechSynthesis) { cargarVoces(); speechSynthesis.addEventListener("voiceschanged", cargarVoces); } } catch (e) { /* sin voz */ }
-  function puntajeVoz(v) {
-    const n = (v.name || "") + " " + (v.voiceURI || "");
-    let p = 0;
-    if (/natural|neural|wavenet|premium|enhanced|mejorad|studio/i.test(n)) p += 60;
-    if (/online|google|microsoft|siri|apple/i.test(n)) p += 18;
-    if (v.localService === false) p += 10;
-    if (/es[-_]CO/i.test(v.lang)) p += 14; else if (/es[-_](419|MX|US|AR|CL|PE|VE|EC|UY)/i.test(v.lang)) p += 11; else if (/es[-_]ES/i.test(v.lang)) p += 6;
-    if (/espeak|compact|eloquence|robot|grandpa|grandma|novelty|bad news|bells|whisper|zarvox/i.test(n)) p -= 80;
-    return p;
-  }
-  function mejorVoz() {
-    const vs = VOZ.lista.length ? VOZ.lista : cargarVoces();
-    const elegida = store.get("guiaVozNombre", "");
-    const fija = elegida && vs.find((x) => x.name === elegida);
-    return fija || vs.slice().sort((a, b) => puntajeVoz(b) - puntajeVoz(a))[0] || null;
-  }
-  // Divide en frases y las lee una tras otra; fin() se llama cuando termina la última
-  function locutor() {
-    const L = { frases: [], i: 0, activo: false, enPausa: false, fin: null, gen: 0 };
-    const decir = () => {
-      if (!L.activo || L.enPausa) return;
-      if (L.i >= L.frases.length) { L.activo = false; const f = L.fin; L.fin = null; if (f) f(); return; }
-      const g = L.gen, u = new SpeechSynthesisUtterance(L.frases[L.i]);
-      const v = mejorVoz(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "es-419";
-      u.rate = v && puntajeVoz(v) >= 60 ? 1 : 0.96; u.pitch = 1;
-      let hecho = false, seg = 0;
-      const sigue = () => { if (hecho || g !== L.gen) return; hecho = true; clearTimeout(seg); L.i++; setTimeout(decir, 240); };
-      u.onend = sigue; u.onerror = sigue;
-      // si el navegador nunca avisa del final, se sigue por tiempo estimado
-      seg = setTimeout(sigue, 2500 + L.frases[L.i].length * 95);
-      try { speechSynthesis.speak(u); } catch (e) { sigue(); }
-    };
-    L.hablar = (texto, fin) => {
-      L.callar();
-      if (!window.speechSynthesis) { if (fin) fin(); return; }
-      L.frases = String(texto).replace(/[«»]/g, "").split(/(?<=[.!?:;])\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/).map((x) => x.trim()).filter(Boolean);
-      L.i = 0; L.activo = true; L.enPausa = false; L.fin = fin || null; L.gen++;
-      decir();
-    };
-    L.callar = () => { L.gen++; L.activo = false; L.enPausa = false; L.fin = null; try { speechSynthesis.cancel(); } catch (e) { /* nada */ } };
-    // pausa: se corta la frase en curso y al seguir se repite desde su comienzo (pause/resume no es fiable en móviles)
-    L.pausar = () => { if (!L.activo) return; L.gen++; L.enPausa = true; try { speechSynthesis.cancel(); } catch (e) { /* nada */ } };
-    L.seguir = () => { if (!L.enPausa) return; L.enPausa = false; L.gen++; decir(); };
-    L.estimado = (texto) => 1.2 + String(texto).length / 14.5;
-    return L;
-  }
+  // Narración de la guía: grabada con una voz neuronal (voz/<voz>/<paso>.mp3), igual en todos los dispositivos.
+  const VOCES_GUIA = [["dora", "Voz femenina"], ["alex", "Voz masculina"]];
   function abrirGuia(inicio) {
     let k = Math.max(0, Math.min(PASOS_GUIA.length - 1, inicio || 0)), t0 = performance.now(), pausa = quieto(), voz = !!store.get("guiaVoz", false), raf = 0, tick = null, transcurrido = 0;
     const escena = h("div", { class: "g-escena", "aria-hidden": "true" });
@@ -2252,39 +2201,42 @@
     const btnPausa = h("button", { class: "btn-icono", type: "button" });
     const btnVoz = h("button", { class: "btn chico", type: "button" });
     const btnIr = h("button", { class: "btn chico oro", type: "button" });
-    const loc = locutor();
-    // con voz, el paso dura lo que tarde en leerse completo y una pausa breve; sin voz, el tiempo fijo
-    let finVoz = 0, durPaso = DUR_PASO;
-    const textoPaso = () => PASOS_GUIA[k].t + ". " + PASOS_GUIA[k].d;
+    // con voz, el paso dura lo que dura su narración y una pausa breve; el reloj de la animación arranca cuando la voz empieza a
+    // sonar, así imagen y voz van juntas. Sin voz, el tiempo fijo.
+    const audio = new Audio(); audio.preload = "auto";
+    let vozNom = store.get("guiaVozN", "dora"); if (!VOCES_GUIA.some((v) => v[0] === vozNom)) vozNom = "dora";
+    let finVoz = 0, durPaso = DUR_PASO, sonando = false, terminado = false;
+    const urlVoz = (i) => BASES[baseOk] + "voz/" + vozNom + "/" + i + ".mp3?v=" + VERSIONES.voz;
     const hablar = () => {
-      finVoz = 0;
-      if (!voz || !window.speechSynthesis) { durPaso = DUR_PASO; return; }
-      durPaso = Math.max(DUR_PASO, loc.estimado(textoPaso()) + 1.4);
+      finVoz = 0; durPaso = DUR_PASO; sonando = false;
+      try { audio.pause(); } catch (e) { /* nada */ }
+      if (!voz) return;
       const paso = k;
-      loc.hablar(textoPaso(), () => { if (paso === k) finVoz = performance.now(); });
+      audio.onloadedmetadata = () => { if (paso === k && isFinite(audio.duration)) durPaso = Math.max(DUR_PASO * 0.75, audio.duration + 1.2); };
+      audio.onplaying = () => { if (paso !== k) return; if (!sonando) { sonando = true; t0 = performance.now() - audio.currentTime * 1000; } };
+      audio.onended = () => { if (paso === k) finVoz = performance.now(); };
+      audio.onerror = () => { if (paso === k) { durPaso = DUR_PASO; finVoz = performance.now() + (DUR_PASO - 1.2) * 1000; } };
+      audio.src = urlVoz(k);
+      if (!pausa) { const pr = audio.play(); if (pr && pr.catch) pr.catch(() => { if (paso === k) finVoz = performance.now() + (DUR_PASO - 1.2) * 1000; }); }
     };
-    const selVoz = h("select", { class: "g-voces", "aria-label": "Voz de la guía", hidden: true, onchange: () => { store.set("guiaVozNombre", selVoz.value); if (voz) { t0 = performance.now(); transcurrido = 0; hablar(); } } });
-    const pintarVoces = () => {
-      const vs = (VOZ.lista.length ? VOZ.lista : cargarVoces()).slice().sort((a, b) => puntajeVoz(b) - puntajeVoz(a));
-      selVoz.hidden = !voz || vs.length < 2;
-      if (selVoz.hidden) return;
-      const actual = mejorVoz();
-      selVoz.replaceChildren(...vs.map((v) => h("option", { value: v.name, selected: !!(actual && v.name === actual.name), text: v.name.replace(/^(Microsoft|Google|Apple)\s+/, "").replace(/\s*-\s*Spanish.*$/i, "") + " · " + v.lang })));
-    };
-    try { if (window.speechSynthesis) speechSynthesis.addEventListener("voiceschanged", pintarVoces); } catch (e) { /* nada */ }
+    const selVoz = h("select", { class: "g-voces", "aria-label": "Voz de la guía", hidden: true, onchange: () => { vozNom = selVoz.value; store.set("guiaVozN", vozNom); if (voz) { t0 = performance.now(); transcurrido = 0; hablar(); } } },
+      VOCES_GUIA.map(([v, t]) => h("option", { value: v, selected: v === vozNom, text: t })));
+    const pintarVoces = () => { selVoz.hidden = !voz; };
     const pintarBotones = () => {
-      btnPausa.replaceChildren(svg(pausa ? ICO.play : ICO.pausa)); btnPausa.setAttribute("aria-label", pausa ? "Seguir" : "Pausar"); btnPausa.title = pausa ? "Seguir" : "Pausar";
+      const et = terminado ? "Ver de nuevo" : pausa ? "Seguir" : "Pausar"; btnPausa.replaceChildren(svg(pausa ? ICO.play : ICO.pausa)); btnPausa.setAttribute("aria-label", et); btnPausa.title = et;
       btnVoz.replaceChildren(svg(ICO.voz), voz ? "Voz: activada" : "Escuchar en voz alta"); btnVoz.setAttribute("aria-pressed", String(voz));
       pintarVoces();
     };
-    function ir(i) {
+    function ir(i, auto) {
       k = (i + PASOS_GUIA.length) % PASOS_GUIA.length;
+      // cambiar de paso a mano (flechas, puntos, teclado) siempre reproduce imagen y voz desde el comienzo del paso
+      if (!auto && (pausa || terminado) && !quieto()) { pausa = false; terminado = false; pintarBotones(); }
       const p = PASOS_GUIA[k];
       tit.textContent = p.t; desc.textContent = p.d; num.textContent = "Paso " + (k + 1) + " de " + PASOS_GUIA.length;
       [...puntos.children].forEach((b, j) => b.setAttribute("aria-selected", String(j === k)));
       escena.replaceChildren(); escena.className = "g-escena g-" + p.e;
       tick = ESCENAS[p.e] ? ESCENAS[p.e](escena) : null;
-      btnIr.replaceChildren(svg(ICO.seguir), p.ir[0]);
+      btnIr.replaceChildren(svg(ICO.seguir), ...textoNp(p.ir[0]));
       btnIr.onclick = () => {
         const x = p.ir[1];
         if (x.startsWith("?q=")) return abrirBusqueda(x.slice(3));
@@ -2299,21 +2251,26 @@
     }
     const bucle = (ahora) => {
       raf = requestAnimationFrame(bucle);
-      if (!modal.open) { cancelAnimationFrame(raf); loc.callar(); return; }
-      if (!caja.isConnected) { if (!loc.enPausa) loc.pausar(); t0 = ahora - transcurrido * 1000; return; } // otra vista encima (p. ej., las opciones): en pausa
+      if (!modal.open) { cancelAnimationFrame(raf); audio.pause(); return; }
+      if (!caja.isConnected) { if (!audio.paused) audio.pause(); t0 = ahora - transcurrido * 1000; return; } // otra vista encima (p. ej., las opciones): en pausa
       if (pausa) { t0 = ahora - transcurrido * 1000; if (finVoz) finVoz = ahora - Math.min(ahora - finVoz, 1100); return; }
-      if (loc.enPausa) loc.seguir();
+      const habla = voz && !audio.error;
+      if (habla && audio.paused && !finVoz && audio.src) { const pr = audio.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      // con voz, la animación espera a que la voz empiece a sonar (como mucho 1,5 s)
+      if (habla && !sonando && !finVoz && ahora - t0 < 1500) { t0 = ahora - transcurrido * 1000; return; }
       transcurrido = Math.max(0, (ahora - t0) / 1000);
       if (tick && !quieto()) tick(transcurrido);
-      // con voz: se avanza cuando terminó de hablar (y pasó la pausa) o, si el aviso no llega, por el tiempo estimado con margen
-      const habla = voz && window.speechSynthesis;
-      const listo = habla ? ((finVoz && ahora - finVoz >= 1100 && transcurrido >= DUR_PASO * 0.6) || transcurrido >= durPaso + 6) : transcurrido >= DUR_PASO;
-      const total = habla ? (finVoz ? Math.max(transcurrido, 0.1) + Math.max(0, 1.1 - (ahora - finVoz) / 1000) : durPaso) : DUR_PASO;
-      barra.firstChild.style.width = Math.min(100, transcurrido / total * 100) + "%";
-      if (listo) { if (k < PASOS_GUIA.length - 1) ir(k + 1); else { pausa = true; barra.firstChild.style.width = "100%"; pintarBotones(); } }
+      const listo = habla ? ((finVoz && ahora - finVoz >= 1100 && transcurrido >= DUR_PASO * 0.55) || transcurrido >= durPaso + 5) : transcurrido >= DUR_PASO;
+      barra.firstChild.style.width = Math.min(100, transcurrido / (habla ? durPaso : DUR_PASO) * 100) + "%";
+      if (listo) { if (k < PASOS_GUIA.length - 1) ir(k + 1, true); else { pausa = true; terminado = true; barra.firstChild.style.width = "100%"; pintarBotones(); } }
     };
-    btnPausa.onclick = () => { pausa = !pausa; if (pausa) loc.pausar(); else loc.seguir(); pintarBotones(); };
-    btnVoz.onclick = () => { voz = !voz; store.set("guiaVoz", voz); pintarBotones(); if (voz) { t0 = performance.now(); transcurrido = 0; hablar(); } else { loc.callar(); durPaso = DUR_PASO; } };
+    btnPausa.onclick = () => {
+      if (terminado) { ir(0); return; }
+      pausa = !pausa;
+      if (pausa) audio.pause(); else if (voz && !finVoz && audio.src) { const pr = audio.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      pintarBotones();
+    };
+    btnVoz.onclick = () => { voz = !voz; store.set("guiaVoz", voz); pintarBotones(); if (voz) { t0 = performance.now(); transcurrido = 0; if (tick && !quieto()) tick(0); hablar(); } else { audio.pause(); durPaso = DUR_PASO; } };
     const caja = h("div", { class: "guia", tabindex: "-1" },
       h("div", { class: "g-marco" }, escena),
       h("div", { class: "g-texto", "aria-live": "polite" }, num, tit, desc),
@@ -2328,7 +2285,7 @@
       else if (e.key === "ArrowLeft") { e.preventDefault(); ir(k - 1); }
       else if (e.key === " " && e.target === caja) { e.preventDefault(); btnPausa.onclick(); }
     });
-    abrirModal(() => cajaModal(cabModal("Guía del lector", "Cómo usar el lector y analizador"), caja), () => { cancelAnimationFrame(raf); loc.callar(); try { speechSynthesis.removeEventListener("voiceschanged", pintarVoces); } catch (e) { /* nada */ } });
+    abrirModal(() => cajaModal(cabModal("Guía del lector", "Cómo usar el lector y analizador"), caja), () => { cancelAnimationFrame(raf); audio.pause(); audio.removeAttribute("src"); });
     pintarBotones(); ir(k);
     raf = requestAnimationFrame(bucle);
     setTimeout(() => { try { caja.focus({ preventScroll: true }); } catch (e) { /* nada */ } }, 60);
