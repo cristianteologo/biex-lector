@@ -809,9 +809,9 @@
         h("p", { class: "creditos" }, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
           h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " (Biblica) y ",
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
-          "Transcripciones de los manuscritos: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración de la Nueva Voluntad] (Alan Bunning), con licencia CC BY-SA 4.0; la comparación con el texto base se publica con la misma licencia.", h("br"),
+          "Transcripciones de los manuscritos: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración del Nuevo Testamento] (Alan Bunning), con licencia CC BY-SA 4.0; la comparación con el texto base se publica con la misma licencia.", h("br"),
           "Para reconocer las palabras con que se recuerda un verso, el buscador usa, sin mostrarlas, las traducciones de dominio público Reina-Valera 1909 y 1865, World English Bible [Biblia Mundial en Inglés], King James Version [Versión del Rey Jacobo] y Berean Standard Bible [Biblia Estándar de Berea], y la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0).", h("br"),
-          "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación de la Nueva Voluntad] (1976)."))),
+          "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación del Nuevo Testamento] (1976)."))),
       modal);
     const tg = store.get("tema", null);
     if (tg === "light" || tg === "dark") document.documentElement.setAttribute("data-theme", tg);
@@ -962,7 +962,7 @@
           h("a", { class: "btn", href: "#/" + P.c + "/" + P.cap + "/a/" + P.v }, svg(ICO.lupa), "Analizar palabra por palabra"),
           h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros")))),
       h("section", { class: "cifras" }, h("div", { class: "in" },
-        h("div", { class: "c" }, h("b", { text: pct(D.palabras) }), h("span", { text: "de las palabras ya traducidas en el texto base" })),
+        h("div", { class: "c" }, h("b", { text: pct(D.palabras) }), h("span", { text: "de las palabras ya traducidas en el texto base (preliminar, en revisión)" })),
         h("div", { class: "c" }, h("b", { text: fmt(D.palabrasTotal) }), h("span", { text: "palabras griegas analizadas" })),
         h("div", { class: "c" }, h("b", { text: fmt(D.lemas) }), h("span", { text: "lemas distintos" })),
         h("div", { class: "c" }, h("b", { text: fmt(D.legibles) }), h("span", { text: "versos que ya se pueden leer" })))),
@@ -1101,7 +1101,7 @@
           h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null)),
         fechaEscrito(b) ? h("a", { class: "banda-fecha", href: "#/cronologia" }, svg(ICO.tiempo), "Escrito c. " + fechaEscrito(b).replace(/^c\. /, "") + (/H\.D\./.test(fechaEscrito(b)) ? "" : " " + ERA_D) + (fechaNarra(b) ? " · narra " + fechaNarra(b) : "")) : null),
       h("div", { class: "banda-cifras" },
-        h("div", { class: "anillo" }, anilloSvg(p), h("p", { text: "de las palabras ya traducidas en el texto base" })),
+        h("div", { class: "anillo" }, anilloSvg(p), h("p", { text: "de las palabras ya traducidas en el texto base (preliminar, en revisión)" })),
         h("div", { class: "mini-cifras" },
           h("div", {}, h("b", { text: fmt(b.total) }), "versos"),
           h("div", {}, h("b", { text: fmt(b.nPal || 0) }), "palabras"),
@@ -1462,7 +1462,7 @@
     if (id === "03") out.push(["DigiVatLib · Bibliotheca Apostolica Vaticana [Biblioteca Vaticana] (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
     if (id === "05") out.push(["Cambridge Digital Library [Biblioteca Digital de Cambridge]", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
     const doc = /^P\d+$/.test(id) ? 10000 + +id.slice(1) : /^0\d+$/.test(id) ? 20000 + +id : null;
-    if (doc) out.push(["Imágenes y transcripción del Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual de la Nueva Voluntad], Münster", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
+    if (doc) out.push(["Imágenes y transcripción del Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual del Nuevo Testamento], Münster", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
     return out;
   }
   const palBase = (toks, k) => (toks && toks[k] ? T.F[toks[k][0]] : "");
@@ -1610,7 +1610,7 @@
       const seg = h("div", { class: "seg", role: "group", "aria-label": "Nivel de detalle" }, [["sencillo", "Sencillo"], ["experto", "Aparato crítico"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(modo === k), onclick: () => { prefs.msModo = k; guardarPrefs(); reemplazar(vistaManuscritos(ctx)); } }, t)));
       return cajaModal(cabModal("Manuscritos · " + refCorta(b, cap, v), "Los declarantes griegos más antiguos (hasta c. 400 d.H.D.)"),
         h("div", {}, h("div", { class: "ms-barra" }, elegirTextoMs(ctx), seg), cuerpo,
-          h("p", { class: "creditos-ms" }, "Transcripciones: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración de la Nueva Voluntad] (CC BY-SA 4.0). Fechas aproximadas.")));
+          h("p", { class: "creditos-ms" }, "Transcripciones: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración del Nuevo Testamento] (CC BY-SA 4.0). Fechas aproximadas.")));
     };
   }
   // Elegir qué texto revisar en los manuscritos: libro, capítulo y verso
