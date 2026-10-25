@@ -117,7 +117,28 @@
     ".pu-tx{position:relative;margin-right:-.32em;text-shadow:0 1px 12px rgba(0,0,0,.55)}.pu-nota:empty,.pu-nota span:empty{display:none}.pu-nota{display:inline-flex;align-items:center;gap:8px;font:400 12px/1.4 'BiEx Rotulo',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:rgba(236,229,214,.72)}.pu-nota svg{width:16px;height:16px}" +
     ".prog{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,transparent,var(--oro,#e8cf94));opacity:.55;pointer-events:none}" +
     "@media (max-width:420px){button{padding:0 12px;letter-spacing:.18em}}" +
-    "@media (prefers-reduced-motion:reduce){.pu-btn::before{animation:none}}" +
+"@media (prefers-reduced-motion:reduce){.pu-btn::before{animation:none}}" +
+    /* Saltar: discreto (la mitad), con zona de toque amplia */
+    ".sal{position:relative;min-height:20px;padding:0 9px;gap:5px;font-size:8.5px;letter-spacing:.2em;opacity:.72;border-color:rgba(232,207,148,.22)}.sal svg{width:10px;height:10px}.sal::after{content:'';position:absolute;inset:-12px -10px}.sal:hover,.sal:focus-visible{opacity:1}" +
+    /* Puerta: letras hebreas y griegas que flotan por delante y por detrás, holográficas, con destellos */
+    ".pu-in{position:relative;z-index:2}.pu-capa{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}.pu-capa.frente{z-index:3}" +
+    ".pu-l{position:absolute;left:0;top:0;line-height:1;font-family:'BiEx Hebreo','Frank Ruhl Libre','BiEx Codice','Noto Serif Hebrew',serif;font-weight:500;" +
+    "background:linear-gradient(115deg,#fff6d8 0%,#e8cf94 18%,#9fe8ff 34%,#f2d0ff 48%,#ffe9a8 62%,#c9a865 78%,#fff6d8 100%);background-size:280% 100%;" +
+    "-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 5px rgba(232,207,148,.4));" +
+    "animation:pu-flota var(--d) ease-in-out var(--r) infinite alternate,pu-holo var(--h) linear var(--r) infinite;will-change:transform}" +
+    ".frente .pu-l{filter:drop-shadow(0 0 8px rgba(232,207,148,.35))}" +
+    "@keyframes pu-flota{from{transform:translate3d(var(--x0),var(--y0),0) rotate(var(--g0))}to{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--g1))}}" +
+    "@keyframes pu-holo{to{background-position:280% 0}}" +
+    ".pu-ch{position:absolute;width:var(--t);height:var(--t);margin:calc(var(--t)/-2) 0 0 calc(var(--t)/-2);opacity:0;" +
+    "background:radial-gradient(circle,#fff 0 9%,rgba(255,240,200,.85) 14%,transparent 34%),linear-gradient(90deg,transparent 46%,rgba(255,244,214,.95) 50%,transparent 54%),linear-gradient(0deg,transparent 46%,rgba(255,244,214,.95) 50%,transparent 54%);" +
+    "animation:pu-chispa var(--d) ease-in-out var(--r) infinite}" +
+    "@keyframes pu-chispa{0%,100%{opacity:0;transform:scale(.2) rotate(0deg)}45%{opacity:1;transform:scale(1) rotate(45deg)}60%{opacity:.85;transform:scale(.85) rotate(60deg)}}" +
+    /* Entrar: resplandor que respira y un brillo que lo recorre */
+    ".pu-tx{background:linear-gradient(100deg,#fff 0%,#fff 38%,#ffe3a0 50%,#fff 62%,#fff 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;" +
+    "filter:drop-shadow(0 0 4px rgba(255,236,190,.9)) drop-shadow(0 0 14px rgba(232,207,148,.55));animation:pu-barre 3.4s ease-in-out infinite,pu-resplandor 2.8s ease-in-out infinite}" +
+    "@keyframes pu-barre{0%{background-position:100% 0}60%,100%{background-position:-60% 0}}" +
+    "@keyframes pu-resplandor{0%,100%{filter:drop-shadow(0 0 3px rgba(255,236,190,.75)) drop-shadow(0 0 10px rgba(232,207,148,.4))}50%{filter:drop-shadow(0 0 6px rgba(255,240,205,1)) drop-shadow(0 0 22px rgba(232,207,148,.85))}}" +
+    "@media (prefers-reduced-motion:reduce){.pu-l,.pu-ch,.pu-tx{animation:none}.pu-ch{opacity:.6}}" +
     "</style>" +
     '<div class="esc" role="dialog" aria-modal="true" aria-label="' + CFG_BASE.textos.aria + '">' +
     '<canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
@@ -668,10 +689,45 @@
     clearTimeout(relojPuerta);
     abrirSonido(true);
     puerta.classList.add("fuera");
-    setTimeout(() => { puerta.hidden = true; }, 650);
+    setTimeout(() => { puerta.hidden = true; puerta.querySelectorAll(".pu-capa").forEach((c) => c.remove()); }, 650);
     comenzar();
   }
+  // Letras hebreas y griegas que flotan alrededor de la puerta (detrás y delante del contenido), con destellos
+  const LETRAS_HE = "אבגדהוזחטיכלמנסעפצקרשתםןץףך", LETRAS_GR = "ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπρσφχψω";
+  function letrasPuerta() {
+    if (puerta.querySelector(".pu-capa")) return;
+    try {
+      if (!document.getElementById("biex-letra-hebrea")) {
+        const l = document.createElement("link"); l.id = "biex-letra-hebrea"; l.rel = "stylesheet";
+        l.href = "https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500&display=swap&text=" + encodeURIComponent(LETRAS_HE);
+        document.head.appendChild(l);
+      }
+    } catch (e) { /* sin la letra hebrea: queda la del sistema */ }
+    const az = (a, b) => a + Math.random() * (b - a);
+    const capa = (frente, n) => {
+      const c = document.createElement("div"); c.className = "pu-capa" + (frente ? " frente" : ""); c.setAttribute("aria-hidden", "true");
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement("span"); s.className = "pu-l";
+        const he = Math.random() < 0.5, src = he ? LETRAS_HE : LETRAS_GR;
+        s.textContent = src[Math.floor(Math.random() * src.length)];
+        const x = az(-4, 96), y = az(-4, 96), dx = az(-9, 9), dy = az(-8, 8);
+        s.style.cssText = "--x0:" + x + "vw;--y0:" + y + "vh;--x1:" + (x + dx) + "vw;--y1:" + (y + dy) + "vh;--g0:" + az(-14, 14) + "deg;--g1:" + az(-14, 14) + "deg;" +
+          "--d:" + az(14, 30).toFixed(1) + "s;--h:" + az(5, 11).toFixed(1) + "s;--r:-" + az(0, 30).toFixed(1) + "s;" +
+          "font-size:" + (frente ? az(54, 104) : az(18, 62)).toFixed(0) + "px;opacity:" + (frente ? az(0.12, 0.26) : az(0.26, 0.62)).toFixed(2);
+        c.appendChild(s);
+      }
+      for (let i = 0; i < (frente ? 5 : 11); i++) {
+        const ch = document.createElement("i"); ch.className = "pu-ch";
+        ch.style.cssText = "left:" + az(4, 96) + "%;top:" + az(4, 96) + "%;--t:" + az(10, frente ? 26 : 20).toFixed(0) + "px;--d:" + az(2.4, 4.6).toFixed(1) + "s;--r:-" + az(0, 5).toFixed(1) + "s";
+        c.appendChild(ch);
+      }
+      return c;
+    };
+    puerta.insertBefore(capa(false, MOVIL ? 20 : 30), puerta.firstChild);
+    puerta.appendChild(capa(true, MOVIL ? 6 : 9));
+  }
   function mostrarPuerta() {
+    letrasPuerta();
     puerta.hidden = false;
     listo = true; const c = cortina(); if (c) c.remove();
     GESTOS_PUERTA.forEach((t) => puerta.addEventListener(t, alEntrar, true));

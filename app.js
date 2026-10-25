@@ -1,6 +1,8 @@
 /* BiEx · Lector y Analizador de la Nueva Voluntad. Sin dependencias. */
 (function () {
   "use strict";
+  // hojas de estilo que cargan sin bloquear el dibujo (la página no admite manejadores en línea por su política de seguridad)
+  for (const l of document.querySelectorAll("link[data-asinc]")) { const usar = () => { l.media = "all"; }; if (l.sheet) usar(); else l.addEventListener("load", usar); }
   const BASE = window.BIEX_BASE || "";
   // Fuentes de los datos en orden de preferencia (si la primera falla se usa la siguiente)
   const BASES = Array.isArray(window.BIEX_BASES) && window.BIEX_BASES.length ? window.BIEX_BASES : [BASE];
@@ -10,7 +12,7 @@
   const alPadre = (msg) => { if (!EMBED) return; try { window.parent.postMessage(msg, "*"); } catch (e) { /* ignorar */ } };
   if (EMBED) {
     window.addEventListener("error", (e) => alPadre({ biex: "error", m: String(e.message || "error") + " " + (e.filename || "") + ":" + (e.lineno || "") }));
-    window.addEventListener("message", (e) => { if (e.source === window.parent && e.data && e.data.biex === "ir" && typeof e.data.hash === "string") location.hash = e.data.hash; });
+    window.addEventListener("message", (e) => { if (e.source === window.parent && e.data && e.data.biex === "ir" && typeof e.data.hash === "string" && /^#\/[\w\/.:?=%+\-]{0,160}$/.test(e.data.hash)) location.hash = e.data.hash; });
   }
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
@@ -75,6 +77,8 @@
   const uncial = (s) => sinMarcas(s).toUpperCase().replace(/[’'ʼ]/g, "’");
   // Las direcciones internas usan siempre la dirección completa del documento (funciona también dentro de un marco srcdoc)
   const urlHash = (hh) => location.href.split("#")[0] + hh;
+  // una dirección mal formada (p. ej., «%» suelto) no debe romper el lector
+  const decodificar = (s) => { try { return decodeURIComponent(s); } catch (e) { return String(s).replace(/%(?![0-9a-f]{2})/gi, "%25").replace(/%[0-9a-f]{2}/gi, (m) => { try { return decodeURIComponent(m); } catch (er) { return ""; } }); } };
   const ponerHash = (hh) => { try { history.replaceState(history.state, "", urlHash(hh)); } catch (e) { /* ignorar */ } };
 
   // ------------------------------------------------------------------ datos
@@ -1993,7 +1997,7 @@
       try { history.replaceState(history.state, "", urlHash("#/lema" + (q ? "?" + encodeURIComponent(q) : ""))); } catch (e) { /* ignorar */ }
     };
     let tq = 0; entrada.addEventListener("input", () => { clearTimeout(tq); tq = setTimeout(pintar, 140); });
-    const previo = decodeURIComponent((location.hash.split("?")[1] || "")); if (previo) entrada.value = previo;
+    const previo = decodificar(location.hash.split("?")[1] || ""); if (previo) entrada.value = previo;
     const vistos = store.get("lemasVistos", []).filter((x) => x >= 0 && x < T.L.length).slice(0, 12);
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
       barraVolver(),
@@ -2530,6 +2534,8 @@
       // con voz, la animación espera a que la voz empiece a sonar (como mucho 1,5 s)
       if (habla && !sonando && !finVoz && ahora - t0 < 1500) { t0 = ahora - transcurrido * 1000; return; }
       transcurrido = Math.max(0, (ahora - t0) / 1000);
+      // con la voz sonando, el reloj de la escena es el del propio audio (sincronía exacta aunque el teléfono vaya cargado)
+      if (habla && sonando && !audio.paused && audio.currentTime > 0 && Math.abs(audio.currentTime - transcurrido) < 1.2 && !finVoz) { transcurrido = audio.currentTime; t0 = ahora - transcurrido * 1000; }
       if (tick && !quieto()) tick(transcurrido);
       const listo = habla ? ((finVoz && ahora - finVoz >= 250 && transcurrido >= DUR_PASO * 0.5) || transcurrido >= durPaso + 5) : transcurrido >= DUR_PASO;
       barra.firstChild.style.width = Math.min(100, transcurrido / (habla ? durPaso : DUR_PASO) * 100) + "%";
@@ -2706,7 +2712,7 @@
     setTimeout(abrir, 0);
   }
   function mostrarRuta(hh) {
-    const partes = decodeURIComponent((hh || location.hash).replace(/^#\/?/, "")).split("/").filter((x) => x !== "");
+    const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
     const ruta = "#/" + partes.join("/");
     if (partes[0] === "buscar" && partes.length > 1) return sobrePagina(() => abrirBusqueda(partes.slice(1).join("/")));
     if (partes[0] === "guia") return sobrePagina(() => abrirGuia(+partes[1] || 0));

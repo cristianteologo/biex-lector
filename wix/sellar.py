@@ -21,3 +21,10 @@ for f in ("app.css", "app.js"):
     s = re.sub(r'(["\'])' + re.escape(f) + r'(\?v=[0-9a-f]+)?\1', lambda m: m.group(1) + f + "?v=" + hsh + m.group(1), s)
 idx.write_text(s, encoding="utf-8")
 print("app.js e index.html sellados")
+
+# política de seguridad de index.html: la huella de cada <script> en línea (si cambia uno, se actualiza sola)
+import base64 as _b64
+_ix = (r / "index.html").read_text(encoding="utf-8")
+_hs = " ".join("'sha256-" + _b64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'" for x in re.findall(r"<script>(.*?)</script>", _ix, re.S))
+_ix2 = re.sub(r"(script-src 'self')(?: 'sha256-[A-Za-z0-9+/=]+')*", lambda m: m.group(1) + (" " + _hs if _hs else ""), _ix, count=1)
+if _ix2 != _ix: (r / "index.html").write_text(_ix2, encoding="utf-8"); print("CSP actualizada")
