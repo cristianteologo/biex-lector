@@ -27,8 +27,8 @@
     }
     var c = document.createElement("div");
     c.id = "biex-cortina";
-    c.style.cssText = "position:fixed;inset:0;z-index:2147483600;background:#030308;transition:opacity .5s";
-    (document.body || document.documentElement).appendChild(c);
+    c.style.cssText = "position:fixed;inset:0;z-index:2147483600;background:#030308;box-shadow:0 0 0 100vmax #030308;transition:opacity .5s";
+    document.documentElement.appendChild(c);
     var quitar = function () { if (c.parentNode) { c.style.opacity = "0"; setTimeout(function () { c.remove(); }, 550); } };
     setTimeout(function () { if (!window.__biexIntro) quitar(); }, 4500);
     setTimeout(quitar, 30000);

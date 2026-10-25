@@ -90,8 +90,9 @@
   const cortina = () => document.getElementById("biex-cortina");
   const host = document.createElement("div");
   host.id = "biex-intro";
-  host.style.cssText = "position:fixed;inset:0;z-index:2147483601;pointer-events:auto;contain:strict";
-  (document.body || document.documentElement).appendChild(host);
+  host.style.cssText = "position:fixed;inset:0;z-index:2147483601;pointer-events:auto;contain:layout style size;box-shadow:0 0 0 100vmax #020306";
+  // en <html> y no en <body>: si el sitio transforma o desplaza <body>, la capa sigue fija a la ventana
+  document.documentElement.appendChild(host);
   const raiz = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
   const ICO_SON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
   const ICO_SALTAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6l7 6-7 6zM13 6l7 6-7 6z"/></svg>';
@@ -150,8 +151,31 @@
   const esc = raiz.querySelector(".esc"), cv = raiz.querySelector("canvas"), cx = cv.getContext("2d");
   const ui = raiz.querySelector(".ui"), btnSal = raiz.querySelector(".sal"), prog = raiz.querySelector(".prog"), sr = raiz.querySelector(".sr");
   const puerta = raiz.querySelector(".puerta"), btnPuerta = raiz.querySelector(".pu-btn");
-  const desborde = document.documentElement.style.overflow;
-  document.documentElement.style.overflow = "hidden";
+  // Bloqueo del desplazamiento de la página mientras está la presentación (rueda, teclado, tacto y la barra de la derecha)
+  const BLOQ = [document.documentElement, document.body].filter(Boolean).map((el) => ({ el, v: el.style.getPropertyValue("overflow"), p: el.style.getPropertyPriority("overflow") }));
+  const PXY = [window.scrollX || 0, window.scrollY || 0], PEL = new Map();
+  [document.scrollingElement, document.documentElement, document.body].forEach((el) => { if (el && !PEL.has(el)) PEL.set(el, [el.scrollLeft, el.scrollTop]); });
+  const quieto = (e) => { if (e.cancelable) e.preventDefault(); };
+  const fijar = (e) => {
+    const el = e.target;
+    if (el === document || el === window) { if (window.scrollX !== PXY[0] || window.scrollY !== PXY[1]) window.scrollTo(PXY[0], PXY[1]); return; }
+    if (el && el.nodeType === 1 && el !== host) {
+      if (!PEL.has(el)) PEL.set(el, [0, 0]);
+      const q = PEL.get(el); if (el.scrollLeft !== q[0] || el.scrollTop !== q[1]) { el.scrollLeft = q[0]; el.scrollTop = q[1]; }
+    }
+  };
+  BLOQ.forEach((b) => b.el.style.setProperty("overflow", "hidden", "important"));
+  window.addEventListener("wheel", quieto, { passive: false, capture: true });
+  window.addEventListener("touchmove", quieto, { passive: false, capture: true });
+  document.addEventListener("scroll", fijar, true);
+  window.addEventListener("scroll", fijar, true);
+  function soltarDesplazamiento() {
+    BLOQ.forEach((b) => { if (b.v) b.el.style.setProperty("overflow", b.v, b.p); else b.el.style.removeProperty("overflow"); });
+    window.removeEventListener("wheel", quieto, { capture: true });
+    window.removeEventListener("touchmove", quieto, { capture: true });
+    document.removeEventListener("scroll", fijar, true);
+    window.removeEventListener("scroll", fijar, true);
+  }
 
   let W = 0, H = 0, DPR = 1, K = 1;
   function medir() {
@@ -676,6 +700,24 @@
       new Promise((ok) => setTimeout(() => ok(ya()), conGesto ? 700 : 280)),
     ]);
   }
+  // ¿Suena de verdad? En Edge y otros, el estado puede decir «running» sin que el reloj del audio avance
+  function avanza(ms) {
+    if (!SON) return Promise.resolve(false);
+    const c = SON.ctx, t0 = c.currentTime;
+    return new Promise((ok) => setTimeout(() => ok(c.state === "running" && c.currentTime > t0 + 0.02), ms || 300));
+  }
+  // Tras el toque, si el audio sigue detenido, se rehace (el gesto ya dejó activado el permiso de la página)
+  function asegurarSonido() {
+    avanza(450).then((bien) => {
+      if (bien || fin) return;
+      try { if (SON) SON.ctx.close(); } catch (e) { /* nada */ }
+      SON = null; sonando = false;
+      const S = prepararSonido();
+      if (!S) return;
+      try { const r = S.ctx.resume(); if (r && r.then) r.then(arrancar, () => {}); } catch (e) { /* nada */ }
+      setTimeout(arrancar, 120);
+    });
+  }
   // Puerta «Entrar»: el toque abre el sonido y empieza la presentación desde el principio
   let relojPuerta = 0;
   const GESTOS_PUERTA = ["click", "touchend", "keydown"];
@@ -687,7 +729,7 @@
     if (e.cancelable) e.preventDefault();
     GESTOS_PUERTA.forEach((t) => puerta.removeEventListener(t, alEntrar, true));
     clearTimeout(relojPuerta);
-    abrirSonido(true);
+    abrirSonido(true).then(asegurarSonido);
     puerta.classList.add("fuera");
     setTimeout(() => { puerta.hidden = true; puerta.querySelectorAll(".pu-capa").forEach((c) => c.remove()); }, 650);
     comenzar();
@@ -769,7 +811,7 @@
     document.removeEventListener("visibilitychange", visibilidad);
     window.removeEventListener("resize", alCambiarTam);
     clearTimeout(relojPuerta);
-    document.documentElement.style.overflow = desborde;
+    soltarDesplazamiento();
     const c = cortina(); if (c) c.remove();
     setTimeout(() => { if (SON) { try { SON.ctx.close(); } catch (e) { /* nada */ } } sesionAudio("auto"); }, sonando ? 2800 : 50);
     host.remove();
@@ -1011,7 +1053,7 @@
       if (MODO === "quieta") { comenzar(); try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ } }
       else {
         // si el navegador ya deja sonar, empieza sola con música; si no, la puerta «Entrar»
-        const ok = await abrirSonido(false);
+        const ok = (await abrirSonido(false)) && (await avanza(260));
         if (fin) return;
         if (ok) { comenzar(); try { btnSal.focus({ preventScroll: true }); } catch (e) { /* nada */ } }
         else mostrarPuerta();
