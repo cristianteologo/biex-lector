@@ -53,6 +53,7 @@
     lista: '<path d="M8 6.5h12M8 12h12M8 17.5h12" ' + L1 + '/><circle cx="4.5" cy="6.5" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1" fill="currentColor"/>',
     filtros: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9" ' + L1 + '/><circle cx="15" cy="7" r="2" ' + L1 + '/><circle cx="9" cy="17" r="2" ' + L1 + '/>',
     parrafo: '<path d="M4 6h16M4 10.5h16M4 15h16M4 19.5h10" ' + L1 + '/>',
+    sinopsis: '<rect x="3.5" y="4.5" width="7" height="15" rx="1.2" ' + L1 + '/><rect x="13.5" y="4.5" width="7" height="15" rx="1.2" ' + L1 + '/><path d="M5.5 8.5h3M5.5 12h3M15.5 8.5h3M15.5 12h3M10.5 8.5h3" ' + L1 + '/>',
     compartir: '<circle cx="17.5" cy="5.5" r="2.5" ' + L1 + '/><circle cx="6.5" cy="12" r="2.5" ' + L1 + '/><circle cx="17.5" cy="18.5" r="2.5" ' + L1 + '/><path d="M8.7 10.7l6.6-3.9M8.7 13.3l6.6 3.9" ' + L1 + '/>',
     seguir: '<path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" ' + L1 + '/>',
     opciones: '<path d="M4 7h4M12 7h8M4 17h10M18 17h2" ' + L1 + '/><circle cx="10" cy="7" r="2" ' + L1 + '/><circle cx="16" cy="17" r="2" ' + L1 + '/><path d="M4 12h2M10 12h10" ' + L1 + '/><circle cx="8" cy="12" r="2" ' + L1 + '/>',
@@ -1024,6 +1025,7 @@
           item(ICO.buscar, "Buscador inteligente", "Escribe como lo recuerdes: una escena, un nombre, una cita, una palabra griega o una pregunta. Entiende también las palabras de otras traducciones.", "bq", 2),
           item(ICO.manuscrito, "Manuscritos antiguos", "Cada verso en los papiros y códices más antiguos: qué dicen, en qué difieren y su transcripción letra por letra.", "ms", 3),
           hr(ICO.tiempo, "Línea del tiempo", "Los acontecimientos y la fecha en que se escribió cada libro, hasta la destrucción del templo en el año 70.", "Abrir", "#/cronologia"),
+          hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso.", "Buscar una palabra", "#/lema"),
           hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
           hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia"))));
@@ -1735,7 +1737,8 @@
           L ? h("div", { class: "chip-estado n-" + L.n }, h("i"), estadoEt(L.n) + (L.n === "base" ? " · " + L.k + " % de las palabras ya traducidas" : "")) : null,
           L ? h("p", { class: "fv-es" }, txtVerso(L)) : null,
           h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona),
-          h("div", { class: "bloque" }, h("h4", { text: "En los manuscritos antiguos" }), resumenManuscritos({ b, cap, v: ctx.v }, () => empujar(vistaManuscritos(ctx))))),
+          h("div", { class: "bloque" }, h("h4", { text: "En los manuscritos antiguos" }), resumenManuscritos({ b, cap, v: ctx.v }, () => empujar(vistaManuscritos(ctx)))),
+          enlaceFuenteQ(b.c, cap, ctx.v)),
         h("div", { class: "m-pie" },
           L ? h("button", { class: "btn chico", type: "button", onclick: () => compartir(nombreLibro(b) + " " + cap + ":" + ctx.v, textoPlano(L.t), "#/" + b.c + "/" + cap + "/l/" + ctx.v) }, svg(ICO.compartir), "Compartir") : null,
           h("button", { class: "btn chico", type: "button", onclick: () => empujar(vistaManuscritos(ctx)) }, svg(ICO.manuscrito), "Manuscritos"),
@@ -2270,6 +2273,173 @@
     else alTope();
   }
 
+  // ------------------------------------------------------------------ la fuente Q (datos/fuente_q.json)
+  // Sinopsis de la doble tradición calculada sobre el griego del lector: hipótesis, argumentos y su historia
+  const Q_LIB = { MAT: "Mattáy", MRK: "Μᾶrκος", LUK: "Lουκᾶς", Q: "Q", M: "M", L: "L" };
+  let QD = null, QIDX = null;
+  // «MAT 5:3-4; 5:6» → partes con su libro y su ruta
+  const qPartes = (txt) => { let lib = null; return String(txt || "").split(";").map((p) => { p = p.trim(); const m = p.match(/^([A-Z]{3})\s+(.*)$/); if (m) { lib = m[1]; p = m[2]; } return { lib, txt: p, r: parsearRefs(lib + " " + p)[0] }; }).filter((x) => x.r); };
+  const qRefs = (txt, conLibro) => h("span", { class: "q-refs" }, qPartes(txt).map((x, i) => [i ? ", " : null, h("a", { href: refRuta(x.r), text: (i === 0 && conLibro !== false ? Q_LIB[x.lib] + " " : "") + x.txt })]));
+  const qTexto = (t) => String(t).split(/(\[\[[^\]]+\]\])/).filter(Boolean).map((x) => { const m = x.match(/^\[\[(.+)\]\]$/); return m ? qRefs(m[1]) : x; });
+  const qLey = (items) => h("div", { class: "q-ley", role: "note" }, items.map(([k, t]) => h("span", { class: "q-ley-i" }, h("span", { class: "q-ley-m q" + k, lang: "grc", text: "λόγος" }), h("span", { class: "q-ley-t", text: t }))));
+  function qColumna(lib, filas, bx, extra) {
+    return h("div", { class: "q-col" }, h("h4", { class: "q-col-t" }, Q_LIB[lib], extra || null),
+      filas.map(([c, cap, v, ws, L]) => h("div", { class: "q-v" },
+        h("a", { class: "q-ref", href: "#/" + c + "/" + cap + "/l/" + v, "aria-label": Q_LIB[c] + " " + cap + ":" + v, text: cap + ":" + v }),
+        h("p", { class: "q-g", lang: "grc" }, ws.map(([g, k, p], i) => [i ? " " : null, h("span", { class: "q" + k, "data-gk": g }, gk(g)), punt(p) || null])),
+        bx && L ? h("p", { class: "q-bx" }, txtVerso(L)) : null)));
+  }
+  async function vistaFuenteQ(foco) {
+    document.title = "La fuente Q · BiEx";
+    navActual("#/fuente-q");
+    if (!QD) {
+      vista().replaceChildren(h("div", { class: "in" }, cargando("Reuniendo los textos de Mattáy, Μᾶrκος y Lουκᾶς…")));
+      try { QD = await cargar("datos/fuente_q.json"); } catch (e) { vista().replaceChildren(h("div", { class: "in" }, fallo("No se pudo cargar esta sección."))); return; }
+      if (!/^#\/fuente-q/.test(rutaVista || "")) return;
+    }
+    const X = QD.textos;
+    let bx = store.get("qBx", true), ord = store.get("qOrd", "lu"), sel = +foco || store.get("qSel", 1);
+    const sec = (id, eyebrow, titulo, ...kids) => h("section", { class: "q-sec", id }, h("span", { class: "eyebrow", text: eyebrow }), h("h2", { class: "q-h2", text: titulo }), kids);
+    const pars = (xs, cls) => xs.map((t) => h("p", { class: cls || "q-p" }, qTexto(t)));
+    const ir = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: "start", behavior: quieto() ? "auto" : "smooth" }); };
+
+    // 1. el problema: barras por libro
+    const par = (a, b) => [a, b].sort().join("-");
+    const CLS = { "LUK-MAT": "dt", "MAT-MRK": "mm", "LUK-MRK": "ml" };
+    const barras = h("div", { class: "q-barras" }, ["MAT", "MRK", "LUK"].map((c) => {
+      const k = QD.cuentas[c], os = ["MAT", "MRK", "LUK"].filter((x) => x !== c);
+      const segs = [["ambos", "En los tres", "tr"]].concat(os.map((o) => [o, "Solo con " + Q_LIB[o] + (CLS[par(c, o)] === "dt" ? " (doble tradición)" : ""), CLS[par(c, o)]]), [["propio", c === "MRK" ? "Solo en Μᾶrκος" : "Propio (" + (c === "MAT" ? "M" : "L") + ")", "pr"]]);
+      const pc = (n) => (100 * (n || 0) / k.total);
+      return h("div", { class: "q-barra" },
+        h("div", { class: "q-barra-cab" }, h("b", { text: Q_LIB[c] }), h("span", { text: k.total + " versos" })),
+        h("div", { class: "q-pista", role: "img", "aria-label": Q_LIB[c] + ": " + segs.map(([kk, t]) => t + " " + Math.round(pc(k[kk])) + " %").join("; ") },
+          segs.map(([kk, t, cl]) => h("span", { class: "q-tramo q-" + cl, style: "flex-basis:" + pc(k[kk]).toFixed(2) + "%", title: t + ": " + (k[kk] || 0) + " versos" }, pc(k[kk]) >= 9 ? h("i", { text: Math.round(pc(k[kk])) + " %" }) : null))),
+        h("ul", { class: "q-barra-ley" }, segs.map(([kk, t, cl]) => h("li", {}, h("i", { class: "q-" + cl }), t + ": ", h("b", { text: String(k[kk] || 0) })))));
+    }));
+
+    // 2. sinopsis de la doble tradición
+    const lista = h("ol", { class: "q-lista" });
+    const visor = h("div", { class: "q-visor", id: "q-visor", "aria-live": "polite" });
+    const leySin = qLey([[2, "misma forma griega, en el mismo orden"], [1, "misma palabra con otra forma"], [0, "sin coincidencia"]]);
+    const tgBx = h("label", { class: "q-tg" }, h("input", { type: "checkbox", checked: bx, onchange: (e) => { bx = e.target.checked; store.set("qBx", bx); mostrarPer(sel); } }), "Mostrar el texto BiEx");
+    function llenarLista() {
+      const xs = QD.per.slice().sort((a, b) => ord === "lit" ? b.lit - a.lit || a.id - b.id : a.id - b.id);
+      lista.replaceChildren(...xs.map((p) => h("li", {}, h("button", { type: "button", class: "q-it", "aria-pressed": String(p.id === sel), "data-id": p.id, onclick: () => mostrarPer(p.id, true) },
+        h("span", { class: "q-it-t", text: p.t }), h("span", { class: "q-it-r", text: "Q " + p.lu.replace(/^LUK /, "").split(";")[0] }),
+        h("span", { class: "q-it-b", "aria-hidden": "true" }, h("i", { style: "width:" + p.lit + "%" })), h("span", { class: "q-it-n", text: p.lit + " %" })))));
+    }
+    function mostrarPer(id, desplazar) {
+      const p = QD.per.find((x) => x.id === id) || QD.per[0];
+      sel = p.id; store.set("qSel", sel);
+      for (const b of $$(".q-it", lista)) b.setAttribute("aria-pressed", String(+b.dataset.id === sel));
+      visor.replaceChildren(
+        h("div", { class: "q-visor-cab" },
+          h("h3", { text: p.t }),
+          h("p", { class: "q-visor-r" }, qRefs(p.mt), h("span", { class: "q-sep", text: " · " }), qRefs(p.lu)),
+          h("p", { class: "q-lit" }, h("b", { text: p.lit + " %" }), " de coincidencia literal", h("span", { class: "q-lit-n", text: " · " + p.n[0] + " y " + p.n[1] + " palabras" })),
+          p.mk ? h("p", { class: "nota-ui q-sup" }, "Μᾶrκος tiene una versión más breve de este pasaje (", qRefs(p.mk), "): es uno de los lugares donde Μᾶrκος y Q se superponen.") : null),
+        h("div", { class: "q-visor-ctl" }, leySin.cloneNode(true), tgBx),
+        h("div", { class: "q-sin" }, qColumna("MAT", p.M, bx), qColumna("LUK", p.L, bx)),
+        h("div", { class: "q-visor-pie" },
+          h("button", { class: "btn chico", type: "button", disabled: !QD.per.some((x) => x.id === p.id - 1), onclick: () => mostrarPer(p.id - 1, true) }, svg(ICO.izq), "Anterior"),
+          h("button", { class: "btn chico", type: "button", disabled: !QD.per.some((x) => x.id === p.id + 1), onclick: () => mostrarPer(p.id + 1, true) }, "Siguiente", svg(ICO.der))));
+      if (desplazar) visor.scrollIntoView({ block: "start", behavior: quieto() ? "auto" : "smooth" });
+    }
+    const segOrd = h("div", { class: "seg", role: "group", "aria-label": "Ordenar" }, [["lu", "Orden de Lουκᾶς"], ["lit", "Mayor coincidencia"]].map(([k, t]) =>
+      h("button", { type: "button", "aria-pressed": String(ord === k), onclick: (e) => { ord = k; store.set("qOrd", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); llenarLista(); } }, t)));
+
+    // 3. el orden: Mattáy arriba, Lουκᾶς abajo; gris = lo que siguen de Μᾶrκος, oro = doble tradición
+    const W = 1000, Y1 = 46, Y2 = 214, x = (f) => (24 + f * (W - 48)).toFixed(1);
+    const ticks = (c, y, arriba) => QD.orden.caps[c].map(([n, f]) => '<line x1="' + x(f) + '" x2="' + x(f) + '" y1="' + (y - 6) + '" y2="' + (y + 6) + '" class="q-tk"/><text x="' + x(f) + '" y="' + (arriba ? y - 13 : y + 26) + '" class="q-tn">' + n + "</text>").join("");
+    const mapaOrden = svg('<g class="q-ejes"><line x1="24" x2="' + (W - 24) + '" y1="' + Y1 + '" y2="' + Y1 + '"/><line x1="24" x2="' + (W - 24) + '" y1="' + Y2 + '" y2="' + Y2 + '"/>' + ticks("MAT", Y1, true) + ticks("LUK", Y2, false) + "</g>" +
+      '<g class="q-mk">' + QD.orden.mk.map(([a, b]) => '<line x1="' + x(a) + '" y1="' + (Y1 + 7) + '" x2="' + x(b) + '" y2="' + (Y2 - 7) + '"/>').join("") + "</g>" +
+      '<g class="q-qq">' + QD.orden.q.map(([a, b, id]) => '<line data-id="' + id + '" x1="' + x(a) + '" y1="' + (Y1 + 7) + '" x2="' + x(b) + '" y2="' + (Y2 - 7) + '"/>').join("") + "</g>", "0 0 " + W + " 250");
+    mapaOrden.removeAttribute("aria-hidden"); mapaOrden.setAttribute("role", "img");
+    mapaOrden.setAttribute("aria-label", "Mapa del orden: arriba los capítulos de Mattáy, abajo los de Lουκᾶς. Las líneas grises (pasajes que siguen a Μᾶrκος) casi no se cruzan; las doradas (doble tradición) se cruzan muchas veces.");
+    const infoOrden = h("p", { class: "q-orden-info nota-ui", "aria-live": "polite", text: "Toca una línea dorada para ver ese pasaje en columnas." });
+    mapaOrden.addEventListener("click", (e) => { const l = e.target.closest && e.target.closest("line[data-id]"); if (l) mostrarPer(+l.dataset.id, true); });
+    mapaOrden.addEventListener("pointerover", (e) => { const l = e.target.closest && e.target.closest("line[data-id]"); if (!l) return; const p = QD.per.find((q) => q.id === +l.dataset.id); if (p) infoOrden.textContent = p.t + " · Mattáy " + p.mt.replace(/^MAT /, "") + " · Lουκᾶς " + p.lu.replace(/^LUK /, ""); });
+    const verOrden = store.get("qVerOrden", "ambos");
+    const cajaOrden = h("div", { class: "q-orden ver-" + verOrden }, h("div", { class: "q-orden-et", text: "Mattáy · capítulos" }), h("div", { class: "q-orden-mapa" }, mapaOrden), h("div", { class: "q-orden-et", text: "Lουκᾶς · capítulos" }));
+    const segOrden = h("div", { class: "seg", role: "group", "aria-label": "Qué mostrar" }, [["ambos", "Todo"], ["mk", "Lo que sigue a Μᾶrκος"], ["q", "Doble tradición"]].map(([k, t]) =>
+      h("button", { type: "button", "aria-pressed": String(verOrden === k), onclick: (e) => { store.set("qVerOrden", k); cajaOrden.className = "q-orden ver-" + k; for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); } }, t)));
+
+    // 4 y 5. argumentos
+    const bloqueCorto = ({ r, B }) => h("div", { class: "q-corto" }, h("div", { class: "q-corto-r" }, qRefs(r)), B.map(([c, cap, v, ws, L]) => h("div", { class: "q-v" },
+      h("p", { class: "q-g", lang: "grc" }, ws.map(([g, k, p], i) => [i ? " " : null, h("span", { "data-gk": g }, gk(g)), punt(p) || null])),
+      bx && L ? h("p", { class: "q-bx" }, txtVerso(L)) : null)));
+    const selector = (items, pintar, etiqueta) => {
+      const caja = h("div", { class: "q-sel-caja" });
+      const botones = h("div", { class: "q-chips", role: "group", "aria-label": etiqueta }, items.map((it, i) => h("button", { type: "button", class: "q-chip", "aria-pressed": String(i === 0), onclick: (e) => { for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); caja.replaceChildren(pintar(it)); } }, it.t)));
+      caja.append(pintar(items[0]));
+      return h("div", { class: "q-sel" }, botones, caja);
+    };
+    const anexo = {
+      lit: () => h("ol", { class: "q-top" }, QD.per.slice().sort((a, b) => b.lit - a.lit).slice(0, 6).map((p) => h("li", {}, h("button", { type: "button", class: "q-link", onclick: () => mostrarPer(p.id, true) }, h("span", { text: p.t }), h("b", { text: p.lit + " %" }))))),
+      orden: () => h("button", { type: "button", class: "btn chico", onclick: () => ir("q-orden") }, svg(ICO.seguir), "Ver el mapa del orden"),
+      dob: () => selector(QD.dobletes, (d) => h("div", { class: "q-dob" },
+        h("div", { class: "q-dob-g" }, h("h4", { text: "Siguiendo a Μᾶrκος" }), d.mk.map(bloqueCorto)),
+        h("div", { class: "q-dob-g dt" }, h("h4", { text: "En la doble tradición" }), d.q.map(bloqueCorto))), "Dobletes"),
+      men: () => h("div", {}, qLey([[3, "Mattáy y Lουκᾶς coinciden en esa forma y Μᾶrκος no la tiene"], [2, "misma forma que en el otro libro"], [1, "misma palabra con otra forma"]]),
+        selector(QD.menores, (m) => h("div", { class: "q-tri" }, qColumna("MRK", m.K, bx), qColumna("MAT", m.M, bx), qColumna("LUK", m.L, bx)), "Acuerdos menores")),
+      sup: () => h("div", { class: "q-chips" }, QD.per.filter((p) => p.mk).map((p) => h("button", { type: "button", class: "q-chip", onclick: () => mostrarPer(p.id, true) }, p.t))),
+    };
+    const tarjetas = (xs, cls) => h("div", { class: "q-args " + cls }, xs.map(([t, d, k]) => h("article", { class: "tarjeta q-arg" + (k === "dob" || k === "men" ? " ancho" : "") }, h("h3", { text: t }), h("p", {}, qTexto(d)), k && anexo[k] ? anexo[k]() : null)));
+
+    // 6. hipótesis: diagrama de flechas
+    const NODO = { MRK: [250, 60], Q: [750, 60], MAT: [250, 250], LUK: [750, 250], M: [70, 250], L: [930, 250] };
+    const diag = (hp) => {
+      const usados = new Set(hp.fl.flat());
+      const flecha = ([a, b]) => { const [x1, y1] = NODO[a], [x2, y2] = NODO[b], dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy), r = 54; return '<line x1="' + (x1 + dx * r / d).toFixed(1) + '" y1="' + (y1 + dy * r / d).toFixed(1) + '" x2="' + (x2 - dx * (r + 8) / d).toFixed(1) + '" y2="' + (y2 - dy * (r + 8) / d).toFixed(1) + '" marker-end="url(#q-punta)"/>'; };
+      const nodo = (k) => { const [cx, cy] = NODO[k], hip = k === "Q" || k === "M" || k === "L"; return '<g class="q-n' + (hip ? " hip" : "") + '"><circle cx="' + cx + '" cy="' + cy + '" r="50"/><text x="' + cx + '" y="' + (cy + 7) + '">' + Q_LIB[k] + "</text></g>"; };
+      const s = svg('<defs><marker id="q-punta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs><g class="q-fl">' + hp.fl.map(flecha).join("") + "</g>" + Object.keys(NODO).filter((k) => usados.has(k)).map(nodo).join(""), "0 0 1000 310");
+      s.removeAttribute("aria-hidden"); s.setAttribute("role", "img"); s.setAttribute("aria-label", hp.t + ": " + hp.fl.map(([a, b]) => Q_LIB[a] + " hacia " + Q_LIB[b]).join(", "));
+      return s;
+    };
+    const cajaHip = h("div", { class: "q-hip-caja" });
+    const pintarHip = (hp) => cajaHip.replaceChildren(h("div", { class: "q-hip-d" }, diag(hp)), h("div", { class: "q-hip-t" },
+      h("h3", {}, hp.t, h("small", { text: hp.s })), h("p", { text: hp.d }), h("p", { class: "nota-ui", text: hp.quien }),
+      h("dl", {}, h("dt", { text: "A su favor" }), h("dd", { text: hp.bien }), h("dt", { text: "Su dificultad" }), h("dd", { text: hp.mal }))));
+    const segHip = h("div", { class: "q-chips", role: "group", "aria-label": "Hipótesis" }, X.hipotesis.map((hp, i) => h("button", { type: "button", class: "q-chip", "aria-pressed": String(i === 0), onclick: (e) => { for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintarHip(hp); } }, hp.t)));
+    pintarHip(X.hipotesis[0]);
+
+    const indice = [["q-problema", "El problema"], ["q-sinopsis", "Sinopsis"], ["q-orden", "El orden"], ["q-favor", "A favor"], ["q-contra", "En contra"], ["q-hip", "Hipótesis"], ["q-cont", "Qué contendría"], ["q-hist", "Historia"]];
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel q-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Mattáy, Μᾶrκος y Lουκᾶς · el problema sinóptico" }), h("h1", { class: "texto", text: "La fuente Q" }),
+        pars(X.lead, "q-lead"), h("p", { class: "q-aviso" }, X.aviso),
+        h("nav", { class: "q-indice", "aria-label": "En esta página" }, indice.map(([id, t]) => h("button", { type: "button", class: "q-chip", onclick: () => ir(id) }, t)))),
+      sec("q-problema", "1 · El problema", "Tres relatos que se conocen entre sí", pars(X.problema), h("ul", { class: "q-puntos" }, X.puntos.map((t) => h("li", {}, qTexto(t)))), barras,
+        h("p", { class: "nota-ui", text: "Cálculo automático: un verso cuenta como paralelo cuando comparte con otro verso varias palabras griegas o frases breves; los versos sueltos dentro de un pasaje paralelo también cuentan. Es una aproximación." })),
+      sec("q-sinopsis", "2 · La doble tradición", "Mattáy y Lουκᾶς, palabra por palabra", pars(X.sinopsis),
+        h("div", { class: "q-sin-ctl" }, segOrd, h("span", { class: "nota-ui", text: X.ley_lit })),
+        h("div", { class: "q-sin-zona" }, lista, visor), h("p", { class: "nota-ui q-nota-bx", text: X.nota_bx })),
+      sec("q-orden", "3 · El orden", "Dónde coloca cada uno lo que comparten", pars(X.orden), h("div", { class: "q-orden-ctl" }, segOrden), cajaOrden, infoOrden),
+      sec("q-favor", "4 · A favor de Q", "Por qué tantos especialistas la aceptan", tarjetas(X.favor, "favor")),
+      sec("q-contra", "5 · En contra de Q", "Por qué otros prefieren prescindir de ella", tarjetas(X.contra, "contra")),
+      sec("q-hip", "6 · Las hipótesis", "Cinco maneras de explicar los mismos datos", segHip, cajaHip),
+      sec("q-cont", "7 · Qué contendría Q", "Una colección de dichos", pars(X.contenido), h("div", { class: "q-chips q-todos" }, QD.per.map((p) => h("button", { type: "button", class: "q-chip", onclick: () => mostrarPer(p.id, true) }, p.t)))),
+      sec("q-hist", "8 · Historia", "Una pregunta de casi dos mil años", h("ol", { class: "q-hist" }, X.historia.map(([f, t, g]) => h("li", {}, h("span", { class: "q-hist-f", text: f }), h("div", {}, h("p", {}, t), g ? h("blockquote", { class: "q-cita", lang: "grc", text: g }) : null))))),
+      h("section", { class: "q-sec q-cierre" }, h("h2", { class: "q-h2", text: "¿Y entonces?" }), pars(X.cierre)))));
+    llenarLista();
+    mostrarPer(QD.per.some((p) => p.id === sel) ? sel : 1);
+    if (foco && !restaurando()) requestAnimationFrame(() => ir("q-visor"));
+    else alTope();
+  }
+  // En la ventana de un verso de Mattáy o Lουκᾶς: si pertenece a la doble tradición, un acceso a su sinopsis
+  function enlaceFuenteQ(c, cap, v) {
+    const zona = h("div", { class: "bloque q-en-verso", hidden: true });
+    if (c !== "MAT" && c !== "LUK") return zona;
+    (QIDX ? Promise.resolve(QIDX) : cargar("datos/fuente_q_idx.json").then((x) => (QIDX = x))).then((ix) => {
+      const id = ix[c + " " + cap + ":" + v];
+      if (!id) return;
+      zona.hidden = false;
+      zona.append(h("h4", { text: "En la doble tradición (fuente Q)" }), h("p", { class: "nota-ui", text: "Este verso tiene un paralelo en " + (c === "MAT" ? "Lουκᾶς" : "Mattáy") + " que no está en Μᾶrκος." }),
+        h("a", { class: "btn chico", href: "#/fuente-q/" + id }, svg(ICO.sinopsis), "Ver los dos en columnas"));
+    }).catch(() => {});
+    return zona;
+  }
+
   // ------------------------------------------------------------------ explorar por nivel
   const NIVEL_TXT = { exacto: "Versos que el autor da por exactos, siempre abiertos a ajustes.", casi: "Versos con la traducción casi terminada.", revision: "Versos con traducción completa que el autor está revisando.", borrador: "Versos con una primera traducción del autor.", base: "Versos que aún se leen como texto base, palabra por palabra." };
   async function vistaNiveles(nivel, lib) {
@@ -2723,6 +2893,7 @@
     if (partes[0] === "lema" || /^lema\?/.test(partes[0])) { esc.libro = null; return partes[1] != null && partes[0] === "lema" ? vistaLema(+partes[1]) : vistaConcordancia(); }
     if (partes[0] === "buscar") { esc.libro = null; return vistaBuscar(""); }
     if (partes[0] === "cronologia") { esc.libro = null; return vistaCronologia(partes[1] || ""); }
+    if (partes[0] === "fuente-q") { esc.libro = null; return vistaFuenteQ(partes[1] || ""); }
     if (partes[0] === "niveles") { esc.libro = null; return vistaNiveles(partes[1] || "", partes[2] || ""); }
     const c = partes[0].toUpperCase();
     const cap = +partes[1] || 1;
