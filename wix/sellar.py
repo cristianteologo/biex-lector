@@ -28,3 +28,13 @@ _ix = (r / "index.html").read_text(encoding="utf-8")
 _hs = " ".join("'sha256-" + _b64.b64encode(hashlib.sha256(x.encode()).digest()).decode() + "'" for x in re.findall(r"<script>(.*?)</script>", _ix, re.S))
 _ix2 = re.sub(r"(script-src 'self')(?: 'sha256-[A-Za-z0-9+/=]+')*", lambda m: m.group(1) + (" " + _hs if _hs else ""), _ix, count=1)
 if _ix2 != _ix: (r / "index.html").write_text(_ix2, encoding="utf-8"); print("CSP actualizada")
+
+# lista de archivos del lector para «Descargar todo» (lectura sin conexión): ruta y tamaño
+import json as _json
+_lista = [f for f in ("app.css", "app.js", "busqueda.js")]
+_lista += sorted(str(x.relative_to(r)) for x in (r / "fuentes").glob("*.woff2") if not x.name.startswith("intro-"))
+_lista += sorted(str(x.relative_to(r)) for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json")
+_lista += sorted(str(x.relative_to(r)) for x in (r / "voz").rglob("*") if x.is_file() and x.suffix in (".mp4", ".ogg", ".json"))
+_arch = {"archivos": [[f, (r / f).stat().st_size] for f in _lista]}
+(r / "datos" / "archivos.json").write_text(_json.dumps(_arch, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+print("datos/archivos.json: %d archivos, %.1f MB" % (len(_lista), sum(b for _, b in _arch["archivos"]) / 1048576))

@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "BiEx – Biblia Exacta",
+  "short_name": "BiEx",
+  "description": "La Nueva Voluntad traducida del griego al español palabra por palabra, con el análisis morfológico de cada palabra.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#09090a",
+  "theme_color": "#09090a",
+  "categories": ["books", "education", "reference"],
+  "icons": [
+    { "src": "icono/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "icono/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icono/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icono/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Libros", "url": "./#/libros", "icons": [{ "src": "icono/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Mis marcadores", "url": "./#/marcadores", "icons": [{ "src": "icono/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Buscar", "url": "./#/buscar", "icons": [{ "src": "icono/icon-96.png", "sizes": "96x96" }] }
+  ]
+}

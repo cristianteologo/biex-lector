@@ -16,6 +16,7 @@ barra = lambda u: u if not u or u.endswith("/") else u + "/"
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument("--sha", help="commit del repositorio para jsDelivr / githack")
 ap.add_argument("--cargador", action="store_true", help="genera la página index.html del sitio headless")
+ap.add_argument("--cabecera", action="store_true", help="genera el código de la cabecera del sitio oficial (manifiesto e ícono de BiEx)")
 ap.add_argument("--intro", action="store_true", help="genera el código de la presentación de apertura (comienzo del cuerpo, todas las páginas)")
 ap.add_argument("--config", default="", help="con --intro: plantilla de la presentación (por defecto plantillas/presentacion.json)")
 ap.add_argument("--completo", default=PAGES); ap.add_argument("--respaldo", default=HEADLESS)
@@ -32,6 +33,13 @@ if a.cargador:
     base, base2 = barra(a.base or jsd), barra(a.base2 or gh)
     if not base or not base2: sys.exit("Falta --sha (o --base y --base2).")
     out = (d / "cargador.plantilla.html").read_text(encoding="utf-8").replace("__BASE__", base).replace("__BASE2__", base2)
+    sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
+if a.cabecera:
+    # Código para la cabecera (<head>) del sitio oficial: nombre e ícono de BiEx al instalar el sitio como aplicación
+    if not jsd: sys.exit("Falta --sha.")
+    out = ('<link rel="manifest" href="%sapp-oficial.webmanifest">\n<link rel="apple-touch-icon" href="%sicono/apple-touch-icon.png">\n'
+           '<meta name="apple-mobile-web-app-title" content="BiEx">\n<meta name="application-name" content="BiEx">\n'
+           '<script>(function(){try{var m=document.querySelectorAll(\'link[rel="manifest"]\');for(var i=0;i<m.length;i++)if(m[i].href.indexOf("app-oficial.webmanifest")<0)m[i].parentNode.removeChild(m[i]);}catch(e){}})();</script>\n') % (jsd, jsd)
     sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
 if a.intro:
     import hashlib

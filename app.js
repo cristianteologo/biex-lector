@@ -64,6 +64,16 @@
     voz: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" ' + L1 + '/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" ' + L1 + '/>',
     pausa: '<path d="M9 6v12M15 6v12" ' + L1 + '/>',
     play: '<path d="M8 5.5l11 6.5-11 6.5z" ' + L1 + '/>',
+    marcador: '<path d="M7 4h10a.5.5 0 0 1 .5.5V20l-5.5-4-5.5 4V4.5A.5.5 0 0 1 7 4z" ' + L1 + '/>',
+    nota: '<path d="M5 4.5h14v10.5l-4.5 4.5H5z M14.5 19.5V15H19" ' + L1 + '/><path d="M8 8.5h8M8 11.5h5" ' + L1 + '/>',
+    subir: '<path d="M6 5h12M7 13.5l5-5 5 5M12 8.5V20" ' + L1 + '/>',
+    bajar: '<path d="M6 19h12M7 10.5l5 5 5-5M12 15.5V4" ' + L1 + '/>',
+    centro: '<path d="M5 12h3M16 12h3M8.5 6.5l3.5 3.5 3.5-3.5M8.5 17.5l3.5-3.5 3.5 3.5" ' + L1 + '/>',
+    descargar: '<path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 19.5h14" ' + L1 + '/>',
+    importar: '<path d="M12 15.5V4.5M7.5 9l4.5-4.5L16.5 9M5 19.5h14" ' + L1 + '/>',
+    nube: '<path d="M7.5 18.5h9.5a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 6.9 9.6 4.5 4.5 0 0 0 7.5 18.5z" ' + L1 + '/><path d="M12 10.5v5.5M9.8 13.8l2.2 2.2 2.2-2.2" ' + L1 + '/>',
+    papelera: '<path d="M5 7h14M10 4.5h4M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7M10.5 10.5v6M13.5 10.5v6" ' + L1 + '/>',
+    copiar: '<rect x="8.5" y="8.5" width="11" height="11" rx="1.5" ' + L1 + '/><path d="M15.5 5.5v-.5A1.5 1.5 0 0 0 14 3.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h.5" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
@@ -793,7 +803,10 @@
       EMBED ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(enlacePublico(location.hash), "_blank", "noopener") }, svg(ICO.externo)) : null,
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
     ] : [];
-    raiz.replaceChildren(
+    // Fondo vivo: luces muy tenues que se desplazan despacio y motas de luz que suben (se detiene con «Sin animaciones»)
+    const motas = Array.from({ length: 16 }, (_, i) => h("i", { style: "--x:" + ((i * 61 + 7) % 100) + "%;--d:" + (34 + (i * 13) % 30) + "s;--r:-" + ((i * 7.3) % 40).toFixed(1) + "s;--s:" + (1.4 + (i % 4) * 0.5) + "px;--w:" + (((i * 37) % 9) - 4) + "vw" }));
+    const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, h("i", { class: "vivo-a" }), h("i", { class: "vivo-b" }), h("i", { class: "vivo-c" }), h("div", { class: "vivo-motas" }, motas));
+    raiz.replaceChildren(fondo,
       h("header", { class: "barra" }, h("div", { class: "in" },
         h("a", { class: "marca", href: "#/", "aria-label": "Inicio del lector" }, h("span", { class: "sello", text: "BiEx" }), h("span", { class: "nombre" }, h("b", { text: "Biblia Exacta" }), h("small", { text: "Lector y analizador" }))),
         h("nav", { class: "nav", "aria-label": "Secciones" }, h("a", { href: "#/", text: "Inicio" }), h("a", { href: "#/libros", text: "Libros" }), h("a", { href: "#/cronologia", text: "Cronología" }), h("a", { href: "#/buscar", text: "Avanzada" })),
@@ -807,7 +820,7 @@
           h("strong", { text: "BiEx – Biblia Exacta ©™." }),
           h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" }))),
         h("p", { class: "creditos" }, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
-          h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " (Biblica) y ",
+          h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " [Conjuntos de Datos Lingüísticos del Griego MACULA] (Biblica) y ",
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
           "Transcripciones de los manuscritos: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración del Nuevo Testamento] (Alan Bunning), con licencia CC BY-SA 4.0; la comparación con el texto base se publica con la misma licencia.", h("br"),
           "Para reconocer las palabras con que se recuerda un verso, el buscador usa, sin mostrarlas, las traducciones de dominio público Reina-Valera 1909 y 1865, World English Bible [Biblia Mundial en Inglés], King James Version [Versión del Rey Jacobo] y Berean Standard Bible [Biblia Estándar de Berea], y la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0).", h("br"),
@@ -1026,6 +1039,8 @@
           item(ICO.manuscrito, "Manuscritos antiguos", "Cada verso en los papiros y códices más antiguos: qué dicen, en qué difieren y su transcripción letra por letra.", "ms", 3),
           hr(ICO.tiempo, "Línea del tiempo", "Los acontecimientos y la fecha en que se escribió cada libro, hasta la destrucción del templo en el año 70.", "Abrir", "#/cronologia"),
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
+          hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
+          hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
           hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso.", "Buscar una palabra", "#/lema"),
           hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
           hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia"))));
@@ -1113,9 +1128,9 @@
     const caps = h("div", { class: "caps", role: "group", "aria-label": "Capítulos" }, b.caps.map((C) => h("a", {
       class: "cap", href: "#/" + b.c + "/" + C.c + (esc.modo === "a" ? "/a" : ""), "aria-current": C.c === cap ? "true" : "false",
       title: "Capítulo " + C.c + ": " + pct(C.pct) + " de avance", onclick: alElegir || null }, String(C.c), h("i", { style: "width:" + Math.min(100, C.pct) + "%" }))));
-    const teselas = versos ? h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, versos.map((x) => h("button", {
+    const teselas = versos ? h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, versos.map((x) => aplicarMarca(h("button", {
       type: "button", class: "tesela n-" + x.n + (esc.modo !== "a" && prefs.nivel && !pasaFiltro(x, prefs.nivel) ? " fuera" : ""), "data-v": x.v, title: cap + ":" + x.v + " · " + estadoEt(x.n), "aria-label": "Verso " + x.v + ", " + estadoEt(x.n),
-      onclick: () => { if (alElegir) alElegir(); irVerso(x.v); } }, String(x.v)))) : null;
+      onclick: () => { if (alElegir) alElegir(); irVerso(x.v); } }, String(x.v)), marcaDe(b, cap, x.v)))) : null;
     const usados = versos ? ["exacto", "casi", "revision", "borrador", "base"].filter((k) => versos.some((x) => x.n === k)) : [];
     return [
       h("div", {}, h("p", { class: "rotulo", text: "Capítulos" }), caps),
@@ -1146,8 +1161,16 @@
       h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); volverAAncla(a); } },
         FILTROS.map(([k, t]) => h("option", { value: k, selected: (prefs.nivel || "") === k ? true : null, text: t + " · " + (k ? versos.filter((x) => pasaFiltro(x, k)).length : versos.length) })))) : null;
     const opciones = modo !== "a" ? h("button", { class: "btn-icono btn-opc", type: "button", "aria-label": "Opciones del texto: colores, corchetes y paréntesis", title: "Opciones del texto", onclick: abrirOpciones }, svg(ICO.opciones)) : null;
+    // En el centro de la barra: el libro (transliteración y nombre en español) y el capítulo en hebreo con su numeral romano
+    const capH = String((b.caps[cap - 1] || {}).h || "").match(/^(.*?)\s*\[[^\]]*\]\s*(\S+)?\s*$/);
+    const he = capH ? capH[1] : "", rom = capH && capH[2] ? capH[2] : String(cap);
+    const titulo = h("button", { class: "bh-tit", type: "button", title: "Elegir capítulo y verso",
+      "aria-label": nombreLibro(b) + ", capítulo " + cap + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) },
+      h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null),
+      h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom })));
     return h("div", { class: "barra-hoja" },
       h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("l", "Lectura"), btnModo("a", "Análisis")),
+      titulo,
       h("div", { class: "cap-grupo movil" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
         h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
@@ -1209,9 +1232,9 @@
       versos.forEach((x, k) => {
         if (f && huecos(x, k) > 0) { parrafos.push(salto(huecos(x, k))); actual = null; }
         if (!actual || iniciaPericopa(usaP, x, k)) { actual = h("p", { class: "peri" }, h("span", { class: "par", "aria-hidden": "true", text: "§" })); parrafos.push(actual); }
-        actual.append(h("span", { class: "vs n-" + x.n, id: "v" + x.v, role: "button", tabindex: "0", title: refCorta(b, cap, x.v) + " · " + estadoEt(x.n),
+        actual.append(aplicarMarca(h("span", { class: "vs n-" + x.n, id: "v" + x.v, role: "button", tabindex: "0", title: refCorta(b, cap, x.v) + " · " + estadoEt(x.n),
           onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
-          h("sup", { text: x.v }), txtVerso(x)), " ");
+          h("sup", { text: x.v }), txtVerso(x)), marcaDe(b, cap, x.v)), " ");
       });
       if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) parrafos.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
       return [encabezado(b, cap, "l"), nota, avisoFiltro, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
@@ -1224,12 +1247,12 @@
     if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) filas.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
     return [encabezado(b, cap, "l"), nota, avisoFiltro, h("div", { class: "lectura" }, filas), finCap(b, cap, "l")];
     function filaVerso(x, k) {
-      return h("div", {
+      return aplicarMarca(h("div", {
       class: "vl n-" + x.n + (iniciaPericopa(usaP, x, k) ? " p" : ""), id: "v" + x.v, role: "button", tabindex: "0",
       "aria-label": "Verso " + x.v + " (" + estadoEt(x.n) + "). Abrir su griego palabra por palabra",
       onclick: () => abrir(x), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
       h("span", { class: "vn", title: estadoEt(x.n) + (x.n === "base" ? ": " + x.k + " % de las palabras ya traducidas" : ""), text: x.v }),
-      h("span", { class: "vt" }, txtVerso(x)));
+      h("span", { class: "vt" }, txtVerso(x))), marcaDe(b, cap, x.v));
     }
   }
   function abrirVerso(b, cap, v, conManuscritos) {
@@ -1248,6 +1271,164 @@
     esc.vMarcado = v;
     const u = store.get("ultimo", null);
     if (u && u.c === esc.libro && u.cap === esc.cap) { u.v = v; store.set("ultimo", u); }
+  }
+
+  // ------------------------------------------------------------------ estudio: marcadores con temas de color y notas
+  // Se guardan en este navegador (sin cuentas ni servidores); se exportan a un archivo y se importan en otro dispositivo.
+  const TEMAS_BASE = [["oro", "Clave"], ["azul", "Para estudiar"], ["verde", "Enseñanza"], ["rojo", "Advertencia"], ["violeta", "Cumplimiento"], ["gris", "Pendiente"]];
+  const MK = {
+    todo() { const m = store.get("marcas", {}); return m && typeof m === "object" && !Array.isArray(m) ? m : {}; },
+    clave: (c, cap, v) => c + "-" + cap + "-" + v,
+    get: (c, cap, v) => MK.todo()[MK.clave(c, cap, v)] || null,
+    poner(c, cap, v, cambios) {
+      const m = MK.todo(), k = MK.clave(c, cap, v);
+      const x = Object.assign({ c, cap, v }, m[k] || {}, cambios, { f: Date.now() });
+      if (!x.col) delete x.col;
+      if (!String(x.nota || "").trim()) delete x.nota;
+      if (!x.col && !x.nota) delete m[k]; else m[k] = x;
+      store.set("marcas", m);
+      MK.pintar(c, cap, v);
+    },
+    temas() { const t = store.get("marcasTemas", null) || {}; return TEMAS_BASE.map(([k, n]) => [k, typeof t[k] === "string" && t[k].trim() ? t[k].trim().slice(0, 40) : n]); },
+    nombre: (k) => (MK.temas().find((x) => x[0] === k) || [k, k])[1],
+    // refleja el cambio en el capítulo abierto: el verso y su tesela
+    pintar(c, cap, v) {
+      if (esc.libro !== c || esc.cap !== cap) return;
+      const x = MK.get(c, cap, v), el = document.getElementById("v" + v);
+      if (el) aplicarMarca(el, x);
+      for (const t of $$('.tesela[data-v="' + v + '"]')) aplicarMarca(t, x);
+    },
+  };
+  function aplicarMarca(el, x) {
+    for (const [k] of TEMAS_BASE) el.classList.remove("mk-" + k);
+    el.classList.toggle("mk", !!(x && x.col));
+    el.classList.toggle("mk-con-nota", !!(x && x.nota));
+    if (x && x.col) el.classList.add("mk-" + x.col);
+    return el;
+  }
+  const marcaDe = (b, cap, v) => MK.get(b.c, cap, v);
+  // En la ventana del verso: elegir un tema de color y escribir una nota
+  function bloqueEstudio(b, cap, v) {
+    const x = MK.get(b.c, cap, v) || {};
+    const temas = h("div", { class: "mk-temas", role: "radiogroup", "aria-label": "Marcar el verso con un tema" });
+    const pintarTemas = (sel) => { for (const bt of temas.children) bt.setAttribute("aria-checked", String(bt.dataset.k === sel)); };
+    temas.append(...MK.temas().map(([k, n]) => h("button", { type: "button", class: "mk-tema mk-" + k, role: "radio", "data-k": k, "aria-checked": String(x.col === k),
+      onclick: () => { const ya = (MK.get(b.c, cap, v) || {}).col === k; MK.poner(b.c, cap, v, { col: ya ? null : k }); pintarTemas(ya ? null : k); avisar(ya ? "Marca quitada" : "Marcado: " + n); } },
+      h("i", { "aria-hidden": "true" }), h("span", { text: n }))));
+    const nota = h("textarea", { class: "mk-nota", rows: "3", maxlength: "4000", spellcheck: "true", placeholder: "Tu nota de estudio sobre este verso…", "aria-label": "Nota de estudio del verso " + cap + ":" + v });
+    nota.value = x.nota || "";
+    let reloj = 0;
+    const guardar = () => { clearTimeout(reloj); MK.poner(b.c, cap, v, { nota: nota.value.slice(0, 4000) }); };
+    nota.addEventListener("input", () => { clearTimeout(reloj); reloj = setTimeout(guardar, 400); });
+    nota.addEventListener("blur", guardar);
+    return h("div", { class: "bloque mk-bloque" },
+      h("h4", {}, svg(ICO.marcador), h("span", { text: "Tu estudio" }), h("a", { class: "mk-ir", href: "#/marcadores", text: "Mis marcadores" })),
+      temas, nota,
+      h("p", { class: "nota-ui", text: "Se guarda en este navegador. En «Mis marcadores» puedes llevarlo a otro dispositivo." }));
+  }
+  // Página «Mis marcadores»: filtrar por tema, buscar en las notas, ir al verso, exportar e importar
+  async function vistaMarcadores() {
+    document.title = "Mis marcadores · BiEx";
+    navActual("");
+    const orden = new Map(librosEnOrden().map((b, i) => [b.c, i]));
+    const lista = () => Object.values(MK.todo()).filter((x) => x && libroDe(x.c)).sort((a, b) => (orden.get(a.c) - orden.get(b.c)) || (a.cap - b.cap) || (a.v - b.v));
+    let filtro = "", q = "";
+    const cuerpo = h("div", { class: "mk-lista" });
+    const chips = h("div", { class: "q-chips mk-filtros", role: "group", "aria-label": "Filtrar por tema" });
+    const buscador = h("input", { class: "mk-buscar", type: "search", placeholder: "Buscar en tus notas y versos…", "aria-label": "Buscar en tus marcadores" });
+    buscador.addEventListener("input", () => { q = claveEs(buscador.value.trim()); pintar(); });
+    const textos = {};
+    const textoDe = async (x) => { try { const Lc = await lectura(x.c); const L = (Lc.caps[x.cap] || []).find((y) => y.v === x.v); return L ? textoPlano(txtVerso(L).textContent || "") : ""; } catch (e) { return ""; } };
+    function pintarChips(todos) {
+      const n = (k) => todos.filter((x) => (k === "nota" ? x.nota : x.col === k)).length;
+      const ch = (k, t, cnt, cls) => h("button", { type: "button", class: "q-chip " + (cls || ""), "aria-pressed": String(filtro === k), onclick: () => { filtro = filtro === k ? "" : k; pintar(); } }, cls ? h("i", { class: "mk-punto" }) : null, t + " · " + cnt);
+      chips.replaceChildren(ch("", "Todos", todos.length), ...MK.temas().filter(([k]) => n(k)).map(([k, t]) => ch(k, t, n(k), "mk-" + k)), n("nota") ? ch("nota", "Con nota", n("nota")) : null);
+    }
+    function pintar() {
+      const todos = lista();
+      pintarChips(todos);
+      const vis = todos.filter((x) => (!filtro || (filtro === "nota" ? x.nota : x.col === filtro)) && (!q || claveEs((x.nota || "") + " " + (textos[MK.clave(x.c, x.cap, x.v)] || "") + " " + refCorta(libroDe(x.c), x.cap, x.v)).includes(q)));
+      if (!todos.length) { cuerpo.replaceChildren(h("div", { class: "mk-vacio" }, svg(ICO.marcador), h("p", { text: "Aún no tienes marcadores." }), h("p", { class: "nota-ui", text: "Abre cualquier verso (tócalo mientras lees) y elige un tema de color o escribe una nota. Aparecerán aquí, ordenados por libro." }))); return; }
+      if (!vis.length) { cuerpo.replaceChildren(h("p", { class: "nota-ui", text: "Ningún marcador coincide." })); return; }
+      const grupos = [];
+      let actual = null;
+      for (const x of vis) {
+        if (!actual || actual.c !== x.c) { actual = { c: x.c, xs: [] }; grupos.push(actual); }
+        actual.xs.push(x);
+      }
+      cuerpo.replaceChildren(...grupos.map((g) => { const b = libroDe(g.c); return h("section", { class: "mk-grupo" }, h("h3", {}, etLibro(b), h("small", { text: " · " + g.xs.length })), g.xs.map((x) => tarjeta(b, x))); }));
+    }
+    function tarjeta(b, x) {
+      const k = MK.clave(x.c, x.cap, x.v);
+      const tx = h("p", { class: "mk-tx" }, textos[k] != null ? textos[k] : "…");
+      if (textos[k] == null) textoDe(x).then((t) => { textos[k] = t; tx.textContent = t; });
+      const quitar = h("button", { class: "btn-icono mk-quitar", type: "button", "aria-label": "Quitar el marcador de " + refCorta(b, x.cap, x.v), title: "Quitar",
+        onclick: () => { MK.poner(x.c, x.cap, x.v, { col: null, nota: "" }); pintar(); avisar("Marcador quitado"); } }, svg(ICO.papelera));
+      return aplicarMarca(h("article", { class: "mk-card" },
+        h("a", { class: "mk-ref", href: "#/" + x.c + "/" + x.cap + "/l/" + x.v }, h("span", { text: x.cap + ":" + x.v }), x.col ? h("small", { text: MK.nombre(x.col) }) : null, svg(ICO.der)),
+        tx, x.nota ? h("p", { class: "mk-n" }, svg(ICO.nota), h("span", { text: x.nota })) : null, quitar), x);
+    }
+    // Llevar los marcadores a otro dispositivo
+    const descargar = () => {
+      const datos = { app: "BiEx", tipo: "marcadores", v: 1, exportado: new Date().toISOString(), temas: Object.fromEntries(MK.temas()), marcas: MK.todo() };
+      const a = h("a", { href: URL.createObjectURL(new Blob([JSON.stringify(datos, null, 1)], { type: "application/json" })), download: "biex-marcadores-" + new Date().toISOString().slice(0, 10) + ".json" });
+      document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      avisar("Archivo de marcadores descargado");
+    };
+    const archivo = h("input", { type: "file", accept: "application/json,.json", hidden: true });
+    archivo.addEventListener("change", async () => {
+      const f = archivo.files && archivo.files[0]; archivo.value = ""; if (!f) return;
+      try {
+        if (f.size > 4e6) throw new Error("grande");
+        const d = JSON.parse(await f.text());
+        if (!d || d.app !== "BiEx" || d.tipo !== "marcadores" || typeof d.marcas !== "object") throw new Error("formato");
+        const m = MK.todo(); let n = 0;
+        for (const x of Object.values(d.marcas)) {
+          if (!x || !libroDe(String(x.c)) || !(x.cap > 0) || !(x.v > 0)) continue;
+          const col = TEMAS_BASE.some(([k]) => k === x.col) ? x.col : null, nota = typeof x.nota === "string" ? x.nota.slice(0, 4000) : "";
+          if (!col && !nota.trim()) continue;
+          const k = MK.clave(String(x.c), x.cap | 0, x.v | 0), prev = m[k] || {};
+          m[k] = Object.assign({ c: String(x.c), cap: x.cap | 0, v: x.v | 0 }, prev, col ? { col } : {}, nota.trim() ? { nota: prev.nota && prev.nota !== nota ? prev.nota + "\n\n" + nota : nota } : {}, { f: +x.f || Date.now() });
+          n++;
+        }
+        if (d.temas && typeof d.temas === "object" && !store.get("marcasTemas", null)) store.set("marcasTemas", Object.fromEntries(TEMAS_BASE.map(([k]) => [k, typeof d.temas[k] === "string" ? d.temas[k].slice(0, 40) : ""]).filter(([, t]) => t)));
+        store.set("marcas", m); pintar(); avisar(n ? "Importados " + n + " marcadores" : "El archivo no tenía marcadores");
+      } catch (e) { avisar("Ese archivo no es una copia de marcadores de BiEx"); }
+    });
+    const copiarTexto = async () => {
+      const todos = lista();
+      const lineas = [];
+      for (const x of todos) { const b = libroDe(x.c), k = MK.clave(x.c, x.cap, x.v); if (textos[k] == null) textos[k] = await textoDe(x); lineas.push(refCorta(b, x.cap, x.v) + (x.col ? " [" + MK.nombre(x.col) + "]" : "") + "\n" + textos[k] + (x.nota ? "\nNota: " + x.nota : "")); }
+      try { await navigator.clipboard.writeText(lineas.join("\n\n")); avisar("Copiado como texto"); } catch (e) { avisar("No se pudo copiar"); }
+    };
+    // Nombres de los temas (cada quien los llama a su manera)
+    const editarTemas = () => abrirModal(() => {
+      const campos = MK.temas().map(([k, n]) => { const i = h("input", { type: "text", maxlength: "40", value: n, "aria-label": "Nombre del tema " + n }); i.dataset.k = k; return h("label", { class: "mk-tema-ed mk-" + k }, h("i", { "aria-hidden": "true" }), i); });
+      const guardarT = () => { store.set("marcasTemas", Object.fromEntries(campos.map((l) => { const i = l.querySelector("input"); return [i.dataset.k, i.value.trim().slice(0, 40)]; }).filter(([, t]) => t))); cerrarModal(); pintar(); avisar("Temas guardados"); };
+      return cajaModal(cabModal("Nombres de los temas", "Cada color puede significar lo que tú quieras"), h("div", { class: "mk-temas-ed" }, campos),
+        h("div", { class: "m-pie" }, h("button", { class: "btn chico", type: "button", onclick: () => { store.set("marcasTemas", {}); cerrarModal(); pintar(); }, text: "Restablecer" }), h("button", { class: "btn chico oro", type: "button", onclick: guardarT, text: "Guardar" })));
+    });
+    let confirmar = 0;
+    const borrarTodo = h("button", { class: "btn chico mk-borrar", type: "button", onclick: (e) => {
+      const bt = e.currentTarget;
+      if (!confirmar) { confirmar = 1; bt.lastChild.textContent = "¿Seguro? Toca de nuevo"; setTimeout(() => { confirmar = 0; if (bt.isConnected) bt.lastChild.textContent = "Borrar todos"; }, 4000); return; }
+      confirmar = 0; store.set("marcas", {}); bt.lastChild.textContent = "Borrar todos"; pintar(); avisar("Marcadores borrados");
+    } }, svg(ICO.papelera), h("span", { text: "Borrar todos" }));
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel mk-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Tu estudio · marcadores y notas" }), h("h1", { class: "texto", text: "Mis marcadores" }),
+        h("p", { class: "q-lead", text: "Los versos que marcaste con un tema de color y tus notas de estudio, en el orden de los libros. Toca uno para volver a él." })),
+      h("div", { class: "mk-ctl" }, buscador, chips),
+      cuerpo,
+      h("div", { class: "mk-acciones" },
+        h("button", { class: "btn chico", type: "button", onclick: descargar }, svg(ICO.descargar), h("span", { text: "Exportar" })),
+        h("button", { class: "btn chico", type: "button", onclick: () => archivo.click() }, svg(ICO.importar), h("span", { text: "Importar" })),
+        h("button", { class: "btn chico", type: "button", onclick: copiarTexto }, svg(ICO.copiar), h("span", { text: "Copiar como texto" })),
+        h("button", { class: "btn chico", type: "button", onclick: editarTemas }, svg(ICO.opciones), h("span", { text: "Nombres de los temas" })),
+        borrarTodo, archivo),
+      h("p", { class: "nota-ui", text: "Tus marcadores se guardan solo en este navegador, sin cuentas ni servidores: nadie más los ve. Para tenerlos en otro dispositivo, usa «Exportar» aquí e «Importar» allá." }))));
+    pintar();
+    alTope();
   }
 
   // ------------------------------------------------------------------ análisis
@@ -1737,6 +1918,7 @@
           L ? h("div", { class: "chip-estado n-" + L.n }, h("i"), estadoEt(L.n) + (L.n === "base" ? " · " + L.k + " % de las palabras ya traducidas" : "")) : null,
           L ? h("p", { class: "fv-es" }, txtVerso(L)) : null,
           h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona),
+          bloqueEstudio(b, cap, ctx.v),
           h("div", { class: "bloque" }, h("h4", { text: "En los manuscritos antiguos" }), resumenManuscritos({ b, cap, v: ctx.v }, () => empujar(vistaManuscritos(ctx)))),
           enlaceFuenteQ(b.c, cap, ctx.v)),
         h("div", { class: "m-pie" },
@@ -2770,6 +2952,7 @@
   document.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2 && PELLIZCO) {
       gesto = null;
+      clearTimeout(tInm); // la barra no cambia mientras dura el pellizco (la posición del texto depende de ella)
       const raiz = modal.open ? $(".m-cuerpo", modal) : $("#vista");
       if (!raiz) return;
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2, cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
@@ -2799,6 +2982,7 @@
     if (pinza) {
       if (e.touches.length) return;
       const p = pinza; pinza = null;
+      RP.fin = performance.now();
       const actual = K_TAM[ap.tam - 1], meta = actual * p.k;
       let mejor = ap.tam - 1;
       if (Math.abs(p.k - 1) > .06) K_TAM.forEach((k, i) => { if (Math.abs(k - meta) < Math.abs(K_TAM[mejor] - meta)) mejor = i; });
@@ -2822,6 +3006,177 @@
     setTimeout(() => document.documentElement.removeAttribute("data-paso"), 700);
   }, { passive: true });
   document.addEventListener("touchcancel", () => { gesto = null; if (pinza) { pinza.raiz.style.transform = ""; pinza = null; } }, { passive: true });
+
+  // ------------------------------------------------------------------ BiEx como aplicación: instalar y leer sin conexión
+  // La copia sin conexión la guarda el trabajador de servicio (sw.js) del sitio donde se abre el lector como página propia.
+  // Dentro del sitio oficial (marco) no se instala: se ofrece abrir BiEx como aplicación en su dirección propia.
+  const APP_URL = "https://headless-acyvpvsbblb-bibliaexacta-140c.wix-site-host.com/";
+  const PWA = { prompt: null, reg: null, instalada: false };
+  const puedeSW = () => !EMBED && "serviceWorker" in navigator && window.isSecureContext && !!document.querySelector('link[rel="manifest"]');
+  const enApp = () => (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: window-controls-overlay)").matches)) || navigator.standalone === true;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); PWA.prompt = e; document.documentElement.classList.add("app-instalable"); });
+  window.addEventListener("appinstalled", () => { PWA.prompt = null; PWA.instalada = true; document.documentElement.classList.remove("app-instalable"); avisar("BiEx quedó instalada"); });
+  if (puedeSW()) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).then((r) => { PWA.reg = r; }).catch(() => {});
+    });
+  }
+  // Pregunta al trabajador de servicio qué archivos tiene guardados
+  async function guardados() {
+    const sw = navigator.serviceWorker && (navigator.serviceWorker.controller || (PWA.reg && PWA.reg.active));
+    if (!sw) return new Set();
+    return new Promise((ok) => {
+      const ch = new MessageChannel(); const t = setTimeout(() => ok(new Set()), 4000);
+      ch.port1.onmessage = (e) => { clearTimeout(t); ok(new Set((e.data && e.data.rutas) || [])); };
+      sw.postMessage({ tipo: "guardados" }, [ch.port2]);
+    });
+  }
+  const mb = (n) => (n / 1048576).toLocaleString("es", { maximumFractionDigits: n < 10485760 ? 1 : 0 }) + " MB";
+  // Lista de archivos que componen el lector (la arma wix/sellar.py en cada publicación)
+  async function archivosApp() {
+    const L = await cargar("datos/archivos.json");
+    const a = document.createElement("audio");
+    const ogg = !!(a.canPlayType && a.canPlayType('audio/ogg; codecs="opus"'));
+    // de la narración de la guía basta el formato que este navegador reproduce
+    return (L.archivos || []).filter(([r]) => !/^voz\/.+\.(mp4|ogg)$/.test(r) || (ogg ? /\.ogg$/ : /\.mp4$/).test(r));
+  }
+  let descarga = null;
+  async function descargarTodo(alAvanzar) {
+    if (descarga) return descarga;
+    descarga = (async () => {
+      try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* sin permiso */ }
+      if (!navigator.serviceWorker.controller) { try { await navigator.serviceWorker.ready; } catch (e) { /* sigue */ } }
+      const lista = await archivosApp();
+      const ya = await guardados();
+      const total = lista.reduce((s, [, b]) => s + b, 0);
+      let hecho = lista.filter(([r]) => ya.has(r)).reduce((s, [, b]) => s + b, 0), fallos = 0;
+      const faltan = lista.filter(([r]) => !ya.has(r));
+      alAvanzar(hecho, total);
+      let i = 0;
+      const obrero = async () => {
+        while (i < faltan.length) {
+          const [r, b] = faltan[i++];
+          try { const res = await fetch(BASES[baseOk] + r, { cache: "no-cache" }); if (!res.ok) throw new Error(res.status); await res.arrayBuffer(); }
+          catch (e) { fallos++; }
+          hecho += b; alAvanzar(hecho, total);
+        }
+      };
+      await Promise.all(Array.from({ length: 6 }, obrero));
+      store.set("sinConexion", { gen: D && D.generado, fecha: Date.now(), fallos });
+      return { total, fallos };
+    })().finally(() => { descarga = null; });
+    return descarga;
+  }
+  function vistaApp() {
+    document.title = "Instalar y leer sin conexión · BiEx";
+    navActual("");
+    const estado = h("div", { class: "app-estado" });
+    const barra = h("div", { class: "app-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "0" }, h("i"));
+    const txt = h("p", { class: "app-tx", role: "status" });
+    let fijo = false; // un mensaje final (listo, borrado, error) no lo pisa el recuento
+    const pintarAvance = (hecho, total) => { const p = total ? Math.min(100, (100 * hecho) / total) : 0; barra.firstChild.style.width = p.toFixed(1) + "%"; barra.setAttribute("aria-valuenow", String(Math.round(p))); if (!fijo) txt.textContent = mb(hecho) + " de " + mb(total) + " · " + Math.round(p) + " %"; };
+    const tarjeta = (ico, t, d, ...hijos) => h("section", { class: "app-card" }, h("div", { class: "app-ico" }, svg(ico)), h("div", { class: "app-cuerpo" }, h("h2", { text: t }), h("p", { text: d }), ...hijos));
+    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    let instalar;
+    if (EMBED || !puedeSW()) {
+      instalar = tarjeta(ICO.externo, "Abrir BiEx como aplicación", "Para instalar BiEx con su propio ícono y guardar todo su contenido en tu dispositivo, ábrelo en su dirección de aplicación. Allí verás el botón «Instalar» (o, en iPhone y iPad, Compartir › «Agregar a inicio»).",
+        h("a", { class: "btn oro", href: APP_URL, target: "_blank", rel: "noopener" }, svg(ICO.externo), h("span", { text: "Abrir BiEx como aplicación" })));
+    } else if (enApp() || PWA.instalada) {
+      instalar = tarjeta(ICO.marca, "BiEx ya está instalada", "La estás usando como aplicación, con su propio ícono.");
+    } else {
+      const btn = h("button", { class: "btn oro", type: "button", disabled: !PWA.prompt, onclick: async () => { if (!PWA.prompt) return; PWA.prompt.prompt(); try { await PWA.prompt.userChoice; } catch (e) { /* ignorar */ } PWA.prompt = null; btn.disabled = true; } }, svg(ICO.descargar), h("span", { text: "Instalar BiEx" }));
+      const pasos = ios ? h("ol", { class: "app-pasos" }, h("li", { text: "Toca el botón Compartir de Safari (el cuadrado con la flecha hacia arriba)." }), h("li", { text: "Elige «Agregar a inicio»." }), h("li", { text: "Confirma con «Agregar»: aparecerá el ícono de BiEx." }))
+        : h("p", { class: "nota-ui", text: "Si el botón no se activa, usa el menú del navegador: «Instalar BiEx» o «Agregar a la pantalla de inicio». En Safari para Mac: Archivo › «Agregar al Dock»." });
+      instalar = tarjeta(ICO.descargar, "Instalar BiEx", "Queda como una aplicación más, con el ícono de BiEx, en tu pantalla de inicio o en tu escritorio.", ios ? null : btn, pasos);
+    }
+    const bDesc = h("button", { class: "btn oro", type: "button" }, svg(ICO.nube), h("span", { text: "Descargar todo" }));
+    const bBorrar = h("button", { class: "btn chico", type: "button" }, svg(ICO.papelera), h("span", { text: "Borrar la copia" }));
+    bDesc.addEventListener("click", async () => {
+      bDesc.disabled = true; bDesc.lastChild.textContent = "Descargando…"; fijo = false;
+      try {
+        const r = await descargarTodo(pintarAvance);
+        fijo = true;
+        txt.textContent = r.fallos ? "Listo, salvo " + r.fallos + " archivos que no respondieron: vuelve a intentarlo con conexión." : "Listo: todo BiEx está guardado en este dispositivo.";
+        bDesc.lastChild.textContent = "Actualizar la copia";
+      } catch (e) { fijo = true; txt.textContent = "No se pudo completar la descarga. Revisa la conexión y vuelve a intentarlo."; bDesc.lastChild.textContent = "Reintentar"; }
+      bDesc.disabled = false; pintarEstado();
+    });
+    bBorrar.addEventListener("click", () => {
+      const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (sw) sw.postMessage({ tipo: "borrar" }); store.set("sinConexion", null);
+      barra.firstChild.style.width = "0"; fijo = true; txt.textContent = "Copia borrada. Lo que vuelvas a abrir con conexión se irá guardando de nuevo."; setTimeout(pintarEstado, 600);
+    });
+    async function pintarEstado() {
+      const filas = [];
+      try {
+        const lista = await archivosApp(), ya = await guardados();
+        const total = lista.reduce((s, [, b]) => s + b, 0), hay = lista.filter(([r]) => ya.has(r)).reduce((s, [, b]) => s + b, 0);
+        pintarAvance(hay, total);
+        const sc = store.get("sinConexion", null);
+        if (sc && sc.gen && D && sc.gen !== D.generado && hay) filas.push(h("li", { class: "app-aviso", text: "Hay una versión más reciente que tu copia: toca «Actualizar la copia»." }));
+        if (hay >= total * 0.999 && total) bDesc.lastChild.textContent = "Actualizar la copia";
+      } catch (e) { txt.textContent = "La lista de archivos no está disponible sin conexión todavía."; }
+      try {
+        if (navigator.storage && navigator.storage.estimate) { const est = await navigator.storage.estimate(); filas.push(h("li", { text: "Espacio usado por BiEx en este navegador: " + mb(est.usage || 0) + (est.quota ? " de " + mb(est.quota) + " disponibles" : "") + "." })); }
+        if (navigator.storage && navigator.storage.persisted) { const pe = await navigator.storage.persisted(); filas.push(h("li", { text: pe ? "Almacenamiento persistente: concedido. El navegador no borrará la copia por sí solo." : "Almacenamiento persistente: aún no concedido. Al descargar se pide; instalar BiEx ayuda a que el navegador lo conceda." })); }
+      } catch (e) { /* sin datos de almacenamiento */ }
+      estado.replaceChildren(filas.length ? h("ul", { class: "app-datos" }, filas) : "");
+    }
+    const sinConexion = puedeSW() ? tarjeta(ICO.nube, "Leer sin conexión", "Descarga una sola vez todo el lector: los 27 libros, el análisis de cada palabra, los manuscritos, el buscador, la fuente Q y la guía con su voz. Después se puede navegar sin internet; con conexión, todo se sigue actualizando solo.",
+      h("div", { class: "app-desc" }, barra, txt, h("div", { class: "app-botones" }, bDesc, bBorrar)), estado) : null;
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel app-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "BiEx en tu dispositivo" }), h("h1", { class: "texto", text: "Instalar y leer sin conexión" }),
+        h("p", { class: "q-lead", text: "BiEx puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
+      instalar, sinConexion,
+      h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
+    if (sinConexion) pintarEstado();
+    alTope();
+  }
+  // Con una copia ya descargada, al haber una publicación nueva se actualiza sola en segundo plano (si no se pidió ahorrar datos)
+  function actualizarCopia() {
+    const sc = store.get("sinConexion", null);
+    if (!sc || !puedeSW() || !navigator.onLine || (navigator.connection && navigator.connection.saveData) || !D || sc.gen === D.generado) return;
+    setTimeout(() => { descargarTodo(() => {}).catch(() => {}); }, 12000);
+  }
+
+  // ------------------------------------------------------------------ saltos rápidos: inicio, mitad y final de la página
+  // En las páginas largas aparecen al desplazarse y se retiran solos al quedarse quietos; el aro del botón central
+  // muestra cuánto se ha avanzado.
+  (function saltosRapidos() {
+    const ir = (f) => {
+      const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const y = Math.round(max * f);
+      RP.fin = performance.now();
+      try { window.scrollTo({ top: y, left: 0, behavior: quieto() ? "auto" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
+    };
+    const aro = svg('<circle cx="20" cy="20" r="17.5" class="sr-fondo"/><circle cx="20" cy="20" r="17.5" class="sr-av" transform="rotate(-90 20 20)"/>', "0 0 40 40");
+    aro.classList.add("sr-aro");
+    const btn = (cls, et, ico, f, extra) => h("button", { type: "button", class: "sr-btn " + cls, "aria-label": et, title: et, onclick: () => { ir(f); mostrar(); } }, extra || null, svg(ico));
+    const caja = h("div", { class: "saltos-rap", role: "group", "aria-label": "Ir rápido por la página" },
+      btn("sr-ini", "Ir al inicio de la página", ICO.subir, 0), btn("sr-med", "Ir a la mitad de la página", ICO.centro, 0.5, aro), btn("sr-fin", "Ir al final de la página", ICO.bajar, 1));
+    document.body.append(caja);
+    const av = aro.querySelector(".sr-av"), CIR = 2 * Math.PI * 17.5;
+    av.setAttribute("stroke-dasharray", "0 " + CIR.toFixed(1));
+    let reloj = 0, pendiente = false;
+    const largo = () => document.documentElement.scrollHeight > window.innerHeight * 2.6;
+    function mostrar() {
+      if (!largo() || modal.open) { caja.classList.remove("vis"); return; }
+      caja.classList.add("vis");
+      clearTimeout(reloj);
+      reloj = setTimeout(() => { if (!caja.matches(":hover") && !caja.contains(document.activeElement)) caja.classList.remove("vis"); }, 2600);
+    }
+    function medir() {
+      pendiente = false;
+      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight), p = Math.min(1, Math.max(0, window.scrollY / max));
+      av.setAttribute("stroke-dasharray", (CIR * p).toFixed(1) + " " + CIR.toFixed(1));
+      caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98);
+    }
+    window.addEventListener("scroll", () => { if (!pendiente) { pendiente = true; requestAnimationFrame(medir); } mostrar(); }, { passive: true });
+    window.addEventListener("hashchange", () => { caja.classList.remove("vis"); });
+    caja.addEventListener("mouseleave", mostrar);
+    caja.addEventListener("focusout", mostrar);
+  })();
 
   // ------------------------------------------------------------------ lectura inmersiva
   // En teléfonos, el primer toque pide pantalla completa (dentro del sitio oficial se lo pide a la página que lo aloja);
@@ -2894,6 +3249,8 @@
     if (partes[0] === "buscar") { esc.libro = null; return vistaBuscar(""); }
     if (partes[0] === "cronologia") { esc.libro = null; return vistaCronologia(partes[1] || ""); }
     if (partes[0] === "fuente-q") { esc.libro = null; return vistaFuenteQ(partes[1] || ""); }
+    if (partes[0] === "marcadores") { esc.libro = null; return vistaMarcadores(); }
+    if (partes[0] === "app") { esc.libro = null; return vistaApp(); }
     if (partes[0] === "niveles") { esc.libro = null; return vistaNiveles(partes[1] || "", partes[2] || ""); }
     const c = partes[0].toUpperCase();
     const cap = +partes[1] || 1;
@@ -2913,5 +3270,6 @@
     window.addEventListener("hashchange", () => { pasosApp++; prepararPos(); enrutar(); });
     prepararPos();
     enrutar();
+    actualizarCopia();
   }).catch((er) => { console.error(er); vista().replaceChildren(fallo("No se pudo cargar el avance.")); });
 })();
