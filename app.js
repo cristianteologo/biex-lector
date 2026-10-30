@@ -74,6 +74,7 @@
     nube: '<path d="M7.5 18.5h9.5a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 6.9 9.6 4.5 4.5 0 0 0 7.5 18.5z" ' + L1 + '/><path d="M12 10.5v5.5M9.8 13.8l2.2 2.2 2.2-2.2" ' + L1 + '/>',
     papelera: '<path d="M5 7h14M10 4.5h4M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7M10.5 10.5v6M13.5 10.5v6" ' + L1 + '/>',
     copiar: '<rect x="8.5" y="8.5" width="11" height="11" rx="1.5" ' + L1 + '/><path d="M15.5 5.5v-.5A1.5 1.5 0 0 0 14 3.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h.5" ' + L1 + '/>',
+    orden: '<path d="M4 7.5h11M4 12h8M4 16.5h13" ' + L1 + '/><path d="M17.5 4.5l3 3-3 3" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
@@ -343,7 +344,8 @@
     vaciar();
     return frag;
   }
-  const txtVerso = (L) => textoLectura(L.t, !!L.g, L);
+  // Lectura organizada: los versos de texto base con el orden reorganizado (o, om, oc) cuando existe
+  const txtVerso = (L) => (prefs.lorg && L.o ? textoLectura(L.o, !!L.g, { m: L.om, c: L.oc, g: L.g, n: L.n, v: L.v }) : textoLectura(L.t, !!L.g, L));
   // Glosa breve: la primera traducción y, aparte, las alternativas entre corchetes
   // Traducción principal arriba y alternativas debajo; si hay corchetes en medio («buen [buena] mensaje [noticia]»),
   // arriba va la lectura sin corchetes («buen mensaje») y debajo la traducción completa
@@ -1070,8 +1072,8 @@
     navActual("#/libros");
     cap = Math.max(1, Math.min(b.caps.length, cap || 1));
     document.title = nombreLibro(b) + " " + cap + " · BiEx";
-    const mismo = esc.libro === c && esc.cap === cap && esc.modo === modo && $(".libro", vista());
-    esc.libro = c; esc.cap = cap; esc.modo = modo;
+    const mismo = esc.libro === c && esc.cap === cap && esc.modo === modo && esc.lorg === !!prefs.lorg && $(".libro", vista());
+    esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
     if (mismo) { enfocar(v, i); return; }
     vista().replaceChildren(estructuraLibro(b, cap, modo, null, [cargando()]));
     if (v == null) alTope();
@@ -1150,7 +1152,13 @@
   const nombreFiltro = (f) => (FILTROS.find((x) => x[0] === f) || FILTROS[0])[1];
   function barraHoja(b, cap, modo, versos) {
     const ir = (m) => "#/" + b.c + "/" + cap + (m === "a" ? "/a" : "");
-    const btnModo = (m, t) => h("button", { type: "button", "aria-pressed": (modo === "a") === (m === "a") ? "true" : "false", onclick: () => { if ((modo === "a") !== (m === "a")) { RP.anclaSig = capturarAncla(); location.hash = ir(m); } } }, t);
+    // Tres modos: Lectura (orden del griego), Organizada (orden del español donde ya existe) y Análisis
+    const activo = (m) => (m === "a" ? modo === "a" : modo !== "a" && (m === "o") === !!prefs.lorg);
+    const btnModo = (m, t, corto) => h("button", { type: "button", class: "m-" + m, "aria-label": m === "o" ? "Organizada" : t, "aria-pressed": activo(m) ? "true" : "false", title: m === "o" ? "Lectura organizada: orden del español donde ya está decidido" : null, onclick: () => {
+      if (activo(m)) return;
+      if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { const a = capturarAncla(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); volverAAncla(a); } return; } }
+      RP.anclaSig = capturarAncla(); location.hash = ir(m);
+    } }, svg(m === "a" ? ICO.lupa : m === "o" ? ICO.orden : ICO.libro), h("span", { class: "lbl" }, corto ? [h("span", { class: "largo", text: t }), h("span", { class: "corto", "aria-hidden": "true", text: corto })] : t));
     const prev = cap > 1 ? "#/" + b.c + "/" + (cap - 1) + (modo === "a" ? "/a" : "") : null;
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
     const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
@@ -1169,7 +1177,7 @@
       h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null),
       h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom })));
     return h("div", { class: "barra-hoja" },
-      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("l", "Lectura"), btnModo("a", "Análisis")),
+      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("l", "Lectura"), btnModo("o", "Organizada", "Orden"), btnModo("a", "Análisis")),
       titulo,
       h("div", { class: "cap-grupo movil" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
@@ -1218,7 +1226,12 @@
     const hayBase = todos.some((v) => v.g), hayAutor = todos.some((v) => !v.g);
     const ley = prefs.ed && hayAutor ? h("span", { class: "ley-mini" }, " Colores de la edición BiEx: ", h("span", { class: "tm", text: "palabras del Mashíaḥ" }), " · ", h("span", { class: "tc", text: "citas de la Antigua Voluntad" }), " · ", h("span", { class: "tk", text: "[ampliaciones]" }), " · ",
       h("button", { class: "enlace", type: "button", onclick: abrirOpciones, text: "opciones" }), ".") : null;
-    const nota = hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se presentan palabra por palabra.", h("br"), "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.", h("br"), "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
+    const nOrg = todos.filter((x) => x.o).length, nAut = todos.filter((x) => !x.g).length;
+    const nota = prefs.lorg ? h("p", { class: "nota-base nota-org" }, h("b", { text: "Lectura organizada. " }),
+      nAut ? (nAut === todos.length ? "Todos los versos de este capítulo tienen ya el orden de la edición BiEx." : nAut + (nAut === 1 ? " verso tiene" : " versos tienen") + " ya el orden de la edición BiEx. ") : "",
+      nAut < todos.length ? "En el texto base, «pero» y «porque» pasan al inicio de su cláusula, como en la edición" + (nOrg ? " (" + nOrg + (nOrg === 1 ? " verso" : " versos") + " en este capítulo)" : "") + "; el resto sigue el orden del griego mientras se organiza." : "", h("br"),
+      "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada. Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
+      hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se presentan palabra por palabra.", h("br"), "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.", h("br"), "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
       h("p", { class: "nota-base" }, "Toca cualquier verso para abrir su griego palabra por palabra.", ley);
     const quitarFiltro = () => { prefs.nivel = ""; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); };
     const avisoFiltro = f ? h("div", { class: "nota-filtro" }, svg(ICO.filtro), h("span", { text: (versos.length ? "Se muestran " + versos.length + " de " + todos.length + " versos" : "Ningún verso de este capítulo está aún en este nivel") + " · " + nombreFiltro(f) + "." }),
@@ -3254,6 +3267,7 @@
     if (partes[0] === "niveles") { esc.libro = null; return vistaNiveles(partes[1] || "", partes[2] || ""); }
     const c = partes[0].toUpperCase();
     const cap = +partes[1] || 1;
+    if (partes[2] === "o" && !prefs.lorg) { prefs.lorg = true; guardarPrefs(); } // «#/LIB/cap/o»: abre la lectura organizada
     const modo = partes[2] === "a" ? "a" : "l";
     const v = partes[3] != null ? +partes[3] : null;
     const i = partes[4] == null ? null : partes[4] === "m" ? "m" : +partes[4];

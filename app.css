@@ -1426,3 +1426,31 @@ body { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 .app-datos { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; font: .88rem/1.5 var(--f-ui); color: var(--tenue); }
 .app-aviso { color: var(--oro-vivo); }
 @media (max-width: 560px) { .app-card { grid-template-columns: minmax(0, 1fr); } .app-ico { width: 46px; height: 46px; } }
+
+/* modo «Organizada»: rótulo corto en teléfonos; nota de la lectura organizada */
+.seg-modo .corto { display: none; }
+@media (max-width: 1023px) {
+  .seg-modo .m-o .largo { display: none; }
+  .seg-modo .m-o .corto { display: inline; }
+}
+@media (max-width: 400px) {
+  .barra-hoja .seg-modo button { padding: 6px 7px; letter-spacing: .02em; font-size: min(.68rem, 11.5px); }
+}
+.nota-org b { color: var(--oro); font-weight: 500; }
+@media (max-width: 360px) {
+  .barra-hoja .seg-modo button { padding: 6px 5px; font-size: min(.66rem, 11px); }
+  .barra-hoja .seg-modo { padding: 2px; }
+}
+@media (max-width: 1023px) {
+  /* si no cabe, el nombre en español se abrevia con «…» y el capítulo queda siempre entero */
+  .bh-tit { grid-template-columns: minmax(0, max-content) max-content; }
+  .bh-tit .es { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+}
+/* modos: rótulos con su ícono; en teléfonos estrechos, el modo activo con su nombre y los otros solo con el ícono */
+.seg-modo button svg { display: none; }
+@media (max-width: 400px) {
+  .barra-hoja .seg-modo button { padding: 6px 9px; font-size: min(.68rem, 11.5px); letter-spacing: .03em; display: inline-flex; align-items: center; }
+  .barra-hoja .seg-modo button:not([aria-pressed="true"]) .lbl { display: none; }
+  .barra-hoja .seg-modo button:not([aria-pressed="true"]) svg { display: block; width: 17px; height: 17px; }
+  .barra-hoja .seg-modo { padding: 3px; }
+}
