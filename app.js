@@ -3100,7 +3100,7 @@
       const btn = h("button", { class: "btn oro", type: "button", disabled: !PWA.prompt, onclick: async () => { if (!PWA.prompt) return; PWA.prompt.prompt(); try { await PWA.prompt.userChoice; } catch (e) { /* ignorar */ } PWA.prompt = null; btn.disabled = true; } }, svg(ICO.descargar), h("span", { text: "Instalar BiEx" }));
       const pasos = ios ? h("ol", { class: "app-pasos" }, h("li", { text: "Toca el botón Compartir de Safari (el cuadrado con la flecha hacia arriba)." }), h("li", { text: "Elige «Agregar a inicio»." }), h("li", { text: "Confirma con «Agregar»: aparecerá el ícono de BiEx." }))
         : h("p", { class: "nota-ui", text: "Si el botón no se activa, usa el menú del navegador: «Instalar BiEx» o «Agregar a la pantalla de inicio». En Safari para Mac: Archivo › «Agregar al Dock»." });
-      instalar = tarjeta(ICO.descargar, "Instalar BiEx", "Queda como una aplicación más, con el ícono de BiEx, en tu pantalla de inicio o en tu escritorio.", ios ? null : btn, pasos);
+      instalar = tarjeta(ICO.descargar, "Instalar BiEx", "Queda como una aplicación más, directamente en tu pantalla de inicio o en tu escritorio.", ios ? null : btn, pasos);
     }
     const bDesc = h("button", { class: "btn oro", type: "button" }, svg(ICO.nube), h("span", { text: "Descargar todo" }));
     const bBorrar = h("button", { class: "btn chico", type: "button" }, svg(ICO.papelera), h("span", { text: "Borrar la copia" }));
@@ -3140,7 +3140,7 @@
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel app-pag" },
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "BiEx en tu dispositivo" }), h("h1", { class: "texto", text: "Instalar y leer sin conexión" }),
-        h("p", { class: "q-lead", text: "BiEx puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
+        h("p", { class: "q-lead", text: "Biblia Exacta ©™ puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
       instalar, sinConexion,
       h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
     if (sinConexion) pintarEstado();
