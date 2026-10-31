@@ -3730,7 +3730,10 @@
   const mdFecha = () => new Date().toISOString().slice(0, 10);
   const mdYaml = (o) => "---\n" + Object.entries(o).filter(([, v]) => v != null && v !== "").map(([k, v]) => k + ": " + (Array.isArray(v) ? "[" + v.map((x) => JSON.stringify(String(x))).join(", ") + "]" : typeof v === "number" ? v : JSON.stringify(String(v)))).join("\n") + "\n---\n\n";
   const mdArchivo = (t) => String(t).replace(/[\\/:*?"<>|#^[\]]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || "BiEx";
+  // en un marco ajeno a la inserción del sitio oficial (p. ej., la página pública de Claude, que no permite descargas) se copia
+  const SIN_DESCARGAS = (() => { try { return window.self !== window.top && !EMBED; } catch (e) { return true; } })();
   async function mdEntregar(nombre, texto) {
+    if (SIN_DESCARGAS) return mdCopiar(texto);
     const blob = new Blob([texto], { type: "text/markdown;charset=utf-8" });
     try {
       const a = h("a", { href: URL.createObjectURL(blob), download: mdArchivo(nombre) + ".md" });
@@ -3812,7 +3815,7 @@
     const conGr = h("input", { type: "checkbox", id: "md-gr" });
     const fila = (t, p, hacer) => h("div", { class: "md-fila" }, h("div", {}, h("b", { text: t }), p ? h("p", { text: p }) : null),
       h("div", { class: "md-acc" },
-        h("button", { class: "btn chico oro", type: "button", onclick: async (e) => { const bt = e.currentTarget; bt.disabled = true; try { const r = await hacer(); await mdEntregar(r.nombre, r.texto); } catch (er) { avisar("No se pudo preparar la nota"); } bt.disabled = false; } }, svg(ICO.descargar), h("span", { text: "Descargar .md" })),
+        SIN_DESCARGAS ? null : h("button", { class: "btn chico oro", type: "button", onclick: async (e) => { const bt = e.currentTarget; bt.disabled = true; try { const r = await hacer(); await mdEntregar(r.nombre, r.texto); } catch (er) { avisar("No se pudo preparar la nota"); } bt.disabled = false; } }, svg(ICO.descargar), h("span", { text: "Descargar .md" })),
         h("button", { class: "btn chico", type: "button", onclick: async (e) => { const bt = e.currentTarget; bt.disabled = true; try { const r = await hacer(); await mdCopiar(r.texto); } catch (er) { avisar("No se pudo preparar la nota"); } bt.disabled = false; } }, svg(ICO.copiar || ICO.lista), h("span", { text: "Copiar" }))));
     const filas = [];
     if (cap && (!sel || sel === "cap")) {
@@ -3823,7 +3826,7 @@
     if (!sel || sel === "estudios") for (const [k, t] of ESTUDIOS) filas.push(fila(t, "Estudio completo, con sus pasajes y sus fuentes en avisos plegables.", () => mdEstudio(k)));
     if (!sel || sel === "marcadores") filas.push(fila("Mis marcadores", "Tus versos marcados, con su tema y tus notas de estudio.", () => mdMarcadores()));
     abrirModal(() => cajaModal(cabModal("Exportar a Obsidian", "Notas .md con el mejor formato"), h("div", { class: "md-exp" },
-      h("p", { class: "nota-ui", text: "Cada nota lleva sus propiedades, encabezados, avisos plegables y los colores de BiEx. Guárdala en tu bóveda de Obsidian (o pégala en una nota nueva)." }), filas)));
+      h("p", { class: "nota-ui", text: SIN_DESCARGAS ? "Aquí no se pueden descargar archivos: copia la nota y pégala en una nota nueva de Obsidian. Lleva sus propiedades, encabezados, avisos plegables y los colores de BiEx." : "Cada nota lleva sus propiedades, encabezados, avisos plegables y los colores de BiEx. Guárdala en tu bóveda de Obsidian (o pégala en una nota nueva)." }), filas)));
   }
   // ------------------------------------------------------------------ letras meteoro
   // Letras hebreas y griegas que cruzan la pantalla como meteoritos, en direcciones distintas, por delante de los contenedores
