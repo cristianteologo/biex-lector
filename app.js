@@ -125,7 +125,7 @@
         for (const x of vs) {
           const k = c * 1000 + x.v;
           if (k < c0 * 1000 + v0 || k > c1 * 1000 + v1) continue;
-          m.set(c + ":" + x.v, { p, entero: !!(x.x && x.x[0] && x.x[0][0] === 0), ini: c === c0 && x.v === v0, fin: c === c1 && x.v === v1 });
+          m.set(c + ":" + x.v, { p, entero: !!(x.x && x.x.length === 1 && x.x[0][0] === 0 && x.x[0][1] >= (x.t || "").length), ini: c === c0 && x.v === v0, fin: c === c1 && x.v === v1 });
         }
       }
     }
@@ -1512,7 +1512,7 @@
     }
     // Llevar los marcadores a otro dispositivo
     const descargar = () => {
-      const datos = { app: "BiEx", tipo: "marcadores", v: 1, exportado: new Date().toISOString(), temas: Object.fromEntries(MK.temas()), marcas: MK.todo() };
+      const datos = { app: "BiEx", tipo: "marcadores", v: 1, exportado: new Date().toISOString(), temas: Object.fromEntries(MK.temas()), marcas: MK.todo(), planes: store.get("planes", null) };
       const a = h("a", { href: URL.createObjectURL(new Blob([JSON.stringify(datos, null, 1)], { type: "application/json" })), download: "biex-marcadores-" + new Date().toISOString().slice(0, 10) + ".json" });
       document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
       avisar("Archivo de marcadores descargado");
@@ -1534,7 +1534,15 @@
           n++;
         }
         if (d.temas && typeof d.temas === "object" && !store.get("marcasTemas", null)) store.set("marcasTemas", Object.fromEntries(TEMAS_BASE.map(([k]) => [k, typeof d.temas[k] === "string" ? d.temas[k].slice(0, 40) : ""]).filter(([, t]) => t)));
-        store.set("marcas", m); pintar(); avisar(n ? "Importados " + n + " marcadores" : "El archivo no tenía marcadores");
+        let np = 0;
+        if (d.planes && typeof d.planes === "object" && d.planes.hechos && typeof d.planes.hechos === "object") {
+          const e = Object.assign({ act: null, hechos: {}, ini: {} }, store.get("planes", null) || {});
+          for (const [id, hs] of Object.entries(d.planes.hechos)) if (Array.isArray(hs)) { const u = new Set([...(e.hechos[id] || []), ...hs.filter((x) => Number.isInteger(x) && x >= 0 && x < 400)]); e.hechos[id] = [...u].sort((a, b) => a - b); np += hs.length; }
+          for (const [id, t] of Object.entries(d.planes.ini || {})) if (!e.ini[id] && typeof t === "string") e.ini[id] = t;
+          if (!e.act && typeof d.planes.act === "string") e.act = d.planes.act;
+          store.set("planes", e);
+        }
+        store.set("marcas", m); pintar(); avisar((n ? "Importados " + n + " marcadores" : "El archivo no tenía marcadores") + (np ? " y el avance de los planes" : ""));
       } catch (e) { avisar("Ese archivo no es una copia de marcadores de BiEx"); }
     });
     const copiarTexto = async () => {
@@ -1631,7 +1639,7 @@
       }));
       const A = anadido(b.c, cap, v), aviso = avisoAnadido(b, cap, v, A);
       if (aviso) cont.append(aviso);
-      if (A && !A.entero && A.p.i != null) for (const el of fila.children) if (+el.dataset.i >= A.p.i) el.classList.add("an");
+      if (A && !A.entero) { const i0 = A.ini && A.p.i != null ? A.p.i : 0, j0 = A.fin && A.p.j != null ? A.p.j : 1e9; for (const el of fila.children) if (+el.dataset.i >= i0 && +el.dataset.i <= j0) el.classList.add("an"); }
       cont.append(h("div", { class: "av" + (A ? (A.entero ? " anadido" : " an-parcial") : ""), id: "v" + v },
         h("div", { class: "av-cab" }, h("b", { text: v }), L ? h("p", {}, txtVerso(L)) : h("p")), fila));
     }
@@ -3605,6 +3613,7 @@
     { id: "anual", t: "Un año con la Nueva Voluntad", dias: 260, ord: "crono", d: () => "Un capítulo por lectura: los 260 capítulos en orden cronológico, cinco por semana durante un año." },
     { id: "relatos-40", t: "Los relatos de la vida de YēshŪ́ʿa", dias: 40, ord: "crono", sel: ["LUK", "MAT", "MRK", "JHN"], d: () => ["LUK", "MAT", "MRK", "JHN"].map((c) => nombreLibro(libroDe(c))).join(", ").replace(/, ([^,]*)$/, " y $1") + ", en 40 días, según el primer acontecimiento que narra cada uno." },
     { id: "cartas-60", t: "Las cartas en el orden en que se escribieron", dias: 60, ord: "escritura", cartas: true, d: () => "Las cartas en 60 días, cada una en su momento: de la más temprana a la última, antes del año 70." },
+    { id: "escritura-90", t: "La Nueva Voluntad en el orden en que se escribió", dias: 90, ord: "escritura", d: () => "Toda la Nueva Voluntad en 90 días, libro por libro en el orden en que se escribió, del más temprano al último." },
     { id: "nv-30", t: "La Nueva Voluntad en 30 días", dias: 30, ord: "crono", d: () => "Una lectura intensa, de unos nueve capítulos por día, en orden cronológico." },
   ];
   const planDe = (id) => PLANES.find((x) => x.id === id) || null;
@@ -3845,12 +3854,11 @@
     function lanzar() {
       const W = window.innerWidth, A = window.innerHeight, mov = W < 700;
       if (capa.childElementCount >= (mov ? 2 : 3)) return;
-      const he = Math.random() < 0.45, L = he ? HE : GR, s = (mov ? 25 : 30) + Math.random() * (mov ? 13 : 20);
+      const he = Math.random() < 0.45, L = he ? HE : GR, s = ((mov ? 25 : 30) + Math.random() * (mov ? 13 : 20)) * 0.65;
       const ang = Math.random() * Math.PI * 2, dx = Math.cos(ang), dy = Math.sin(ang);
-      const v0 = (mov ? 170 : 240) + Math.random() * 150, a = v0 * 0.16;
-      // entra por fuera de la pantalla, del lado opuesto a su dirección, con un corrimiento lateral al azar, y sale por el otro
-      const R = Math.hypot(W, A) / 2 + 90, lat = (Math.random() - 0.5) * Math.min(W, A) * 0.95;
-      const x0 = W / 2 - dx * R - dy * lat, y0 = A / 2 - dy * R + dx * lat, D = 2 * R + 380;
+      const v0 = ((mov ? 170 : 240) + Math.random() * 150) * 0.5, a = v0 * 0.16;
+      // nace en cualquier punto de la pantalla (con un fundido) y recorre un trecho hasta desvanecerse (pedido de BiEx, 31-oct-2026)
+      const x0 = W * (0.08 + Math.random() * 0.84), y0 = A * (0.08 + Math.random() * 0.84), D = Math.hypot(W, A) * (0.35 + Math.random() * 0.3);
       const T = (-v0 + Math.sqrt(v0 * v0 + 2 * a * D)) / a, al = (v0 * T) / D;
       const largo = Math.min(120 + (v0 + a * T * 0.5) * 0.45, 330);
       const th = Math.random() * 360, w = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 34);
@@ -3861,7 +3869,7 @@
       const ms = T * 1000;
       const viaje = el.animate([{ transform: "translate3d(" + x0.toFixed(1) + "px," + y0.toFixed(1) + "px,0)" }, { transform: "translate3d(" + (x0 + dx * D).toFixed(1) + "px," + (y0 + dy * D).toFixed(1) + "px,0)" }],
         { duration: ms, easing: "cubic-bezier(0.3333," + (al / 3).toFixed(4) + ",0.6667," + ((al + 1) / 3).toFixed(4) + ")", fill: "both" });
-      el.animate([{ opacity: 0 }, { opacity: 1, offset: 0.14 }, { opacity: 1 }], { duration: ms, fill: "both" });
+      el.animate([{ opacity: 0 }, { opacity: 1, offset: 0.22 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: ms, easing: "ease-in-out", fill: "both" });
       letra.animate([{ transform: "rotate(" + th.toFixed(1) + "deg)" }, { transform: "rotate(" + (th + w * T).toFixed(1) + "deg)" }], { duration: ms, fill: "both" });
       viaje.onfinish = viaje.oncancel = () => el.remove();
     }
@@ -3871,7 +3879,7 @@
       t = setTimeout(() => {
         if (!quieto() && !document.hidden && !modal.open && !document.documentElement.classList.contains("desplazando")) lanzar();
         programar(false);
-      }, primero ? 1400 + Math.random() * 1600 : (W < 700 ? 4200 : 3300) * (0.55 + Math.random() * 0.9));
+      }, primero ? 1400 + Math.random() * 1600 : (W < 700 ? 14000 : 11000) * (0.55 + Math.random() * 0.9));
     }
     const despertar = () => { if (quieto()) { clearTimeout(t); capa.replaceChildren(); return; } programar(true); };
     document.addEventListener("visibilitychange", () => { if (!document.hidden) despertar(); });
