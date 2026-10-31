@@ -3034,50 +3034,83 @@
       navigator.serviceWorker.register("sw.js", { scope: "./" }).then((r) => { PWA.reg = r; }).catch(() => {});
     });
   }
-  // Pregunta al trabajador de servicio qué archivos tiene guardados
-  async function guardados() {
+  // Conversación con el trabajador de servicio: responde por un canal propio (sin respuesta en el plazo, null)
+  function alSW(msg, plazo) {
     const sw = navigator.serviceWorker && (navigator.serviceWorker.controller || (PWA.reg && PWA.reg.active));
-    if (!sw) return new Set();
+    if (!sw) return Promise.resolve(null);
     return new Promise((ok) => {
-      const ch = new MessageChannel(); const t = setTimeout(() => ok(new Set()), 4000);
-      ch.port1.onmessage = (e) => { clearTimeout(t); ok(new Set((e.data && e.data.rutas) || [])); };
-      sw.postMessage({ tipo: "guardados" }, [ch.port2]);
+      const ch = new MessageChannel(); const t = setTimeout(() => ok(null), plazo || 8000);
+      ch.port1.onmessage = (e) => { clearTimeout(t); ok(e.data || null); };
+      sw.postMessage(msg, [ch.port2]);
     });
   }
   const mb = (n) => (n / 1048576).toLocaleString("es", { maximumFractionDigits: n < 10485760 ? 1 : 0 }) + " MB";
-  // Lista de archivos que componen el lector (la arma wix/sellar.py en cada publicación)
-  async function archivosApp() {
-    const L = await cargar("datos/archivos.json");
-    const a = document.createElement("audio");
-    const ogg = !!(a.canPlayType && a.canPlayType('audio/ogg; codecs="opus"'));
-    // de la narración de la guía basta el formato que este navegador reproduce
-    return (L.archivos || []).filter(([r]) => !/^voz\/.+\.(mp4|ogg)$/.test(r) || (ogg ? /\.ogg$/ : /\.mp4$/).test(r));
+  // De la narración de la guía basta el formato que este navegador reproduce
+  const VOZ = (() => { try { const a = document.createElement("audio"); return a.canPlayType && a.canPlayType('audio/ogg; codecs="opus"') ? "ogg" : "mp4"; } catch (e) { return "mp4"; } })();
+  // La publicación vigente: la página de inicio del sitio dice de dónde carga el lector (BIEX_BASES); si no lo dice,
+  // de aquí mismo. La consulta va directa a la red (el trabajador no la guarda) y su firma distingue una versión de otra.
+  const vDe = (s) => (/app\.js\?v=([0-9a-f]+)/.exec(s || "") || [])[1] || "";
+  async function vigente() {
+    const r = await fetch(new URL("./?biex-consulta=" + Date.now(), location.href).href, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const html = await r.text();
+    let bases = [];
+    const m = /BIEX_BASES\s*=\s*(\[[^\]]*\])/.exec(html);
+    try { if (m) bases = JSON.parse(m[1]).filter((u) => typeof u === "string" && /^https:\/\/[^\s"'<>]+\/$/.test(u)); } catch (e) { bases = []; }
+    if (!bases.length) bases = [""];
+    return { bases, firma: bases[0] + "|" + vDe(html) };
   }
-  let descarga = null;
-  async function descargarTodo(alAvanzar) {
-    if (descarga) return descarga;
+  const firmaActual = () => BASES[0] + "|" + vDe((document.querySelector('script[src*="app.js"]') || {}).src);
+  // Lista de archivos de una publicación (la arma wix/sellar.py): [ruta, bytes, huella]
+  async function listaDe(bases) {
+    let ultimo = null;
+    for (const b of bases) {
+      try {
+        const r = await fetch(b + "datos/archivos.json", { cache: "no-store" });
+        if (!r.ok) throw new Error(r.status);
+        const L = await r.json();
+        L.base = b; L.archivos = (L.archivos || []).filter(([x]) => !/^voz\/.+\.(mp4|ogg)$/.test(x) || x.endsWith("." + VOZ));
+        return L;
+      } catch (e) { ultimo = e; }
+    }
+    throw ultimo || new Error("sin lista");
+  }
+  let descarga = null, descargaCompleta = false;
+  // Baja lo que falta o cambió (según las huellas) desde la publicación vigente; con «completa», también lo que nunca
+  // se guardó. La copia queda al día con esa publicación solo si al final no queda nada pendiente.
+  async function descargarTodo(alAvanzar, opc) {
+    const o = opc || {}, completa = o.completa !== false;
+    // si ya corre una revisión parcial y se pide la copia completa, se espera a que termine y se sigue con la completa
+    if (descarga) { if (!completa || descargaCompleta) return descarga; await descarga.catch(() => {}); return descargarTodo(alAvanzar, opc); }
+    descargaCompleta = completa;
     descarga = (async () => {
-      try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* sin permiso */ }
+      if (completa) { try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* sin permiso */ } }
       if (!navigator.serviceWorker.controller) { try { await navigator.serviceWorker.ready; } catch (e) { /* sigue */ } }
-      const lista = await archivosApp();
-      const ya = await guardados();
-      const total = lista.reduce((s, [, b]) => s + b, 0);
-      let hecho = lista.filter(([r]) => ya.has(r)).reduce((s, [, b]) => s + b, 0), fallos = 0;
-      const faltan = lista.filter(([r]) => !ya.has(r));
+      const L = o.lista || (await listaDe(((await vigente().catch(() => null)) || { bases: BASES }).bases));
+      const pedir = () => alSW({ tipo: "comparar", lista: L.archivos, completa, voz: VOZ, gen: L.gen, fecha: L.fecha }, 20000);
+      const cmp = await pedir();
+      if (!cmp) throw new Error("sin trabajador de servicio");
+      const tam = new Map(L.archivos.map(([r, b]) => [r, b]));
+      const total = L.archivos.reduce((s, [, b]) => s + b, 0);
+      let hecho = cmp.hay, fallos = 0, i = 0;
       alAvanzar(hecho, total);
-      let i = 0;
       const obrero = async () => {
-        while (i < faltan.length) {
-          const [r, b] = faltan[i++];
-          try { const res = await fetch(BASES[baseOk] + r, { cache: "no-cache" }); if (!res.ok) throw new Error(res.status); await res.arrayBuffer(); }
+        while (i < cmp.faltan.length) {
+          const r = cmp.faltan[i++];
+          try { const res = await fetch(L.base + r, { cache: "no-cache" }); if (!res.ok) throw new Error(res.status); await res.arrayBuffer(); }
           catch (e) { fallos++; }
-          hecho += b; alAvanzar(hecho, total);
+          hecho += tam.get(r) || 0; alAvanzar(hecho, total);
         }
       };
       await Promise.all(Array.from({ length: 6 }, obrero));
-      store.set("sinConexion", { gen: D && D.generado, fecha: Date.now(), fallos });
-      return { total, fallos };
-    })().finally(() => { descarga = null; });
+      // el trabajador guarda cada archivo con su huella; se comprueba que no quede nada pendiente antes de anotar
+      let quedan = 0;
+      if (cmp.faltan.length) { await new Promise((ok) => setTimeout(ok, 400)); const c2 = await pedir(); quedan = c2 ? c2.faltan.length : 1; }
+      await alSW({ tipo: "aplicada", gen: fallos || quedan ? null : L.gen, completa: completa || null, voz: VOZ, base: L.base });
+      if (completa) store.set("sinConexion", { gen: L.gen, fecha: Date.now(), fallos });
+      programarPeriodico();
+      return { total, fallos, bajados: cmp.faltan.length - fallos };
+    })().finally(() => { descarga = null; descargaCompleta = false; });
     return descarga;
   }
   function vistaApp() {
@@ -3122,12 +3155,14 @@
     async function pintarEstado() {
       const filas = [];
       try {
-        const lista = await archivosApp(), ya = await guardados();
-        const total = lista.reduce((s, [, b]) => s + b, 0), hay = lista.filter(([r]) => ya.has(r)).reduce((s, [, b]) => s + b, 0);
-        pintarAvance(hay, total);
-        const sc = store.get("sinConexion", null);
-        if (sc && sc.gen && D && sc.gen !== D.generado && hay) filas.push(h("li", { class: "app-aviso", text: "Hay una versión más reciente que tu copia: toca «Actualizar la copia»." }));
-        if (hay >= total * 0.999 && total) bDesc.lastChild.textContent = "Actualizar la copia";
+        const v = navigator.onLine ? await vigente().catch(() => null) : null;
+        const L = await listaDe(v ? v.bases : BASES);
+        const cmp = await alSW({ tipo: "comparar", lista: L.archivos, completa: true, voz: VOZ, gen: L.gen, fecha: L.fecha }, 20000);
+        const total = L.archivos.reduce((s, [, b]) => s + b, 0);
+        pintarAvance(cmp ? cmp.hay : 0, total);
+        if (cmp && cmp.cambian) filas.push(h("li", { class: "app-aviso", text: "Hay una versión más reciente en " + cmp.cambian + (cmp.cambian === 1 ? " archivo" : " archivos") + " de tu copia: con conexión se actualiza sola, o toca «Actualizar la copia»." }));
+        else if (cmp && v && cmp.hay && !cmp.faltan.length) filas.push(h("li", { text: "Tu copia está al día. Con conexión, cada publicación nueva se baja sola (solo lo que cambió)." }));
+        if (cmp && cmp.hay && !cmp.faltan.length) bDesc.lastChild.textContent = "Actualizar la copia";
       } catch (e) { txt.textContent = "La lista de archivos no está disponible sin conexión todavía."; }
       try {
         if (navigator.storage && navigator.storage.estimate) { const est = await navigator.storage.estimate(); filas.push(h("li", { text: "Espacio usado por BiEx en este navegador: " + mb(est.usage || 0) + (est.quota ? " de " + mb(est.quota) + " disponibles" : "") + "." })); }
@@ -3146,11 +3181,47 @@
     if (sinConexion) pintarEstado();
     alTope();
   }
-  // Con una copia ya descargada, al haber una publicación nueva se actualiza sola en segundo plano (si no se pidió ahorrar datos)
-  function actualizarCopia() {
-    const sc = store.get("sinConexion", null);
-    if (!sc || !puedeSW() || !navigator.onLine || (navigator.connection && navigator.connection.saveData) || !D || sc.gen === D.generado) return;
-    setTimeout(() => { descargarTodo(() => {}).catch(() => {}); }, 12000);
+  // La copia se mantiene al día sola: al abrir BiEx (8 s después) y al volver a la app tras una hora o más, se consulta
+  // la publicación vigente y se baja en segundo plano solo lo que cambió (nunca con «ahorro de datos»). Si lo abierto
+  // es anterior a lo publicado, un aviso discreto ofrece recargar.
+  let revisando = false;
+  async function actualizarCopia() {
+    if (revisando || !puedeSW() || !navigator.onLine || (navigator.connection && navigator.connection.saveData)) return;
+    revisando = true;
+    try {
+      store.set("revisionCopia", Date.now());
+      const est = await alSW({ tipo: "estado" });
+      if (!est) return;
+      const completa = est.completa || !!store.get("sinConexion", null); // copias bajadas antes de las huellas
+      if (!completa && !est.guardados) return;
+      const v = await vigente();
+      if (v.firma !== firmaActual()) avisoVersion();
+      const L = await listaDe(v.bases);
+      if (!L.gen || L.gen !== est.gen) await descargarTodo(() => {}, { lista: L, completa });
+      programarPeriodico();
+    } catch (e) { store.set("revisionCopia", 0); /* sin conexión o sin respuesta: se intenta otra vez */ }
+    finally { revisando = false; }
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - (store.get("revisionCopia", 0) || 0) >= 3600e3) actualizarCopia(); });
+  window.addEventListener("online", () => { if (!store.get("revisionCopia", 0)) setTimeout(actualizarCopia, 3000); });
+  // Aviso discreto: hay una versión publicada más reciente que la que está abierta
+  function avisoVersion() {
+    if ($(".aviso-version")) return;
+    const el = h("div", { class: "aviso-version", role: "status" },
+      h("span", { text: "Hay una versión nueva" }),
+      h("button", { type: "button", class: "av-si", text: "Actualizar", onclick: () => location.reload() }),
+      h("button", { type: "button", class: "av-no", "aria-label": "Ahora no", title: "Ahora no", onclick: () => { el.classList.remove("si"); setTimeout(() => el.remove(), 300); } }, svg(ICO.cerrar)));
+    document.body.append(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("si")));
+  }
+  // Si el navegador lo concede a la app instalada, la copia también se revisa en segundo plano (como mucho, una vez al día)
+  async function programarPeriodico() {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (!reg.periodicSync || !navigator.permissions) return;
+      const p = await navigator.permissions.query({ name: "periodic-background-sync" });
+      if (p.state === "granted") await reg.periodicSync.register("biex-actualizar", { minInterval: 24 * 3600e3 });
+    } catch (e) { /* no disponible en este navegador */ }
   }
 
   // ------------------------------------------------------------------ saltos rápidos: inicio, mitad y final de la página
@@ -3284,6 +3355,6 @@
     window.addEventListener("hashchange", () => { pasosApp++; prepararPos(); enrutar(); });
     prepararPos();
     enrutar();
-    actualizarCopia();
+    setTimeout(actualizarCopia, 8000);
   }).catch((er) => { console.error(er); vista().replaceChildren(fallo("No se pudo cargar el avance.")); });
 })();

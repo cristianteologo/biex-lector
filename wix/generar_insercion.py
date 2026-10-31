@@ -38,7 +38,7 @@ if a.cabecera:
     # Código para la cabecera (<head>) del sitio oficial: nombre e ícono de BiEx al instalar el sitio como aplicación
     if not jsd: sys.exit("Falta --sha.")
     out = ('<link rel="manifest" href="%sapp-oficial.webmanifest">\n<link rel="apple-touch-icon" href="%sicono/apple-touch-icon.png">\n'
-           '<meta name="apple-mobile-web-app-title" content="BiEx">\n<meta name="application-name" content="BiEx">\n'
+           '<meta name="apple-mobile-web-app-title" content="Biblia Exacta">\n<meta name="application-name" content="Biblia Exacta">\n'
            '<script>(function(){try{var m=document.querySelectorAll(\'link[rel="manifest"]\');for(var i=0;i<m.length;i++)if(m[i].href.indexOf("app-oficial.webmanifest")<0)m[i].parentNode.removeChild(m[i]);}catch(e){}})();</script>\n') % (jsd, jsd)
     sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
 if a.intro:

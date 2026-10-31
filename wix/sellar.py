@@ -29,12 +29,20 @@ _hs = " ".join("'sha256-" + _b64.b64encode(hashlib.sha256(x.encode()).digest()).
 _ix2 = re.sub(r"(script-src 'self')(?: 'sha256-[A-Za-z0-9+/=]+')*", lambda m: m.group(1) + (" " + _hs if _hs else ""), _ix, count=1)
 if _ix2 != _ix: (r / "index.html").write_text(_ix2, encoding="utf-8"); print("CSP actualizada")
 
-# lista de archivos del lector para «Descargar todo» (lectura sin conexión): ruta y tamaño
-import json as _json
+# lista de archivos del lector para «Descargar todo» y la actualización sola de la copia sin conexión:
+# [ruta, bytes, huella] (huella = 10 primeros caracteres del SHA-1 del contenido, la misma que calcula sw.js);
+# «gen» identifica la publicación (cambia si cambia cualquier archivo) y «fecha» es cuándo cambió por última vez
+import json as _json, datetime as _dt
 _lista = [f for f in ("app.css", "app.js", "busqueda.js")]
-_lista += sorted(str(x.relative_to(r)) for x in (r / "fuentes").glob("*.woff2") if not x.name.startswith("intro-"))
-_lista += sorted(str(x.relative_to(r)) for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json")
-_lista += sorted(str(x.relative_to(r)) for x in (r / "voz").rglob("*") if x.is_file() and x.suffix in (".mp4", ".ogg", ".json"))
-_arch = {"archivos": [[f, (r / f).stat().st_size] for f in _lista]}
-(r / "datos" / "archivos.json").write_text(_json.dumps(_arch, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-print("datos/archivos.json: %d archivos, %.1f MB" % (len(_lista), sum(b for _, b in _arch["archivos"]) / 1048576))
+_lista += sorted(x.relative_to(r).as_posix() for x in (r / "fuentes").glob("*.woff2") if not x.name.startswith("intro-"))
+_lista += sorted(x.relative_to(r).as_posix() for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json")
+_lista += sorted(x.relative_to(r).as_posix() for x in (r / "voz").rglob("*") if x.is_file() and x.suffix in (".mp4", ".ogg", ".json"))
+_filas = [[f, (r / f).stat().st_size, huella(f)] for f in _lista]
+_gen = hashlib.sha1(_json.dumps(_filas, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()[:12]
+_ruta_lista = r / "datos" / "archivos.json"
+try: _ant = _json.loads(_ruta_lista.read_text(encoding="utf-8"))
+except Exception: _ant = {}
+_fecha = _ant.get("fecha") if _ant.get("gen") == _gen and _ant.get("fecha") else _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+_arch = {"gen": _gen, "fecha": _fecha, "archivos": _filas}
+_ruta_lista.write_text(_json.dumps(_arch, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+print("datos/archivos.json: %d archivos, %.1f MB, publicación %s (%s)" % (len(_lista), sum(f[1] for f in _filas) / 1048576, _gen, _fecha))

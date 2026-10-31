@@ -1,7 +1,7 @@
 {
  "id": "./",
  "name": "BiEx – Biblia Exacta ©™",
- "short_name": "BiEx",
+ "short_name": "Biblia Exacta",
  "description": "La Nueva Voluntad traducida del griego al español palabra por palabra, con el análisis morfológico de cada palabra.",
  "lang": "es",
  "dir": "ltr",
@@ -34,14 +34,14 @@
    "purpose": "any"
   },
   {
-   "src": "icono/icon-512.png",
-   "sizes": "512x512",
+   "src": "icono/icon-1024.png",
+   "sizes": "1024x1024",
    "type": "image/png",
    "purpose": "any"
   },
   {
-   "src": "icono/icon-maskable-512.png",
-   "sizes": "512x512",
+   "src": "icono/icon-maskable-1024.png",
+   "sizes": "1024x1024",
    "type": "image/png",
    "purpose": "maskable"
   }
