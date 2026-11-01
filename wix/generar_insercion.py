@@ -57,7 +57,9 @@ t = (d / "insercion.plantilla.html").read_text(encoding="utf-8")
 t = t.replace("__BASE__", base).replace("__BASE2__", base2).replace("__COMPLETO__", barra(a.completo)).replace("__RESPALDO__", barra(a.respaldo))
 # Minimizar: quitar el comentario de cabecera, las líneas de comentario y las sangrías
 t = re.sub(r"/\*.*?\*/\n", "", t, count=1, flags=re.S)
-lineas = [l.strip() for l in t.splitlines()]
+lineas = [re.sub(r"\s*/\*[^*\n]*\*/", "", l).strip() for l in t.splitlines()]
+# tablas de libros (LIB): sin los espacios entre elementos (fuera de las cadenas no hay «", "» que importe)
+lineas = [l.replace('", "', '","').replace('": [', '":[').replace('], "', '],"') if '": ["' in l else l for l in lineas]
 out = "\n".join(l for l in lineas if l and not l.startswith("//")) + "\n"
 sys.stdout.write(out)
 sys.stderr.write("caracteres: %d (límite de Wix: 15000)\n" % len(out))

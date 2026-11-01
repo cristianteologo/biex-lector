@@ -25,9 +25,13 @@
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   // Cuánto amplía el navegador la página (vista móvil de Wix a 320 px); 1 en escritorio
+  // Solo la vista móvil de Wix (página dibujada a un ancho fijo, p. ej. 320 px) se contraescala; en una página de ancho
+  // del dispositivo (escritorio) la ampliación es de la persona (pellizco del panel táctil, Ctrl + rueda) y no se toca
+  var FIJA = /width=\s*\d/.test((document.querySelector('meta[name="viewport"]') || {}).content) || document.documentElement.clientWidth < 331 && screen.width > 360;
   function escala() {
+    if (!FIJA) return 1;
     var vv = window.visualViewport, k = (vv && vv.scale) || 1, w = document.documentElement.clientWidth || innerWidth;
-    if (k < 1.05) { var m = document.querySelector('meta[name="viewport"]'); if (m && /width=\s*\d/.test(m.content) && screen.width) k = (innerWidth > innerHeight ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) / w; }
+    if (k < 1.05 && screen.width) k = (innerWidth > innerHeight ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) / w;
     return k > 1.05 && k < 4 ? k : 1;
   }
 
@@ -120,7 +124,10 @@
     estado.hidden = true; giro.hidden = true; atajo.hidden = true; aviso.hidden = false;
     aviso.querySelector("small").textContent = errores.length ? "Detalle: " + errores.slice(-4).join(" · ") : "";
   }
+  var AB = "biex:lectorAbierto", EN_APP = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function recordar(si) { try { if (si) { sessionStorage[AB] = 1; localStorage[AB] = Date.now(); } else { delete sessionStorage[AB]; delete localStorage[AB]; } } catch (e) { } }
   function abrir(ruta) {
+    recordar(true);
     var pg = pagina(); if (typeof ruta === "string") pg = [ruta, pg[1], pg[2]];
     var enlace = (RESPALDO || COMPLETO) + pg[0];
     atajo.querySelector("a").href = enlace; aviso.querySelector("a").href = enlace;
@@ -134,6 +141,7 @@
     requestAnimationFrame(function () { velo.classList.add("b"); try { marco && marco.focus(); } catch (e) { /* ignorar */ } });
   }
   function cerrar() {
+    recordar(false);
     try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {}); } catch (e) { /* ignorar */ }
     velo.classList.remove("b");
     setTimeout(function () { velo.classList.remove("a"); }, 250);
@@ -179,6 +187,10 @@
   }
   revisar();
   setInterval(revisar, 700);
-  if (PEDIDO) setTimeout(function () { abrir(PEDIDO); }, 300);
+  // Sin recargas que pierdan la lectura: si el lector estaba abierto (recarga de la pestaña, o la app instalada que el sistema
+  // cerró en segundo plano), vuelve a abrirse en el verso donde se leía («#/seguir» lo resuelve el lector con su memoria)
+  var SEGUIR = false;
+  try { SEGUIR = sessionStorage[AB] == 1 || EN_APP && localStorage[AB] > Date.now() - 2592e6; } catch (e) { }
+  if (PEDIDO || SEGUIR) setTimeout(function () { abrir(PEDIDO || "#/seguir"); }, 300);
 })();
 </script>

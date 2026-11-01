@@ -285,7 +285,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .vl .vt { font-size: 1.14rem; line-height: calc(1.75 * var(--lh)); overflow-wrap: anywhere; }
 .vl.p { margin-top: 18px; }
 .vl.p:first-child { margin-top: 0; }
-.vl.p .vn::before { content: "§"; position: absolute; right: 0; top: -.62em; color: var(--tenue); font-size: .72em; line-height: 1; letter-spacing: 0; }
+.vl .vn .par-v { color: var(--oro); opacity: .78; font-size: .74em; margin-right: .14em; letter-spacing: 0; }
 .vl.n-base .vt { color: var(--tinta-2); }
 .vl.marcado { background: var(--oro-suave); box-shadow: inset 2px 0 0 var(--oro); }
 .continuo { padding: 18px clamp(14px, 3.4vw, 46px) 40px; max-width: 860px; margin: 0 auto; }
@@ -460,6 +460,13 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
   @keyframes entra { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
   .modal[open]::backdrop { animation: velo .28s ease; }
   @keyframes velo { from { opacity: 0; } to { opacity: 1; } }
+  /* salida de la ventana real (navegadores con «overlay»): se desvanece con su cristal y su velo, sin copias */
+  @supports (overlay: auto) {
+    .modal { transition: opacity .2s ease, transform .2s cubic-bezier(.4, 0, .2, 1), overlay .2s allow-discrete, display .2s allow-discrete; }
+    .modal:not([open]) { opacity: 0; transform: translateY(10px) scale(.985); pointer-events: none; }
+    .modal::backdrop { transition: opacity .22s ease, overlay .22s allow-discrete, display .22s allow-discrete; }
+    .modal:not([open])::backdrop { opacity: 0; }
+  }
   .hero-tit, .codice { animation: sube .9s cubic-bezier(.2, .7, .2, 1) both; }
   .codice { animation-delay: .08s; }
   @keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -542,7 +549,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 @media (prefers-reduced-motion: reduce) { .aviso-version { transition: opacity .2s; transform: none; } }
 
 /* ===================================================================== edición BiEx: colores del texto (ver INFO del sitio oficial) */
-:root { --ed-azul: #b6c8ee; --ed-naranja: #f0a35e; --ed-gris: #929292; }
+:root { --ed-azul: #b6c8ee; --ed-naranja: #f0a35e; --ed-gris: #a8a8a8; } /* gris de las ampliaciones: 20 % más claro (BiEx, 1-nov-2026) */
 :root[data-theme="light"] { --ed-azul: #1c3770; --ed-naranja: #b5530d; --ed-gris: #6a6a6a; }
 .it { font-style: italic; } .ng { font-weight: 700; }
 bdi.he { unicode-bidi: isolate; font-family: "Noto Serif Hebrew", "SBL Hebrew", "Ezra SIL", "Times New Roman", var(--f-texto); }
@@ -1526,7 +1533,8 @@ body { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 @keyframes selloTam { 0% { opacity: 0; transform: translate(-50%, -110%) scale(.92); } 18% { opacity: 1; transform: translate(-50%, -140%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -165%); } }
 html[data-mov="no"] .sello-tam { animation: none; opacity: 1; }
 /* al volver atrás, la vista se muestra cuando ya está en su sitio exacto (unos pocos fotogramas) */
-html.volviendo #vista { opacity: 0; }
+html.volviendo #vista { opacity: 0; transition: none; }
+#vista { transition: opacity .18s ease-out; } /* al volver, la vista aparece con un fundido breve en lugar de un golpe */
 html.volviendo .barra, html.volviendo .barra-hoja { transition: none !important; }
 /* la palabra a la que se llega desde «Ver en el análisis»: un halo dorado y siete estrellitas que se encienden y se apagan */
 .pal { position: relative; }
@@ -1613,6 +1621,11 @@ html[data-mov="no"] .ms-u.toca, html[data-mov="no"] .ms-var.pulso::after, html[d
 
 /* mientras se desplaza la página, lo que vive detrás se queda quieto: el desplazamiento va a todo su ritmo */
 html.desplazando .fondo-vivo > i, html.desplazando .vivo-motas i, html.desplazando .banda::before { animation-play-state: paused; }
+/* Con una ventana abierta, el fondo queda quieto: su cristal (desenfoque) no tiene que recalcularse en cada cuadro y la
+   ventana se desplaza con fluidez (Herramientas, búsqueda…); los meteoros en vuelo se ocultan con un fundido */
+html.con-modal .fondo-vivo > i, html.con-modal .vivo-motas i, html.con-modal .banda::before, html.con-modal .anillo svg circle + circle, html.con-modal .encab .h [lang="he"] { animation-play-state: paused; }
+.meteoros { transition: opacity .3s ease; }
+html.con-modal .meteoros { opacity: 0; }
 /* estudios: «Lo que pocos saben», «Por qué estas fechas» y «Falacias lógicas» */
 .estudio .panel-cab h1 { margin-bottom: 4px; }
 .est-sub { margin: 0; color: var(--tenue); font-family: var(--f-ui); font-size: .92rem; }
@@ -1743,7 +1756,7 @@ html[data-mov="no"] .meteoros { display: none; }
 /* Cierre de las ventanas: una copia quieta se desvanece y baja apenas mientras la ventana real ya se cerró */
 .modal-sale { position: fixed; z-index: 2147483000; pointer-events: none; display: flex; flex-direction: column; overflow: hidden; margin: 0; animation: modalSale .22s cubic-bezier(.4, 0, .2, 1) forwards; }
 .modal-sale > .m-caja { flex: 1 1 auto; min-height: 0; }
-.modal-velo-sale { position: fixed; inset: 0; z-index: 2147482999; pointer-events: none; background: rgba(4, 3, 2, .5); animation: veloSale .24s ease forwards; }
+.modal-velo-sale { position: fixed; inset: 0; z-index: 2147482999; pointer-events: none; background: rgba(4, 3, 2, .5); -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2); animation: veloSale .24s ease forwards; }
 :root[data-theme="light"] .modal-velo-sale { background: rgba(40, 30, 15, .28); }
 @keyframes modalSale { to { opacity: 0; transform: translate3d(0, 12px, 0) scale(.985); } }
 @keyframes veloSale { to { opacity: 0; } }
@@ -1798,3 +1811,66 @@ html[data-mov="no"] .meteoros { display: none; }
 .fin-plan { display: grid; justify-items: center; gap: 8px; margin: 26px auto 0; text-align: center; }
 .pl-ok { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-ui); font-size: .86rem; color: var(--oro); }
 .pl-ok svg { width: 16px; height: 16px; }
+
+/* «Adelante» dentro de una ventana (1-nov-2026) */
+.m-cab .m-adelante { color: var(--oro); }
+/* La palabra que se analiza, marcada en su verso (ventana de la palabra), con su halo de estrellitas (1-nov-2026) */
+.pal-sel { position: relative; border-radius: 4px; background: color-mix(in srgb, var(--oro) 20%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--oro) 42%, transparent); color: var(--tinta); }
+.pal-sel::after { content: ""; position: absolute; inset: -3px -2px; border-radius: 6px; box-shadow: 0 0 0 2px var(--oro), 0 0 16px color-mix(in srgb, var(--oro) 55%, transparent); opacity: 0; pointer-events: none; }
+.pal-sel.destello::after { animation: selHalo 2.4s ease-out; }
+@keyframes selHalo { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
+html[data-mov="no"] .pal-sel.destello::after { animation: none; }
+/* Versos leídos: un punto de oro junto al número (por versos) o el número subrayado (continuo) */
+.vl.leido .vn::before { content: ""; position: absolute; left: 3px; top: .74em; width: 5px; height: 5px; border-radius: 50%; background: var(--oro); opacity: .85; }
+.vs.leido > sup { text-decoration: underline 1.5px color-mix(in srgb, var(--oro) 70%, transparent); text-underline-offset: 3px; }
+.btn-leido.si { border-color: var(--oro); color: var(--oro); }
+.btn-leido svg, .fin-leido svg { width: 16px; height: 16px; }
+.fin-leido { display: flex; justify-content: center; margin: 16px 0 0; }
+.fin-leido.hecho { gap: 6px; align-items: center; color: var(--oro); font-size: .92rem; }
+/* Tu lectura (planes): cifras y gráfico vectorial de los últimos 30 días */
+.pl-stats { margin: 4px 0 22px; padding: 16px 18px 14px; border: 1px solid var(--linea); border-radius: 16px; background: var(--hoja-2); }
+.pls-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.pls-pct { font-family: var(--f-display); color: var(--oro); font-size: 1.05rem; }
+.pls-barra { height: 4px; border-radius: 4px; background: var(--hoja-3); margin: 8px 0 14px; overflow: hidden; }
+.pls-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--oro), var(--oro-vivo, #e9c779)); }
+.pls-cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.pls-c { display: grid; gap: 2px; text-align: center; }
+.pls-c b { font-family: var(--f-display); font-size: 1.6rem; font-weight: 500; color: var(--tinta); line-height: 1.1; font-variant-numeric: lining-nums; }
+.pls-c span { font-size: .74rem; color: var(--tenue); }
+.pls-graf { margin: 14px 0 0; }
+.pls-graf svg { display: block; width: 100%; height: auto; }
+.pls-graf .b-si { fill: var(--oro); opacity: .82; }
+.pls-graf .b-no { fill: var(--linea); }
+.pls-graf .b-hoy { opacity: 1; stroke: var(--oro-vivo, #e9c779); stroke-width: .8; }
+.pls-graf .b-meta { fill: var(--oro-vivo, #e9c779); }
+.pls-graf figcaption { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: .76rem; color: var(--tenue); }
+.pls-ley i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--oro-vivo, #e9c779); vertical-align: middle; }
+@media (max-width: 520px) { .pls-cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 14px; } }
+/* Historial: las últimas 24 citas */
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hist a { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--linea-2); background: var(--hoja-2); color: var(--tinta); text-decoration: none; }
+.hist a:hover, .hist a:focus-visible { border-color: var(--oro); }
+.hist-ref { font-family: var(--f-display); font-size: 1.12rem; min-width: 0; overflow-wrap: anywhere; }
+.hist-ref .trad { color: var(--tenue); font-size: .9em; }
+.hist-m { font-size: .78rem; color: var(--tenue); white-space: nowrap; }
+.hist a > svg { width: 16px; height: 16px; color: var(--oro); }
+@media (max-width: 480px) { .hist a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; } .hist-m { grid-column: 1; } .hist a > svg { grid-row: 1 / span 2; grid-column: 2; } }
+/* Deslizar entre versos dentro de una ventana: el contenido entra desde el lado del gesto */
+@media (prefers-reduced-motion: no-preference) {
+  .modal[data-paso="sig"] .m-cuerpo { animation: entraDer .3s cubic-bezier(.2, .7, .2, 1); }
+  .modal[data-paso="ant"] .m-cuerpo { animation: entraIzq .3s cubic-bezier(.2, .7, .2, 1); }
+}
+/* Buscador: secciones de los textos de BiEx (estudios y línea del tiempo) */
+.res-secc { display: grid; gap: 8px; }
+.res-sec { display: grid; gap: 3px; padding: 11px 13px; border: 1px solid var(--linea-2); border-radius: 12px; background: var(--hoja-2); color: var(--tinta); text-decoration: none; }
+.res-sec:hover, .res-sec:focus-visible { border-color: var(--oro); }
+.rs-s { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--oro); }
+.res-sec b { font-family: var(--f-display); font-weight: 500; font-size: 1.08rem; }
+.rs-tx { font-size: .9rem; color: var(--tinta-2); line-height: 1.45; }
+.sec-foco { position: relative; }
+.sec-halo { position: absolute; inset: -8px; border-radius: 14px; box-shadow: 0 0 0 2px var(--oro), 0 0 22px color-mix(in srgb, var(--oro) 40%, transparent); pointer-events: none; animation: secHalo 2.6s ease-out forwards; }
+@keyframes secHalo { 0%, 40% { opacity: 1; } 100% { opacity: 0; } }
+html[data-mov="no"] .sec-halo { animation: none; opacity: 0; }
+
+/* Lector dentro del sitio oficial en un teléfono estrecho (7 botones en la barra): la guía se oculta aquí y sigue en Herramientas */
+@media (max-width: 400px) { html.incrustado .barra .btn-guia { display: none; } }

@@ -197,7 +197,8 @@
 
   // ---------------------------------------------------------------- texto libre
   // Pesos de cada campo: b (traducción BiEx), e (otras traducciones en español), i (en inglés), g (palabras griegas)
-  const PESO = { b: 1.25, e: 1.0, i: 0.85, g: 1.1 };
+  // (1-nov-2026) el texto de BiEx ya cubre casi todas las palabras: pesa más que las otras traducciones
+  const PESO = { b: 1.5, e: 0.9, i: 0.8, g: 1.1 };
   function bm25(C, posts, N) {
     const df = posts.length || 1;
     const idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
