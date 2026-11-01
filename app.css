@@ -442,7 +442,9 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .filtros-m select, .filtros-m input, .filtros-m .mm-btn { width: 100%; min-width: 0; background: var(--hoja-2); border: 1px solid var(--linea-2); border-radius: 10px; padding: 8px 10px; color: var(--tinta); }
 
 /* ---------- pie */
-.pie { margin-top: 60px; border-top: 1px solid var(--linea-2); background: var(--bg-2); }
+.pie { margin-top: 30px; border-top: 1px solid var(--linea-2); background: var(--bg-2); }
+/* final de página sin hueco antes del pie (BiEx, 31-oct-2026): el último panel no suma su margen inferior */
+.pagina > .in > .panel:last-child { padding-bottom: 12px; }
 .pie .in { padding-top: 34px; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; font-family: var(--f-ui); font-size: .8rem; color: var(--tenue); line-height: 1.6; }
 .pie .marca-pie { font-family: var(--f-display); font-size: 1.1rem; letter-spacing: .3em; text-transform: uppercase; color: var(--tinta); margin-bottom: 6px; }
 .pie p { margin: 0; max-width: 92ch; }

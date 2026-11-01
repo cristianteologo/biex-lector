@@ -269,13 +269,15 @@
   // cursiva y negrita del borrador (Markdown), ampliaciones entre corchetes (y si son la primera alternativa o una de las
   // siguientes), paréntesis, < >, marcas voladas, griego aún sin traducción (⟪…⟫ en el texto base) y hebreo.
   // Según las opciones de lectura se ocultan o se colorean; los asteriscos sueltos del texto se conservan como marcas.
-  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048 };
+  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048, SIG: 4096 };
   const VOLADA = /[ʰ-˿ᴬ-ᶿ⁰-₟]/;
   function rasgos(t, esBase, x) {
     const n = t.length, f = new Uint16Array(n);
     for (const [a, z] of (x && x.m) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.M;
     for (const [a, z] of (x && x.c) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.C;
     for (const [a, z] of (x && x.x) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.AN;
+    // significado de un nombre o de una palabra transliterada en su primera aparición del capítulo: siempre visible (BiEx, 31-oct-2026)
+    for (const [a, z] of (x && x.s) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.SIG;
     if (!esBase) {
       // negritas **…** y cursivas *…* (mismas reglas que tenía el lector: los asteriscos sueltos no cuentan)
       let t2 = t;
@@ -333,7 +335,7 @@
   function oculto(b) {
     if (b & F.OCU) return true;
     const cor = corAct();
-    if ((b & F.COR) && (cor === "base" || (cor === "primera" && (b & F.ALT)))) return true;
+    if ((b & F.COR) && !(b & F.SIG) && (cor === "base" || (cor === "primera" && (b & F.ALT)))) return true;
     if ((b & F.PAR) && prefs.par === false) return true;
     if ((b & F.ANG) && prefs.ang === false) return true;
     if ((b & F.SUP) && prefs.sup === false) return true;
@@ -376,7 +378,7 @@
     return frag;
   }
   // Lectura organizada: los versos de texto base con el orden reorganizado (o, om, oc) cuando existe
-  const txtVerso = (L) => (prefs.lorg && L.o ? textoLectura(L.o, !!L.g, { m: L.om, c: L.oc, x: L.ox, g: L.g, n: L.n, v: L.v }) : textoLectura(L.t, !!L.g, L));
+  const txtVerso = (L) => (prefs.lorg && L.o ? textoLectura(L.o, !!L.g, { m: L.om, c: L.oc, x: L.ox, s: L.os, g: L.g, n: L.n, v: L.v }) : textoLectura(L.t, !!L.g, L));
   // Glosa breve: la primera traducción y, aparte, las alternativas entre corchetes
   // Traducción principal arriba y alternativas debajo; si hay corchetes en medio («buen [buena] mensaje [noticia]»),
   // arriba va la lectura sin corchetes («buen mensaje») y debajo la traducción completa
@@ -859,7 +861,7 @@
           h("div", { class: "ap-muestra" }, h("p", { class: "eyebrow", text: "Así se ve " + ref }), muestra),
           fila("Colores de la edición BiEx", "El texto en azul; las palabras del Mashíaḥ en anaranjado; las citas de la Antigua Voluntad en mayúsculas; las expresiones del Eterno en cursiva; las ampliaciones en gris.",
             grupo("ed", [[true, "Con colores"], [false, "Sin colores"]]), ley),
-          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la lectura organizada (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones"]])),
+          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la lectura organizada (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones (el significado de cada nombre se ve en su primera aparición)"]])),
           fila("Paréntesis ( )", null, grupo("par", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Signos < >", null, grupo("ang", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Letras voladas y asteriscos (ᵐ ⁿ ᶠ *)", null, grupo("sup", [[true, "Mostrar"], [false, "Ocultar"]])),
