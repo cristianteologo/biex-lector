@@ -1874,3 +1874,9 @@ html[data-mov="no"] .sec-halo { animation: none; opacity: 0; }
 
 /* Lector dentro del sitio oficial en un teléfono estrecho (7 botones en la barra): la guía se oculta aquí y sigue en Herramientas */
 @media (max-width: 400px) { html.incrustado .barra .btn-guia { display: none; } }
+/* Lupa en la computadora (pellizco del panel o Ctrl + rueda): la página ampliada se recorre a lo ancho y a lo alto; la barra
+   superior queda fija y a su tamaño, y la barra del capítulo deja de ir pegada (su ampliación la llevaría más abajo) */
+html.lupa .barra { position: fixed; top: 0; left: 0; right: 0; }
+html.lupa body { padding-top: calc(var(--alto) + env(safe-area-inset-top, 0px)); }
+html.lupa .barra-hoja { position: relative; top: auto; }
+html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; overflow-anchor: none !important; }

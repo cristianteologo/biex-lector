@@ -40,6 +40,11 @@ if a.cabecera:
     out = ('<link rel="manifest" href="%sapp-oficial.webmanifest">\n<link rel="apple-touch-icon" href="%sicono/apple-touch-icon.png">\n'
            '<meta name="apple-mobile-web-app-title" content="Biblia Exacta">\n<meta name="application-name" content="Biblia Exacta">\n'
            '<script>(function(){try{var m=document.querySelectorAll(\'link[rel="manifest"]\');for(var i=0;i<m.length;i++)if(m[i].href.indexOf("app-oficial.webmanifest")<0)m[i].parentNode.removeChild(m[i]);}catch(e){}})();</script>\n') % (jsd, jsd)
+    # App instalada (ventana de Windows, macOS o Linux): el título lleva el nombre de la app una sola vez, el completo con ©™,
+    # y después la página, sin «Biblia Exacta» ni «BiEx» repetidos (1-nov-2026); Wix cambia el título al navegar: se vigila
+    out += (r'<script>(function(){var A="BiEx – Biblia Exacta ©™";if(!(matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: window-controls-overlay)").matches||navigator.standalone===true))return;'
+            r'function f(){var t=document.title,r=t.replace(/BiEx\s*[–—-]\s*Biblia Exacta(\s*©?™?)?|Biblia Exacta(\s*©?™?)?|\bBiEx\b/gi," ").replace(/\s*([|·–—:-])\s*(?=[|·–—:-])/g," ").replace(/^[\s|·–—:-]+|[\s|·–—:-]+$/g,"").replace(/\s{2,}/g," ").trim(),n=r?A+" · "+r:A;if(n!==t)document.title=n}'
+            r'f();new MutationObserver(f).observe(document.head,{subtree:true,childList:true,characterData:true})})();</script>' + "\n")
     sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
 if a.intro:
     import hashlib

@@ -3548,6 +3548,89 @@
     if (yM != null) p.raiz.scrollTop = yM * p.raiz.scrollHeight;
     else if (p.v != null) volverAAncla({ v: p.v, frac: p.frac, off: Math.max(0, p.cy - bordeSup() - 6) });
   }
+  // ------------------------------------------------------------------ lupa en la computadora
+  // Pellizco del panel táctil o Ctrl + rueda del ratón: el navegador ampliaba sin tope y la vista llegaba a saltar y romperse.
+  // Ahora amplía el lector, por pasos estables (hasta 2,5×), sin reacomodar el texto y con el punto bajo el puntero en su
+  // sitio; la página ampliada se recorre con el panel en cualquier dirección (arriba, abajo, a los lados, en diagonal).
+  // Con una ventana abierta, el mismo gesto cambia el tamaño de su texto (como el pellizco en el teléfono).
+  const LUPA = [1, 1.25, 1.5, 1.75, 2, 2.5];
+  const fmtLupa = (z) => String(z).replace(".", ",") + "×";
+  let nLupa = 0, acLupa = 0, tLupaEv = 0, tLupaPaso = 0, gestoSafari = null, lupaTurno = 0;
+  // desplazarse (rueda sin Ctrl, teclado, toque) suelta el punto que se sostenía tras ampliar
+  for (const ev of ["keydown", "touchstart"]) window.addEventListener(ev, () => { lupaTurno++; }, { passive: true });
+  window.addEventListener("wheel", (e) => { if (!e.ctrlKey) lupaTurno++; }, { passive: true });
+  function ponerLupa(n, x, y) {
+    const v = vista(); if (!v) return;
+    n = Math.max(0, Math.min(LUPA.length - 1, n));
+    if (n === nLupa) { sello(x, y, n ? "Ampliación máxima · " + fmtLupa(LUPA[n]) : "Tamaño normal", true); return; }
+    const z0 = LUPA[nLupa], z1 = LUPA[n], r0 = v.getBoundingClientRect();
+    // lo que está bajo el puntero (el verso, o la página) y en qué punto de él: después de ampliar vuelve a quedar ahí
+    const bajo = document.elementFromPoint(x, y), ve = bajo && bajo.closest && bajo.closest("#vista [id^='v'], #vista .tarjeta, #vista .panel");
+    const ra = ve ? ve.getBoundingClientRect() : null, fx = ra && ra.width ? (x - ra.left) / ra.width : 0, fy = ra && ra.height ? (y - ra.top) / ra.height : 0;
+    const px = (x - r0.left) / z0, py = (y - r0.top) / z0;
+    document.documentElement.classList.add("lupa-ajuste");
+    if (!nLupa) v.style.width = Math.round(r0.width) + "px"; // ancho fijo: se amplía sin reacomodar el texto
+    nLupa = n;
+    v.style.zoom = n ? String(z1) : "";
+    if (!n) v.style.width = "";
+    document.documentElement.classList.toggle("lupa", n > 0);
+    if (n) document.documentElement.classList.remove("inmersivo");
+    if (ve) ve.classList.add("cv-vis");
+    const fijar = () => {
+      let l, t;
+      if (ve && ve.isConnected) { const r = ve.getBoundingClientRect(); l = window.scrollX + r.left + fx * r.width - x; t = window.scrollY + r.top + fy * r.height - y; }
+      else { const r1 = v.getBoundingClientRect(); l = window.scrollX + r1.left + px * z1 - x; t = window.scrollY + r1.top + py * z1 - y; }
+      try { window.scrollTo({ left: l, top: t, behavior: "instant" }); } catch (e) { window.scrollTo(l, t); }
+    };
+    // lo de arriba puede terminar de dibujarse con su altura real y las barras de acomodarse: se sostiene el punto cuadro a
+    // cuadro un momento (hasta que queda quieto, como mucho 0,7 s; se suelta si la persona desplaza)
+    // (sin desplazamiento suave ni el anclaje propio del navegador mientras tanto: los dos movían la página por su cuenta)
+    const raizH = document.documentElement; raizH.classList.add("lupa-ajuste");
+    const yo = ++lupaTurno; let quietos = 0, k = 0, yAnt = -1;
+    const sostener = () => {
+      if (yo !== lupaTurno || ++k > 42 || quietos > 4) { if (yo === lupaTurno) raizH.classList.remove("lupa-ajuste"); return; }
+      fijar(); const yy = Math.round(window.scrollY); quietos = yy === yAnt ? quietos + 1 : 0; yAnt = yy; requestAnimationFrame(sostener);
+    };
+    sostener();
+    sello(x, y, n ? "Lupa " + fmtLupa(z1) : "Tamaño normal", false);
+  }
+  let gestoN = 0, gestoModal = -1;
+  function pasoGesto(dir, x, y) {
+    // en una ventana, como el pellizco del teléfono: un gesto, un tamaño de texto
+    if (modal.open) { if (gestoModal === gestoN) return; gestoModal = gestoN; pasoPellizco({ cx: x, cy: y, raiz: $(".m-cuerpo", modal), v: null }, dir); }
+    else ponerLupa(nLupa + dir, x, y);
+  }
+  window.addEventListener("wheel", (e) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault(); // sin la ampliación del navegador (sin tope)
+    if (gestoSafari) return;
+    const ahora = performance.now();
+    if (ahora - tLupaEv > 320) { acLupa = 0; gestoN++; } // un gesto nuevo
+    tLupaEv = ahora;
+    acLupa += e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
+    // un paso cada 260 ms como mucho, por amplio o rápido que sea el gesto: nunca se dispara
+    if (ahora - tLupaPaso < 260 || Math.abs(acLupa) < 40) return;
+    const dir = acLupa < 0 ? 1 : -1; acLupa = 0; tLupaPaso = ahora;
+    pasoGesto(dir, e.clientX, e.clientY);
+  }, { passive: false });
+  // Safari en el Mac (gestos propios del panel táctil): un gesto, un paso
+  if (!("ontouchstart" in window)) {
+    document.addEventListener("gesturestart", (e) => { e.preventDefault(); gestoSafari = { paso: 0 }; gestoN++; });
+    document.addEventListener("gesturechange", (e) => {
+      e.preventDefault();
+      if (!gestoSafari || gestoSafari.paso || !(e.scale > 1.12 || e.scale < 0.89)) return;
+      gestoSafari.paso = 1; pasoGesto(e.scale > 1 ? 1 : -1, e.clientX || innerWidth / 2, e.clientY || innerHeight / 2);
+    });
+    document.addEventListener("gestureend", (e) => { e.preventDefault(); gestoSafari = null; });
+  }
+  // Ctrl + 0 vuelve también la lupa a su tamaño normal; si cambia el ancho de la ventana, el ancho fijo se mide de nuevo
+  document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "0" && nLupa) ponerLupa(0, innerWidth / 2, innerHeight / 2); });
+  window.addEventListener("resize", () => {
+    const v = nLupa && vista(); if (!v) return;
+    const z = v.style.zoom; v.style.zoom = ""; v.style.width = "";
+    v.style.width = Math.round(v.getBoundingClientRect().width) + "px"; v.style.zoom = z;
+  }, { passive: true });
+
   function sello(x, y, txt, tope) {
     const el = h("div", { class: "sello-tam" + (tope ? " tope" : ""), "aria-hidden": "true", text: txt });
     el.style.left = Math.round(x) + "px"; el.style.top = Math.round(y) + "px";
@@ -3562,6 +3645,20 @@
   const PWA = { prompt: null, reg: null, instalada: false };
   const puedeSW = () => !EMBED && "serviceWorker" in navigator && window.isSecureContext && !!document.querySelector('link[rel="manifest"]');
   const enApp = () => (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: window-controls-overlay)").matches)) || navigator.standalone === true;
+  // En la app instalada (Windows, macOS, Linux) la ventana muestra el título del documento: el nombre de la app va una sola
+  // vez, el completo con ©™, y después la página («BiEx – Biblia Exacta ©™ · YÔḥānā́n [Juan] 3»), sin «BiEx» ni
+  // «Biblia Exacta» repetidos
+  const NOMBRE_APP = "BiEx – Biblia Exacta ©™";
+  const tituloApp = (t) => {
+    const r = String(t || "").replace(/BiEx\s*[–—-]\s*Biblia Exacta(\s*©?™?)?|Biblia Exacta(\s*©?™?)?|\bBiEx\b/gi, " ")
+      .replace(/\s*([|·–—:-])\s*(?=[|·–—:-])/g, " ").replace(/^[\s|·–—:-]+|[\s|·–—:-]+$/g, "").replace(/\s{2,}/g, " ").trim();
+    return r ? NOMBRE_APP + " · " + r : NOMBRE_APP;
+  };
+  if (enApp() && !EMBED) {
+    const fijarTitulo = () => { const n = tituloApp(document.title); if (n !== document.title) document.title = n; };
+    fijarTitulo();
+    new MutationObserver(fijarTitulo).observe(document.head, { subtree: true, childList: true, characterData: true });
+  }
   window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); PWA.prompt = e; document.documentElement.classList.add("app-instalable"); });
   window.addEventListener("appinstalled", () => { PWA.prompt = null; PWA.instalada = true; document.documentElement.classList.remove("app-instalable"); avisar("BiEx quedó instalada"); });
   if (puedeSW()) {
@@ -3820,7 +3917,8 @@
     if (!tDesp) r.classList.add("desplazando"); else clearTimeout(tDesp);
     tDesp = setTimeout(() => { tDesp = 0; r.classList.remove("desplazando"); }, 220);
   }, { passive: true });
-  const inmersivo = (si) => { if (si) { medirBarraHoja(); marcarPegada(); } document.documentElement.classList.toggle("inmersivo", !!si); };
+  // (con la lupa puesta las barras no se retiran: la del capítulo va en el flujo y su cambio de altura movería la página)
+  const inmersivo = (si) => { if (si && document.documentElement.classList.contains("lupa")) si = false; if (si) { medirBarraHoja(); marcarPegada(); } document.documentElement.classList.toggle("inmersivo", !!si); };
   // ¿la barra del capítulo está pegada arriba? (el centinela, justo antes de ella, ya pasó por debajo de su tope)
   function marcarPegada() {
     const bh = $(".barra-hoja"), c = $(".bh-centinela"); if (!bh || !c) return;
