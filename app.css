@@ -99,7 +99,12 @@ a { color: var(--oro); text-underline-offset: 3px; }
 @media (max-width: 640px) { .btn-buscar span { display: none; } .btn-buscar { width: 40px; padding: 0; justify-content: center; } .marca .nombre b { font-size: 16px; letter-spacing: .24em !important; } }
 @media (max-width: 380px) { .marca .nombre small { display: none; } }
 
-.pagina { min-height: 60vh; }
+.pagina { min-height: 0; }
+/* (7-nov-2026) en las vistas cortas, el pie queda al fondo de la pantalla: antes sobraba una franja vacía DEBAJO del pie */
+#app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
+#app > .pagina { flex: 1 0 auto; }
+/* (7-nov-2026) la altura mínima solo mientras carga: en las vistas cortas dejaba una franja vacía antes del pie */
+.pagina:has(> .cargando, > .in > .cargando) { min-height: 60vh; }
 .cargando, .vacio, .error { color: var(--tenue); padding: 60px 16px; text-align: center; font-family: var(--f-ui); }
 .cargando::before { content: ""; display: block; width: 34px; height: 34px; margin: 0 auto 14px; border-radius: 50%; border: 1px solid var(--linea); border-top-color: var(--oro); animation: giro 1s linear infinite; }
 @keyframes giro { to { transform: rotate(360deg); } }
@@ -442,10 +447,10 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .filtros-m select, .filtros-m input, .filtros-m .mm-btn { width: 100%; min-width: 0; background: var(--hoja-2); border: 1px solid var(--linea-2); border-radius: 10px; padding: 8px 10px; color: var(--tinta); }
 
 /* ---------- pie */
-.pie { margin-top: 30px; border-top: 1px solid var(--linea-2); background: var(--bg-2); }
+.pie { margin-top: 18px; border-top: 1px solid var(--linea-2); background: var(--bg-2); }
 /* final de página sin hueco antes del pie (BiEx, 31-oct-2026): el último panel no suma su margen inferior */
 .pagina > .in > .panel:last-child { padding-bottom: 12px; }
-.pie .in { padding-top: 34px; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; font-family: var(--f-ui); font-size: .8rem; color: var(--tenue); line-height: 1.6; }
+.pie .in { padding-top: 28px; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; font-family: var(--f-ui); font-size: .8rem; color: var(--tenue); line-height: 1.6; }
 .pie .marca-pie { font-family: var(--f-display); font-size: 1.1rem; letter-spacing: .3em; text-transform: uppercase; color: var(--tinta); margin-bottom: 6px; }
 .pie p { margin: 0; max-width: 92ch; }
 .pie .autoria { display: grid; gap: 3px; justify-items: center; text-align: center; margin-top: 14px; }
@@ -1300,7 +1305,7 @@ html.con-modal .barra { transform: none; }
 .bh-tit .tr { font-family: var(--f-display); font-size: .98rem; font-weight: 500; color: var(--oro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; transition: color .25s; }
 .bh-tit .es { font-family: var(--f-ui); font-size: .58rem; letter-spacing: .22em; text-transform: uppercase; color: var(--tenue); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .bh-tit .bh-cap { display: inline-flex; align-items: baseline; gap: .45em; color: var(--tinta-2); white-space: nowrap; flex: none; }
-.bh-tit .bh-cap::before { content: "·"; color: var(--oro-2); }
+/* (7-nov-2026) sin el punto entre el libro y el capítulo: rompía la simetría (pedido de BiEx); el espacio los separa */
 .bh-tit .bh-cap [lang="he"] { font-family: var(--f-texto); font-size: .82rem; }
 .bh-tit .rom { font-family: var(--f-display); font-size: .78rem; letter-spacing: .12em; }
 .bh-tit:hover .tr, .bh-tit:focus-visible .tr { color: var(--oro-vivo); }

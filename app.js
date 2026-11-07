@@ -421,18 +421,38 @@
   // Qué tramo del texto del verso corresponde a cada palabra griega: las traducciones de las palabras se buscan en orden
   // (el texto base es su suma; en la lectura organizada, una pospositiva movida se halla buscando desde el comienzo).
   // En los textos del autor solo vale una coincidencia única (no hay alineación palabra por palabra).
+  // (7-nov-2026) la lectura puede mostrar una pieza recortada: el significado de un nombre solo va en su primera aparición del
+  // capítulo (Mashíaḥ [Ungido] → Mashíaḥ), el Nombre o YēshŪ́ʿa cambian de forma… Si la pieza entera no está, se busca su
+  // núcleo (sin lo que va entre [ ] ni los superíndices); y una palabra que quede sola sin hallar entre dos halladas toma el
+  // hueco que dejan (antes la palabra tocada caía en la palabra griega anterior: Yôḥānā́n 1:41).
+  const nucleoPieza = (s) => { let x = s, y; do { y = x; x = x.replace(/\s*\[[^\[\]]*\]/g, ""); } while (x !== y); return x.replace(/[ⁿᵐᶠ]/g, "").trim(); };
   function alinearTokens(L, toks) {
     const raw = crudoVerso(L), bajo = raw.toLowerCase(), out = [];
     let cur = 0;
+    const buscar = (tr) => {
+      let a = -1;
+      if (L.g) { a = bajo.indexOf(tr, cur); if (a < 0) a = bajo.indexOf(tr); }
+      else if (tr.length >= 3) { const p = bajo.indexOf(tr); if (p >= 0 && bajo.indexOf(tr, p + 1) < 0) a = p; }
+      return a;
+    };
     for (const t of toks) {
-      const tr = String(T.TR[t[3] || 0] || "").toLowerCase();
+      let tr = String(T.TR[t[3] || 0] || "").toLowerCase();
       let a = -1, z = -1;
       if (tr) {
-        if (L.g) { a = bajo.indexOf(tr, cur); if (a < 0) a = bajo.indexOf(tr); }
-        else if (tr.length >= 3) { const p = bajo.indexOf(tr); if (p >= 0 && bajo.indexOf(tr, p + 1) < 0) a = p; }
+        a = buscar(tr);
+        if (a < 0) { const nu = nucleoPieza(tr); if (nu && nu !== tr && nu.length >= 2) { a = buscar(nu); if (a >= 0) tr = nu; } }
         if (a >= 0) z = a + tr.length;
       } else if (L.g) { a = raw.indexOf("⟪", cur); const e = a >= 0 ? raw.indexOf("⟫", a) : -1; z = e > 0 ? e + 1 : -1; }
       if (a >= 0 && z > a) { out.push([a, z]); if (a >= cur) cur = z; } else out.push(null);
+    }
+    if (L.g) for (let j = 0; j < out.length; j++) {
+      if (out[j]) continue;
+      const ant = j > 0 ? out[j - 1] : [0, 0], sig = j + 1 < out.length ? out[j + 1] : [raw.length, raw.length];
+      if (!ant || !sig) continue; // dos o más seguidas sin hallar: no se adivina
+      let a = ant[1], z = sig[0];
+      while (a < z && /[\s,.;:·¡!¿?«»“”‘’()]/.test(raw[a])) a++;
+      while (z > a && /[\s,.;:·¡!¿?«»“”‘’()]/.test(raw[z - 1])) z--;
+      if (z > a && /\p{L}/u.test(raw.slice(a, z))) out[j] = [a, z];
     }
     return out;
   }
@@ -484,7 +504,7 @@
   const ORDENES = [
     ["crono", "Cronológico", () => "Primero los relatos de la vida de YēshŪ́ʿa, según el primer acontecimiento que narra cada uno; luego " + nombreLibro(libroDe("ACT")) + ", las cartas en el orden en que se escribieron y, al final, " + nombreLibro(libroDe("REV")) + "."],
     ["escritura", "Por escritura", "Cada libro en el orden en que se escribió, con su fecha aproximada: todos, antes del año 70."],
-    ["tradicional", "Tradicional", "El orden habitual en espurias Biblias impresas."]];
+    ["tradicional", "Tradicional", "El orden habitual en espurias traducciones de la Biblia."]];
   const ordenActivo = () => (CRONO && CRONO.ordenes[prefs.orden] ? prefs.orden : "tradicional");
   const nombreOrden = () => ({ crono: "en orden cronológico", escritura: "por fecha de escritura", tradicional: "en el orden tradicional" })[ordenActivo()];
   function librosEnOrden() { const k = ordenActivo(); return k === "tradicional" ? D.libros : CRONO.ordenes[k].map(libroDe).filter(Boolean); }
@@ -492,7 +512,8 @@
   // En rótulos en mayúsculas, las palabras con signos (YēshŪ́ʿa) se dejan en su forma para no deformar los diacríticos
   const protegerMay = (t) => String(t).split(/(\S*[\u0300-\u036f\u02b0-\u02ff]\S*)/).filter(Boolean).map((x) => (/[\u0300-\u036f\u02b0-\u02ff]/.test(x) ? h("span", { class: "np", text: x }) : x));
   const fechaEscrito = (b) => (CRONO && CRONO.libros[b.c] ? CRONO.libros[b.c].e || "" : "");
-  const fechaNarra = (b) => (CRONO && CRONO.libros[b.c] ? CRONO.libros[b.c].n || "" : "");
+  // (7-nov-2026) «c. 28 – 30» → «c. 28–30», como «Escrito c. 45–60» a su lado; el guion espaciado queda solo entre eras
+  const fechaNarra = (b) => (CRONO && CRONO.libros[b.c] ? (CRONO.libros[b.c].n || "").replace(/(\d) – (\d)/g, "$1–$2") : "");
   const estadoEt = (n) => (D.escala[n] || {}).etiqueta || n;
   const refCorta = (b, cap, v) => nombreLibro(b) + " " + cap + (v != null ? ":" + v : "");
 
@@ -506,7 +527,7 @@
   let pasoAdelante = () => {};
   let repintarAdelante = () => {};
   var MET = null; // var: la apariencia se aplica antes de esta línea (sin zona muerta)
-  const RP = { inm: null, clave: null, objetivo: null, guardar: true, t: 0, ts: 0, tg: 0, forzar: null, previa: null, actual: null, ancla: null, anclaSig: null };
+  const RP = { inm: null, clave: null, objetivo: null, guardar: true, t: 0, ts: 0, tg: 0, forzar: null, previa: null, actual: null, ancla: null, anclaSig: null, enSitio: false, anclaEnSitio: null };
   const nuevaClave = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   function claveActual() {
     const st = history.state;
@@ -611,6 +632,32 @@
   }
   // Tras cambiar el filtro: si el verso que se leía (o uno posterior) sigue a la vista, se vuelve a él; si quedó oculto,
   // la barra del capítulo se queda fija donde estaba y el resultado aparece debajo (nunca se salta al comienzo de la página)
+  // (7-nov-2026) al pasar entre Lectura/Orden y Análisis se llega al COMIENZO del verso que se estaba leyendo (si ya iba
+  // pasado en más de la mitad, al siguiente): en el Análisis cada verso es largo y caer a media ficha desorienta
+  function anclaInicioVerso() {
+    const a = capturarAncla(); if (!a || a.tope || a.v == null) return a;
+    if (a.frac > 0.55) { const sig = [...document.querySelectorAll("#vista [id^='v']")].find((x) => /^v\d+$/.test(x.id) && +x.id.slice(1) > a.v); if (sig) return { v: +sig.id.slice(1), frac: 0, off: 0 }; }
+    return { v: a.v, frac: 0, off: a.frac > 0 ? 0 : a.off };
+  }
+  // el ancla de un cambio en el sitio se aplica en el mismo cuadro en que se pone el texto nuevo (nada se ve saltar)
+  // (el salto es del lector: no cuenta como lectura para ocultar las barras; y la posición se sostiene mientras la página
+  // termina de acomodarse, como en cualquier restauración)
+  function aplicarAnclaEnSitio(a) {
+    if (!a) return;
+    RP.fin = performance.now();
+    if (a.tope) { saltarA(0); return; }
+    const hay = a.v != null && [...document.querySelectorAll("#vista [id^='v']")].some((x) => /^v\d+$/.test(x.id) && +x.id.slice(1) >= a.v);
+    if (hay) { const y = yDeAncla(a); if (y != null) saltarA(y); volverAAncla(a); return; }
+    if (!a.barra) return;
+    const bh = $(".barra-hoja"), hoja = $(".hoja"); if (!bh || !hoja) return;
+    saltarA(Math.max(0, Math.round(window.scrollY + hoja.getBoundingClientRect().top - (parseFloat(getComputedStyle(bh).top) || 0))));
+  }
+  // fundido corto solo del texto (la barra del capítulo no se mueve ni parpadea); por el compositor (opacidad)
+  function fundirTexto() {
+    if (document.documentElement.dataset.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+    const hoja = $(".hoja", vista()); if (!hoja || !hoja.animate) return;
+    for (const el of hoja.children) if (!el.matches(".barra-hoja, .bh-centinela")) el.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+  }
   function volverAAnclaOBarra(a) {
     if (a && a.tope) { saltarA(0); return; }
     const hay = a && a.v != null && [...document.querySelectorAll("#vista [id^='v']")].some((x) => /^v\d+$/.test(x.id) && +x.id.slice(1) >= a.v);
@@ -647,6 +694,8 @@
     pasoAdelante(!conocida);
     let y = null;
     const ancla = RP.anclaSig; RP.anclaSig = null; RP.ancla = null;
+    const enSitio = RP.enSitio; RP.enSitio = false;
+    if (enSitio && ancla) { RP.anclaEnSitio = ancla; RP.objetivo = null; RP.inm = null; RP.guardar = true; clearTimeout(RP.t); return; }
     if (ancla && !ancla.tope) { RP.ancla = ancla; y = 1; }
     else if (RP.forzar != null) { y = RP.forzar; RP.forzar = null; }
     else if (conocida && POS[RP.clave] != null) { const g = POS[RP.clave]; if (g && typeof g === "object") { y = g.y || 1; if (g.a) RP.ancla = g.a; RP.inm = !!g.i; } else { y = g; RP.inm = false; } }
@@ -759,11 +808,13 @@
   }
   let tScrollM = 0, toqueM = 0;
   modal.addEventListener("scroll", () => { if (!tScrollM) tScrollM = setTimeout(() => { tScrollM = 0; guardarScrollM(); }, 150); }, true);
-  for (const ev of ["touchstart", "wheel"]) modal.addEventListener(ev, () => { toqueM = performance.now(); }, { passive: true, capture: true });
+  // (7-nov-2026) también el teclado y el puntero (barra de desplazamiento, clic): la posición recordada nunca se impone a quien ya se mueve
+  for (const ev of ["touchstart", "wheel", "keydown", "pointerdown"]) modal.addEventListener(ev, () => { toqueM = performance.now(); }, { passive: true, capture: true });
   function restaurarScrollM() {
     const k = claveM(), y = MS[k]; if (!y) return;
     const t0 = performance.now();
-    const intento = () => { const c = $(".m-cuerpo", modal); if (!c || claveM() !== k || toqueM > t0) return; c.scrollTop = y; };
+    // (7-nov-2026) si la ventana se abrió para estudiar una palabra tocada, manda la palabra centrada sobre la posición recordada
+    const intento = () => { const c = $(".m-cuerpo", modal); if (!c || claveM() !== k || toqueM > t0 || performance.now() - (M.centrada || -1e9) < 2500) return; c.scrollTop = y; };
     intento(); requestAnimationFrame(intento); for (const ms of [120, 350, 800, 1500]) setTimeout(intento, ms);
   }
   modal.addEventListener("close", () => {
@@ -1352,6 +1403,7 @@
   // ------------------------------------------------------------------ libro
   const esc = { libro: null, cap: 0, modo: "", lista: null };
 
+  let hojaHecha = ""; // libro/capítulo cuyo texto completo está puesto en la vista
   async function vistaLibro(c, cap, modo, v, i) {
     const b = libroDe(c);
     if (!b) return noEncontrado();
@@ -1359,10 +1411,12 @@
     cap = Math.max(1, Math.min(b.caps.length, cap || 1));
     document.title = nombreLibro(b) + " " + cap + " · BiEx";
     const mismo = esc.libro === c && esc.cap === cap && esc.modo === modo && esc.lorg === !!prefs.lorg && $(".libro", vista());
+    // en el sitio: el mismo capítulo cambia de modo o de disposición; el texto viejo queda hasta que el nuevo está listo
+    const enSitio = RP.anclaEnSitio != null && hojaHecha === c + "/" + cap && !!$(".libro", vista());
+    const anclaS = RP.anclaEnSitio; RP.anclaEnSitio = null;
     esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
     if (mismo) { enfocar(v, i); return; }
-    ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()]));
-    if (v == null) alTope();
+    if (!enSitio) { ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()])); hojaHecha = ""; if (v == null) alTope(); }
     let Lc, A = null;
     try {
       const pA = modo === "a" ? Promise.all([analisis(c), tablas()]) : null; // en paralelo con la lectura
@@ -1374,6 +1428,8 @@
     esc.versos = versos;
     const cuerpo = modo === "a" ? cuerpoAnalisis(b, cap, A.caps[cap] || [], versos) : cuerpoLectura(b, cap, versos);
     ponerLibro(estructuraLibro(b, cap, modo, versos, cuerpo));
+    hojaHecha = c + "/" + cap;
+    if (enSitio) { aplicarAnclaEnSitio(anclaS); fundirTexto(); }
     store.set("ultimo", { c, cap, m: modo, v: v || null });
     historial(c, cap, v || null, modo);
     enfocar(v, i);
@@ -1410,7 +1466,7 @@
     const cifra = (k, n, t) => h("div", { class: "bc " + k }, h("b", { text: fmt(n) }), h("span", { text: t }));
     return h("header", { class: "banda" }, h("div", { class: "in banda-g" },
       h("div", { class: "banda-tit" },
-        h("span", { class: "eyebrow", text: "Libro " + numLibro(b) + " de 27 " + nombreOrden() + " · Nueva Voluntad" }),
+        h("span", { class: "eyebrow", text: "Libro " + numLibro(b) + " de 27 de la Nueva Voluntad " + nombreOrden() }),
         h("h1", {}, h("a", { class: "banda-lib", href: (MEMLIB && MEMLIB.h) || "#/libros", title: "Volver a la lista de libros", onclick: irALista },
           h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null)),
         fechaEscrito(b) ? h("a", { class: "banda-fecha", href: "#/cronologia" }, svg(ICO.tiempo), "Escrito c. " + fechaEscrito(b).replace(/^c\. /, "") + (/H\.D\./.test(fechaEscrito(b)) ? "" : " " + ERA_D) + (fechaNarra(b) ? " · narra " + fechaNarra(b) : "")) : null),
@@ -1455,17 +1511,17 @@
     const activo = (m) => (m === "a" ? modo === "a" : modo !== "a" && (m === "o") === !!prefs.lorg);
     const btnModo = (m, t, corto) => h("button", { type: "button", class: "m-" + m, "aria-label": m === "o" ? "Organizada" : t, "aria-pressed": activo(m) ? "true" : "false", title: m === "o" ? "Lectura organizada: orden del español donde ya está decidido" : null, onclick: () => {
       if (activo(m)) return;
-      if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { const a = capturarAncla(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); volverAAncla(a); } return; } }
-      RP.anclaSig = capturarAncla(); location.hash = ir(m);
+      if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { RP.anclaEnSitio = capturarAncla(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); } return; } }
+      RP.anclaSig = anclaInicioVerso(); RP.enSitio = true; location.hash = ir(m);
     } }, svg(m === "a" ? ICO.lupa : m === "o" ? ICO.orden : ICO.libro), h("span", { class: "lbl" }, corto ? [h("span", { class: "largo", text: t }), h("span", { class: "corto", "aria-hidden": "true", text: corto })] : t));
     const prev = cap > 1 ? "#/" + b.c + "/" + (cap - 1) + (modo === "a" ? "/a" : "") : null;
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
     const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
       [["versos", "Por versos", ICO.lista], ["continuo", "Continuo", ICO.parrafo]].map(([k, t, ico]) => h("button", { type: "button", "aria-pressed": prefs.disp === k ? "true" : "false", "aria-label": t, title: t, onclick: () => {
-        if (prefs.disp === k) return; const a = capturarAncla(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); volverAAncla(a);
+        if (prefs.disp === k) return; RP.anclaEnSitio = capturarAncla(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
       } }, svg(ico), h("span", { class: "txt", text: t })))) : null;
     const filtro = modo !== "a" && versos ? h("label", { class: "filtro-niv" + (prefs.nivel ? " activo" : ""), title: "Mostrar los versos según su nivel de avance" }, svg(ICO.filtro),
-      h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; Promise.resolve(vistaLibro(b.c, cap, modo, null, null)).then(() => volverAAnclaOBarra(a)); } },
+      h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); if (a) a.barra = true; RP.anclaEnSitio = a || { barra: true, v: null }; prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); } },
         FILTROS.map(([k, t]) => { const vs = k ? versos.filter((x) => pasaFiltro(x, k)) : versos; let n = " · " + vs.length; if (k === "base" && vs.length) n += " · " + Math.round(vs.reduce((acc, x) => acc + (+x.k || 0), 0) / vs.length) + " % traducido"; return h("option", { value: k, selected: (prefs.nivel || "") === k ? true : null, "data-corto": (FILTRO_CORTO[k] || t) + n, text: t + n }); }))) : null;
     const opciones = modo !== "a" ? h("button", { class: "btn-icono btn-opc", type: "button", "aria-label": "Opciones del texto: colores, corchetes y paréntesis", title: "Opciones del texto", onclick: abrirOpciones }, svg(ICO.opciones)) : null;
     // En el centro de la barra: el libro (transliteración y nombre en español) y el capítulo en hebreo con su numeral romano
@@ -1948,12 +2004,28 @@
     el.classList.remove("destello"); el.append(ch); void el.offsetWidth; el.classList.add("destello");
     setTimeout(() => { el.classList.remove("destello"); ch.remove(); }, 2600);
   }
+  // centra un elemento dentro de su contenedor desplazable (la ventana) o de la página, sin animación
+  function centrarEnSuCaja(el) {
+    let s = el.parentElement;
+    while (s && s !== document.body && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement;
+    if (!s || s === document.body || s === document.documentElement) { el.scrollIntoView({ block: "center", behavior: "instant" }); return; }
+    const r = el.getBoundingClientRect(), rs = s.getBoundingClientRect();
+    s.scrollTop += (r.top + r.height / 2) - (rs.top + rs.height / 2);
+  }
   function destellarPalabra(v, i) {
     const el = $("#vista .pal[data-v='" + v + "'][data-i='" + i + "']");
     if (!el) return;
     const vEl = document.getElementById("v" + v); if (vEl) vEl.classList.add("cv-vis");
+    // ir a estudiar una palabra manda sobre la posición recordada: queda en el centro y se sostiene ahí mientras las fichas
+    // de arriba terminan de medirse (si no, en los versos largos quedaba fuera de la pantalla)
+    if (RP.objetivo != null) terminarRestauracion();
+    for (let x = vEl && vEl.previousElementSibling, k = 0; x && k < 6; x = x.previousElementSibling, k++) x.classList.add("cv-vis");
     requestAnimationFrame(() => {
       el.scrollIntoView({ block: "center", behavior: "instant" });
+      const t0 = performance.now(); let quieto = 0;
+      const sostener = () => { if (!el.isConnected || performance.now() - t0 > 1200 || quieto > 8) return; const r = el.getBoundingClientRect(), d = (r.top + r.height / 2) - innerHeight / 2; if (Math.abs(d) > 3) { saltarA(window.scrollY + d); quieto = 0; } else quieto++; requestAnimationFrame(sostener); };
+      const corta = () => { quieto = 99; }; for (const ev of ["wheel", "touchstart", "keydown"]) window.addEventListener(ev, corta, { once: true, passive: true });
+      requestAnimationFrame(sostener);
       for (const x of $$("#vista .pal.destello")) x.classList.remove("destello");
       destello(el);
       ponerHash("#/" + esc.libro + "/" + esc.cap + "/a/" + v);
@@ -2363,9 +2435,9 @@
         if (ctx.toque != null && L) {
           const rs = alinearTokens(L, toks), q = ctx.toque; ctx.toque = null;
           let k = rs.findIndex((r) => r && q >= r[0] && q < r[1]);
-          if (k < 0) { let mejor = 1e9; rs.forEach((r, j) => { if (r && Math.abs(r[0] - q) < mejor) { mejor = Math.abs(r[0] - q); k = j; } }); }
+          if (k < 0) { let mejor = 1e9; rs.forEach((r, j) => { if (!r) return; const d = q < r[0] ? r[0] - q : q >= r[1] ? q - r[1] + 1 : 0; if (d < mejor) { mejor = d; k = j; } }); }
           const el = zona.children[k];
-          if (el) requestAnimationFrame(() => { el.setAttribute("aria-pressed", "true"); el.scrollIntoView({ block: "nearest", behavior: "instant" }); destello(el); });
+          if (el) { M.centrada = performance.now(); requestAnimationFrame(() => { el.setAttribute("aria-pressed", "true"); M.centrada = performance.now(); centrarEnSuCaja(el); destello(el); }); }
         }
       };
       if (ctx.toks) llenar(ctx.toks);
@@ -3487,7 +3559,7 @@
     return false;
   };
   function capCercano(dir) {
-    if (!esc.libro || modal.open || !/^#\/[1-3A-Z]{3}\/\d+(\/a)?\/?$/.test(location.hash)) return null;
+    if (!esc.libro || modal.open || !/^#\/[1-3A-Z]{3}\/\d+(\/[al](\/\d+(-\d+)?(\/[\dm]+)?)?)?\/?$/.test(location.hash)) return null;
     const b = libroDe(esc.libro); if (!b) return null;
     const c = esc.cap + dir;
     if (c >= 1 && c <= b.caps.length) return rutaCap(b, c, esc.modo);
