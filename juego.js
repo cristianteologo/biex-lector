@@ -1364,7 +1364,7 @@
     R.enviando = true; R.ultEnvio = Date.now();
     const lote = R.cola.splice(0, 400);
     guardarCola(true);
-    const r = await pedir("/lectura/tanda", { metodo: "POST", cuerpo: { t: lote, donde: R.lib ? R.lib + "." + R.cap : "" }, keepalive: !!final && JSON.stringify(lote).length < 60000 });
+    const r = await pedir("/lectura/tanda", { metodo: "POST", cuerpo: { t: lote, donde: R.lib ? R.lib + "." + R.cap : "", fin: !!final }, keepalive: !!final && JSON.stringify(lote).length < 60000 });
     R.enviando = false;
     if (r.error) {
       if (r.error !== "sesion" && r.error !== "datos") { R.cola.unshift(...lote); guardarCola(true); }
