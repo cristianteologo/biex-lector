@@ -14,9 +14,16 @@ hv = hashlib.sha1(b"".join((x.read_bytes()) for x in sorted(list((r / "voz").rgl
 a, n = re.subn(r'(const VERSIONES = \{[^}]*\bvoz: ")[0-9a-f]*(")', lambda m: m.group(1) + hv + m.group(2), a)
 if n != 1: raise SystemExit("No se encontró la huella de voz en app.js")
 app.write_text(a, encoding="utf-8")
+# presentación de apertura del lector propio: la huella de intro.js dentro de su cargador (antes de sellar index.html)
+_car = r / "intro-cargador.js"
+if _car.exists():
+    _c = _car.read_text(encoding="utf-8")
+    _c2, _n = re.subn(r'intro\.js\?v=[0-9a-f]*', "intro.js?v=" + huella("intro.js"), _c)
+    if _n != 1: raise SystemExit("No se encontró la huella de intro.js en intro-cargador.js")
+    if _c2 != _c: _car.write_text(_c2, encoding="utf-8")
 idx = r / "index.html"
 s = idx.read_text(encoding="utf-8")
-for f in ("app.css", "app.js"):
+for f in ("app.css", "app.js", "intro-cargador.js"):
     hsh = huella(f)
     s = re.sub(r'(["\'])' + re.escape(f) + r'(\?v=[0-9a-f]+)?\1', lambda m: m.group(1) + f + "?v=" + hsh + m.group(1), s)
 idx.write_text(s, encoding="utf-8")
@@ -33,7 +40,7 @@ if _ix2 != _ix: (r / "index.html").write_text(_ix2, encoding="utf-8"); print("CS
 # [ruta, bytes, huella] (huella = 10 primeros caracteres del SHA-1 del contenido, la misma que calcula sw.js);
 # «gen» identifica la publicación (cambia si cambia cualquier archivo) y «fecha» es cuándo cambió por última vez
 import json as _json, datetime as _dt
-_lista = [f for f in ("app.css", "app.js", "busqueda.js", "juego.js")]
+_lista = [f for f in ("app.css", "app.js", "busqueda.js", "juego.js", "intro-cargador.js")]
 _lista += sorted(x.relative_to(r).as_posix() for x in (r / "fuentes").glob("*.woff2") if not x.name.startswith("intro-"))
 # datos/juego/ son las preguntas que lee el servidor del juego: no hacen falta sin conexión
 _lista += sorted(x.relative_to(r).as_posix() for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json" and not x.relative_to(r).as_posix().startswith("datos/juego/"))

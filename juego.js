@@ -70,6 +70,11 @@
     };
   })();
   const CONT = { AF: "África", AN: "Antártida", AS: "Asia", EU: "Europa", NA: "América del Norte", OC: "Oceanía", SA: "América del Sur" };
+  // Nombre de la división del país en la clasificación (lo que Cloudflare llama «region»)
+  const REGION = { CO: "Departamento", PE: "Departamento", BO: "Departamento", PY: "Departamento", UY: "Departamento", GT: "Departamento", HN: "Departamento", SV: "Departamento", NI: "Departamento",
+    MX: "Estado", US: "Estado", VE: "Estado", BR: "Estado", AR: "Provincia", EC: "Provincia", CU: "Provincia", DO: "Provincia", PA: "Provincia", CR: "Provincia", CA: "Provincia",
+    ES: "Comunidad", CL: "Región", FR: "Región", IT: "Región", GB: "Región", PR: "Municipio" };
+  const nombreRegion = (pais) => REGION[pais] || "Departamento o estado";
 
   // ------------------------------------------------------------------ red
   async function pedir(ruta, o) {
@@ -98,6 +103,17 @@
   function guardarSesion(token, yo) {
     S.token = token; A.store.set("jg:t", token);
     if (yo) actualizarYo(yo);
+    reclamarSemilla();
+  }
+  // Semilla: el lector la pone en lo que comparte quien todavía no tiene cuenta; al entrar, esa siembra pasa a su árbol
+  function reclamarSemilla() {
+    const s = A.store.get("jg:semS", null), y = S.yo;
+    if (!s || typeof s !== "string" || !y || A.store.get("jg:semOk", null) === y.j) return;
+    pedir("/semilla", { metodo: "POST", cuerpo: { secreto: s } }).then((r) => {
+      if (r.error && r.error !== "ya_reclamada") return;
+      A.store.set("jg:semOk", y.j);
+      if (r.adoptados > 0) A.avisar(r.adoptados === 1 ? "1 persona que llegó con lo que compartiste antes ya está en tu árbol de la siembra" : fmt(r.adoptados) + " personas que llegaron con lo que compartiste antes ya están en tu árbol de la siembra");
+    });
   }
   function actualizarYo(yo) {
     if (!yo) return;
@@ -158,9 +174,14 @@
     let anillo = marco ? '<circle cx="24" cy="24" r="23" fill="none" stroke="var(--oro-vivo)" stroke-width="1.2" stroke-dasharray="' + (marco >= 6 ? "none" : (2 + marco) + " 2.2") + '"/>' : "";
     if (marco >= 8) anillo += '<circle cx="24" cy="24" r="21.6" fill="none" stroke="var(--oro)" stroke-width=".6"/>';
     if (marco >= 10) for (let k = 0; k < 8; k++) { const g = k * Math.PI / 4, x = (24 + 23 * Math.cos(g)).toFixed(2), y = (24 + 23 * Math.sin(g)).toFixed(2); anillo += '<circle cx="' + x + '" cy="' + y + '" r="1.1" fill="var(--oro-vivo)"/>'; }
+    // la escalera es un bucle: desde la segunda vuelta completa, una marca con el número de vueltas (11 = dos vueltas…)
+    const vueltas = marco > 10 ? marco - 9 : 0;
+    const marca = vueltas ? '<circle cx="40" cy="40" r="7.4" fill="var(--hoja)" stroke="var(--oro-vivo)" stroke-width="1.1"/><text x="40" y="43.1" text-anchor="middle" font-size="' + (vueltas > 9 ? 7 : 8.6) + '" font-weight="600" fill="var(--oro-vivo)" style="font-family:var(--f-ui)">' + vueltas + "</text>" : "";
     return A.svg(anillo + '<circle cx="24" cy="24" r="20" fill="var(--hoja-2)" stroke="' + col + '" stroke-width="2"/><text x="24" y="' + (heb ? 31 : 32) + '" text-anchor="middle" font-size="' + (heb ? 21 : 25) +
-      '" fill="' + col + '" style="font-family:' + (heb ? "'Frank Ruhl Libre','BiEx Texto',serif" : "'BiEx Texto','Gentium Book Plus',Georgia,serif") + '">' + esc(l || "α") + "</text>", "0 0 48 48");
+      '" fill="' + col + '" style="font-family:' + (heb ? "'Frank Ruhl Libre','BiEx Texto',serif" : "'BiEx Texto','Gentium Book Plus',Georgia,serif") + '">' + esc(l || "α") + "</text>" + marca, "0 0 48 48");
   }
+  // marco que se dibuja para la persona: «Ciento» y, desde la segunda vuelta, su número de vueltas
+  const marcoVisible = (y) => (y && y.vuelta >= 1 ? 9 + y.vuelta : (y && y.marco) || 0);
   const embDe = (s) => { const t = String(s || ""); const m = /^(.+?)(\d)$/u.exec(t); return m ? [m[1], +m[2]] : ["α", 0]; };
   const ICO_JG = {
     llave: '<circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.6 12H20.5M17.5 12v3M20.5 12v2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
@@ -182,6 +203,7 @@
     publicar: '<path d="M4.5 6.5h15M4.5 11h15M4.5 15.5h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15l2 2 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
     correo: '<rect x="3.5" y="5.5" width="17" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 7l7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
     persona: '<circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c.8-3.9 3.6-6 7-6s6.2 2.1 7 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    arbol: '<path d="M12 20.5V13.5M12 13.5L7.6 9.1M12 13.5l4.4-4.4M7.6 9.1L5.2 6.7M7.6 9.1V5.6M16.4 9.1l2.4-2.4M16.4 9.1V5.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="6.3" r="1.5" fill="currentColor"/><circle cx="7.6" cy="4.6" r="1.5" fill="currentColor"/><circle cx="16.4" cy="4.6" r="1.5" fill="currentColor"/><circle cx="19" cy="6.3" r="1.5" fill="currentColor"/>',
   };
   const ico = (k) => A.svg(ICO_JG[k]);
 
@@ -370,6 +392,32 @@
 .jg-pres i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro-vivo) 22%,transparent)}
 .jg-img{display:block;width:min(100%,360px);height:auto;margin:0 auto;border-radius:14px;border:1px solid var(--linea-2)}
 :root[data-theme=light] .jg-fila .p,:root[data-theme=light] .jg-tarjeta>h2{color:var(--oro)}
+.jg-zonas{margin-top:6px}
+.jg-zonas summary{cursor:pointer;font:500 .82rem/1.4 var(--f-ui);color:var(--oro-vivo);list-style-position:inside}
+.jg-zonas ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 14px;text-align:left}
+.jg-zonas li{display:flex;justify-content:space-between;gap:10px;font:400 .8rem/1.35 var(--f-ui);color:var(--tenue)}
+.jg-zonas li b{color:var(--tinta);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jg-aviso.tenue{background:none;border-style:dashed}
+.jg-total{margin:0;font:500 1.2rem/1.2 var(--f-ui);color:var(--tinta)}
+.jg-total b{font:500 2rem/1 var(--f-display);color:var(--oro-vivo);margin-right:2px}
+.jg-gen{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.jg-gen li{display:grid;grid-template-columns:minmax(0,auto) 1fr auto;gap:10px;align-items:center;font:500 .84rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-gen .b{height:8px;border-radius:99px;background:var(--hoja-3);overflow:hidden;min-width:40px}
+.jg-gen .b i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo))}
+.jg-arbol-caja{max-width:620px;width:100%;margin:0 auto}
+.jg-arbol{display:block;width:100%;height:auto;overflow:visible}
+.jg-arbol .jg-nodo{cursor:pointer;outline:none}
+.jg-arbol .jg-nodo:focus-visible .pt,.jg-arbol .jg-nodo.sel .pt{stroke:var(--tinta);stroke-width:4}
+.jg-ficha{display:grid;gap:6px;padding:12px;border-radius:12px;background:var(--hoja-2)}
+.jg-ficha .jg-nombre{font-size:1.15rem}
+.jg-siembra{display:flex;gap:14px;align-items:center}
+.jg-siembra-svg{flex:none;width:104px;height:104px;display:block}
+.jg-siembra-svg svg{width:100%;height:100%}
+.jg-arbol-lista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.jg-arbol-lista li{display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:8px 10px;border-radius:10px;border:1px solid var(--linea-2);min-width:0}
+.jg-arbol-lista li>span:first-child{min-width:0;overflow-wrap:anywhere}
+.jg-arbol-lista li small{font:400 .78rem var(--f-ui);color:var(--tenue)}
+.jg-arbol-lista li.ok{border-color:color-mix(in srgb,var(--oro) 50%,transparent)}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -400,6 +448,7 @@
     if (!S.token) return pintarEntrada(cont);
     if (que === "clasificacion") return pintarClasificacion(cont);
     if (que === "prestigio") return pintarPrestigio(cont);
+    if (que === "arbol") return pintarArbol(cont, /^[a-z0-9]{4,12}$/.test(S.sub[1] || "") ? S.sub[1] : null);
     if (que === "propuestas") return pintarPropuestas(cont);
     if (que === "buzon") return pintarBuzon(cont);
     if (que === "cuenta") return pintarCuenta(cont);
@@ -477,12 +526,13 @@
       franjaInv, tarjetaPrerregistro(entrada),
       tarjeta("Cómo se juega", null,
         h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, una de las doce piedras del fundamento o un lauro trenzado incorruptible." }),
-        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." })),
+        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, departamento o estado, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Cada persona que llega con tu enlace hace crecer tu árbol de la siembra. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." })),
       h("div", { class: "jg-dos" },
         tarjeta("Empezar con un apodo", null, h("div", { class: "jg-form" }, entrada, btn), pista,
           h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso, Google o Facebook." })),
         tarjeta("Ya juego", null, opciones)),
       tarjetaOpinion(false),
+      notaConstruccion(),
       vivoLinea());
   }
 
@@ -538,13 +588,13 @@
     const pct = y.xpSig ? Math.max(0, Math.min(100, (100 * y.xpNivel) / y.xpSig)) : 0;
     const chips = [];
     if (y.fundador) chips.push(h("span", { class: "jg-chip", title: "Las 1440 primeras cuentas de Escudriña", text: "Primicia n.º " + fmt(y.n) }));
-    if (y.marco) chips.push(h("span", { class: "jg-chip", title: "Escalera del Sembrador: personas que invitaste y ya leen", text: marcos()[y.marco - 1][1] }));
+    if (y.marco) chips.push(h("span", { class: "jg-chip", title: "Escalera del Sembrador: personas que invitaste y ya leen", text: marcos()[y.marco - 1][1] + (y.vuelta >= 1 ? " · " + plural(y.vuelta, "vuelta", "vueltas") : "") }));
     if (y.mult > 1) chips.push(h("span", { class: "jg-chip", title: "Experiencia multiplicada", text: "Experiencia ×" + String(y.mult).replace(".", ",") }));
     if (y.dob > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Experiencia doble · " + horas(y.dob) + " de lectura" }));
     if (y.imp && y.imp.ms > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Impulso ×" + String(y.imp.f).replace(".", ",") + " · " + horas(y.imp.ms) + " de lectura" }));
     if (y.enTope) chips.push(h("span", { class: "jg-chip tenue", title: "Cada mes se abren de 2 a 7 niveles nuevos", text: "Nivel tope del mes · reserva " + fmt(y.reserva) }));
     return tarjeta(null, null, h("div", { class: "jg-perfil" },
-      h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Tu emblema: cambiarlo en Cuenta" }, emblema(l, c, y.marco)),
+      h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Tu emblema: cambiarlo en Cuenta" }, emblema(l, c, marcoVisible(y))),
       h("div", {}, h("p", { class: "jg-nombre", text: y.apodo }), h("div", { class: "jg-rango", text: y.rangoNombre + " · nivel " + y.nivel }), chips.length ? h("div", { class: "jg-chips" }, chips) : null)),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
@@ -596,8 +646,10 @@
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
   }
   const NOVEDAD = { piedra: (a) => "Hallaste " + PIEDRAS[a.i][1] + ".", lauro: () => "Hallaste un lauro trenzado incorruptible.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
-    conf: (a) => a.a + " confirmó su lugar: sumas un peldaño de tu escalera.", marco: (a) => "¡Subiste al peldaño «" + ((marcos()[a.m - 1] || [])[1] || "") + "» de la escalera del Sembrador!" + (a.h ? " +" + a.h + " h de experiencia doble." : ""),
-    lanzamiento: (a) => "¡Escudriña abrió! Por inscribirte antes recibiste " + a.h + " horas de experiencia doble.", propuesta: (a) => "Tu propuesta se hizo realidad: +" + a.h + " h de experiencia doble. ¡Gracias por construir Escudriña!",
+    conf: (a) => a.a + " confirmó su lugar: sumas un peldaño de tu escalera.", marco: (a) => "¡Subiste al peldaño «" + ((marcos()[a.m - 1] || [])[1] || "") + "» de la escalera del Sembrador" + (a.v > 1 ? " (vuelta " + a.v + ")" : "") + "!" + (a.h ? " +" + a.h + " h de experiencia doble." : ""),
+    lanzamiento: (a) => "¡Escudriña abrió! " + (a.p ? "Conservaste el " + String(a.p).replace(".", ",") + " % de tu avance de práctica y, por inscribirte antes, recibiste " + a.h + " horas de experiencia doble." : "Por inscribirte antes recibiste " + a.h + " horas de experiencia doble."),
+    micro: (a) => a.a + " confirmó su lugar en tu " + (a.g === 2 ? "segunda" : "tercera") + " generación" + (a.via ? " (llegó por " + a.via + ")" : "") + ": +" + a.min + " min de experiencia doble.",
+    adoptados: (a) => (a.n === 1 ? "1 persona que llegó con lo que compartiste antes de tener cuenta ya está en tu árbol de la siembra." : fmt(a.n) + " personas que llegaron con lo que compartiste antes de tener cuenta ya están en tu árbol de la siembra."), propuesta: (a) => "Tu propuesta se hizo realidad: +" + a.h + " h de experiencia doble. ¡Gracias por construir Escudriña!",
     nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", libroInv: (a) => a.a + " terminó su primer libro: +" + a.xp + ".", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + "." };
   function tarjetaNovedades(y) {
     const l = (y.avisos || []).filter((a) => NOVEDAD[a.k]).slice(0, 6);
@@ -612,25 +664,32 @@
     else dibujarPanel(cont, y);
     const r = await pedir("/yo");
     if (r.error) { if (!y && S.token) marco(cont, cabecera(), tarjeta(null, null, h("p", { text: mensaje(r) }), h("button", { class: "btn", type: "button", onclick: repintar }, h("span", { text: "Reintentar" })))); return; }
+    const igual = y && JSON.stringify(y) === JSON.stringify(r.yo);
     actualizarYo(r.yo);
-    if (cont === S.cont && S.cont.isConnected && (S.sub[0] || "") === "") dibujarPanel(cont, r.yo);
+    // sin cambios no se vuelve a pintar (nada salta ni se cierra mientras se lee el panel)
+    if (!igual && cont === S.cont && S.cont.isConnected && (S.sub[0] || "") === "") dibujarPanel(cont, r.yo);
   }
   function dibujarPanel(cont, y) {
     const apodo = y.apodoProvisional ? tarjetaApodo(true) : null;
     marco(cont, cabecera(),
       y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
-        "Todo funciona de verdad, pero el avance de práctica se reinicia el día del lanzamiento para que todos empiecen en igualdad. Se conservan tu cuenta, tu apodo, tu número de Primicia, tu escalera de invitaciones y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
+        "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás al azar " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
       tarjetaPerfil(y), apodo, botonSeguir(),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       tarjetaHallazgos(y),
       y.asegurado ? null : tarjetaAsegurar(false),
       tarjetaCampana(y),
-      tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
+      tarjetaSiembra(y),
+      tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu " + nombreRegion((y.lugar || {}).pais).toLowerCase() + ", tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
           h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea()),
       tarjetaOpinion(true),
+      notaConstruccion(),
       h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" }))));
   }
+  // BiEx (9-nov-2026): que nadie confunda el proceso semana a semana con el resultado final
+  const notaConstruccion = () => h("div", { class: "jg-aviso tenue" }, h("b", { text: "Biblia Exacta se construye semana a semana. " }),
+    "Con el paso de los días, la vista Orden del lector reflejará de manera cada vez más precisa e inteligible el mensaje de la traducción literal. Te invitamos a volver cada semana para ver las novedades y los avances del texto y del proyecto.");
   function tarjetaApodo(provisional) {
     const entrada = h("input", { type: "text", maxlength: "20", value: provisional ? "" : (S.yo && S.yo.apodo) || "", placeholder: "Tu apodo (3 a 20 letras)", "aria-label": "Tu apodo", spellcheck: "false" });
     const pista = h("p", { class: "jg-pista", role: "status" });
@@ -646,22 +705,35 @@
 
   // --- pre-registro, campaña y escalera del Sembrador
   const horas = (ms) => { const m = Math.max(1, Math.round(ms / MIN)); return m < 60 ? m + " min" : Math.floor(m / 60) + " h" + (m % 60 ? " " + (m % 60) + " min" : ""); };
-  const fechaLarga = (ms) => new Date(ms).toLocaleString("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "America/Bogota" }) + " (hora de Bogotá)";
+  // La hora del lanzamiento se muestra en la hora local de quien lee y en las de las principales ciudades (BiEx, 9-nov-2026:
+  // que el proyecto no parezca nacer de un solo punto geográfico). Los nombres van «original [tradicional]».
+  const fechaLarga = (ms, tz) => { try { return new Date(ms).toLocaleString("es", Object.assign({ weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }, tz ? { timeZone: tz } : {})); } catch (e) { return new Date(ms).toLocaleString("es"); } };
+  const fechaDia = (ms) => { try { return new Date(ms).toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" }); } catch (e) { return ""; } };
+  const CIUDADES = [["America/Los_Angeles", "Los Angeles [Los Ángeles] · hora del Pacífico"], ["America/Mexico_City", "Ciudad de México · Centroamérica"], ["America/Bogota", "Bogotá · Lima · Quito"],
+    ["America/New_York", "New York [Nueva York]"], ["America/Caracas", "Caracas · Santo Domingo · San Juan"], ["America/Santiago", "Santiago"], ["America/Argentina/Buenos_Aires", "Buenos Aires · São Paulo · Montevideo"],
+    ["Europe/London", "London [Londres]"], ["Europe/Madrid", "Madrid · Paris [París] · Roma"]];
+  function horaEn(ms, tz) { try { return new Date(ms).toLocaleString("es", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
+  function zonasLanzamiento(ms) {
+    return h("details", { class: "jg-zonas" }, h("summary", { text: "Ver la hora en otras ciudades" }),
+      h("ul", {}, CIUDADES.map(([tz, n]) => h("li", {}, h("span", { text: n }), h("b", { text: horaEn(ms, tz) })))));
+  }
   const uni = (n, a, b) => h("span", {}, h("b", { text: String(n) }), h("small", { text: n === 1 ? a : b }));
   function cuentaAtras(ms) {
     if (!ms) return null;
-    const el = h("div", { class: "jg-cuenta" });
+    const reloj = h("span", { class: "jg-reloj", role: "timer" });
+    const el = h("div", { class: "jg-cuenta" }, h("span", { class: "jg-mini", text: "Lanzamiento: " + fechaLarga(ms) + " (tu hora local)" }), reloj, zonasLanzamiento(ms));
     const pintar = () => {
       const f = ms - Date.now();
       if (f <= 0) { el.replaceChildren(h("span", { text: "¡Escudriña ya abrió!" })); return false; }
-      el.replaceChildren(h("span", { class: "jg-mini", text: "Lanzamiento, a más tardar el " + fechaLarga(ms) }),
-        h("span", { class: "jg-reloj", role: "timer" }, uni(Math.floor(f / 864e5), "día", "días"), uni(Math.floor((f % 864e5) / 36e5), "hora", "horas"), uni(Math.floor((f % 36e5) / 6e4), "minuto", "minutos")));
+      reloj.replaceChildren(uni(Math.floor(f / 864e5), "día", "días"), uni(Math.floor((f % 864e5) / 36e5), "hora", "horas"), uni(Math.floor((f % 36e5) / 6e4), "minuto", "minutos"));
       return true;
     };
     pintar();
     const t = setInterval(() => { if (!el.isConnected || !pintar()) clearInterval(t); }, 20000);
     return el;
   }
+  // Lo que se conserva al lanzar (BiEx, 9-nov-2026): nada se pierde del todo
+  const textoConserva = () => { const c = (S.cfg && S.cfg.conserva) || [0.72, 40]; return "entre el " + String(c[0]).replace(".", ",") + " % y el " + String(c[1]).replace(".", ",") + " %"; };
   function primiciasVivas() {
     const quedan = h("b", { text: "…" }), ins = h("span", { class: "jg-mini" }), barra = h("i", { style: "width:0%" });
     pedir("/campana", { sin: true, guardable: true }).then((c) => {
@@ -682,13 +754,15 @@
       h("p", { class: "jg-quedan" }, "Quedan ", v.quedan, " lugares · ", v.ins),
       h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
       cuentaAtras(cfg.lanzamiento),
-      h("p", { text: "Reserva hoy tu apodo y tu número de Primicia, comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble." }),
+      h("p", { text: "Reserva hoy tu apodo y tu número de Primicia (se asigna al azar), comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble, y lo que avance en la práctica no se pierde del todo: ese día conserva al azar " + textoConserva() + " de su experiencia, sus dracmas y sus hallazgos." }),
       h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
-    const sig = M.find((m) => conf < m[0]) || null, prev = M.filter((m) => conf >= m[0]).pop();
-    const base = prev ? prev[0] : 0, pct = sig ? Math.min(100, (100 * (conf - base)) / (sig[0] - base)) : 100;
+    // la escalera es un bucle: cada vuelta de 100 repite los diez peldaños y sus horas (BiEx, 9-nov-2026)
+    const V = (S.cfg && S.cfg.vuelta) || 100, vuelta = Math.floor(conf / V) + 1, b0 = (vuelta - 1) * V, enV = conf - b0;
+    const sig = M.find((m) => enV < m[0]) || null, prev = M.filter((m) => enV >= m[0]).pop();
+    const base = prev ? prev[0] : 0, pct = sig ? Math.min(100, (100 * (enV - base)) / (sig[0] - base)) : 100;
     const ab = h("b", { text: "·" }), ins = h("b", { text: fmt((y.invi && y.invi.unidos) || 0) });
     pedir("/campana/mia", { guardable: true }).then((m) => { if (!m.error) { ab.textContent = fmt(m.aperturas); ins.textContent = fmt(Math.max(m.inscritos, (y.invi && y.invi.unidos) || 0)); } });
     const red = (k, href, t) => h("a", { class: "btn chico", href, target: "_blank", rel: "noopener" }, ico(k), h("span", { text: t }));
@@ -709,10 +783,116 @@
         h("button", { class: "btn chico", type: "button", onclick: () => verTarjetaImagen({ tipo: "prerregistro" }) }, ico("imagen"), h("span", { text: "Imagen para compartir" }))),
       h("div", { class: "jg-cifras" }, h("div", {}, ab, h("span", { text: "abrieron tu enlace" })), h("div", {}, ins, h("span", { text: "se inscribieron" })), h("div", {}, h("b", { text: fmt(conf) }), h("span", { text: "confirmaron" }))),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": pct.toFixed(0), "aria-label": "Avance hacia el peldaño siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
-        h("p", { class: "jg-mini", text: sig ? "Te " + (sig[0] - conf === 1 ? "falta 1 persona confirmada" : "faltan " + fmt(sig[0] - conf) + " personas confirmadas") + " para «" + sig[1] + "» (+" + sig[2] + " h de experiencia doble)." : "¡Completaste la escalera del Sembrador hasta «Ciento»!" })),
-      h("ol", { class: "jg-escalera" }, M.map((m) => h("li", { class: conf >= m[0] ? "ya" : sig && sig[0] === m[0] ? "sig" : "", title: m[1] + " · " + plural(m[0], "persona", "personas") + " · +" + m[2] + " h de experiencia doble" },
-        h("b", { text: String(m[0]) }), h("span", { text: m[1] }), h("small", { text: "+" + m[2] + " h" })))),
+        h("p", { class: "jg-mini", text: (vuelta > 1 ? "Vuelta " + vuelta + " de la escalera · " : "") + (sig ? "Te " + (sig[0] - enV === 1 ? "falta 1 persona confirmada" : "faltan " + fmt(sig[0] - enV) + " personas confirmadas") + " para «" + sig[1] + "» (+" + sig[2] + " h de experiencia doble)." : "") })),
+      h("ol", { class: "jg-escalera" }, M.map((m) => h("li", { class: enV >= m[0] ? "ya" : sig && sig[0] === m[0] ? "sig" : "", title: m[1] + " · " + plural(b0 + m[0], "persona", "personas") + " · +" + m[2] + " h de experiencia doble" },
+        h("b", { text: fmt(b0 + m[0]) }), h("span", { text: m[1] }), h("small", { text: "+" + m[2] + " h" })))),
+      h("p", { class: "jg-mini", text: "La escalera no termina: al llegar a 100 empieza otra vuelta con los mismos peldaños y las mismas horas, y tu emblema conserva «Ciento» y suma una marca por cada vuelta. Y tu siembra sigue: por cada persona que confirma en tu 2.ª generación (las que invitan tus invitados) recibes " + (((S.cfg && S.cfg.micro) || {})[2] || 15) + " min de experiencia doble, y " + (((S.cfg && S.cfg.micro) || {})[3] || 5) + " min en la 3.ª." }),
       h("p", { class: "jg-mini", text: "Una persona se confirma cuando lee sus primeros 20 versos o asegura su cuenta (compartir red o dispositivo con tu familia no es problema). Además recibes 100 de experiencia cuando lee sus primeros 20 versos, 300 cuando llega al nivel 10, 500 cuando termina su primer libro y un regalo del 5 % de lo que lea en su primer mes de juego. Las horas de experiencia doble solo se gastan mientras lees y no vencen. 30, 60 y 100: Μᾶrκος 4:8; 72: Λουκᾶς 10:1." }));
+  }
+
+  // --- árbol de la siembra (BiEx, 9-nov-2026): quién llegó con tu enlace, quién llegó por esas personas… hasta dónde llegó
+  // lo que sembraste al compartir. El servidor lo calcula al pedirlo (una sola consulta) y el navegador lo guarda un minuto.
+  const ORD = ["", "1.ª", "2.ª", "3.ª", "4.ª", "5.ª", "6.ª", "7.ª", "8.ª", "9.ª", "10.ª"];
+  const ordGen = (k) => ORD[k] || k + ".ª";
+  const diaCorto = (f) => { try { return new Date(f + "T12:00:00Z").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); } catch (e) { return f; } };
+  // Dibujo radial y vectorial: tú en el centro, cada generación en su anillo; cada rama ocupa el ángulo de las hojas que sostiene
+  function dibujoArbol(d, mini) {
+    const C = 500, P = Math.max(1, Math.min(4, d.prof || 3)), paso = 455 / P, R = (k) => k * paso, f1 = (v) => v.toFixed(1);
+    const hijos = new Map();
+    for (const n of d.nodos) { const k = n.p || "@"; if (!hijos.has(k)) hijos.set(k, []); hijos.get(k).push(n); }
+    const pesos = new Map();
+    const peso = (c) => { if (pesos.has(c)) return pesos.get(c); const l = hijos.get(c) || []; const w = l.length ? l.reduce((a, x) => a + peso(x.c), 0) : 1; pesos.set(c, w); return w; };
+    const pos = new Map([["@", { x: C, y: C, a: -Math.PI / 2 }]]);
+    const colocar = (c, a0, a1) => {
+      const l = hijos.get(c) || []; if (!l.length) return;
+      const tot = l.reduce((a, x) => a + peso(x.c), 0); let a = a0;
+      for (const x of l) { const w = ((a1 - a0) * peso(x.c)) / tot, am = a + w / 2; pos.set(x.c, { x: C + R(x.k) * Math.cos(am), y: C + R(x.k) * Math.sin(am), a: am }); colocar(x.c, a, a + w); a += w; }
+    };
+    colocar("@", -Math.PI / 2, 1.5 * Math.PI);
+    let s = "";
+    for (let k = 1; k <= P; k++) s += '<circle cx="500" cy="500" r="' + f1(R(k)) + '" fill="none" stroke="var(--linea-2)" stroke-width="1.2" stroke-dasharray="2 8"/>';
+    for (const n of d.nodos) {
+      const a = pos.get(n.c), b = pos.get(n.p || "@"); if (!a || !b) continue;
+      const rm = R(n.k - 0.55), qx = C + rm * Math.cos(a.a), qy = C + rm * Math.sin(a.a);
+      s += '<path d="M' + f1(b.x) + " " + f1(b.y) + "Q" + f1(qx) + " " + f1(qy) + " " + f1(a.x) + " " + f1(a.y) + '" fill="none" stroke="' + (n.ok ? "var(--oro)" : "var(--linea)") + '" stroke-width="' + (n.ok ? "3.4" : "2.2") + '" stroke-linecap="round"/>';
+    }
+    // nombres: la 1.ª generación si cabe (hasta 12) y la 2.ª si el árbol visible es pequeño
+    const n1 = (hijos.get("@") || []).length, etiquetas = !mini && n1 <= 12, etiq2 = etiquetas && d.nodos.length <= 24;
+    for (const n of d.nodos) {
+      const a = pos.get(n.c); if (!a) continue;
+      const r = Math.min(30, (mini ? 13 : 13) + 3.4 * Math.sqrt(n.d)), ocultos = n.h - (hijos.get(n.c) || []).length;
+      let et = "";
+      if ((etiquetas && n.k === 1) || (etiq2 && n.k === 2)) { const c = Math.cos(a.a), sn = Math.sin(a.a), fs = n.k === 1 ? 31 : 26; et = '<text x="' + f1(a.x + (r + 12) * c) + '" y="' + f1(a.y + (r + 12) * sn + fs * 0.35) + '" text-anchor="' + (c > 0.3 ? "start" : c < -0.3 ? "end" : "middle") + '" font-size="' + fs + '" fill="' + (n.k === 1 ? "var(--tinta)" : "var(--tinta-2)") + '" style="font-family:var(--f-ui)">' + esc(n.a) + "</text>"; }
+      s += '<g class="jg-nodo" data-c="' + esc(n.c) + '"' + (mini ? "" : ' tabindex="0" role="button" aria-label="' + esc(n.a + ", " + ordGen(n.k) + " generación" + (n.ok ? ", confirmó su lugar" : "") + (n.d ? ", " + n.d + " en sus ramas" : "")) + '"') + ">" +
+        (mini ? "" : '<circle cx="' + f1(a.x) + '" cy="' + f1(a.y) + '" r="' + f1(r + 12) + '" fill="transparent"/>') +
+        '<circle class="pt" cx="' + f1(a.x) + '" cy="' + f1(a.y) + '" r="' + f1(r) + '" fill="' + (n.ok ? "var(--oro)" : "var(--hoja-2)") + '" stroke="' + (n.ok ? "var(--oro-vivo)" : "var(--oro)") + '" stroke-width="3"/>' +
+        (ocultos > 0 && !mini ? '<text x="' + f1(a.x) + '" y="' + f1(a.y + 7) + '" text-anchor="middle" font-size="20" font-weight="600" fill="' + (n.ok ? "var(--sobre-oro)" : "var(--oro-vivo)") + '" style="font-family:var(--f-ui)">+' + ocultos + "</text>" : "") + et + "</g>";
+    }
+    // en el centro: tu emblema (o la inicial de quien encabeza la rama que se explora)
+    const y = S.yo || {}, e = y.emb || {}, propia = !!(d.raiz && d.raiz.propia), col = propia ? COLORES[e.c] || COLORES[0] : "var(--oro)";
+    const l = propia ? e.l || "α" : String((d.raiz && d.raiz.a) || "·").trim().charAt(0).toUpperCase(), heb = /[֐-׿]/.test(l);
+    s += '<circle cx="500" cy="500" r="' + (mini ? 50 : 38) + '" fill="var(--hoja-2)" stroke="' + col + '" stroke-width="3.5"/><text x="500" y="' + (mini ? 520 : 514) + '" text-anchor="middle" font-size="' + (mini ? 56 : 42) + '" fill="' + col + '" style="font-family:' + (heb ? "'Frank Ruhl Libre','BiEx Texto',serif" : "'BiEx Texto',Georgia,serif") + '">' + esc(l) + "</text>";
+    const el = A.svg(s, "0 0 1000 1000");
+    el.setAttribute("class", "jg-arbol");
+    if (!mini) { el.removeAttribute("aria-hidden"); el.setAttribute("role", "group"); el.setAttribute("aria-label", "Árbol de la siembra: " + plural((d.raiz && d.raiz.d) || 0, "persona", "personas")); }
+    return el;
+  }
+  function tarjetaSiembra(y) {
+    const zona = h("div", { class: "jg-siembra" });
+    const unidos = (y.invi && y.invi.unidos) || 0;
+    if (!unidos) zona.append(h("p", { text: "Cuando alguien llegue con tu enlace, aquí nacerá tu árbol: verás a cada persona y a las que lleguen por ellas, generación tras generación." }));
+    else {
+      zona.append(h("p", { class: "jg-mini", text: "Cargando tu árbol…" }));
+      pedir("/arbol?prof=2", { guardable: true }).then((r) => {
+        if (r.error) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Tu árbol se verá aquí en un momento." }));
+        zona.replaceChildren(h("a", { class: "jg-siembra-svg", href: "#/escudrina/arbol", "aria-label": "Ver mi árbol de la siembra" }, dibujoArbol(r, true)),
+          h("div", {}, h("p", { class: "jg-total" }, h("b", { text: fmt(r.raiz.d) }), " " + (r.raiz.d === 1 ? "persona" : "personas")),
+            h("p", { class: "jg-mini", text: r.gens.map(([k, n]) => ordGen(k) + " generación: " + fmt(n)).join(" · ") + (r.raiz.dc ? " · " + plural(r.raiz.dc, "confirmada", "confirmadas") : "") })));
+      });
+    }
+    return tarjeta("Árbol de la siembra", ico("arbol"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/arbol" }, ico("arbol"), h("span", { text: "Ver mi árbol" }))));
+  }
+  async function pintarArbol(cont, raiz) {
+    document.title = "Árbol de la siembra · Escudriña · BiEx";
+    const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu árbol…" }));
+    marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje."), zona);
+    const r = await pedir("/arbol?" + new URLSearchParams(raiz ? { raiz, prof: "3" } : { prof: "3" }), { guardable: true });
+    if (cont !== S.cont || !zona.isConnected) return;
+    if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: r.error === "no_existe" ? "Esa rama no está en tu árbol." : mensaje(r) }), h("a", { class: "btn", href: "#/escudrina/arbol" }, h("span", { text: "Ver mi árbol" }))));
+    const R0 = r.raiz, propia = !!R0.propia, M = (S.cfg && S.cfg.micro) || { 2: 15, 3: 5 };
+    const maxG = Math.max(1, ...r.gens.map((g) => g[1]));
+    const resumen = tarjeta(propia ? "Tu siembra" : "Rama de " + R0.a, ico("arbol"),
+      h("p", { class: "jg-total" }, h("b", { text: fmt(R0.d) }), " " + (R0.d === 1 ? "persona" : "personas") + (r.gens.length ? " en " + plural(r.gens.length, "generación", "generaciones") : "")),
+      R0.d ? h("p", { class: "jg-mini", text: plural(R0.dc, "persona confirmó su lugar", "personas confirmaron su lugar") + " (leyeron sus primeros 20 versos o aseguraron su cuenta)." }) : null,
+      r.gens.length ? h("ul", { class: "jg-gen" }, r.gens.map(([k, n, c]) => h("li", {}, h("span", { text: ordGen(k) + " generación" }), h("span", { class: "b", "aria-hidden": "true" }, h("i", { style: "width:" + Math.max(4, (100 * n) / maxG).toFixed(1) + "%" })),
+        h("span", { text: fmt(n) + (c ? " · " + fmt(c) + " ✓" : "") })))) : null,
+      propia && r.padre ? h("p", { class: "jg-mini", text: "Tú llegaste con la invitación de " + r.padre + "." }) : null,
+      propia ? h("p", { class: "jg-mini", text: "Quien llega con tu enlace es tu 1.ª generación y te sube en la escalera del Sembrador; por cada persona que confirma en tu 2.ª generación (las que invitan tus invitados) recibes " + M[2] + " min de experiencia doble, y " + M[3] + " min en la 3.ª. Desde la 4.ª, tu árbol sigue creciendo a la vista." })
+        : h("a", { class: "btn chico", href: "#/escudrina/arbol" }, h("span", { text: "‹ Volver a mi árbol" })),
+      r.trunc ? h("p", { class: "jg-mini", text: "Tu árbol pasa de 20 000 personas: aquí se ve una muestra." }) : null);
+    if (!R0.d) return zona.replaceChildren(resumen, tarjeta(null, null, h("p", { text: propia ? "Tu árbol nace con la primera persona que llegue con tu enlace. Comparte el Mensaje y aquí verás crecer cada rama." : R0.a + " todavía no tiene ramas." }),
+      propia ? h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: compartirInvitacion }, ico("compartir"), h("span", { text: "Compartir mi enlace" }))) : null));
+    const porC = new Map(r.nodos.map((n) => [n.c, n]));
+    const ficha = h("div", { class: "jg-ficha", "aria-live": "polite" }, h("p", { class: "jg-mini", text: "Toca a una persona para ver su rama." }));
+    const dib = dibujoArbol(r, false);
+    const elegir = (c) => {
+      const n = porC.get(c); if (!n) return;
+      for (const g of dib.querySelectorAll(".jg-nodo.sel")) g.classList.remove("sel");
+      for (const g of dib.querySelectorAll(".jg-nodo")) if (g.getAttribute("data-c") === c) g.classList.add("sel");
+      const padre = n.p ? porC.get(n.p) : null;
+      ficha.replaceChildren(h("p", { class: "jg-nombre", text: n.a }),
+        h("p", { class: "jg-mini", text: ordGen(n.k) + " generación" + (padre ? " · llegó por " + padre.a : "") + " · " + diaCorto(n.f) + (n.pr ? " · Primicia" : "") }),
+        h("p", { text: (n.ok ? "Confirmó su lugar." : "Todavía no confirma su lugar (lo hace al leer sus primeros 20 versos o al asegurar su cuenta).") + (n.h ? " Trajo a " + plural(n.h, "persona", "personas") + (n.d > n.h ? " y su rama ya suma " + fmt(n.d) : "") + "." : "") }),
+        n.h ? h("a", { class: "btn chico", href: "#/escudrina/arbol/" + n.c }, ico("arbol"), h("span", { text: "Ver su rama" })) : null);
+    };
+    dib.addEventListener("click", (e) => { const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) elegir(g.getAttribute("data-c")); });
+    dib.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) { e.preventDefault(); elegir(g.getAttribute("data-c")); } });
+    const lista = h("ol", { class: "jg-arbol-lista" }, r.nodos.map((n) => { const padre = n.p ? porC.get(n.p) : null; return h("li", { class: n.ok ? "ok" : "" },
+      h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") })),
+      h("span", { class: "jg-mini", text: [n.d ? fmt(n.d) + " en sus ramas" : "", n.ok ? "✓" : ""].filter(Boolean).join(" · ") })); }));
+    zona.replaceChildren(resumen,
+      tarjeta("Las ramas", null, h("div", { class: "jg-arbol-caja" }, dib), h("p", { class: "jg-mini", text: "● confirmó su lugar · ○ todavía no · +N: personas que se ven al abrir su rama" }), ficha),
+      tarjeta("Por generación", null, lista, r.nodos.length < R0.d ? h("p", { class: "jg-mini", text: "Se muestran " + fmt(r.nodos.length) + " de " + fmt(R0.d) + " personas (hasta la " + ordGen(r.prof) + " generación). Toca una persona y abre su rama para ver más." }) : null));
   }
 
   // --- imagen para compartir (lienzo de 1080 × 1350, a su tamaño exacto: nítida en cualquier red)
@@ -753,7 +933,8 @@
     txt("Únete con mi enlace", 1118, "500 34px " + U, "#ece5d6", "2px");
     const u = enlaceInvitacion().replace(/^https:\/\//, "");
     txt(u, 1176, ajustar(u, W - 220, "600 {t}px " + U, 44), "#e8cf94");
-    txt(y.practica ? "Lanzamiento: a más tardar el sábado 28 de noviembre" : "El juego de Biblia Exacta", 1250, "400 28px " + U, "#a39a88", "1px");
+    let lz = ""; try { lz = new Date(y.lanzamiento).toLocaleString("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZoneName: "short" }); } catch (e) { lz = ""; }
+    txt(y.practica && lz ? "Lanzamiento: " + lz : "El juego de Biblia Exacta", 1250, "400 28px " + U, "#a39a88", "1px");
     return new Promise((ok) => cv.toBlob((b) => ok(b), "image/png"));
   }
   async function verTarjetaImagen(op) {
@@ -864,7 +1045,7 @@
   }
 
   // --- clasificación
-  const AMBITOS = [["ciudad", "Ciudad"], ["region", "Región"], ["pais", "País"], ["continente", "Continente"], ["mundo", "Mundo"]];
+  const AMBITOS = (pais) => [["ciudad", "Ciudad"], ["region", nombreRegion(pais)], ["pais", "País"], ["continente", "Continente"], ["mundo", "Mundo"]];
   async function pintarClasificacion(cont) {
     document.title = "Clasificación · Escudriña · BiEx";
     const y = S.yo || {};
@@ -890,7 +1071,7 @@
     }
     marco(cont, h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: "Clasificación" }),
       h("p", { class: "est-sub", text: "Cada rango tiene su propia clasificación: los nuevos compiten con nuevos y los veteranos con veteranos." })),
-      tarjeta(null, null, seg(AMBITOS, "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"), seg(RANGOS.map((t, i) => [i, t]), "rango")),
+      tarjeta(null, null, seg(AMBITOS((y.lugar || {}).pais), "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"), seg(RANGOS.map((t, i) => [i, t]), "rango")),
       tarjeta(null, null, zona), vivoLinea());
     cargar();
   }
@@ -900,14 +1081,14 @@
     document.title = "Cuenta · Escudriña · BiEx";
     const y = S.yo || {};
     const [l0, c0] = [y.emb ? y.emb.l : "α", y.emb ? y.emb.c : 0];
-    const vista = h("div", { class: "jg-emb", style: "width:72px;height:72px" }, emblema(l0, c0, y.marco));
+    const vista = h("div", { class: "jg-emb", style: "width:72px;height:72px" }, emblema(l0, c0, marcoVisible(y)));
     const emb = { l: l0, c: c0 };
     const guardarEmb = async () => { const r = await pedir("/cuenta/preferencias", { metodo: "POST", cuerpo: { emb } }); if (!r.error) { actualizarYo(r.yo); A.avisar("Emblema guardado"); } else A.avisar(mensaje(r)); };
     const letras = h("div", { class: "jg-letras", role: "group", "aria-label": "Letra del emblema" }, [...LETRAS].map((x) => h("button", { type: "button", "aria-pressed": String(x === emb.l), lang: /[֐-׿]/.test(x) ? "he" : "grc", text: x, onclick: (e) => {
-      emb.l = x; for (const b of letras.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vista.replaceChildren(emblema(emb.l, emb.c, y.marco)); guardarEmb();
+      emb.l = x; for (const b of letras.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vista.replaceChildren(emblema(emb.l, emb.c, marcoVisible(y))); guardarEmb();
     } })));
     const colores = h("div", { class: "jg-colores", role: "group", "aria-label": "Color del emblema" }, COLORES.map((col, i) => h("button", { type: "button", "aria-pressed": String(i === emb.c), "aria-label": "Color " + (i + 1), style: "background:" + col, onclick: (e) => {
-      emb.c = i; for (const b of colores.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vista.replaceChildren(emblema(emb.l, emb.c, y.marco)); guardarEmb();
+      emb.c = i; for (const b of colores.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vista.replaceChildren(emblema(emb.l, emb.c, marcoVisible(y))); guardarEmb();
     } })));
     const pref = (k, t, d) => { const c = h("input", { type: "checkbox", checked: !!y[k], onchange: async () => { const r = await pedir("/cuenta/preferencias", { metodo: "POST", cuerpo: { [k]: c.checked } }); if (!r.error) actualizarYo(r.yo); else { c.checked = !c.checked; A.avisar(mensaje(r)); } } });
       return h("label", { class: "jg-check" }, c, h("span", {}, t, h("br"), h("span", { class: "jg-mini", text: d }))); };
@@ -949,7 +1130,7 @@
   async function conectar(prov, modo, pista) {
     // la ventana se abre ya, dentro del toque (si no, el navegador la bloquea); luego se le da su dirección
     const w = window.open("", "biex-entrar", "popup,width=480,height=680");
-    const r = await pedir("/auth/" + prov + "/preparar", { metodo: "POST", cuerpo: { modo }, sin: modo !== "vincular" });
+    const r = await pedir("/auth/" + prov + "/preparar", { metodo: "POST", cuerpo: { modo, inv: modo === "vincular" ? null : invitacionPendiente() }, sin: modo !== "vincular" });
     if (r.error) { if (w) w.close(); if (pista) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; } return; }
     const url = API_ABS + "/auth/" + prov + "/inicio?e=" + encodeURIComponent(r.estado);
     if (w) { try { w.location.href = url; } catch (e) { window.open(url, "_blank"); } } else window.open(url, "_blank");

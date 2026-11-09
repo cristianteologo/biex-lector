@@ -3,7 +3,12 @@
 // navegador; los robots que arman la vista previa no cuentan) y lleva al lector con la invitación guardada.
 const BOTS = /facebookexternalhit|facebot|whatsapp|twitterbot|telegrambot|slackbot|discordbot|linkedinbot|pinterest|googlebot|bingbot|applebot|embedly|skypeuripreview|vkshare|redditbot|preview|crawler|spider|\bbot\b/i;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const LANZA = Date.UTC(2026, 10, 29, 1, 0); // a más tardar: sábado 28-nov-2026, 20:00 de Bogotá (el servidor manda la fecha vigente)
+const LANZA = Date.UTC(2026, 10, 15, 1, 0); // sábado 14-nov-2026, 20:00 de Bogotá (el servidor manda la fecha vigente)
+// La hora del lanzamiento en las principales ciudades (no solo Bogotá) y, en el navegador, en la hora local de quien abre
+const CIUDADES = [["America/Los_Angeles", "Los Angeles [Los Ángeles]"], ["America/Mexico_City", "Ciudad de México"], ["America/Bogota", "Bogotá · Lima · Quito"],
+  ["America/New_York", "New York [Nueva York]"], ["America/Caracas", "Caracas · Santo Domingo"], ["America/Argentina/Buenos_Aires", "Buenos Aires · Santiago · São Paulo"], ["Europe/Madrid", "Madrid"]];
+const horaEn = (ms, tz) => { try { return new Date(ms).toLocaleString("es", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } };
+const diaEn = (ms) => { try { return new Date(ms).toLocaleDateString("es", { timeZone: "America/Bogota", weekday: "long", day: "numeric", month: "long" }); } catch (e) { return ""; } };
 
 export async function onRequestGet({ request, env, params }) {
   const url = new URL(request.url);
@@ -15,7 +20,7 @@ export async function onRequestGet({ request, env, params }) {
   if (env.JUEGO && typeof env.JUEGO.fetch === "function") {
     try {
       const r = await env.JUEGO.fetch(new Request(url.origin + "/api/juego/invitacion?c=" + c + (!bot && !vista ? "&a=1" : "")));
-      const d = await r.json(); apodo = d.apodo || ""; if (Number.isFinite(d.quedan)) quedan = d.quedan;
+      const d = await r.json(); apodo = d.apodo || ""; if (Number.isFinite(d.quedan)) quedan = d.quedan; if (Number.isFinite(d.lanzamiento)) lanza = d.lanzamiento;
     } catch (e) { /* sin servidor: la página sigue sirviendo */ }
   }
   const quien = apodo ? esc(apodo) + " te invita" : "Te invitan";
@@ -52,7 +57,8 @@ h1{margin:.35em 0 0;font:600 clamp(2.4rem,9vw,3.4rem)/1 "BiEx Titular",Georgia,s
 .barra{height:8px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin:.3em 0 1em}.barra i{display:block;height:100%;background:linear-gradient(90deg,var(--oro),var(--oro-vivo))}
 .reloj{display:flex;justify-content:center;gap:10px;margin:.3em 0 .4em}.reloj span{display:grid;min-width:70px;padding:7px 6px;border-radius:12px;border:1px solid rgba(201,168,101,.35)}
 .reloj b{font:600 1.6rem/1.1 "BiEx Interfaz",system-ui,sans-serif;color:var(--oro-vivo);font-variant-numeric:tabular-nums}.reloj small{font:500 .68rem/1.2 "BiEx Interfaz",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
-.nota{font:400 .86rem/1.4 "BiEx Interfaz",system-ui,sans-serif;color:var(--tenue);margin:0 0 1.2em}
+.nota{font:400 .86rem/1.4 "BiEx Interfaz",system-ui,sans-serif;color:var(--tenue);margin:0 0 .5em}
+.zonas{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin:0 0 1.2em;font:400 .76rem/1.4 "BiEx Interfaz",system-ui,sans-serif;color:var(--tenue)}.zonas b{color:var(--tinta);font-weight:600;white-space:nowrap}
 ul{list-style:none;padding:0;margin:0 0 1.4em;text-align:left;display:grid;gap:8px}li{padding-left:24px;position:relative}li:before{content:"✦";position:absolute;left:2px;color:var(--oro)}
 .btn{display:block;text-decoration:none;font:600 1.12rem/1.2 "BiEx Interfaz",system-ui,sans-serif;letter-spacing:.04em;padding:16px 18px;border-radius:14px;color:#1a1408;
 background:linear-gradient(180deg,#f0d9a2,#c9a865);box-shadow:0 10px 30px rgba(201,168,101,.25)}.btn:focus-visible{outline:2px solid #fff;outline-offset:3px}
@@ -66,13 +72,15 @@ background:linear-gradient(180deg,#f0d9a2,#c9a865);box-shadow:0 10px 30px rgba(2
 <p class="prim">Solo hay <b>1440</b> Primicias</p>
 ${quedan != null ? `<p class="quedan">Quedan <b>${quedan}</b> lugares</p><div class="barra"><i style="width:${Math.min(100, ((1440 - quedan) * 100) / 1440).toFixed(1)}%"></i></div>` : ""}
 <div class="reloj" id="reloj" data-fin="${lanza}" aria-label="Tiempo para el lanzamiento"></div>
-<p class="nota">Lanzamiento, a más tardar el sábado 28 de noviembre, 20:00 (hora de Bogotá)</p>
+<p class="nota" id="lz" data-ms="${lanza}">Lanzamiento: ${esc(diaEn(lanza))}</p>
+<p class="zonas">${CIUDADES.map(([tz, n]) => `<span>${esc(n)} <b>${esc(horaEn(lanza, tz))}</b></span>`).join("")}</p>
 <ul><li>Lee la Nueva Voluntad traducida palabra por palabra del griego, con su análisis.</li><li>Misiones pequeñas cada día, hallazgos raros (las doce piedras y el lauro trenzado incorruptible), clasificaciones y el prestigio de tu ciudad.</li><li>Llegas con 3 horas de lectura con experiencia doble, que no vencen.</li></ul>
 <a class="btn" id="ir" href="${destino}">Reservar mi lugar</a>
 <a class="sec" href="https://bibliaexacta.wixsite.com/biex">Conocer Biblia Exacta</a>
 <p class="verso"><span lang="grc">ἐρευνᾶτε τὰς γραφάς</span>«Escudriñan a las escrituras» · YÔḥānā́n 5:39</p>
 </main><script>
 (function(){try{localStorage.setItem("biex:jg:ab:${c}","true")}catch(e){}
+try{var lz=document.getElementById("lz"),ms=+lz.getAttribute("data-ms");lz.textContent="Lanzamiento: "+new Date(ms).toLocaleString("es",{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})+" (tu hora local)"}catch(e){}
 var el=document.getElementById("reloj"),fin=+el.getAttribute("data-fin");
 function p(n,a,b){return"<span><b>"+n+"</b><small>"+(n===1?a:b)+"</small></span>"}
 function t(){var f=fin-Date.now();if(f<=0){el.innerHTML="<span><b>¡Ya abrió!</b><small>Escudriña</small></span>";return}

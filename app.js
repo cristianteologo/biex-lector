@@ -986,8 +986,20 @@
   const OFICIAL = "https://bibliaexacta.wixsite.com/biex/";
   const enlacePublico = (hh) => (EMBED ? OFICIAL + "nueva-voluntad?lector=" + encodeURIComponent(String(hh || "").replace(/^#?\/?/, "")).replace(/%2F/g, "/") : location.href.split("#")[0] + hh);
   const textoPlano = (t) => String(t || "").replace(/[⟪⟫]/g, "").replace(/\*\*?/g, "");
+  // Semilla (BiEx, 9-nov-2026: «todo compartir sale con un código único de quien comparte»): quien aún no juega comparte con
+  // un código de 10 letras que sale de un secreto guardado solo en este dispositivo; si después crea su cuenta, todo lo que
+  // sembró antes pasa a su árbol de la siembra. Nadie puede reclamarla con solo ver el enlace.
+  async function semilla() {
+    try {
+      let s = store.get("jg:semS", null);
+      if (typeof s !== "string" || s.length < 32) { s = Array.from(crypto.getRandomValues(new Uint8Array(24)), (b) => b.toString(16).padStart(2, "0")).join(""); store.set("jg:semS", s); }
+      const b = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("biex-semilla:" + s)));
+      const AB = "abcdefghjkmnpqrstuvwxyz23456789";
+      return Array.from(b.slice(0, 10), (x) => AB[x % AB.length]).join("");
+    } catch (e) { return null; }
+  }
   async function compartir(titulo, texto, hh) {
-    const inv = store.get("jg:t", null) && store.get("jg:mio", null);
+    const inv = (store.get("jg:t", null) && store.get("jg:mio", null)) || (await semilla());
     if (inv && /^[a-z0-9]{4,12}$/.test(inv) && /^#\/[A-Z0-9]{3}\//.test(hh || "")) hh = "#/escudrina/i/" + inv + "/" + hh.slice(2);
     const url = enlacePublico(hh);
     try { if (navigator.share) { await navigator.share({ title: titulo, text: titulo + " — " + texto, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
@@ -1034,7 +1046,8 @@
           fila("Movimiento", grupo("mov", [["si", op("Con animaciones")], ["no", op("Sin animaciones", "Todo aparece al instante")]])),
           h("div", { class: "ap-pie" },
             h("button", { class: "btn chico oro", type: "button", onclick: () => empujar(vistaOpciones()) }, svg(ICO.opciones), "Opciones del texto: colores, corchetes, paréntesis"),
-            h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura"))));
+            h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura")),
+          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para toda clase de personas, también neurodivergentes (con TDAH, dislexia, autismo…), y busca la máxima inclusión progresiva de accesibilidad para personas ciegas y con otras limitaciones, para que el Lógos llegue a toda clase de personas." })));
     });
   }
 
@@ -1355,7 +1368,7 @@
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
           hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden cronológico en 30, 90 días o un año, los relatos de la vida de YēshŪ́ʿa y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
-          hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros y clasificaciones por ciudad y país. Se entra con un apodo.", "Jugar", "#/escudrina"),
+          hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
           hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
@@ -1605,6 +1618,14 @@
 
   // Perícopas: las marcas § de BiEx cuando el capítulo las tiene; si no, los párrafos (¶) del texto griego
   const iniciaPericopa = (usaP, x, k) => k === 0 || !!(usaP ? x.p : x.q);
+  // BiEx (9-nov-2026): que nadie tome el proceso semana a semana por el resultado final. Tras «Entendido» vuelve a los 7 días.
+  function notaObra() {
+    if (Date.now() - (Number(store.get("obraVista", 0)) || 0) < 7 * 864e5) return null;
+    const el = h("div", { class: "nota-obra", role: "note" },
+      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Orden (lectura organizada) reflejará de manera precisa e inteligible el mensaje de la traducción literal. Te invitamos a volver cada semana para ver las novedades y los avances en la edición del texto y del proyecto."),
+      h("button", { class: "btn chico", type: "button", onclick: () => { store.set("obraVista", Date.now()); el.remove(); } }, "Entendido"));
+    return el;
+  }
   function cuerpoLectura(b, cap, todos) {
     const f = prefs.nivel || "";
     const versos = todos.filter((x) => pasaFiltro(x, f));
@@ -1617,6 +1638,7 @@
       hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se presentan palabra por palabra.", h("br"), "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.", h("br"), "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
       h("p", { class: "nota-base" }, "Toca cualquier verso para abrir su griego palabra por palabra.", ley);
     const quitarFiltro = () => { prefs.nivel = ""; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); };
+    const obra = notaObra();
     const avisoFiltro = f ? h("div", { class: "nota-filtro" }, svg(ICO.filtro), h("span", { text: (versos.length ? "Se muestran " + versos.length + " de " + todos.length + " versos" : "Ningún verso de este capítulo está aún en este nivel") + " · " + nombreFiltro(f) + "." }),
       h("button", { class: "btn chico", type: "button", onclick: quitarFiltro, text: "Mostrar todos" })) : null;
     // al tocar un verso se abre su griego palabra por palabra, con la palabra tocada iluminada
@@ -1637,7 +1659,7 @@
         if (A && A.fin) actual = null;
       });
       if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) parrafos.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
-      return [encabezado(b, cap, "l"), nota, avisoFiltro, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
+      return [encabezado(b, cap, "l"), obra, nota, avisoFiltro, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
     }
     const filas = [];
     versos.forEach((x, k) => {
@@ -1647,7 +1669,7 @@
       filas.push(filaVerso(x, k));
     });
     if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) filas.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
-    return [encabezado(b, cap, "l"), nota, avisoFiltro, h("div", { class: "lectura" }, filas), finCap(b, cap, "l")];
+    return [encabezado(b, cap, "l"), obra, nota, avisoFiltro, h("div", { class: "lectura" }, filas), finCap(b, cap, "l")];
     function filaVerso(x, k) {
       const A = anadido(b.c, cap, x.v);
       return aplicarMarca(h("div", {
@@ -1739,7 +1761,7 @@
     return h("div", { class: "bloque mk-bloque" },
       h("h4", {}, svg(ICO.marcador), h("span", { text: "Tu estudio" }), h("a", { class: "mk-ir", href: "#/marcadores", text: "Mis marcadores" })),
       temas, nota,
-      h("p", { class: "nota-ui", text: "Se guarda en este navegador. En «Mis marcadores» puedes llevarlo a otro dispositivo." }));
+      h("p", { class: "nota-ui" }, "Se guarda en este navegador. Borrar solo la caché no lo toca; si se borran los datos del sitio o se desinstala la app, se pierde: ", h("a", { href: "#/marcadores", text: "expórtalo en «Mis marcadores»" }), "."));
   }
   // Página «Mis marcadores»: filtrar por tema, buscar en las notas, ir al verso, exportar e importar
   async function vistaMarcadores() {
@@ -1850,6 +1872,7 @@
         h("button", { class: "btn chico", type: "button", onclick: copiarTexto }, svg(ICO.copiar), h("span", { text: "Copiar como texto" })),
         h("button", { class: "btn chico", type: "button", onclick: editarTemas }, svg(ICO.opciones), h("span", { text: "Nombres de los temas" })),
         borrarTodo, archivo),
+      h("div", { class: "nota-guarda", role: "note" }, svg(ICO.marcador), h("p", {}, h("b", { text: "Tus notas viven en este dispositivo. " }), "Borrar solo la caché no toca tus notas. Instalar la app con «Descargar todo» las protege de la limpieza automática, pero si alguien borra los datos del sitio o desinstala la app, se pierden. Por eso conviene exportarlas.")),
       h("p", { class: "nota-ui", text: "Tus marcadores se guardan solo en este navegador, sin cuentas ni servidores: nadie más los ve. Para tenerlos en otro dispositivo, usa «Exportar» aquí e «Importar» allá." }))));
     pintar();
     alTope();
@@ -2474,7 +2497,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "7ee51c1247", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "6865984a4f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3918,6 +3941,7 @@
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "BiEx en tu dispositivo" }), h("h1", { class: "texto", text: "Instalar y leer sin conexión" }),
         h("p", { class: "q-lead", text: "Biblia Exacta ©™ puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
       instalar, sinConexion,
+      h("div", { class: "nota-guarda", role: "note" }, svg(ICO.marcador), h("p", {}, h("b", { text: "Tus marcadores y notas. " }), "Borrar solo la caché no toca tus notas. Instalar la app con «Descargar todo» las protege de la limpieza automática, pero si alguien borra los datos del sitio o desinstala la app, se pierden. Por eso conviene exportarlas. ", h("a", { href: "#/marcadores", text: "Exportarlas" }), ".")),
       h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
     if (sinConexion) pintarEstado();
     alTope();

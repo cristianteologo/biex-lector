@@ -1006,7 +1006,7 @@ html.barra-sin-pista .btn-buscar .bb-pista { display: none; }
 html.barra-sin-nav .barra .nav { display: none; }
 html.barra-sin-nav .barra .acc { margin-left: auto; }
 .marca { flex-shrink: 0; }
-@media (max-width: 440px) { .marca { flex-shrink: 1; } }
+@media (max-width: 500px) { .marca { flex-shrink: 1; } }
 @media (max-width: 640px) { .btn-buscar small { display: none; } }
 .bq > *, .bq-res > *, .bq-g > * { min-width: 0; }
 .bq-campo input { width: 100%; }
@@ -1040,7 +1040,8 @@ html.restaurando, html.restaurando body { overflow-anchor: none; }
 .paradigma td { overflow-wrap: anywhere; }
 /* barra superior en teléfonos: el sello basta; el nombre completo no debe montarse sobre los botones */
 .marca { overflow: hidden; }
-@media (max-width: 440px) { .marca .nombre { display: none; } .barra .in { justify-content: space-between; } }
+/* con el ícono del juego la barra tiene siete botones: el nombre se recoge hasta 500 px para que nada se recorte */
+@media (max-width: 500px) { .marca .nombre { display: none; } .barra .in { justify-content: space-between; } }
 /* tabla de formas del lema en pantallas estrechas: cada forma como ficha */
 @media (max-width: 520px) {
   .paradigma, .paradigma tbody { display: block; }
@@ -1158,6 +1159,8 @@ select.mm-nativo { position: fixed !important; left: 0 !important; top: 0 !impor
 html.inmersivo .barra { transform: translateY(-105%); }
 html.inmersivo .barra-hoja.bh-pegada { transform: translate3d(0, calc(-1 * (var(--alto) + var(--bh-sube, 0px))), 0); }
 html.con-modal .barra { transform: none; }
+/* al volver a una posición guardada las barras quedan en su sitio en el mismo cuadro (sin deslizarse): atrás es exacto */
+html.restaurando .barra, html.restaurando .barra-hoja { transition: none !important; }
 
 /* barra del capítulo en teléfonos: arriba la disposición, el filtro y las opciones; abajo el modo y el capítulo con sus
    flechas, la fila que queda siempre a la vista al leer */
@@ -1898,3 +1901,15 @@ html.lupa .barra { position: fixed; top: 0; left: 0; right: 0; }
 html.lupa body { padding-top: calc(var(--alto) + env(safe-area-inset-top, 0px)); }
 html.lupa .barra-hoja { position: relative; top: auto; }
 html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; overflow-anchor: none !important; }
+/* avisos de BiEx (9-nov-2026): notas que viven en el dispositivo y construcción continua del texto */
+.nota-guarda{display:flex;gap:10px;align-items:flex-start;margin:14px 0 6px;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--oro-suave) 60%,transparent)}
+.nota-guarda svg{flex:none;width:18px;height:18px;margin-top:2px;color:var(--oro)}
+.nota-guarda p{margin:0;font:400 .9rem/1.5 var(--f-ui);color:var(--tinta)}
+.nota-guarda b{color:var(--oro-vivo);font-weight:600}
+.nota-obra{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 14px;padding:10px 14px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--oro) 50%,transparent);font:400 13.5px/1.5 var(--f-ui);color:var(--tinta-2)}
+.nota-obra .btn{font-size:12.5px}
+.nota-obra p{margin:0}
+.nota-obra b{color:var(--oro-vivo);font-weight:600}
+.nota-obra .btn{flex:none}
+@media (max-width:520px){.nota-obra{flex-direction:column;align-items:stretch}.nota-obra .btn{align-self:flex-end}}
+.ap-acc{margin-top:12px}
