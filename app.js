@@ -1087,6 +1087,7 @@
     const buscar = h("button", { class: "btn-buscar", type: "button", "aria-label": "Buscar: escenas, citas, nombres, palabras o preguntas", onclick: () => abrirBusqueda("") }, svg(ICO.buscar), h("span", { text: "Buscar" }), h("small", { class: "bb-pista", text: "escenas, citas, palabras…" }));
     const guia = h("button", { class: "btn-icono btn-guia", type: "button", "aria-label": "Guía animada del lector", title: "Guía: cómo usar el lector", onclick: () => abrirGuia(0) }, svg(ICO.guia));
     const hist = h("button", { class: "btn-icono btn-hist", type: "button", "aria-label": "Historial: las últimas 24 citas consultadas", title: "Historial", onclick: () => abrirHistorial() }, svg(ICO.historial));
+    const juego = h("button", { class: "btn-icono btn-juego", type: "button", "aria-label": "Escudriña, el juego de Biblia Exacta", title: "Escudriña · el juego", onclick: () => { location.hash = "#/escudrina"; } }, svg(ICO.juego));
     const herr = h("button", { class: "btn-icono btn-herr", type: "button", "aria-label": "Herramientas: lectura, análisis, buscador, manuscritos, línea del tiempo, concordancia y guía", title: "Herramientas", onclick: () => abrirHerramientas() }, svg(ICO.rejilla));
     const extra = EMBED ? [
       EMBED ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(enlacePublico(location.hash), "_blank", "noopener") }, svg(ICO.externo)) : null,
@@ -1101,7 +1102,7 @@
       h("header", { class: "barra" }, h("div", { class: "in" },
         h("a", { class: "marca", href: "#/", "aria-label": "Inicio del lector" }, h("span", { class: "sello", text: "BiEx" }), h("span", { class: "nombre" }, h("b", { text: "Biblia Exacta" }), h("small", { text: "Lector y analizador" }))),
         h("nav", { class: "nav", "aria-label": "Secciones" }, h("a", { href: "#/", text: "Inicio" }), h("a", { href: "#/libros", text: "Libros" }), h("a", { href: "#/cronologia", text: "Cronología" }), h("a", { href: "#/buscar", text: "Avanzada" })),
-        h("div", { class: "acc" }, buscar, hist, herr, guia, tema, extra))),
+        h("div", { class: "acc" }, buscar, juego, hist, herr, guia, tema, extra))),
       h("main", { class: "pagina", id: "vista", tabindex: "-1" }),
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
@@ -2473,7 +2474,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "33f96d5ba4", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "7ee51c1247", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2498,7 +2499,8 @@
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
         irA: (hh) => { location.hash = hh; },
         marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
-        sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no" });
+        sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
+        cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v) });
       return J;
     }).catch((e) => { JGX = null; throw e; });
     return JGX;

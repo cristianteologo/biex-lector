@@ -13,7 +13,11 @@
   const LETRAS = "αβγδεζηθικλμνξοπρστυφχψωאבגדהוזחטיכלמנסעפצקרשת";
   const COLORES = ["#c9a865", "#d98a5e", "#6aa7d8", "#6fbf8f", "#b08bd9", "#e0b84a", "#d47a98", "#9fb7c9"];
   const RANGOS = ["Oyente", "Lector", "Examinador", "Escudriñador", "Declarante"];
-  const MARCOS = [[1, "Sembrador"], [3, "Cordón de tres"], [7, "Siete"], [12, "Doce"], [24, "Veinticuatro"], [70, "Setenta"]];
+  // Escalera del Sembrador: [personas confirmadas, nombre, horas de experiencia doble]; el servidor manda la vigente en /config
+  const MARCOS0 = [[1, "Sembrador", 1], [3, "Cordón de tres", 2], [7, "Siete", 3], [12, "Doce", 4], [24, "Veinticuatro", 6], [30, "Treinta", 7],
+    [48, "Cuarenta y ocho", 8], [60, "Sesenta", 10], [72, "Setenta y dos", 12], [100, "Ciento", 15]];
+  const marcos = () => (S.cfg && Array.isArray(S.cfg.marcos) && S.cfg.marcos.length ? S.cfg.marcos : MARCOS0);
+  const PUBLICO = "https://bibliaexacta.pages.dev";
   const PIEDRAS = [["ἴασπις", "jaspe", "#5f9f72"], ["σάπφειρος", "zafiro", "#3f72d8"], ["χαλκηδών", "calcedonia", "#93a9c2"], ["σμάραγδος", "esmeralda", "#22a876"],
     ["σαρδόνυξ", "sardónice", "#c2643f"], ["σάρδιον", "cornalina", "#cc452f"], ["χρυσόλιθος", "crisólito", "#c3c23c"], ["βήρυλλος", "berilo", "#4db9ae"],
     ["τοπάζιον", "topacio", "#e4a92f"], ["χρυσόπρασος", "crisopraso", "#86d070"], ["ὑάκινθος", "jacinto", "#e57b3d"], ["ἀμέθυστος", "amatista", "#9663d0"]];
@@ -73,8 +77,10 @@
     const cab = {};
     if (o.cuerpo !== undefined) cab["content-type"] = "application/json";
     const t = S.token; if (t && !o.sin) cab.authorization = "Bearer " + t;
+    if (o.cab) Object.assign(cab, o.cab);
     let r;
-    try { r = await fetch(API + ruta, { method: o.metodo || "GET", headers: cab, body: o.cuerpo !== undefined ? JSON.stringify(o.cuerpo) : undefined, keepalive: !!o.keepalive, credentials: "omit", cache: "no-store" }); }
+    // «guardable»: el navegador puede reutilizar la respuesta mientras valga (no gasta peticiones del plan gratuito)
+    try { r = await fetch(API + ruta, { method: o.metodo || "GET", headers: cab, body: o.cuerpo !== undefined ? JSON.stringify(o.cuerpo) : undefined, keepalive: !!o.keepalive, credentials: "omit", cache: o.guardable ? "default" : "no-store" }); }
     catch (e) { return { error: "red" }; }
     let d = null;
     try { d = await r.json(); } catch (e) { d = { error: r.ok ? "datos" : "red" }; }
@@ -100,7 +106,7 @@
     A.store.set("jg:inv", null);
   }
   function olvidarSesion(aviso) {
-    R.cola = [];
+    R.cola = []; A.store.set("jg:cola", null); A.store.set("jg:hoy", null); A.store.set("jg:sie", null);
     S.token = null; S.yo = null; A.store.set("jg:t", null); A.store.set("jg:yo", null); A.store.set("jg:mio", null);
     salir();
     if (aviso) A.avisar("Tu sesión de Escudriña terminó. Entra de nuevo con tu código, tu llave o tu cuenta.");
@@ -108,7 +114,7 @@
   }
   async function config() {
     if (S.cfg && !S.cfg.sinServidor) return S.cfg;
-    const c = await pedir("/config", { sin: true });
+    const c = await pedir("/config", { sin: true, guardable: true });
     S.cfg = c.error ? { sinServidor: true, error: c.error, msPalabra: 250, msMin: 1000 } : c;
     return S.cfg;
   }
@@ -148,9 +154,12 @@
   const dracma = () => A.svg('<circle cx="12" cy="12" r="9.2" fill="var(--oro-suave)" stroke="var(--oro)" stroke-width="1.4"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="var(--oro)" stroke-width=".7" opacity=".6"/><path d="M12 7.6l3.9 8H8.1z" fill="none" stroke="var(--oro-vivo)" stroke-width="1.3" stroke-linejoin="round"/>');
   function emblema(l, c, marco) {
     const col = COLORES[c] || COLORES[0], heb = /[֐-׿]/.test(l || "");
-    const anillo = marco ? '<circle cx="24" cy="24" r="23" fill="none" stroke="var(--oro-vivo)" stroke-width="1.2" stroke-dasharray="' + (marco >= 6 ? "none" : (2 + marco) + " 2.2") + '"/>' : "";
+    // marco: punteado que se va cerrando (1–5), anillo pleno (6–7), doble anillo (8–9) y doble anillo con destellos (10, «Ciento»)
+    let anillo = marco ? '<circle cx="24" cy="24" r="23" fill="none" stroke="var(--oro-vivo)" stroke-width="1.2" stroke-dasharray="' + (marco >= 6 ? "none" : (2 + marco) + " 2.2") + '"/>' : "";
+    if (marco >= 8) anillo += '<circle cx="24" cy="24" r="21.6" fill="none" stroke="var(--oro)" stroke-width=".6"/>';
+    if (marco >= 10) for (let k = 0; k < 8; k++) { const g = k * Math.PI / 4, x = (24 + 23 * Math.cos(g)).toFixed(2), y = (24 + 23 * Math.sin(g)).toFixed(2); anillo += '<circle cx="' + x + '" cy="' + y + '" r="1.1" fill="var(--oro-vivo)"/>'; }
     return A.svg(anillo + '<circle cx="24" cy="24" r="20" fill="var(--hoja-2)" stroke="' + col + '" stroke-width="2"/><text x="24" y="' + (heb ? 31 : 32) + '" text-anchor="middle" font-size="' + (heb ? 21 : 25) +
-      '" fill="' + col + '" style="font-family:' + (heb ? "'Frank Ruhl Libre','Gentium Book Plus',serif" : "'Gentium Book Plus',Georgia,serif") + '">' + esc(l || "α") + "</text>", "0 0 48 48");
+      '" fill="' + col + '" style="font-family:' + (heb ? "'Frank Ruhl Libre','BiEx Texto',serif" : "'BiEx Texto','Gentium Book Plus',Georgia,serif") + '">' + esc(l || "α") + "</text>", "0 0 48 48");
   }
   const embDe = (s) => { const t = String(s || ""); const m = /^(.+?)(\d)$/u.exec(t); return m ? [m[1], +m[2]] : ["α", 0]; };
   const ICO_JG = {
@@ -165,6 +174,13 @@
     cambiar: '<path d="M4.5 9.5h12.5l-3-3M19.5 14.5H7l3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
     llama: '<path d="M12 21c3.6 0 6-2.5 6-5.8 0-3.6-2.7-5.6-3.6-8.7-.3 2-1.2 3-2.3 3.6C12.4 7.7 11 5 8.8 3.5c.3 3.3-2.8 5.6-2.8 10C6 18.5 8.4 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
     mundo: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.6 5.3 3.6 8.5s-1.1 6.1-3.6 8.5c-2.5-2.4-3.6-5.3-3.6-8.5s1.1-6.1 3.6-8.5z" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+    imagen: '<rect x="3.5" y="4.5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9.5" r="1.6" fill="currentColor"/><path d="M4.5 18l5.2-5.2 3.3 3.3 2.4-2.4 4.1 4.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    idea: '<path d="M9 17.5h6M10 20.5h4M12 3.5a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V17h5.2v-.7c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>',
+    arriba: '<path d="M12 5l6.5 7.5H14.5V19h-5v-6.5H5.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    chat: '<path d="M12 4a8 8 0 0 0-6.9 12.1L4 20l4-1.1A8 8 0 1 0 12 4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    avion: '<path d="M20.5 4L3.5 11l6 2.2L18 6.5l-6.8 7.8.5 5.7 3-4 4 2.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
+    publicar: '<path d="M4.5 6.5h15M4.5 11h15M4.5 15.5h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15l2 2 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    correo: '<rect x="3.5" y="5.5" width="17" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 7l7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
     persona: '<circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c.8-3.9 3.6-6 7-6s6.2 2.1 7 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
   };
   const ico = (k) => A.svg(ICO_JG[k]);
@@ -267,7 +283,7 @@
 .jg-novedades{list-style:none;margin:0;padding:0;display:grid;gap:6px;font:400 .88rem/1.45 var(--f-ui);color:var(--tinta-2)}
 .jg-novedades li::before{content:"·";color:var(--oro);margin-right:8px}
 .jg-letras{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
-.jg-letras button{font:400 1.25rem/1 "Gentium Book Plus",Georgia,serif;height:40px;border-radius:10px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer}
+.jg-letras button{font:400 1.25rem/1 "BiEx Texto","Gentium Book Plus",Georgia,serif;height:40px;border-radius:10px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer}
 .jg-letras button[aria-pressed=true]{border-color:var(--oro);color:var(--oro-vivo);background:var(--oro-suave)}
 .jg-colores{display:flex;flex-wrap:wrap;gap:8px}
 .jg-colores button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer}
@@ -309,6 +325,50 @@
 .jg-cel .arte.anim{animation:jg-brilla 1.6s ease-in-out 2}
 @media (min-width:720px){.jg-piedras{grid-template-columns:repeat(12,1fr)}.jg-dos{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}}
 @media (prefers-reduced-motion:reduce){.jg-cel .arte.anim{animation:none}}
+.jg-subt{margin:.1em 0 0;font:italic 400 1.22rem/1.2 var(--f-display,var(--f-texto));color:var(--oro);letter-spacing:.02em}
+.jg-campana{position:relative;display:grid;gap:10px;text-align:center;padding:22px 18px 20px;border-radius:var(--radio);border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 70%),color-mix(in srgb,var(--hoja) 88%,transparent)}
+.jg-campana.mini{padding:12px 14px;text-align:left;gap:8px}
+.jg-campana h2{margin:0;font:600 clamp(1.6rem,5vw,2.3rem)/1.15 var(--f-display,var(--f-texto));color:var(--tinta)}
+.jg-campana h2 b{color:var(--oro-vivo);font-weight:600}
+.jg-campana .eyebrow{justify-self:center}
+.jg-campana p{margin:0}
+.jg-quedan{margin:0;font:500 1rem/1.4 var(--f-ui);color:var(--tinta)}
+.jg-quedan b{color:var(--oro-vivo);font-size:1.15em}
+.jg-barra.oro>i{background:linear-gradient(90deg,var(--oro),var(--oro-vivo))}
+.jg-cuenta{display:grid;gap:6px;justify-items:center}
+.jg-campana.mini .jg-cuenta{justify-items:start}
+.jg-reloj{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.jg-reloj>span{display:grid;justify-items:center;min-width:64px;padding:6px 8px;border-radius:10px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 80%,transparent)}
+.jg-reloj b{font:600 1.5rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.jg-reloj small{font:500 .7rem/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tenue)}
+.jg-enlace{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.jg-enlace code{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;font:500 .98rem/1.3 var(--f-ui);padding:10px 12px;border-radius:10px;border:1px dashed color-mix(in srgb,var(--oro) 60%,transparent);color:var(--oro-vivo);background:color-mix(in srgb,var(--hoja-2) 70%,transparent)}
+.jg-redes{display:flex;flex-wrap:wrap;gap:6px}
+.jg-redes .btn svg,.jg-enlace .btn svg{width:16px;height:16px}
+.jg-escalera{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.jg-escalera li{display:grid;justify-items:center;gap:1px;padding:7px 4px;border-radius:10px;border:1px solid var(--linea-2);text-align:center;opacity:.62}
+.jg-escalera li b{font:600 1.05rem/1.1 var(--f-ui);color:var(--tinta)}
+.jg-escalera li span{font:500 .72rem/1.2 var(--f-ui);color:var(--tenue)}
+.jg-escalera li small{font:500 .68rem/1.2 var(--f-ui);color:var(--oro)}
+.jg-escalera li.ya{opacity:1;border-color:color-mix(in srgb,var(--oro) 70%,transparent);background:color-mix(in srgb,var(--oro) 10%,transparent)}
+.jg-escalera li.ya b{color:var(--oro-vivo)}
+.jg-escalera li.sig{opacity:1;border-style:dashed;border-color:var(--oro)}
+.jg-form.col{flex-direction:column;align-items:stretch}
+.jg-form textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:96px;font:inherit;font-size:1rem;color:var(--tinta);background:var(--hoja-2);border:1px solid var(--linea-2);border-radius:10px;padding:10px 12px}
+.jg-form textarea:focus{outline:2px solid var(--oro);outline-offset:1px}
+.jg-props{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.jg-prop{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;border:1px solid var(--linea-2)}
+.jg-prop>div{min-width:0;flex:1}
+.jg-prop p{margin:0 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.jg-prop.hecha{border-color:color-mix(in srgb,var(--oro) 60%,transparent)}
+.jg-prop .jg-form{margin-top:8px;flex-wrap:wrap}
+.jg-voto{display:grid;justify-items:center;gap:2px;min-width:48px;padding:6px;border-radius:10px;border:1px solid var(--linea-2);background:none;color:var(--tenue);cursor:pointer;font:600 .9rem var(--f-ui)}
+.jg-voto svg{width:18px;height:18px}
+.jg-voto[aria-pressed=true]{color:var(--oro-vivo);border-color:var(--oro)}
+.jg-voto:disabled{cursor:default}
+.jg-pres{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 4px;font:500 .9rem/1.4 var(--f-ui);color:var(--tenue);text-align:center}
+.jg-pres i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro-vivo) 22%,transparent)}
+.jg-img{display:block;width:min(100%,360px);height:auto;margin:0 auto;border-radius:14px;border:1px solid var(--linea-2)}
 :root[data-theme=light] .jg-fila .p,:root[data-theme=light] .jg-tarjeta>h2{color:var(--oro)}
 `;
 
@@ -317,7 +377,7 @@
   function cabecera(sub) {
     return h("div", { class: "panel-cab" },
       h("span", { class: "eyebrow", text: "El juego de Biblia Exacta" }),
-      h("h1", { class: "texto", text: "Escudriña" }),
+      h("h1", { class: "texto", text: "Escudriña" }), h("p", { class: "jg-subt", text: "El Códice Viviente" }),
       h("p", { class: "jg-lema" }, h("span", { lang: "grc", text: "ἐρευνᾶτε τὰς γραφάς" }), " · «Escudriñan a las escrituras» (", h("a", { href: "#/JHN/5/l/39", text: "YÔḥānā́n 5:39" }), ")"),
       sub ? h("p", { class: "est-sub", text: sub }) : null);
   }
@@ -336,8 +396,12 @@
     await config();
     if (cont !== S.cont) return;
     if (S.codigoNuevo) return pintarCodigo(cont);
+    if (que === "propuestas" && !S.token) return pintarPropuestas(cont);
     if (!S.token) return pintarEntrada(cont);
     if (que === "clasificacion") return pintarClasificacion(cont);
+    if (que === "prestigio") return pintarPrestigio(cont);
+    if (que === "propuestas") return pintarPropuestas(cont);
+    if (que === "buzon") return pintarBuzon(cont);
     if (que === "cuenta") return pintarCuenta(cont);
     return pintarPanel(cont);
   }
@@ -361,8 +425,8 @@
         h("a", { class: "btn oro", href: "#/" }, h("span", { text: "Seguir leyendo" }))));
     }
     const inv = invitacionPendiente();
-    const franjaInv = inv ? h("div", { class: "jg-aviso" }, "Llegaste con una invitación: ", h("b", { text: "tus primeros 3 días cuentan doble." })) : null;
-    if (inv) pedir("/invitacion?c=" + encodeURIComponent(inv), { sin: true }).then((r) => { if (r.apodo && franjaInv) franjaInv.replaceChildren(h("b", { text: r.apodo }), " te invitó: tus primeros 3 días cuentan doble."); });
+    const franjaInv = inv ? h("div", { class: "jg-aviso" }, "Llegaste con una invitación: ", h("b", { text: "tus primeras 3 horas de lectura cuentan doble." })) : null;
+    if (inv) pedir("/invitacion?c=" + encodeURIComponent(inv) + (abrirInvitacion(inv) ? "&a=1" : ""), { sin: true }).then((r) => { if (r.apodo && franjaInv) franjaInv.replaceChildren(h("b", { text: r.apodo }), " te invitó: tus primeras 3 horas de lectura cuentan doble (no vencen)."); });
     // empezar con un apodo
     const entrada = h("input", { type: "text", maxlength: "20", autocomplete: "nickname", placeholder: "Tu apodo (3 a 20 letras)", "aria-label": "Tu apodo", spellcheck: "false" });
     const pista = h("p", { class: "jg-pista", role: "status" });
@@ -410,14 +474,15 @@
       cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pistaC) }, ico("google"), h("span", { text: "Entrar con Google" })) : null,
       cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pistaC) }, ico("facebook"), h("span", { text: "Entrar con Facebook" })) : null);
     marco(cont, cabecera(),
-      franjaInv,
+      franjaInv, tarjetaPrerregistro(entrada),
       tarjeta("Cómo se juega", null,
-        h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, una de las doce piedras del fundamento o un lauro trenzado." }),
-        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, país y continente, separadas por rango para que nadie compita en desventaja. No se piden correo, nombre ni contraseña." })),
+        h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, una de las doce piedras del fundamento o un lauro trenzado incorruptible." }),
+        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." })),
       h("div", { class: "jg-dos" },
         tarjeta("Empezar con un apodo", null, h("div", { class: "jg-form" }, entrada, btn), pista,
           h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso, Google o Facebook." })),
         tarjeta("Ya juego", null, opciones)),
+      tarjetaOpinion(false),
       vivoLinea());
   }
 
@@ -472,16 +537,17 @@
     const [l, c] = [y.emb && y.emb.l, y.emb && y.emb.c];
     const pct = y.xpSig ? Math.max(0, Math.min(100, (100 * y.xpNivel) / y.xpSig)) : 0;
     const chips = [];
-    if (y.fundador) chips.push(h("span", { class: "jg-chip", title: "Las 1000 primeras cuentas de Escudriña", text: "Primicia n.º " + fmt(y.n) }));
-    if (y.marco) chips.push(h("span", { class: "jg-chip", title: "Por invitar a personas que leen", text: MARCOS[y.marco - 1][1] }));
+    if (y.fundador) chips.push(h("span", { class: "jg-chip", title: "Las 1440 primeras cuentas de Escudriña", text: "Primicia n.º " + fmt(y.n) }));
+    if (y.marco) chips.push(h("span", { class: "jg-chip", title: "Escalera del Sembrador: personas que invitaste y ya leen", text: marcos()[y.marco - 1][1] }));
     if (y.mult > 1) chips.push(h("span", { class: "jg-chip", title: "Experiencia multiplicada", text: "Experiencia ×" + String(y.mult).replace(".", ",") }));
-    if (y.bienvenida) chips.push(h("span", { class: "jg-chip tenue", text: "Bienvenida hasta el " + new Date(y.bienvenida).toLocaleString("es", { weekday: "long", hour: "numeric", minute: "2-digit" }) }));
-    if (y.imp && y.imp.ms > 0) chips.push(h("span", { class: "jg-chip tenue", text: "Impulso ×" + String(y.imp.f).replace(".", ",") + " · quedan " + Math.max(1, Math.round(y.imp.ms / MIN)) + " min de lectura" }));
+    if (y.dob > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Experiencia doble · " + horas(y.dob) + " de lectura" }));
+    if (y.imp && y.imp.ms > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Impulso ×" + String(y.imp.f).replace(".", ",") + " · " + horas(y.imp.ms) + " de lectura" }));
+    if (y.enTope) chips.push(h("span", { class: "jg-chip tenue", title: "Cada mes se abren de 2 a 7 niveles nuevos", text: "Nivel tope del mes · reserva " + fmt(y.reserva) }));
     return tarjeta(null, null, h("div", { class: "jg-perfil" },
       h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Tu emblema: cambiarlo en Cuenta" }, emblema(l, c, y.marco)),
       h("div", {}, h("p", { class: "jg-nombre", text: y.apodo }), h("div", { class: "jg-rango", text: y.rangoNombre + " · nivel " + y.nivel }), chips.length ? h("div", { class: "jg-chips" }, chips) : null)),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
-        h("div", { class: "jg-nivel" }, h("span", { text: fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
+        h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
   }
   function botonSeguir() {
     const u = A.ultimo && A.ultimo();
@@ -529,17 +595,9 @@
       h("p", { text: "La " + ORDINAL[i] + " piedra del fundamento del muro de la ciudad. " + (veces ? "La hallaste " + plural(veces, "vez", "veces") + "." : "Aún no la hallas: sigue leyendo.") }),
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
   }
-  function tarjetaInvitar(y) {
-    const url = enlaceInvitacion();
-    return tarjeta("Invita a leer", ico("compartir"),
-      h("p", { text: "Quien entra con tu enlace lee con experiencia doble sus primeros 3 días. Tú recibes 100 de experiencia cuando lee sus primeros 20 versos, 300 cuando llega al nivel 10, 500 cuando termina su primer libro, y un regalo del 5 % de lo que lea durante un mes." }),
-      h("div", { class: "jg-acciones" },
-        h("button", { class: "btn oro", type: "button", onclick: compartirInvitacion }, ico("compartir"), h("span", { text: "Compartir mi enlace" })),
-        h("button", { class: "btn", type: "button", onclick: () => copiar(url, "Enlace copiado") }, ico("copiar"), h("span", { text: "Copiar" }))),
-      h("p", { class: "jg-mini", text: (y.invi && y.invi.unidos ? plural(y.invi.unidos, "persona llegó", "personas llegaron") + " con tu enlace; " + plural(y.invi.leyeron, "ya lee", "ya leen") + ". " : "") +
-        "Al compartir un verso desde el lector, el enlace también lleva tu invitación." + (y.marco ? " Tu marco: " + MARCOS[y.marco - 1][1] + "." : "") }));
-  }
-  const NOVEDAD = { piedra: (a) => "Hallaste " + PIEDRAS[a.i][1] + ".", lauro: () => "Hallaste un lauro trenzado.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
+  const NOVEDAD = { piedra: (a) => "Hallaste " + PIEDRAS[a.i][1] + ".", lauro: () => "Hallaste un lauro trenzado incorruptible.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
+    conf: (a) => a.a + " confirmó su lugar: sumas un peldaño de tu escalera.", marco: (a) => "¡Subiste al peldaño «" + ((marcos()[a.m - 1] || [])[1] || "") + "» de la escalera del Sembrador!" + (a.h ? " +" + a.h + " h de experiencia doble." : ""),
+    lanzamiento: (a) => "¡Escudriña abrió! Por inscribirte antes recibiste " + a.h + " horas de experiencia doble.", propuesta: (a) => "Tu propuesta se hizo realidad: +" + a.h + " h de experiencia doble. ¡Gracias por construir Escudriña!",
     nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", libroInv: (a) => a.a + " terminó su primer libro: +" + a.xp + ".", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + "." };
   function tarjetaNovedades(y) {
     const l = (y.avisos || []).filter((a) => NOVEDAD[a.k]).slice(0, 6);
@@ -560,13 +618,17 @@
   function dibujarPanel(cont, y) {
     const apodo = y.apodoProvisional ? tarjetaApodo(true) : null;
     marco(cont, cabecera(),
+      y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
+        "Todo funciona de verdad, pero el avance de práctica se reinicia el día del lanzamiento para que todos empiecen en igualdad. Se conservan tu cuenta, tu apodo, tu número de Primicia, tu escalera de invitaciones y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
       tarjetaPerfil(y), apodo, botonSeguir(),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       tarjetaHallazgos(y),
       y.asegurado ? null : tarjetaAsegurar(false),
-      tarjetaInvitar(y),
-      tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango." }),
-        h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })), vivoLinea()),
+      tarjetaCampana(y),
+      tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
+        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
+          h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea()),
+      tarjetaOpinion(true),
       h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" }))));
   }
   function tarjetaApodo(provisional) {
@@ -580,6 +642,225 @@
     entrada.addEventListener("keydown", (e) => { if (e.key === "Enter") guardar(); });
     return tarjeta(provisional ? "Elige tu apodo" : "Apodo", ico("persona"), provisional ? h("p", { text: "Así aparecerás en las clasificaciones. Nadie verá tu nombre real." }) : null,
       h("div", { class: "jg-form" }, entrada, h("button", { class: "btn oro", type: "button", onclick: guardar }, h("span", { text: "Guardar" }))), pista);
+  }
+
+  // --- pre-registro, campaña y escalera del Sembrador
+  const horas = (ms) => { const m = Math.max(1, Math.round(ms / MIN)); return m < 60 ? m + " min" : Math.floor(m / 60) + " h" + (m % 60 ? " " + (m % 60) + " min" : ""); };
+  const fechaLarga = (ms) => new Date(ms).toLocaleString("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "America/Bogota" }) + " (hora de Bogotá)";
+  const uni = (n, a, b) => h("span", {}, h("b", { text: String(n) }), h("small", { text: n === 1 ? a : b }));
+  function cuentaAtras(ms) {
+    if (!ms) return null;
+    const el = h("div", { class: "jg-cuenta" });
+    const pintar = () => {
+      const f = ms - Date.now();
+      if (f <= 0) { el.replaceChildren(h("span", { text: "¡Escudriña ya abrió!" })); return false; }
+      el.replaceChildren(h("span", { class: "jg-mini", text: "Lanzamiento, a más tardar el " + fechaLarga(ms) }),
+        h("span", { class: "jg-reloj", role: "timer" }, uni(Math.floor(f / 864e5), "día", "días"), uni(Math.floor((f % 864e5) / 36e5), "hora", "horas"), uni(Math.floor((f % 36e5) / 6e4), "minuto", "minutos")));
+      return true;
+    };
+    pintar();
+    const t = setInterval(() => { if (!el.isConnected || !pintar()) clearInterval(t); }, 20000);
+    return el;
+  }
+  function primiciasVivas() {
+    const quedan = h("b", { text: "…" }), ins = h("span", { class: "jg-mini" }), barra = h("i", { style: "width:0%" });
+    pedir("/campana", { sin: true, guardable: true }).then((c) => {
+      if (c.error) return;
+      quedan.textContent = fmt(c.quedan);
+      ins.textContent = plural(c.inscritos, "persona inscrita", "personas inscritas");
+      barra.style.width = Math.min(100, (100 * (c.primicias - c.quedan)) / c.primicias).toFixed(1) + "%";
+    });
+    return { quedan, ins, barra };
+  }
+  // Entrada (sin sesión): invitación a reservar el lugar antes del lanzamiento
+  function tarjetaPrerregistro(entrada) {
+    const cfg = S.cfg || {}; if (cfg.ciclo !== "previa") return null;
+    const v = primiciasVivas();
+    return h("section", { class: "jg-campana" },
+      h("span", { class: "eyebrow", text: "Pre-registro abierto" }),
+      h("h2", {}, "Solo hay ", h("b", { text: "1440" }), " Primicias"),
+      h("p", { class: "jg-quedan" }, "Quedan ", v.quedan, " lugares · ", v.ins),
+      h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
+      cuentaAtras(cfg.lanzamiento),
+      h("p", { text: "Reserva hoy tu apodo y tu número de Primicia, comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble." }),
+      h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
+  }
+  function tarjetaCampana(y) {
+    const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
+    const sig = M.find((m) => conf < m[0]) || null, prev = M.filter((m) => conf >= m[0]).pop();
+    const base = prev ? prev[0] : 0, pct = sig ? Math.min(100, (100 * (conf - base)) / (sig[0] - base)) : 100;
+    const ab = h("b", { text: "·" }), ins = h("b", { text: fmt((y.invi && y.invi.unidos) || 0) });
+    pedir("/campana/mia", { guardable: true }).then((m) => { if (!m.error) { ab.textContent = fmt(m.aperturas); ins.textContent = fmt(Math.max(m.inscritos, (y.invi && y.invi.unidos) || 0)); } });
+    const red = (k, href, t) => h("a", { class: "btn chico", href, target: "_blank", rel: "noopener" }, ico(k), h("span", { text: t }));
+    const v = y.practica ? primiciasVivas() : null;
+    return tarjeta(y.practica ? "Pre-registro · tu escalera del Sembrador" : "Invita a leer · escalera del Sembrador", ico("compartir"),
+      v ? h("div", { class: "jg-campana mini" }, h("p", { class: "jg-quedan" }, "Primicias: quedan ", v.quedan, " de 1440 · ", v.ins), h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
+        y.fundador ? h("p", { class: "jg-mini", text: "La tuya ya está reservada: Primicia n.º " + fmt(y.n) + "." } ) : null, cuentaAtras(y.lanzamiento)) : null,
+      h("p", { text: "Tu enlace propio: quien entra con él recibe 3 horas de lectura con experiencia doble, y cada persona que confirma su lugar te sube en la escalera." }),
+      h("div", { class: "jg-enlace" }, h("code", { text: url.replace(/^https:\/\//, "") }),
+        h("button", { class: "btn oro chico", type: "button", onclick: compartirInvitacion }, ico("compartir"), h("span", { text: "Compartir" })),
+        h("button", { class: "btn chico", type: "button", onclick: () => copiar(url, "Enlace copiado") }, ico("copiar"), h("span", { text: "Copiar" }))),
+      h("div", { class: "jg-redes" },
+        red("chat", "https://wa.me/?text=" + encodeURIComponent(TEXTO_INV + " " + url), "WhatsApp"),
+        red("facebook", "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url), "Facebook"),
+        red("avion", "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(TEXTO_INV), "Telegram"),
+        red("publicar", "https://twitter.com/intent/tweet?text=" + encodeURIComponent(TEXTO_INV) + "&url=" + encodeURIComponent(url), "X"),
+        red("correo", "mailto:?subject=" + encodeURIComponent("Te invito a Escudriña · El Códice Viviente") + "&body=" + encodeURIComponent(TEXTO_INV + "\n\n" + url), "Correo"),
+        h("button", { class: "btn chico", type: "button", onclick: () => verTarjetaImagen({ tipo: "prerregistro" }) }, ico("imagen"), h("span", { text: "Imagen para compartir" }))),
+      h("div", { class: "jg-cifras" }, h("div", {}, ab, h("span", { text: "abrieron tu enlace" })), h("div", {}, ins, h("span", { text: "se inscribieron" })), h("div", {}, h("b", { text: fmt(conf) }), h("span", { text: "confirmaron" }))),
+      h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": pct.toFixed(0), "aria-label": "Avance hacia el peldaño siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
+        h("p", { class: "jg-mini", text: sig ? "Te " + (sig[0] - conf === 1 ? "falta 1 persona confirmada" : "faltan " + fmt(sig[0] - conf) + " personas confirmadas") + " para «" + sig[1] + "» (+" + sig[2] + " h de experiencia doble)." : "¡Completaste la escalera del Sembrador hasta «Ciento»!" })),
+      h("ol", { class: "jg-escalera" }, M.map((m) => h("li", { class: conf >= m[0] ? "ya" : sig && sig[0] === m[0] ? "sig" : "", title: m[1] + " · " + plural(m[0], "persona", "personas") + " · +" + m[2] + " h de experiencia doble" },
+        h("b", { text: String(m[0]) }), h("span", { text: m[1] }), h("small", { text: "+" + m[2] + " h" })))),
+      h("p", { class: "jg-mini", text: "Una persona se confirma cuando lee sus primeros 20 versos o asegura su cuenta (compartir red o dispositivo con tu familia no es problema). Además recibes 100 de experiencia cuando lee sus primeros 20 versos, 300 cuando llega al nivel 10, 500 cuando termina su primer libro y un regalo del 5 % de lo que lea en su primer mes de juego. Las horas de experiencia doble solo se gastan mientras lees y no vencen. 30, 60 y 100: Μᾶrκος 4:8; 72: Λουκᾶς 10:1." }));
+  }
+
+  // --- imagen para compartir (lienzo de 1080 × 1350, a su tamaño exacto: nítida en cualquier red)
+  async function imagenTarjeta(op) {
+    const y = S.yo || {}, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const c = cv.getContext("2d"), T = "'BiEx Texto',Georgia,serif", D = "'BiEx Titular','BiEx Texto',Georgia,serif", U = "'BiEx Interfaz','Segoe UI',sans-serif";
+    try { await Promise.all(["600 90px 'BiEx Titular'", "italic 400 46px 'BiEx Titular'", "400 40px 'BiEx Texto'", "italic 400 34px 'BiEx Texto'", "500 28px 'BiEx Interfaz'"].map((f) => document.fonts.load(f))); } catch (e) { /* sin fuentes: respaldo */ }
+    c.fillStyle = "#07070a"; c.fillRect(0, 0, W, H);
+    const luz = (x, y0, r, a) => { const g = c.createRadialGradient(x, y0, 10, x, y0, r); g.addColorStop(0, "rgba(201,168,101," + a + ")"); g.addColorStop(1, "rgba(201,168,101,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); };
+    luz(W / 2, 360, 720, 0.30); luz(140, 1230, 520, 0.10); luz(960, 1180, 460, 0.08);
+    c.textAlign = "center"; c.textBaseline = "alphabetic";
+    for (let i = 0; i < 46; i++) { const l = LETRAS[(i * 7) % LETRAS.length]; c.font = (26 + (i * 13) % 40) + "px " + T; c.fillStyle = "rgba(232,207,148," + (0.035 + ((i * 5) % 7) / 140).toFixed(3) + ")"; c.fillText(l, (i * 233) % W, 60 + (i * 397) % (H - 80)); }
+    const rr = (x, y0, w, hh, r) => { c.beginPath(); c.moveTo(x + r, y0); c.arcTo(x + w, y0, x + w, y0 + hh, r); c.arcTo(x + w, y0 + hh, x, y0 + hh, r); c.arcTo(x, y0 + hh, x, y0, r); c.arcTo(x, y0, x + w, y0, r); c.closePath(); };
+    c.strokeStyle = "rgba(201,168,101,.62)"; c.lineWidth = 2.5; rr(44, 44, W - 88, H - 88, 38); c.stroke();
+    c.strokeStyle = "rgba(201,168,101,.22)"; c.lineWidth = 1; rr(62, 62, W - 124, H - 124, 28); c.stroke();
+    const txt = (t, y0, f, col, ls) => { c.font = f; c.fillStyle = col; try { c.letterSpacing = ls || "0px"; } catch (e) { /* ignorar */ } c.fillText(t, W / 2, y0); try { c.letterSpacing = "0px"; } catch (e) { /* ignorar */ } };
+    const ajustar = (t, max, f0, tam) => { let s = tam; c.font = f0.replace("{t}", s); while (c.measureText(t).width > max && s > 20) { s -= 2; c.font = f0.replace("{t}", s); } return f0.replace("{t}", s); };
+    txt("ESCUDRIÑA", 170, "600 76px " + D, "#e8cf94", "14px");
+    txt("El Códice Viviente", 228, "italic 400 44px " + D, "#c9a865");
+    // emblema
+    const col = COLORES[(y.emb && y.emb.c) || 0] || COLORES[0], l = (y.emb && y.emb.l) || "α";
+    c.beginPath(); c.arc(W / 2, 400, 92, 0, 2 * Math.PI); c.fillStyle = "#121216"; c.fill(); c.lineWidth = 6; c.strokeStyle = col; c.stroke();
+    if (y.marco) { c.beginPath(); c.arc(W / 2, 400, 108, 0, 2 * Math.PI); c.lineWidth = 2.5; c.strokeStyle = "#e8cf94"; c.stroke(); }
+    c.font = "500 110px " + (/[֐-׿]/.test(l) ? "'Frank Ruhl Libre'," + T : T); c.fillStyle = col; c.fillText(l, W / 2, 438);
+    txt(y.apodo || "", 560, ajustar(y.apodo || "", W - 260, "600 {t}px " + D, 62), "#f3ecdc");
+    const x = op.x || {};
+    let l1, l2, l3;
+    if (op.tipo === "lauro") { l1 = "Hallé un lauro trenzado"; l2 = "incorruptible"; l3 = "1 Κοrίndsιοι 9:25"; }
+    else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][1] + ","; l2 = "una de las doce piedras"; l3 = "Ḥăzṓn Hiṯgallū́ṯ 21:19-20"; }
+    else if (op.tipo === "rango") { l1 = "Llegué al rango de"; l2 = x.rango || y.rangoNombre || ""; l3 = "nivel " + (x.nivel || y.nivel || 1); }
+    else { l1 = "Ya tengo mi lugar entre"; l2 = "las 1440 Primicias"; l3 = y.fundador ? "Primicia n.º " + fmt(y.n) : "Únete antes del lanzamiento"; }
+    txt(l1, 680, ajustar(l1, W - 200, "400 {t}px " + D, 66), "#ece5d6");
+    txt(l2, 762, ajustar(l2, W - 200, "600 {t}px " + D, 78), "#e8cf94");
+    txt(l3, 834, "500 34px " + U, "#c9a865", "3px");
+    c.strokeStyle = "rgba(201,168,101,.45)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(W / 2 - 160, 888); c.lineTo(W / 2 + 160, 888); c.stroke();
+    txt("ἐρευνᾶτε τὰς γραφάς", 958, "400 46px " + T, "#e8cf94");
+    txt("«Escudriñan a las escrituras» · YÔḥānā́n 5:39", 1012, "italic 400 34px " + T, "#bdb4a3");
+    txt("Únete con mi enlace", 1118, "500 34px " + U, "#ece5d6", "2px");
+    const u = enlaceInvitacion().replace(/^https:\/\//, "");
+    txt(u, 1176, ajustar(u, W - 220, "600 {t}px " + U, 44), "#e8cf94");
+    txt(y.practica ? "Lanzamiento: a más tardar el sábado 28 de noviembre" : "El juego de Biblia Exacta", 1250, "400 28px " + U, "#a39a88", "1px");
+    return new Promise((ok) => cv.toBlob((b) => ok(b), "image/png"));
+  }
+  async function verTarjetaImagen(op) {
+    const b = await imagenTarjeta(op); if (!b) return A.avisar("No se pudo crear la imagen");
+    const nombre = "escudrina-" + (op.tipo || "tarjeta") + ".png", u = URL.createObjectURL(b);
+    const file = typeof File === "function" ? new File([b], nombre, { type: "image/png" }) : null;
+    const puede = !!(file && navigator.canShare && navigator.canShare({ files: [file] }));
+    A.abrirModal(() => A.cajaModal(A.cabModal("Imagen para compartir", "Escudriña"), h("div", { class: "jg-cel" },
+      h("img", { class: "jg-img", src: u, alt: "Tarjeta de Escudriña para compartir", width: "1080", height: "1350" }),
+      h("div", { class: "jg-acciones" },
+        puede ? h("button", { class: "btn oro", type: "button", onclick: async () => { try { await navigator.share({ files: [file], title: "Escudriña · El Códice Viviente", text: TEXTO_INV + " " + enlaceInvitacion() }); } catch (e) { /* cancelado */ } } }, ico("compartir"), h("span", { text: "Compartir la imagen" })) : null,
+        A.sinDescargas && A.sinDescargas() ? null : h("a", { class: "btn" + (puede ? "" : " oro"), href: u, download: nombre }, ico("descargar"), h("span", { text: "Descargar" })),
+        h("button", { class: "btn", type: "button", onclick: () => copiar(TEXTO_INV + " " + enlaceInvitacion(), "Texto y enlace copiados") }, ico("copiar"), h("span", { text: "Copiar el texto" }))),
+      h("p", { class: "jg-mini", text: "1080 × 1350 píxeles, el tamaño exacto de las publicaciones verticales: se ve nítida en Instagram, Facebook, WhatsApp y las demás redes." }))));
+  }
+
+  // --- construir Escudriña con la comunidad: opiniones, propuestas y votos
+  function tarjetaOpinion(conSesion) {
+    const intro = h("p", { text: "Escudriña se construye con quienes lo juegan. Propón una mecánica nueva, avísanos de un error o déjanos un comentario: el equipo lo lee todo. Las propuestas que se publican las vota la comunidad, y si una se hace realidad, quien la propuso recibe 2 horas de experiencia doble." });
+    const ver = h("a", { class: "btn", href: "#/escudrina/propuestas" }, h("span", { text: "Ver y votar las propuestas" }));
+    if (!conSesion) return tarjeta("Construye Escudriña con nosotros", ico("idea"), intro, h("div", { class: "jg-acciones" }, ver), h("p", { class: "jg-mini", text: "Para enviar tu propuesta, primero reserva tu lugar o entra." }));
+    const PH = { propuesta: "Describe la mecánica o la idea que te gustaría ver…", error: "¿Qué pasó, dónde y en qué dispositivo?", comentario: "Lo que quieras decirnos…" };
+    const tipo = { v: "propuesta" };
+    const area = h("textarea", { rows: "4", maxlength: "1500", placeholder: PH.propuesta, "aria-label": "Tu mensaje" });
+    const seg = h("div", { class: "jg-seg", role: "group", "aria-label": "Tipo de mensaje" }, [["propuesta", "Propuesta"], ["error", "Error"], ["comentario", "Comentario"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(k === tipo.v),
+      onclick: (e) => { tipo.v = k; for (const b of seg.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); area.placeholder = PH[k]; } }, t)));
+    const pista = h("p", { class: "jg-pista", role: "status" });
+    const enviarO = async (e) => {
+      const t = area.value.trim(); const btn = e.currentTarget;
+      if (t.length < 8) { pista.textContent = "Escribe un poco más (8 letras o más)."; pista.className = "jg-pista mal"; return; }
+      btn.disabled = true; const r = await pedir("/opinion", { metodo: "POST", cuerpo: { tipo: tipo.v, texto: t } }); btn.disabled = false;
+      if (r.error) { pista.textContent = r.error === "limite" ? "Ya enviaste varios mensajes hoy: mañana puedes enviar más." : mensaje(r); pista.className = "jg-pista mal"; return; }
+      area.value = ""; pista.textContent = "¡Gracias! Lo recibimos. Ya van " + plural(r.total, "mensaje", "mensajes") + " de la comunidad."; pista.className = "jg-pista bien"; sonar("chispa");
+    };
+    return tarjeta("Construye Escudriña con nosotros", ico("idea"), intro, seg, h("div", { class: "jg-form col" }, area, h("button", { class: "btn oro", type: "button", onclick: enviarO }, h("span", { text: "Enviar" }))), pista, h("div", { class: "jg-acciones" }, ver));
+  }
+  const ESTADOS = { nuevo: "Recibida", estudio: "En estudio", construccion: "En construcción", hecha: "¡Hecha realidad!", descartada: "No por ahora" };
+  const cabSub = (t, sub) => h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: t }), sub ? h("p", { class: "est-sub", text: sub }) : null);
+  async function pintarPropuestas(cont) {
+    document.title = "Propuestas de la comunidad · Escudriña · BiEx";
+    const zona = h("div", {}, h("p", { class: "cargando", text: "Cargando…" }));
+    marco(cont, cabSub("Propuestas de la comunidad", "Lo que la comunidad propone para Escudriña. Apoya las que quieres ver hechas realidad: las más apoyadas se estudian primero."),
+      tarjeta(null, null, zona), S.token ? tarjetaOpinion(true) : tarjeta(null, null, h("a", { class: "btn oro", href: "#/escudrina" }, h("span", { text: "Reservar mi lugar para proponer y votar" }))));
+    const r = await pedir("/propuestas", { guardable: true, sin: !S.token });
+    if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
+    if (!r.lista.length) return zona.replaceChildren(h("p", { text: "Todavía no hay propuestas publicadas: ¡la tuya puede ser la primera!" }), h("p", { class: "jg-mini", text: plural(r.recibidas, "mensaje recibido", "mensajes recibidos") + " hasta hoy." }));
+    zona.replaceChildren(h("ul", { class: "jg-props" }, r.lista.map((p) => {
+      const n = h("b", { text: fmt(p.votos) });
+      const b = h("button", { class: "jg-voto", type: "button", "aria-pressed": String(!!p.voto), disabled: !S.token || p.estado === "hecha", "aria-label": "Apoyar esta propuesta", onclick: async () => {
+        const x = await pedir("/propuestas/votar", { metodo: "POST", cuerpo: { id: p.id } }); if (x.error) return A.avisar(mensaje(x));
+        b.setAttribute("aria-pressed", String(x.voto)); n.textContent = fmt(x.votos); if (x.voto) sonar("chispa");
+      } }, ico("arriba"), n);
+      return h("li", { class: "jg-prop " + p.estado }, b, h("div", {}, h("p", { text: p.texto }), h("span", { class: "jg-mini", text: (ESTADOS[p.estado] || "") + " · propuesta de " + p.apodo + (p.nota ? " · " + p.nota : "") })));
+    })), h("p", { class: "jg-mini", text: plural(r.recibidas, "mensaje recibido", "mensajes recibidos") + " de la comunidad." }));
+  }
+  // Buzón del equipo (solo con la clave ADMIN_CLAVE guardada como secreto del Worker en Cloudflare)
+  async function pintarBuzon(cont) {
+    document.title = "Buzón del equipo · Escudriña";
+    const clave = h("input", { type: "password", placeholder: "Clave del equipo (ADMIN_CLAVE)", autocomplete: "current-password", "aria-label": "Clave del equipo" });
+    const zona = h("div");
+    const fila = (p, k) => {
+      const est = h("select", { "aria-label": "Estado" }, Object.entries(ESTADOS).map(([v, t]) => h("option", { value: v, selected: v === p.estado, text: t })));
+      const pub = h("input", { type: "checkbox", checked: !!p.pub }), nota = h("input", { type: "text", value: p.nota || "", placeholder: "Nota pública (opcional)", maxlength: "300" });
+      const ok = h("button", { class: "btn chico", type: "button", onclick: async () => {
+        const r = await pedir("/buzon/marcar", { metodo: "POST", sin: true, cab: { "x-biex-admin": k }, cuerpo: { id: p.id, estado: est.value, pub: pub.checked, nota: nota.value } });
+        A.avisar(r.error ? mensaje(r) : est.value === "hecha" && p.estado !== "hecha" ? "Guardado: quien la propuso recibe 2 h de experiencia doble" : "Guardado"); if (!r.error) p.estado = est.value;
+      } }, h("span", { text: "Guardar" }));
+      return h("li", { class: "jg-prop " + p.estado }, h("div", {}, h("p", { text: p.texto }),
+        h("span", { class: "jg-mini", text: p.tipo + " · " + p.apodo + " · " + new Date(p.t).toLocaleString("es") + " · " + plural(p.votos, "voto", "votos") }),
+        h("div", { class: "jg-form" }, est, h("label", { class: "jg-check" }, pub, h("span", { text: "Pública" })), nota, ok)));
+    };
+    const abrirB = async () => {
+      const k = A.store.get("jg:admin", ""); if (!k) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Escribe la clave que guardaste en Cloudflare como secreto ADMIN_CLAVE del Worker biex-juego." }));
+      const r = await pedir("/buzon", { sin: true, cab: { "x-biex-admin": k } });
+      if (r.error) return zona.replaceChildren(h("p", { text: "La clave no coincide o el buzón no está activo." }));
+      zona.replaceChildren(r.lista.length ? h("ul", { class: "jg-props" }, r.lista.map((p) => fila(p, k))) : h("p", { text: "El buzón está vacío por ahora." }));
+    };
+    marco(cont, cabSub("Buzón del equipo", "Opiniones, errores y propuestas de la comunidad. Las propuestas marcadas «Pública» aparecen para votar."),
+      tarjeta(null, null, h("div", { class: "jg-form" }, clave, h("button", { class: "btn", type: "button", onclick: () => { A.store.set("jg:admin", clave.value.trim()); abrirB(); } }, h("span", { text: "Abrir" })))), tarjeta(null, null, zona));
+    abrirB();
+  }
+
+  // --- prestigio local: cada ciudad suma la experiencia de sus 12 mejores lectores
+  async function pintarPrestigio(cont) {
+    document.title = "Prestigio local · Escudriña · BiEx";
+    const y = S.yo || {}, lugar = y.lugar || {};
+    const st = A.store.get("jg:pres", null) || {}; const q = { periodo: st.periodo || "semana", ambito: st.ambito || (lugar.pais ? "pais" : "mundo") };
+    const zona = h("div", {}, h("p", { class: "cargando", text: "Cargando…" }));
+    const seg = (opciones, k) => h("div", { class: "jg-seg", role: "group" }, opciones.map(([v, t]) => h("button", { type: "button", "aria-pressed": String(q[k] === v), onclick: (e) => {
+      q[k] = v; A.store.set("jg:pres", q); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); cargarP();
+    } }, t)));
+    async function cargarP() {
+      zona.replaceChildren(h("p", { class: "cargando", text: "Cargando…" }));
+      const pais = q.ambito === "pais" ? lugar.pais || "" : "";
+      const r = await pedir("/prestigio?" + new URLSearchParams({ periodo: q.periodo, pais }), { guardable: true });
+      if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
+      const tit = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + (pais ? nombrePais(pais) : "el mundo") });
+      if (!r.lista.length) return zona.replaceChildren(tit, h("p", { text: "Todavía ninguna ciudad suma prestigio aquí. ¡La tuya puede ser la primera!" }));
+      zona.replaceChildren(tit, h("ol", { class: "jg-lista" }, r.lista.map((x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") },
+        h("span", { class: "p", text: String(x.p) }), h("span", { class: "n" }, x.ciudad, h("small", { text: [x.region, q.ambito === "pais" ? "" : nombrePais(x.pais), plural(x.n, "lector", "lectores")].filter(Boolean).join(" · ") })),
+        h("span", { class: "x", text: fmt(x.pr) })))));
+    }
+    marco(cont, cabSub("Prestigio local", "Cada ciudad suma la experiencia de sus 12 mejores lectores: así una ciudad pequeña puede brillar tanto como una grande. Lee e invita a los tuyos para llevar a tu ciudad a lo más alto."),
+      tarjeta(null, null, seg([["pais", lugar.pais ? nombrePais(lugar.pais) : "Mi país"], ["mundo", "El mundo"]], "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"),
+        lugar.ciudad ? h("p", { class: "jg-mini", text: "Tu ciudad: " + lugar.ciudad + (y.verCiudad === false ? " (la ocultaste en tu perfil: tu lectura no suma a su prestigio)" : "") }) : null),
+      tarjeta(null, null, zona));
+    cargarP();
   }
 
   // --- clasificación
@@ -600,7 +881,7 @@
       zona.replaceChildren(h("p", { class: "cargando", text: "Cargando…" }));
       const r = await pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(q.rango) }));
       if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
-      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de lunes a domingo, hora de Bogotá)" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + (r.lugar ? lugarDe(q.ambito) : q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar") });
+      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + (r.lugar ? lugarDe(q.ambito) : q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar") });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
       const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco),
         h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
@@ -728,20 +1009,22 @@
   }
 
   // ------------------------------------------------------------------ invitaciones
-  const enlaceInvitacion = () => OFICIAL + "?lector=escudrina/i/" + ((S.yo && S.yo.inv) || A.store.get("jg:mio", ""));
-  function compartirInvitacion() {
-    compartir("Escudriña · Biblia Exacta", "Estoy leyendo la Nueva Voluntad traducida palabra por palabra del griego, y lo hago jugando a Escudriña. Entra con mi enlace: tus primeros 3 días cuentan doble.", enlaceInvitacion());
-  }
+  // Enlace propio de cada estudiante: página de la campaña con vista previa propia («Ana te invita…») que cuenta las aperturas
+  const enlaceInvitacion = () => PUBLICO + "/e/" + ((S.yo && S.yo.inv) || A.store.get("jg:mio", ""));
+  const TEXTO_INV = "Estoy leyendo la Nueva Voluntad traducida palabra por palabra del griego, y lo hago jugando a Escudriña · El Códice Viviente, el juego de Biblia Exacta. Solo hay 1440 Primicias: reserva la tuya con mi enlace y tus primeras 3 horas de lectura cuentan doble.";
+  function compartirInvitacion() { compartir("Escudriña · El Códice Viviente", TEXTO_INV, enlaceInvitacion()); }
+  // Una apertura por dispositivo y por enlace (lo que cuenta la campaña de quien invita)
+  function abrirInvitacion(c) { const k = "jg:ab:" + c; if (A.store.get(k, false)) return false; A.store.set(k, true); return true; }
   // Franja discreta para quien abre un verso compartido con invitación (una sola vez por invitación)
   async function franja(c) {
     estilos();
     c = String(c || "").toLowerCase();
     if (A.store.get("jg:t", null) || A.store.get("jg:franja:" + c, false) || document.querySelector(".jg-franja")) return;
-    const r = await pedir("/invitacion?c=" + encodeURIComponent(c), { sin: true });
+    const r = await pedir("/invitacion?c=" + encodeURIComponent(c) + (abrirInvitacion(c) ? "&a=1" : ""), { sin: true });
     if (r.error || !r.apodo) return;
     const cerrar = () => { A.store.set("jg:franja:" + c, true); el.remove(); };
     const el = h("div", { class: "jg-franja", role: "region", "aria-label": "Invitación a Escudriña" }, lauro(),
-      h("span", {}, h("b", { text: r.apodo }), " te invitó a Escudriña, el juego de Biblia Exacta: tus primeros 3 días cuentan doble."),
+      h("span", {}, h("b", { text: r.apodo }), " te invitó a Escudriña, el juego de Biblia Exacta: tus primeras 3 horas de lectura cuentan doble."),
       h("span", { style: "display:flex;align-items:center;gap:4px" }, h("a", { class: "btn oro chico", href: "#/escudrina", onclick: cerrar }, h("span", { text: "Conocer" })),
         h("button", { class: "x", type: "button", "aria-label": "Cerrar", onclick: cerrar }, A.svg(A.ICO.cerrar))));
     document.body.append(el);
@@ -750,52 +1033,91 @@
   // ------------------------------------------------------------------ lectura validada
   // Un «cursor de lectura»: el tiempo se acredita al primer verso visible (en orden) que aún no se validó; al llegar a su
   // tiempo mínimo pasa al siguiente. Solo cuenta con la pestaña visible, sin ventanas encima y con actividad reciente.
-  const R = { lib: null, cap: 0, pase: null, pal: [], hoy: "", acc: new Map(), hechos: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false };
+  // Ahorro (plan gratuito): lo leído se junta —de varios capítulos— y sale en una sola petición cada 5 minutos, o en el
+  // acto cuando va a ocurrir un suceso (hallazgo, dracmas, nivel, misión, capítulo completo o primer verso del día), para
+  // que ningún beneficio se demore ni se pierda. Lo pendiente queda guardado en el dispositivo hasta que el servidor lo recibe.
+  const CADA = Number(window.BIEX_JUEGO_CADA) || 5 * MIN; // BIEX_JUEGO_CADA: solo en pruebas locales
+  const R = { lib: null, cap: 0, pal: [], hoy: "", acc: new Map(), hechos: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false, pred: null, prueba: false, recuperada: false, completos: new Set() };
+  let PAL = null;
+  function palabras() {
+    if (!PAL) PAL = (A.cargar ? A.cargar("datos/juego/palabras.json") : Promise.reject(new Error("sin cargador")))
+      .catch(() => fetch(PUBLICO + "/datos/juego/palabras.json", { credentials: "omit" }).then((r) => { if (!r.ok) throw new Error("palabras"); return r.json(); }))
+      .catch((e) => { PAL = null; throw e; });
+    return PAL;
+  }
+  const pon = (s, i, d) => s.padEnd(i + 1, "0").slice(0, i) + d + s.slice(i + 1);
+  // Espejo de lo leído hoy (por capítulo) y de los capítulos con prueba pendiente; se reinicia al cambiar el día del servidor
+  function espejo() {
+    const f = (S.yo && S.yo.hoy && S.yo.hoy.f) || "";
+    let e = A.store.get("jg:hoy", null);
+    if (!e || typeof e !== "object" || (f && e.f !== f)) e = { f, m: {}, p: (S.yo && S.yo.hoy && S.yo.hoy.pend) || [] };
+    return e;
+  }
+  const sieDe = (lc) => (A.store.get("jg:sie", null) || {})[lc] || "";
+  function guardarSie(lc, s) { const o = A.store.get("jg:sie", null) || {}; o[lc] = s; A.store.set("jg:sie", o); }
+  let tGuardar = 0;
+  function guardarCola(ya) {
+    clearTimeout(tGuardar);
+    const g = () => A.store.set("jg:cola", R.cola.length ? { t: Date.now(), c: R.cola } : null);
+    if (ya) g(); else tGuardar = setTimeout(g, 2500);
+  }
+  // Lo que quedó sin enviar en la visita anterior (pestaña cerrada, sin conexión…)
+  function recuperarCola() {
+    if (R.recuperada) return; R.recuperada = true;
+    const p = A.store.get("jg:cola", null);
+    if (!p || !Array.isArray(p.c) || !p.c.length) return;
+    if (Date.now() - (p.t || 0) > 48 * 3600e3) { A.store.set("jg:cola", null); return; }
+    const ya = new Set(R.cola.map((x) => x.join("|")));
+    R.cola.unshift(...p.c.filter((x) => Array.isArray(x) && x.length === 4 && !ya.has(x.join("|"))));
+    setTimeout(() => enviar(false), 2500);
+  }
   const actividad = () => { R.ultAct = performance.now(); };
   let escuchando = false;
   function escuchar() {
     if (escuchando) return; escuchando = true;
     for (const ev of ["scroll", "wheel", "touchstart", "keydown", "pointerdown"]) window.addEventListener(ev, actividad, { passive: true, capture: true });
     let pm = 0; window.addEventListener("pointermove", () => { const t = performance.now(); if (t - pm > 2000) { pm = t; actividad(); } }, { passive: true });
-    document.addEventListener("visibilitychange", () => { if (document.hidden) enviar(true); else { R.ultTick = performance.now(); actividad(); } });
-    window.addEventListener("pagehide", () => enviar(true));
+    // al salir de la app o de la pestaña, lo pendiente sale de una vez (cuenta en el día en que se leyó)
+    document.addEventListener("visibilitychange", () => { if (document.hidden) { guardarCola(true); if (Date.now() - R.ultEnvio > 30000) enviar(true); } else { R.ultTick = performance.now(); actividad(); } });
+    window.addEventListener("pagehide", () => { guardarCola(true); enviar(true); });
   }
   function capitulo(lib, cap, modo) {
     if (!S.token) S.token = A.store.get("jg:t", null);
     if (!S.token || modo !== "l") { salir(); return; }
-    estilos(); escuchar();
+    estilos(); escuchar(); recuperarCola();
     if (R.lib !== lib || R.cap !== cap) {
-      salir();
-      Object.assign(R, { lib, cap, pase: null, pal: [], hoy: "", acc: new Map(), hechos: new Set(), cola: [], prueba: false });
-      pedirPase();
+      soltar();
+      Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), hechos: new Set(), prueba: false });
+      prepararCapitulo(lib, cap);
     } else if (R.prueba) setTimeout(tarjetaPrueba, 50);
     observar();
     actividad(); R.ultTick = performance.now();
     if (!R.reloj) R.reloj = setInterval(tick, 250);
   }
-  function salir() {
-    // lo leído y aún no enviado sale con su propio pase (aunque haya otra tanda en camino)
-    if (R.cola.length && R.pase && S.token) {
-      const lib = R.lib, cap = R.cap, lote = R.cola.splice(0);
-      pedir("/lectura/enviar", { metodo: "POST", cuerpo: { pase: R.pase, versos: lote }, keepalive: true }).then((r) => {
-        if (r.error) return;
-        actualizarYo(r.yo); if (r.xp > 0) pop(r.xp);
-        if (r.aceptados && r.aceptados.length && A.marcarLeido) A.marcarLeido(lib, cap, r.aceptados);
-      });
-    }
-    if (R.io) { R.io.disconnect(); R.io = null; }
-    if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
-    clearTimeout(R.reintento);
-    Object.assign(R, { els: [], vis: new Map(), lib: null, cap: 0, pase: null, cola: [], acc: new Map(), hechos: new Set(), prueba: false });
-  }
-  async function pedirPase() {
-    const lib = R.lib, cap = R.cap;
+  async function prepararCapitulo(lib, cap) {
     if (!S.cfg) await config();
-    const r = await pedir("/lectura/pase", { metodo: "POST", cuerpo: { lib, cap } });
-    if (R.lib !== lib || R.cap !== cap) return;
-    if (r.error) { if (r.error !== "sesion") R.reintento = setTimeout(pedirPase, 45000); return; }
-    R.pase = r.pase; R.pal = r.palabras || []; R.hoy = r.hoy || ""; R.prueba = !!r.prueba;
+    let P = null; try { P = await palabras(); } catch (e) { P = null; }
+    if (R.lib !== lib || R.cap !== cap || !P || !P[lib]) return;
+    R.pal = String(P[lib].split(";")[cap - 1] || "").split(",").map(Number);
+    const lc = lib + "." + cap, e = espejo();
+    R.hoy = e.m[lc] || "";
+    R.prueba = e.p.includes(lc);
     if (R.prueba) tarjetaPrueba();
+    pintarPresencia();
+  }
+  // Deja el capítulo (lo leído sigue en la cola: las tandas juntan varios capítulos)
+  function soltar() {
+    if (R.io) { R.io.disconnect(); R.io = null; }
+    Object.assign(R, { els: [], vis: new Map() });
+    const p = document.querySelector(".jg-pres"); if (p) p.remove();
+  }
+  function salir() {
+    guardarCola(true);
+    soltar();
+    if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
+    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), hechos: new Set(), prueba: false });
+    // fuera de los capítulos, lo pendiente sale a su hora (o al volver a leer)
+    if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && Date.now() - R.ultEnvio > CADA) enviar(false); }, 1000);
   }
   function observar() {
     if (R.io) R.io.disconnect();
@@ -810,35 +1132,88 @@
   function tick() {
     const ahora = performance.now(), dt = Math.min(1000, Math.max(0, ahora - (R.ultTick || ahora)));
     R.ultTick = ahora;
-    if (!R.pase || document.hidden || ahora - R.ultAct > 60000 || document.documentElement.classList.contains("con-modal")) return;
+    if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
+    if (!R.pal.length || document.hidden || ahora - R.ultAct > 60000 || document.documentElement.classList.contains("con-modal")) return;
     if (R.els.length && !R.els[0].isConnected) observar();
     let el = null;
     for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && valeLeer(v)) { el = e; break; } }
-    if (el) {
-      const v = +el.id.slice(1), t = (R.acc.get(v) || 0) + dt;
-      R.acc.set(v, t);
-      if (t >= tMin(v)) { R.hechos.add(v); R.cola.push([v, Math.round(t)]); }
+    if (!el) return;
+    const v = +el.id.slice(1), t = (R.acc.get(v) || 0) + dt;
+    R.acc.set(v, t);
+    if (t >= tMin(v)) { R.hechos.add(v); acreditar(R.lib, R.cap, v, Math.round(t)); }
+  }
+  function acreditar(lib, cap, v, ms) {
+    const lc = lib + "." + cap, cD = +(R.hoy[v - 1] || 0), sie = sieDe(lc);
+    const nuevo = !(+(sie[v - 1] || 0) > 0) && !(A.leido && A.leido(lib, cap, v));
+    R.hoy = pon(R.hoy, v - 1, String(Math.min(9, cD + 1)));
+    const e = espejo(); e.m[lc] = R.hoy; A.store.set("jg:hoy", e);
+    R.cola.push([lib, cap, v, ms]);
+    if (!R.ultEnvio) R.ultEnvio = Date.now();
+    guardarCola(false);
+    if (predecir(lib, cap, v, ms, nuevo, cD)) enviar(false);
+  }
+  // ¿Va a ocurrir un suceso con este verso? (estimación local; el servidor decide)
+  function predecir(lib, cap, v, ms, nuevo, cD) {
+    const y = S.yo; if (!y) return false;
+    const hoy = y.hoy || {};
+    const P = R.pred || (R.pred = { xp: 0, h: y.prox ? y.prox.h : 1e9, d: y.prox ? y.prox.d : 1e9, versos: 0, nuevos: 0, repaso: 0, vida: 0, cartas: 0, ms: 0, caps: 0, libros: new Set(hoy.libros || []) });
+    const pal = R.pal[v - 1] || 0, base = nuevo ? 2 * pal : cD < 2 ? 0.5 * pal : 0;
+    let suceso = false;
+    P.versos++; P.ms += ms; P.libros.add(lib);
+    if (nuevo) P.nuevos++; else if (cD < 2) P.repaso++;
+    if (["MAT", "MRK", "LUK", "JHN"].includes(lib)) P.vida++; else if (lib !== "ACT" && lib !== "REV") P.cartas++;
+    if (base > 0) { P.xp += base * (y.mult || 1); P.h--; P.d--; if (P.h <= 0 || P.d <= 0) suceso = true; }
+    if (!y.enTope && y.xpSig - y.xpNivel <= P.xp) suceso = true;
+    if ((hoy.versos || 0) === 0 && P.versos === 1) suceso = true; // primer verso del día: perseverancia
+    // capítulo completo hoy (90 % de sus versos con palabras)
+    const total = R.pal.filter((x) => x > 0).length; let leidos = 0;
+    for (let i = 0; i < R.pal.length; i++) if (R.pal[i] > 0 && +(R.hoy[i] || 0) > 0) leidos++;
+    const lc = lib + "." + cap;
+    if (total && leidos >= Math.ceil(0.9 * total) && !R.completos.has(lc)) { R.completos.add(lc); P.caps++; suceso = true; }
+    const prog = { versos: P.versos, nuevos: P.nuevos, repaso: P.repaso, vida: P.vida, cartas: P.cartas, capitulo: P.caps, libros: Math.max(0, P.libros.size - (hoy.libros || []).length) };
+    for (const m of y.mis || []) {
+      if (m.hecha) continue;
+      if (m.tipo === "minutos") { if (Math.floor(((hoy.ms || 0) + P.ms) / MIN) >= m.meta) suceso = true; continue; }
+      if (prog[m.tipo] !== undefined && m.prog + prog[m.tipo] >= m.meta) suceso = true;
     }
-    if (R.cola.length && (R.cola.length >= 12 || ahora - R.ultEnvio > 15000)) enviar(false);
+    return suceso;
   }
   async function enviar(final) {
-    if (R.enviando || !R.cola.length || !R.pase || !S.token) return;
-    R.enviando = true; R.ultEnvio = performance.now();
-    const lote = R.cola.splice(0, 80), lib = R.lib, cap = R.cap;
-    const r = await pedir("/lectura/enviar", { metodo: "POST", cuerpo: { pase: R.pase, versos: lote }, keepalive: !!final });
+    if (R.enviando || !R.cola.length || !S.token) return;
+    R.enviando = true; R.ultEnvio = Date.now();
+    const lote = R.cola.splice(0, 400);
+    guardarCola(true);
+    const r = await pedir("/lectura/tanda", { metodo: "POST", cuerpo: { t: lote, donde: R.lib ? R.lib + "." + R.cap : "" }, keepalive: !!final && JSON.stringify(lote).length < 60000 });
     R.enviando = false;
     if (r.error) {
-      if (r.error === "pase_vencido") { R.pase = null; for (const [v] of lote) R.hechos.delete(v); pedirPase(); }
-      else if ((r.error === "red" || r.error === "sin_servidor" || /^http5/.test(r.error)) && R.lib === lib && R.cap === cap) R.cola.unshift(...lote);
+      if (r.error !== "sesion" && r.error !== "datos") { R.cola.unshift(...lote); guardarCola(true); }
       return;
     }
-    if (R.lib === lib && R.cap === cap) {
-      for (const [v] of r.rechazados || []) { R.hechos.delete(v); R.acc.delete(v); }
-      if (r.hoyCap) R.hoy = r.hoyCap;
+    const e = espejo();
+    for (const [lc, x] of Object.entries(r.caps || {})) {
+      e.m[lc] = x.d; guardarSie(lc, x.s);
+      const [lib, cap] = lc.split(".");
+      if (x.a && x.a.length && A.marcarLeido) A.marcarLeido(lib, +cap, x.a);
+      if (R.lib + "." + R.cap === lc) R.hoy = x.d;
     }
-    if (r.aceptados && r.aceptados.length && A.marcarLeido) A.marcarLeido(lib, cap, r.aceptados);
-    actualizarYo(r.yo);
-    celebrar(r, lib, cap);
+    for (const x of r.rechazados || []) if (x[0] === R.lib && x[1] === R.cap) { R.hechos.delete(x[2]); R.acc.delete(x[2]); }
+    for (const lc of r.pruebas || []) if (!e.p.includes(lc)) e.p.push(lc);
+    actualizarYo(r.yo); R.pred = null;
+    if (e.f !== r.yo.hoy.f) { e.f = r.yo.hoy.f; }
+    A.store.set("jg:hoy", e);
+    if (r.pres) { S.pres = r.pres; pintarPresencia(); }
+    celebrar(r);
+    if (R.cola.length >= 400) setTimeout(() => enviar(false), 1500);
+  }
+  // Presencia: cuántas personas leen ahora este capítulo y este libro (sale gratis con las tandas)
+  function pintarPresencia() {
+    const p = S.pres; const fin = document.querySelector(".hoja nav.fin-cap");
+    let el = document.querySelector(".jg-pres");
+    if (!p || !fin || !R.lib || (p.cap < 2 && p.lib < 2)) { if (el) el.remove(); return; }
+    const t = p.cap >= 2 ? "Tú y " + plural(p.cap - 1, "persona más leen", "personas más leen") + " este capítulo ahora" + (p.lib > p.cap ? " · " + fmt(p.lib) + " en este libro" : "")
+      : "Ahora mismo, " + plural(p.lib - 1, "persona más lee", "personas más leen") + " este libro";
+    if (!el) { el = h("p", { class: "jg-pres", role: "status" }); fin.before(el); }
+    el.replaceChildren(h("i", { "aria-hidden": "true" }), t + ".");
   }
 
   // ------------------------------------------------------------------ celebraciones
@@ -849,7 +1224,7 @@
     el.animate([{ opacity: 0, transform: "translate(-50%,10px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.15 }, { opacity: 1, transform: "translate(-50%,-6px)", offset: 0.8 }, { opacity: 0, transform: "translate(-50%,-14px)" }],
       { duration: 1900, easing: "ease-out" }).finished.then(() => el.remove(), () => el.remove());
   }
-  function celebrar(r, lib, cap) {
+  function celebrar(r) {
     if (r.xp > 0) { pop(r.xp); sonar("chispa"); }
     const avisos = [];
     for (const m of r.misiones || []) avisos.push("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
@@ -862,7 +1237,10 @@
       else if (x.tipo === "libro") avisos.push("¡Terminaste " + nombreLibro(x.lib) + "! +200 y 20 dracmas");
     }
     if (r.subio) { if (r.subio.rango && !grande) grande = { tipo: "rango", nivel: r.subio.nivel, rango: r.subio.rango }; else avisos.push("Subiste al nivel " + r.subio.nivel); sonar("nivel"); }
-    if (r.completo && r.prueba) { avisos.push("Capítulo completo: al final te espera su prueba"); R.prueba = true; tarjetaPrueba(); }
+    for (const lc of r.pruebas || []) {
+      if (lc === R.lib + "." + R.cap) { avisos.push("Capítulo completo: al final te espera su prueba"); R.prueba = true; tarjetaPrueba(); }
+      else { const [l, c] = lc.split("."); avisos.push("Completaste " + nombreLibro(l) + " " + c + ": su prueba te espera al final del capítulo"); }
+    }
     if (r.cansancio != null && !A.store.get("jg:cansancio:" + new Date().toDateString(), false)) {
       A.store.set("jg:cansancio:" + new Date().toDateString(), true);
       avisos.push(r.cansancio === 0 ? "Hoy ya leíste más de 10 horas: el descanso también es parte del estudio" : "Llevas muchas horas leyendo: la experiencia de hoy rinde menos. El descanso también es parte del estudio");
@@ -878,13 +1256,14 @@
     if (document.documentElement.classList.contains("con-modal")) { A.avisar(x.tipo === "rango" ? "Nuevo rango: " + x.rango : "¡Hallazgo! Lo encuentras en Escudriña"); return; }
     sonar("hallazgo");
     let arte, titulo, texto, compartirT;
-    if (x.tipo === "lauro") { arte = lauro(); titulo = h("h3", { text: "¡Un lauro trenzado!" }); texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25). Durante tus próximos 30 minutos de lectura, tu experiencia vale el doble."; compartirT = "¡Hallé un lauro trenzado en Escudriña, el juego de Biblia Exacta!"; }
-    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", {}, h("span", { lang: "grc", text: PIEDRAS[x.i][0] }), " [" + PIEDRAS[x.i][1] + "]"); texto = "Hallaste la " + ORDINAL[x.i] + " piedra del fundamento (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Durante tus próximos 15 minutos de lectura, tu experiencia vale ×1,5." + (x.doce ? " ¡Y reuniste las doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", una de las doce piedras del fundamento, en Escudriña, el juego de Biblia Exacta."; }
+    if (x.tipo === "lauro") { arte = lauro(); titulo = h("h3", { text: "¡Un lauro trenzado incorruptible!" }); texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Timoteo 2:5). Durante tus próximos 30 minutos de lectura tu experiencia vale el doble: el tiempo solo corre mientras lees y no vence."; compartirT = "¡Hallé un lauro trenzado incorruptible en Escudriña, el juego de Biblia Exacta!"; }
+    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", {}, h("span", { lang: "grc", text: PIEDRAS[x.i][0] }), " [" + PIEDRAS[x.i][1] + "]"); texto = "Hallaste la " + ORDINAL[x.i] + " piedra del fundamento (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste las doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", una de las doce piedras del fundamento, en Escudriña, el juego de Biblia Exacta."; }
     else { arte = emblema(S.yo && S.yo.emb ? S.yo.emb.l : "α", S.yo && S.yo.emb ? S.yo.emb.c : 0, S.yo && S.yo.marco); titulo = h("h3", { text: "Nuevo rango: " + x.rango }); texto = "Llegaste al nivel " + x.nivel + ". Desde ahora compites en la clasificación de " + x.rango + "."; compartirT = "Llegué al rango de " + x.rango + " en Escudriña, el juego de Biblia Exacta."; }
     A.abrirModal(() => A.cajaModal(A.cabModal(x.tipo === "rango" ? "Nuevo rango" : "Hallazgo", "Escudriña"), h("div", { class: "jg-cel" },
       h("div", { class: "arte" + (sinAnim() ? "" : " anim") }, arte), titulo, h("p", { text: texto }),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Seguir leyendo" })),
-        h("button", { class: "btn", type: "button", onclick: () => compartir("Escudriña · Biblia Exacta", compartirT + " Entra con mi enlace: tus primeros 3 días cuentan doble.", enlaceInvitacion()) }, ico("compartir"), h("span", { text: "Compartir" }))))));
+        h("button", { class: "btn", type: "button", onclick: () => compartir("Escudriña · Biblia Exacta", compartirT + " Entra con mi enlace: tus primeras 3 horas de lectura cuentan doble.", enlaceInvitacion()) }, ico("compartir"), h("span", { text: "Compartir" })),
+        h("button", { class: "btn", type: "button", onclick: () => verTarjetaImagen({ tipo: x.tipo, x }) }, ico("imagen"), h("span", { text: "Imagen" }))))));
   }
 
   // ------------------------------------------------------------------ prueba del capítulo
@@ -898,7 +1277,12 @@
   }
   async function abrirPrueba(lib, cap) {
     const r = await pedir("/prueba/pedir", { metodo: "POST", cuerpo: { lib, cap } });
-    if (r.error) { A.avisar(r.error === "ya_hecha" ? "Ya hiciste la prueba de este capítulo hoy" : r.error === "sin_preguntas" ? "Este capítulo aún no tiene preguntas" : mensaje(r)); if (r.error === "ya_hecha") quitarPrueba(); return; }
+    if (r.error) {
+      A.avisar(r.error === "ya_hecha" ? "Ya hiciste la prueba de este capítulo hoy" : r.error === "sin_preguntas" ? "Este capítulo aún no tiene preguntas" : r.error === "sin_capitulo" ? "Primero completa el capítulo (su lectura llega al servidor en unos segundos)" : mensaje(r));
+      if (r.error === "ya_hecha") { quitarPrueba(); const e = espejo(); e.p = e.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e); }
+      if (r.error === "sin_capitulo" && R.cola.length) enviar(false);
+      return;
+    }
     const inicio = Date.now(), resp = r.preguntas.map(() => null);
     let resultado = null;
     const cuerpo = () => {
@@ -919,7 +1303,7 @@
           const falta = 1600 * r.preguntas.length - (Date.now() - inicio); if (falta > 0) await esperar(falta);
           const x = await pedir("/prueba/responder", { metodo: "POST", cuerpo: { id: r.id, r: resp } });
           if (x.error) { A.avisar(mensaje(x)); return; }
-          resultado = x; actualizarYo(x.yo); quitarPrueba();
+          resultado = x; actualizarYo(x.yo); quitarPrueba(); { const e = espejo(); e.p = e.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e); }
           if (x.aciertos === r.preguntas.length) sonar("nivel"); else if (x.aciertos) sonar("chispa");
           for (const m of x.misiones || []) A.avisar("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
           A.reemplazarModal(vistaP);

@@ -1,5 +1,15 @@
 /* BiEx · Lector y Analizador — negro, marfil y oro, en armonía con el sitio oficial de Biblia Exacta */
 /* Fuentes de los modos de lectura (licencia OFL; ver fuentes/LEEME.txt). Solo se descargan si se eligen. */
+/* Letras de la casa servidas desde el propio sitio: un solo archivo por estilo con todas las letras que usa BiEx (latinas,
+   griegas y signos combinables). Así las tildes sobre letras con macrón (YēshŪ́ʿa, YÔḥānā́n) quedan unidas a su letra:
+   con los subconjuntos de Google Fonts la tilde combinable venía de otro archivo y se dibujaba suelta, a un lado.
+   Subconjuntos renombrados de Gentium Book Plus, Cormorant Garamond y Jost (SIL Open Font License; ver fuentes/OFL-*.txt). */
+@font-face { font-family: "BiEx Texto"; src: url("fuentes/biex-texto.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "BiEx Texto"; src: url("fuentes/biex-texto-it.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "BiEx Texto"; src: url("fuentes/biex-texto-b.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "BiEx Titular"; src: url("fuentes/biex-titular.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "BiEx Titular"; src: url("fuentes/biex-titular-it.woff2") format("woff2"); font-weight: 300 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "BiEx Interfaz"; src: url("fuentes/biex-interfaz.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
 @font-face { font-family: "BiEx Dislexia"; src: url("fuentes/opendyslexic-regular.woff2") format("woff2"); font-weight: 100 550; font-display: swap; }
 @font-face { font-family: "BiEx Dislexia"; src: url("fuentes/opendyslexic-bold.woff2") format("woff2"); font-weight: 551 900; font-display: swap; }
 @font-face { font-family: "BiEx Clara"; src: url("fuentes/atkinson-next.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
@@ -15,10 +25,10 @@
   --et-base: #bdb6a8; --et-borrador: #f1e6cf; --et-revision: #0b0a08; --et-casi: #0b0a08; --et-exacto: #0b0a08;
   --c-V: #d4b06a; --c-N: #8fb3d9; --c-A: #93c4a2; --c-T: #b3a7bd; --c-PR: #df9b8c; --c-PREP: #cbb98d; --c-CONJ: #94a7d8;
   --c-PRT: #cf9ec4; --c-ADV: #a9c98b; --c-INJ: #e9a766; --c-HEB: #d9cd8d; --c-X: #8f8a84;
-  --f-display: "Cormorant Garamond", "Cormorant", Georgia, serif;
-  --f-texto: "Gentium Book Plus", "Gentium Plus", "Noto Serif", Georgia, "BiEx Signos", "Cambria Math", "STIX Two Math", serif;
-  --f-ui: "Jost", "Segoe UI", system-ui, "BiEx Signos", "Cambria Math", "STIX Two Math", sans-serif;
-  --f-griego: "Gentium Book Plus", "Gentium Plus", "Noto Serif", Georgia, "BiEx Signos", "Cambria Math", "STIX Two Math", serif;
+  --f-display: "BiEx Titular", "Cormorant Garamond", Georgia, serif;
+  --f-texto: "BiEx Texto", "Gentium Book Plus", "Gentium Plus", "Noto Serif", Georgia, "BiEx Signos", "Cambria Math", "STIX Two Math", serif;
+  --f-ui: "BiEx Interfaz", "Jost", "Segoe UI", system-ui, "BiEx Signos", "Cambria Math", "STIX Two Math", sans-serif;
+  --f-griego: "BiEx Texto", "Gentium Book Plus", "Gentium Plus", "Noto Serif", Georgia, "BiEx Signos", "Cambria Math", "STIX Two Math", serif;
   /* Tamaño base fluido (de 15 px en teléfonos a 17,5 px en pantallas grandes) × tamaño elegido por el lector */
   --raiz: clamp(15px, calc(13.6px + .36vw), 17.5px);
   --k: 1; --kl: 1; --lh: 1;
@@ -79,10 +89,10 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .barra { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: saturate(1.2) blur(12px); -webkit-backdrop-filter: saturate(1.2) blur(12px); border-bottom: 1px solid var(--linea-2); padding-top: env(safe-area-inset-top, 0px); }
 .barra .in { display: flex; align-items: center; gap: 18px; min-height: var(--alto); }
 .marca { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--tinta); min-width: 0; }
-.sello { width: 38px; height: 38px; border: 1px solid var(--oro); border-radius: 50%; display: grid; place-items: center; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: 15px; color: var(--oro); letter-spacing: .02em; flex: none; }
+.sello { width: 38px; height: 38px; border: 1px solid var(--oro); border-radius: 50%; display: grid; place-items: center; font-family: "BiEx Titular", "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: 15px; color: var(--oro); letter-spacing: .02em; flex: none; }
 .marca .nombre { display: grid; line-height: 1.05; min-width: 0; }
-.marca .nombre b { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 400; font-size: 19px; letter-spacing: .3em !important; text-transform: uppercase; white-space: nowrap; }
-.marca .nombre small { font-family: "Jost", system-ui, sans-serif; font-size: 10.5px; letter-spacing: .2em !important; text-transform: uppercase; color: var(--tenue); margin-top: 3px; white-space: nowrap; }
+.marca .nombre b { font-family: "BiEx Titular", "Cormorant Garamond", Georgia, serif; font-weight: 400; font-size: 19px; letter-spacing: .3em !important; text-transform: uppercase; white-space: nowrap; }
+.marca .nombre small { font-family: "BiEx Interfaz", "Jost", system-ui, sans-serif; font-size: 10.5px; letter-spacing: .2em !important; text-transform: uppercase; color: var(--tenue); margin-top: 3px; white-space: nowrap; }
 .nav { display: flex; gap: 26px; margin-left: auto; }
 .nav a { font-family: var(--f-display); font-size: .95rem; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-2); text-decoration: none; padding: 6px 0; border-bottom: 1px solid transparent; }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--oro); border-bottom-color: var(--oro); }
@@ -90,7 +100,7 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .btn-icono { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--linea); background: transparent; display: grid; place-items: center; color: var(--tinta); }
 .btn-icono:hover { border-color: var(--oro); color: var(--oro); }
 .btn-icono svg { width: 18px; height: 18px; }
-.btn-aa { display: flex; flex-wrap: wrap; align-content: center; align-items: baseline; justify-content: center; gap: 1px; padding: 0 0 2px; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; font-weight: 500; line-height: 1; }
+.btn-aa { display: flex; flex-wrap: wrap; align-content: center; align-items: baseline; justify-content: center; gap: 1px; padding: 0 0 2px; font-family: "BiEx Titular", "Cormorant Garamond", Georgia, serif; font-size: 19px; font-weight: 500; line-height: 1; }
 .btn-aa small { font-size: 14px; }
 .btn-buscar { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px 0 13px; border-radius: 999px; border: 1px solid var(--linea); background: var(--hoja); color: var(--tenue); font-family: var(--f-ui); font-size: .88rem; }
 .btn-buscar svg { width: 16px; height: 16px; }
@@ -540,7 +550,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .ap-tams button[aria-pressed="true"], .ap-ops button[aria-pressed="true"] { border-color: var(--oro); background: var(--oro-suave); color: var(--oro-vivo); box-shadow: inset 0 0 0 1px var(--oro); }
 :root[data-theme="light"] .ap-tams button[aria-pressed="true"], :root[data-theme="light"] .ap-ops button[aria-pressed="true"] { color: var(--oro); }
 .ap-ops button:hover, .ap-tams button:hover { border-color: var(--linea); }
-.f-clasica b { font-family: "Gentium Book Plus", Georgia, serif; } .f-clara b { font-family: "BiEx Clara", "BiEx Respaldo", sans-serif; } .f-dislexia b { font-family: "BiEx Dislexia", "BiEx Respaldo", sans-serif; }
+.f-clasica b { font-family: "BiEx Texto", "Gentium Book Plus", Georgia, serif; } .f-clara b { font-family: "BiEx Clara", "BiEx Respaldo", sans-serif; } .f-dislexia b { font-family: "BiEx Dislexia", "BiEx Respaldo", sans-serif; }
 
 /* aviso breve (enlace copiado, etc.) */
 .aviso-flot { position: fixed; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 32px); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 80; background: var(--tinta); color: var(--bg); font-family: var(--f-ui); font-size: .86rem; padding: 10px 18px; border-radius: 999px; box-shadow: var(--sombra); pointer-events: none; opacity: 0; transition: opacity .2s; }
@@ -851,6 +861,9 @@ ol.tl::before { content: ""; position: absolute; left: 7.4rem; top: 4px; bottom:
 
 /* ===================================================================== guía animada */
 .btn-guia svg { width: 21px; height: 21px; }
+.btn-juego svg { width: 21px; height: 21px; }
+.btn-juego { color: var(--oro); }
+@media (max-width: 360px) { html:not(.incrustado) .barra .btn-guia { display: none; } }
 .guia { display: grid; gap: 14px; outline: none; }
 .g-marco { position: relative; height: clamp(190px, 36vh, 300px); border-radius: 16px; border: 1px solid var(--linea); background: radial-gradient(120% 90% at 50% 0%, var(--oro-suave), transparent 70%), var(--bg-2); overflow: hidden; }
 .g-escena { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; }
@@ -954,7 +967,7 @@ ol.tl::before { content: ""; position: absolute; left: 7.4rem; top: 4px; bottom:
 .g-tiempo.llega .gt-n { opacity: 1; color: #d9715f; }
 /* apariencia */
 .ga { display: grid; gap: 16px; justify-items: center; padding: 18px; border-radius: 14px; transition: background .4s, color .4s; width: min(460px, 100%); }
-.ga-btn { display: flex; flex-wrap: wrap; align-items: baseline; align-content: center; justify-content: center; gap: 1px; padding: 0 0 3px; box-sizing: border-box; width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--linea); font-family: "Cormorant Garamond", Georgia, serif; font-size: 25px; font-weight: 500; line-height: 1; color: var(--tinta); transition: transform .2s, background-color .2s, border-color .2s, color .2s; }
+.ga-btn { display: flex; flex-wrap: wrap; align-items: baseline; align-content: center; justify-content: center; gap: 1px; padding: 0 0 3px; box-sizing: border-box; width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--linea); font-family: "BiEx Titular", "Cormorant Garamond", Georgia, serif; font-size: 25px; font-weight: 500; line-height: 1; color: var(--tinta); transition: transform .2s, background-color .2s, border-color .2s, color .2s; }
 .ga-btn small { font-size: 18px; }
 .ga-btn.on { transform: scale(.9); background: var(--oro-suave); border-color: var(--oro); color: var(--oro-vivo); }
 .ga-tx { margin: 0; text-align: center; font-size: 1.15rem; transition: font-size .4s, letter-spacing .4s; }
