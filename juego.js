@@ -339,6 +339,9 @@
 .jg-cel h3 [lang=grc]{color:var(--oro-vivo)}
 .jg-cel p{margin:0;max-width:30em;font:400 .95rem/1.55 var(--f-ui);color:var(--tinta-2)}
 .jg-entrar{display:grid;gap:10px}
+.jg-empezar-con{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--oro) 22%,transparent)}
+.jg-empezar-con .jg-entrar{margin-top:8px}
+.jg-unica{margin-top:14px}
 .jg-entrar .btn{justify-content:flex-start;text-align:left}
 .jg-entrar .btn svg{width:20px;height:20px}
 .jg-espera{display:flex;align-items:center;gap:10px;font:400 .9rem/1.4 var(--f-ui);color:var(--tinta-2)}
@@ -445,6 +448,7 @@
     if (cont !== S.cont) return;
     if (S.codigoNuevo) return pintarCodigo(cont);
     if (que === "propuestas" && !S.token) return pintarPropuestas(cont);
+    if (que === "buzon") return pintarBuzon(cont); // el buzón lo protege la clave del equipo, no hace falta haber entrado
     if (!S.token) return pintarEntrada(cont);
     if (que === "clasificacion") return pintarClasificacion(cont);
     if (que === "prestigio") return pintarPrestigio(cont);
@@ -529,7 +533,12 @@
         h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, departamento o estado, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Cada persona que llega con tu enlace hace crecer tu árbol de la siembra. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." })),
       h("div", { class: "jg-dos" },
         tarjeta("Empezar con un apodo", null, h("div", { class: "jg-form" }, entrada, btn), pista,
-          h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso, Google o Facebook." })),
+          h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso, Google o Facebook." }),
+          cfg.google || cfg.facebook ? h("div", { class: "jg-empezar-con" }, h("p", { class: "jg-mini", text: "O empieza de una vez con tu cuenta oficial: tu lugar queda asegurado desde el primer momento y no tienes que guardar ningún código." }),
+            h("div", { class: "jg-entrar" },
+              cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pista) }, ico("google"), h("span", { text: "Empezar con Google" })) : null,
+              cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pista) }, ico("facebook"), h("span", { text: "Empezar con Facebook" })) : null)) : null,
+          h("div", { class: "jg-aviso tenue jg-unica" }, h("b", { text: "Tu lugar es único. " }), "Solo hay 1440 Primicias y cada una pertenece a una sola persona: crea una sola cuenta, para que 1440 personas distintas tengan la suya. Guarda muy bien tu acceso o vincúlalo con Google o Facebook: si se pierde, tu número de Primicia no vuelve.")),
         tarjeta("Ya juego", null, opciones)),
       tarjetaOpinion(false),
       notaConstruccion(),
@@ -556,7 +565,8 @@
           h("button", { class: "btn", type: "button", onclick: () => descargarTexto("escudrina-codigo.txt", texto) }, ico("descargar"), h("span", { text: "Descargar" })),
           navigator.share ? h("button", { class: "btn", type: "button", onclick: () => compartir("Mi código de Escudriña", texto, OFICIAL) }, ico("compartir"), h("span", { text: "Enviármelo" })) : null,
           guardarTel),
-        h("div", { class: "jg-aviso" }, h("b", { text: "Guárdalo bien. " }), "Este código es tu única llave mientras no asegures tu avance. Si lo pierdes antes de vincular tu perfil con una llave de acceso, Google o Facebook, tu avance no se podrá recuperar: no guardamos datos personales para reconocerte.")),
+        h("div", { class: "jg-aviso" }, h("b", { text: "Guárdalo bien. " }), "Este código es tu única llave mientras no asegures tu avance. Si lo pierdes antes de vincular tu perfil con una llave de acceso, Google o Facebook, tu avance no se podrá recuperar: no guardamos datos personales para reconocerte."),
+        S.yo && S.yo.fundador ? h("div", { class: "jg-aviso tenue" }, h("b", { text: "Eres la Primicia n.º " + fmt(S.yo.n) + " de 1440. " }), "Ese número es solo tuyo y no se repite: si pierdes el acceso, no vuelve. Por eso conviene vincular tu cuenta de una vez.") : null),
       tarjetaAsegurar(true),
       tarjeta(null, null, h("label", { class: "jg-check" }, casilla, h("span", { text: "Ya guardé mi código" })), sigue));
   }
@@ -673,7 +683,7 @@
     const apodo = y.apodoProvisional ? tarjetaApodo(true) : null;
     marco(cont, cabecera(),
       y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
-        "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás al azar " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
+        "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
       tarjetaPerfil(y), apodo, botonSeguir(),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       tarjetaHallazgos(y),
@@ -688,8 +698,12 @@
       h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" }))));
   }
   // BiEx (9-nov-2026): que nadie confunda el proceso semana a semana con el resultado final
-  const notaConstruccion = () => h("div", { class: "jg-aviso tenue" }, h("b", { text: "Biblia Exacta se construye semana a semana. " }),
-    "Con el paso de los días, la vista Orden del lector reflejará de manera cada vez más precisa e inteligible el mensaje de la traducción literal. Te invitamos a volver cada semana para ver las novedades y los avances del texto y del proyecto.");
+  // Sale como mucho un par de veces por semana (cada 84 h); en la misma visita se mantiene para que no desaparezca al repintar
+  const notaConstruccion = () => {
+    if (!S.obraVisita) { if (Date.now() - (Number(A.store.get("jg:obra", 0)) || 0) < 84 * 36e5) return null; S.obraVisita = true; A.store.set("jg:obra", Date.now()); }
+    return h("div", { class: "jg-aviso tenue" }, h("b", { text: "Biblia Exacta se construye semana a semana. " }),
+      "Con el paso de los días, la vista Orden del lector reflejará de manera cada vez más precisa e inteligible el mensaje de la traducción literal. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances del texto y del proyecto.");
+  };
   function tarjetaApodo(provisional) {
     const entrada = h("input", { type: "text", maxlength: "20", value: provisional ? "" : (S.yo && S.yo.apodo) || "", placeholder: "Tu apodo (3 a 20 letras)", "aria-label": "Tu apodo", spellcheck: "false" });
     const pista = h("p", { class: "jg-pista", role: "status" });
@@ -754,7 +768,7 @@
       h("p", { class: "jg-quedan" }, "Quedan ", v.quedan, " lugares · ", v.ins),
       h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
       cuentaAtras(cfg.lanzamiento),
-      h("p", { text: "Reserva hoy tu apodo y tu número de Primicia (se asigna al azar), comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble, y lo que avance en la práctica no se pierde del todo: ese día conserva al azar " + textoConserva() + " de su experiencia, sus dracmas y sus hallazgos." }),
+      h("p", { text: "Reserva hoy tu apodo y tu número de Primicia (se asigna de forma aleatoria), comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble, y lo que avance en la práctica no se pierde del todo: ese día conserva, de forma aleatoria, " + textoConserva() + " de su experiencia, sus dracmas y sus hallazgos." }),
       h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
   }
   function tarjetaCampana(y) {

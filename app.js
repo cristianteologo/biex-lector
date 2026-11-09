@@ -1620,10 +1620,12 @@
   const iniciaPericopa = (usaP, x, k) => k === 0 || !!(usaP ? x.p : x.q);
   // BiEx (9-nov-2026): que nadie tome el proceso semana a semana por el resultado final. Tras «Entendido» vuelve a los 7 días.
   function notaObra() {
-    if (Date.now() - (Number(store.get("obraVista", 0)) || 0) < 7 * 864e5) return null;
+    // Sale como mucho un par de veces por semana (cada 84 h): al mostrarse cuenta como vista; en la misma visita sigue arriba de cada capítulo hasta «Entendido»
+    if (!notaObra.visita) { if (Date.now() - (Number(store.get("obraVista", 0)) || 0) < 84 * 36e5) return null; notaObra.visita = true; store.set("obraVista", Date.now()); }
+    if (notaObra.cerrada) return null;
     const el = h("div", { class: "nota-obra", role: "note" },
-      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Orden (lectura organizada) reflejará de manera precisa e inteligible el mensaje de la traducción literal. Te invitamos a volver cada semana para ver las novedades y los avances en la edición del texto y del proyecto."),
-      h("button", { class: "btn chico", type: "button", onclick: () => { store.set("obraVista", Date.now()); el.remove(); } }, "Entendido"));
+      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Orden (lectura organizada) reflejará de manera precisa e inteligible el mensaje de la traducción literal. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances en la edición del texto y del proyecto."),
+      h("button", { class: "btn chico", type: "button", onclick: () => { store.set("obraVista", Date.now()); notaObra.cerrada = true; el.remove(); } }, "Entendido"));
     return el;
   }
   function cuerpoLectura(b, cap, todos) {
@@ -2497,7 +2499,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "e857d4abb8", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "3275ea7d09", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4480,6 +4482,19 @@
   }
   function mostrarRuta(hh) {
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
+    // Direcciones del juego mal escritas («#/escudrinabuzonn», «#/Escudriña/Buzón»): se corrigen solas a la ruta real
+    const pj = sinMarcas(partes[0] || "").toLowerCase();
+    if (/^escudri/.test(pj) && (partes[0] !== "escudrina" || (partes[1] && !/^(i|arbol|clasificacion|prestigio|propuestas|buzon|cuenta)$/.test(partes[1])))) {
+      const SUB = ["clasificacion", "prestigio", "arbol", "propuestas", "buzon", "cuenta"];
+      const dist = (a, b) => { const d = Array.from({ length: b.length + 1 }, (_, j) => j); for (let i = 1; i <= a.length; i++) { let pr = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, pr + (a[i - 1] === b[j - 1] ? 0 : 1)); pr = t; } } return d[b.length]; };
+      const cerca = (x) => { x = sinMarcas(x || "").toLowerCase().replace(/[^a-z]/g, ""); if (!x) return null; if (x === "i") return "i"; return SUB.find((k) => k === x) || SUB.find((k) => x.length >= 3 && (k.startsWith(x) || x.startsWith(k))) || SUB.find((k) => dist(x, k) <= 2) || null; };
+      const resto = pj.replace(/^escudri(n|ni)?a?/, "");
+      const otras = partes.slice(1);
+      const sub = resto ? cerca(resto) : otras.length ? cerca(otras[0]) : null;
+      const cola = resto ? otras : otras.slice(1);
+      const dest = "#/escudrina" + (sub ? "/" + sub + (sub === "i" || sub === "arbol" ? (cola.length ? "/" + cola.join("/") : "") : "") : "");
+      ponerHash(dest); return mostrarRuta(dest);
+    }
     const ruta = "#/" + partes.join("/");
     if (partes[0] === "buscar" && partes.length > 1) return sobrePagina(() => abrirBusqueda(partes.slice(1).join("/")));
     if (partes[0] === "guia") return sobrePagina(() => abrirGuia(+partes[1] || 0));
