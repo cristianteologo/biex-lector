@@ -1,12 +1,12 @@
-"""Pone las huellas (?v=…) para que GitHub Pages y los navegadores no sirvan versiones viejas en caché:
-1. dentro de app.js, la de cada archivo que el lector carga después (busqueda.js y la narración de la guía en voz/), en const VERSIONES;
+"""Pone las huellas (?v=…) para que los alojamientos y los navegadores no sirvan versiones viejas en caché:
+1. dentro de app.js, la de cada archivo que el lector carga después (busqueda.js, juego.js y la narración de la guía en voz/), en const VERSIONES;
 2. en index.html, la de app.css y app.js."""
 import hashlib, pathlib, re
 r = pathlib.Path(__file__).resolve().parent.parent
 huella = lambda f: hashlib.sha1((r / f).read_bytes()).hexdigest()[:10]
 app = r / "app.js"
 a = app.read_text(encoding="utf-8")
-for nombre in ("busqueda",):
+for nombre in ("busqueda", "juego"):
     a, n = re.subn(r'(const VERSIONES = \{[^}]*\b' + nombre + r': ")[0-9a-f]*(")', lambda m: m.group(1) + huella(nombre + ".js") + m.group(2), a)
     if n != 1: raise SystemExit("No se encontró la huella de " + nombre + " en app.js")
 # narración de la guía (voz/<voz>/<paso>.mp4 y .ogg y voz/marcas.json): una huella para todos los archivos
@@ -33,9 +33,10 @@ if _ix2 != _ix: (r / "index.html").write_text(_ix2, encoding="utf-8"); print("CS
 # [ruta, bytes, huella] (huella = 10 primeros caracteres del SHA-1 del contenido, la misma que calcula sw.js);
 # «gen» identifica la publicación (cambia si cambia cualquier archivo) y «fecha» es cuándo cambió por última vez
 import json as _json, datetime as _dt
-_lista = [f for f in ("app.css", "app.js", "busqueda.js")]
+_lista = [f for f in ("app.css", "app.js", "busqueda.js", "juego.js")]
 _lista += sorted(x.relative_to(r).as_posix() for x in (r / "fuentes").glob("*.woff2") if not x.name.startswith("intro-"))
-_lista += sorted(x.relative_to(r).as_posix() for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json")
+# datos/juego/ son las preguntas que lee el servidor del juego: no hacen falta sin conexión
+_lista += sorted(x.relative_to(r).as_posix() for x in (r / "datos").rglob("*") if x.is_file() and x.name != "archivos.json" and not x.relative_to(r).as_posix().startswith("datos/juego/"))
 _lista += sorted(x.relative_to(r).as_posix() for x in (r / "voz").rglob("*") if x.is_file() and x.suffix in (".mp4", ".ogg", ".json"))
 _filas = [[f, (r / f).stat().st_size, huella(f)] for f in _lista]
 _gen = hashlib.sha1(_json.dumps(_filas, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()[:12]

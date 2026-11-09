@@ -2,7 +2,7 @@
 
 Archivos públicos del lector de la Nueva Voluntad de **BiEx – Biblia Exacta**: la traducción del griego al español en su estado actual, verso por verso, y el análisis morfológico de cada palabra (forma, transliteración, lema, morfología, función en la oración, ediciones que la incluyen, formas del lema y concordancia).
 
-El sitio en Wix carga estos archivos. Se generan automáticamente; no se editan a mano.
+El sitio oficial en Wix carga estos archivos desde Cloudflare Pages. Se generan automáticamente; no se editan a mano.
 
 - `index.html`, `app.css`, `app.js`: la aplicación (sin dependencias).
 - `datos/avance.json`: índice de libros y cifras de avance.
@@ -14,6 +14,8 @@ El sitio en Wix carga estos archivos. Se generan automáticamente; no se editan 
 - `datos/cronologia.json`: orden de los libros, fechas de escritura y línea del tiempo.
 - `intro.js` y `plantillas/`: presentación de apertura del sitio oficial.
 - `wix/`: el código que se inserta en el sitio oficial para abrir el lector desde cada página de libro (`insercion.plantilla.html` y su generador).
+- `juego.js`: Escudriña, el juego de Biblia Exacta (el lector lo carga al abrir el juego o al leer con sesión). `datos/juego/<LIBRO>.json`: el texto de lectura limpio de cada verso para las pruebas del capítulo. `functions/api/juego/`: la puerta de Cloudflare Pages hacia el servidor del juego (privado). `privacidad.html`: qué datos guarda el juego.
+- Alojamiento: Cloudflare Pages (bibliaexacta.pages.dev) publica cada envío a `main`; GitHub Pages (rama `gh-pages`) y jsDelivr quedan de respaldo.
 
 ## Créditos
 

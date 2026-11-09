@@ -4,13 +4,14 @@ Uso habitual (solo cambia el commit fijado para la red de respaldo):
   python3 generar_insercion.py --cargador --sha SHA > index.html
   python3 generar_insercion.py --intro > intro.html   (presentación de apertura y datos estructurados)
   python3 generar_insercion.py --intro --config plantillas/otra.json > intro.html   (otra plantilla de textos y versos)
-Opciones: --completo URL (página propia del lector; por defecto GitHub Pages), --base URL y --base2 URL (de dónde carga app.js,
-app.css y los datos el lector armado dentro de la página; por defecto GitHub Pages y jsDelivr fijado al SHA), --respaldo URL
+Opciones: --completo URL (página propia del lector; por defecto Cloudflare Pages), --base URL y --base2 URL (de dónde carga app.js,
+app.css y los datos el lector armado dentro de la página; por defecto Cloudflare Pages y jsDelivr fijado al SHA), --respaldo URL
 (copia en Wix headless). La inserción se minimiza (sin sangrías ni comentarios de línea) y debe quedar por debajo de 15 000 caracteres."""
 import sys, re, pathlib, argparse
-# Alojamiento del lector: al cambiar de alojamiento (p. ej., a uno sin nombre de usuario) basta con cambiar estas dos líneas
+# Alojamiento del lector: Cloudflare Pages (desde el 9-nov-2026; sin nombre de usuario en la dirección). REPO queda solo
+# para la vía de respaldo por jsDelivr y githack mientras el repositorio sea público.
 REPO = "cristianteologo/biex-lector"
-PAGES = "https://%s.github.io/%s/" % tuple(REPO.split("/"))
+PAGES = "https://bibliaexacta.pages.dev/"
 HEADLESS = "https://headless-acyvpvsbblb-bibliaexacta-140c.wix-site-host.com/"
 barra = lambda u: u if not u or u.endswith("/") else u + "/"
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -36,7 +37,8 @@ if a.cargador:
     sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
 if a.cabecera:
     # Código para la cabecera (<head>) del sitio oficial: nombre e ícono de BiEx al instalar el sitio como aplicación
-    if not jsd: sys.exit("Falta --sha.")
+    # desde Cloudflare Pages: siempre lo último, sin fijar un commit (ya no hace falta reenviarla en cada publicación)
+    jsd = barra(a.completo)
     out = ('<link rel="manifest" href="%sapp-oficial.webmanifest">\n<link rel="apple-touch-icon" href="%sicono/apple-touch-icon.png">\n'
            '<meta name="apple-mobile-web-app-title" content="Biblia Exacta">\n<meta name="application-name" content="Biblia Exacta">\n'
            '<script>(function(){try{var m=document.querySelectorAll(\'link[rel="manifest"]\');for(var i=0;i<m.length;i++)if(m[i].href.indexOf("app-oficial.webmanifest")<0)m[i].parentNode.removeChild(m[i]);}catch(e){}})();</script>\n') % (jsd, jsd)

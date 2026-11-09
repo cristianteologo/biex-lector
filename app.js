@@ -83,6 +83,7 @@
     papelera: '<path d="M5 7h14M10 4.5h4M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7M10.5 10.5v6M13.5 10.5v6" ' + L1 + '/>',
     copiar: '<rect x="8.5" y="8.5" width="11" height="11" rx="1.5" ' + L1 + '/><path d="M15.5 5.5v-.5A1.5 1.5 0 0 0 14 3.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h.5" ' + L1 + '/>',
     orden: '<path d="M4 7.5h11M4 12h8M4 16.5h13" ' + L1 + '/><path d="M17.5 4.5l3 3-3 3" ' + L1 + '/>',
+    juego: '<path d="M7 4.5h10l3.5 4.6L12 19.5 3.5 9.1z" ' + L1 + '/><path d="M3.5 9.1h17M9.6 4.5L8.2 9.1 12 19.5l3.8-10.4-1.4-4.6" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
@@ -986,6 +987,8 @@
   const enlacePublico = (hh) => (EMBED ? OFICIAL + "nueva-voluntad?lector=" + encodeURIComponent(String(hh || "").replace(/^#?\/?/, "")).replace(/%2F/g, "/") : location.href.split("#")[0] + hh);
   const textoPlano = (t) => String(t || "").replace(/[⟪⟫]/g, "").replace(/\*\*?/g, "");
   async function compartir(titulo, texto, hh) {
+    const inv = store.get("jg:t", null) && store.get("jg:mio", null);
+    if (inv && /^[a-z0-9]{4,12}$/.test(inv) && /^#\/[A-Z0-9]{3}\//.test(hh || "")) hh = "#/escudrina/i/" + inv + "/" + hh.slice(2);
     const url = enlacePublico(hh);
     try { if (navigator.share) { await navigator.share({ title: titulo, text: titulo + " — " + texto, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(titulo + " — " + texto + "\n" + url); avisar("Verso y enlace copiados"); }
@@ -1274,7 +1277,8 @@
           ub ? h("a", { class: "btn oro", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, svg(ICO.seguir), h("span", {}, "Seguir leyendo · ", etLibro(ub, ult.cap + (ult.v ? ":" + ult.v : "")))) : null,
           h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/" + P.c + "/" + P.cap + "/l/" + P.v }, svg(ICO.libro), h("span", {}, "Leer ", etLibro(lb, String(P.cap)))),
           h("a", { class: "btn", href: "#/" + P.c + "/" + P.cap + "/a/" + P.v }, svg(ICO.lupa), "Analizar palabra por palabra"),
-          h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros")))),
+          h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros"),
+          h("a", { class: "btn", href: "#/escudrina" }, svg(ICO.juego), "Escudriña · el juego")))),
       h("section", { class: "cifras" }, h("div", { class: "in" },
         h("div", { class: "c" }, h("b", { text: pct(D.palabras) }), h("span", { text: "de las palabras ya traducidas en el texto base (preliminar, en revisión)" })),
         h("div", { class: "c" }, h("b", { text: fmt(D.palabrasTotal) }), h("span", { text: "palabras griegas analizadas" })),
@@ -1350,6 +1354,7 @@
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
           hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden cronológico en 30, 90 días o un año, los relatos de la vida de YēshŪ́ʿa y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
+          hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros y clasificaciones por ciudad y país. Se entra con un apodo.", "Jugar", "#/escudrina"),
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
           hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
@@ -1415,7 +1420,7 @@
     const enSitio = RP.anclaEnSitio != null && hojaHecha === c + "/" + cap && !!$(".libro", vista());
     const anclaS = RP.anclaEnSitio; RP.anclaEnSitio = null;
     esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
-    if (mismo) { enfocar(v, i); return; }
+    if (mismo) { enfocar(v, i); juegoCapitulo(c, cap, modo); return; }
     if (!enSitio) { ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()])); hojaHecha = ""; if (v == null) alTope(); }
     let Lc, A = null;
     try {
@@ -1433,6 +1438,7 @@
     store.set("ultimo", { c, cap, m: modo, v: v || null });
     historial(c, cap, v || null, modo);
     enfocar(v, i);
+    juegoCapitulo(c, cap, modo);
     // Mientras se lee, se trae en segundo plano el análisis para que las palabras abran al instante
     if (modo !== "a") setTimeout(() => { if (esc.libro === c) { analisis(c).catch(() => {}); tablas().catch(() => {}); } }, 2500);
   }
@@ -2467,7 +2473,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "33f96d5ba4", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2481,6 +2487,35 @@
     });
     scripts[nombre] = intentar(baseOk).catch((e) => { delete scripts[nombre]; throw e; });
     return scripts[nombre];
+  }
+  // ------------------------------------------------------------------ Escudriña, el juego (juego.js, carga diferida)
+  let JGX = null;
+  function cargarJuego() {
+    if (!JGX) JGX = cargarScript("juego").then(() => {
+      const J = window.BiExJuego; if (!J) throw new Error("juego");
+      J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn),
+        nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
+        ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
+        irA: (hh) => { location.hash = hh; },
+        marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
+        sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no" });
+      return J;
+    }).catch((e) => { JGX = null; throw e; });
+    return JGX;
+  }
+  function vistaJuego(sub) {
+    navActual("");
+    document.title = "Escudriña · BiEx";
+    vista().replaceChildren(cargando("Abriendo Escudriña…"));
+    saltarA(0);
+    const ruta = rutaVista;
+    cargarJuego().then((J) => { if (rutaVista === ruta) return J.vista(vista(), sub); })
+      .catch(() => { if (rutaVista === ruta) vista().replaceChildren(fallo("No se pudo abrir Escudriña.")); });
+  }
+  // Con sesión de Escudriña, el juego observa la lectura del capítulo (sin sesión no se carga nada)
+  function juegoCapitulo(c, cap, modo) {
+    if (!store.get("jg:t", null) && !window.BiExJuego) return;
+    cargarJuego().then((J) => { if (esc.libro === c && esc.cap === cap) J.capitulo(c, cap, modo); }).catch(() => {});
   }
   let BQX = null, bqListo = false;
   function prepararBuscador() {
@@ -3713,7 +3748,7 @@
   // ------------------------------------------------------------------ BiEx como aplicación: instalar y leer sin conexión
   // La copia sin conexión la guarda el trabajador de servicio (sw.js) del sitio donde se abre el lector como página propia.
   // Dentro del sitio oficial (marco) no se instala: se ofrece abrir BiEx como aplicación en su dirección propia.
-  const APP_URL = "https://headless-acyvpvsbblb-bibliaexacta-140c.wix-site-host.com/";
+  const APP_URL = "https://bibliaexacta.pages.dev/";
   const PWA = { prompt: null, reg: null, instalada: false };
   const puedeSW = () => !EMBED && "serviceWorker" in navigator && window.isSecureContext && !!document.querySelector('link[rel="manifest"]');
   const enApp = () => (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: window-controls-overlay)").matches)) || navigator.standalone === true;
@@ -4422,6 +4457,12 @@
     const ruta = "#/" + partes.join("/");
     if (partes[0] === "buscar" && partes.length > 1) return sobrePagina(() => abrirBusqueda(partes.slice(1).join("/")));
     if (partes[0] === "guia") return sobrePagina(() => abrirGuia(+partes[1] || 0));
+    if (partes[0] === "escudrina" && partes[1] === "i" && /^[a-z0-9]{4,12}$/i.test(partes[2] || "")) {
+      const cod = partes[2].toLowerCase();
+      if (!store.get("jg:t", null)) { const pr = store.get("jg:inv", null); if (!(pr && pr.c && Date.now() - (pr.t || 0) < 30 * 864e5)) store.set("jg:inv", { c: cod, t: Date.now() }); }
+      if (partes.length > 3) { const d = "#/" + partes.slice(3).join("/"); ponerHash(d); if (!store.get("jg:t", null)) setTimeout(() => cargarJuego().then((J) => J.franja(cod)).catch(() => {}), 1500); return mostrarRuta(d); }
+    }
+    if (partes[0] !== "escudrina" && !(D && libroDe(String(partes[0] || "").toUpperCase())) && window.BiExJuego) window.BiExJuego.salir();
     rutaVista = ruta;
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
@@ -4434,6 +4475,7 @@
     if (partes[0] === "marcadores") { esc.libro = null; return vistaMarcadores(); }
     if (partes[0] === "planes") { esc.libro = null; return vistaPlanes(partes[1] || ""); }
     if (partes[0] === "app") { esc.libro = null; return vistaApp(); }
+    if (partes[0] === "escudrina") { esc.libro = null; return vistaJuego(partes.slice(1)); }
     if (partes[0] === "niveles") { esc.libro = null; return vistaNiveles(partes[1] || "", partes[2] || ""); }
     const c = partes[0].toUpperCase();
     const cap = +partes[1] || 1;

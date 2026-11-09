@@ -105,7 +105,7 @@
     if (n >= vias.length) return fallo();
     marco = document.createElement("iframe");
     marco.title = "Lector y analizador de BiEx";
-    marco.setAttribute("allow", "clipboard-write; web-share; fullscreen"); marco.setAttribute("allowfullscreen", "");
+    marco.setAttribute("allow", "clipboard-write; web-share; fullscreen; publickey-credentials-get; publickey-credentials-create"); marco.setAttribute("allowfullscreen", "");
     vias[n](marco);
     var este = marco;
     function siguiente() { if (!listo && marco === este) intentar(n + 1, inicio); }

@@ -179,6 +179,7 @@ self.addEventListener("fetch", (e) => {
   const u = new URL(req.url);
   if (u.protocol !== "https:" && u.hostname !== "localhost") return;
   if (esFuenteGoogle(u)) { e.respondWith(fuentes(req).catch(() => fetch(req))); return; }
+  if (u.origin === self.location.origin && u.pathname.startsWith(ALCANCE.pathname + "api/")) return; // el juego: siempre a la red, sin copia
   if (req.mode === "navigate") {
     if (u.origin !== self.location.origin) return;
     // la página del lector (y su dirección con #/…) se guarda como «index.html»
