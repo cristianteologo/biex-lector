@@ -14,13 +14,21 @@
     window.addEventListener("error", (e) => alPadre({ biex: "error", m: String(e.message || "error") + " " + (e.filename || "") + ":" + (e.lineno || "") }));
     window.addEventListener("message", (e) => { if (e.source === window.parent && e.data && e.data.biex === "ir" && typeof e.data.hash === "string" && /^#\/[\w\/.:?=%+\-]{0,160}$/.test(e.data.hash)) location.hash = e.data.hash; });
   }
+  // Regla de BiEx: un dato vacío nunca se imprime como «null» ni «undefined». append, replaceChildren, before y after
+  // convierten null en el texto «null»; aquí se omiten (10-nov-2026: aparecía «null» en la ficha del Árbol).
+  for (const P of [Element.prototype, DocumentFragment.prototype]) for (const m of ["append", "prepend", "replaceChildren", "before", "after"]) {
+    const o = P[m]; if (typeof o !== "function" || o.__biex) continue;
+    const f = function (...k) { return o.apply(this, k.filter((x) => x != null && x !== false)); }; f.__biex = 1; P[m] = f;
+  }
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   // Las transliteraciones (ā, ḥ, ʿ, letras griegas mezcladas…) no deben pasar a mayúsculas en los rótulos: se envuelven en .np
   const RE_NP = /[\u0100-\u024f\u02b0-\u02ff\u0300-\u036f\u1e00-\u1eff]|[A-Za-z][\u0370-\u03ff\u1f00-\u1fff]|[\u0370-\u03ff\u1f00-\u1fff][A-Za-z]/;
   const SIN_NP = /^(option|title|textarea|script|style|select|input)$/i;
   const textoNp = (t) => String(t).split(/(\S*(?:[\u0100-\u024f\u02b0-\u02ff\u0300-\u036f\u1e00-\u1eff]|[A-Za-z][\u0370-\u03ff\u1f00-\u1fff]|[\u0370-\u03ff\u1f00-\u1fff][A-Za-z])\S*)/).filter(Boolean)
-    .map((x) => { if (!RE_NP.test(x)) return document.createTextNode(x); const sp = document.createElement("span"); sp.className = "np"; sp.textContent = x; return sp; });
+    // «cm» (10-nov-2026): las palabras con signos combinados (YēshŪ́ʿa, Hiṯgallū́ṯ) van con la letra del texto, la única que
+    // apila bien los signos (la de la interfaz no los posiciona y se veían corridos)
+    .map((x) => { if (!RE_NP.test(x)) return document.createTextNode(x); const sp = document.createElement("span"); sp.className = /[\u0300-\u036f]/.test(x) ? "np cm" : "np"; sp.textContent = x; return sp; });
   const h = (tag, attrs, ...kids) => {
     const el = document.createElement(tag);
     const np = !SIN_NP.test(tag);
@@ -1050,7 +1058,7 @@
           h("div", { class: "ap-pie" },
             h("button", { class: "btn chico oro", type: "button", onclick: () => empujar(vistaOpciones()) }, svg(ICO.opciones), "Opciones del texto: colores, corchetes, paréntesis"),
             h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura")),
-          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para toda clase de personas, también neurodivergentes (con TDAH, dislexia, autismo…), y busca la máxima inclusión progresiva de accesibilidad para personas ciegas y con otras limitaciones, para que el Lógos llegue a toda clase de personas." })));
+          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para todas las personas, incluidas las neurodivergentes (con TDAH, dislexia, autismo…), y busca, de forma progresiva, la máxima accesibilidad para las personas ciegas y con otras limitaciones, para que el Lógos llegue a todos los hablantes del idioma español." })));
     });
   }
 
@@ -1263,7 +1271,7 @@
       return h("a", { class: "tlibro", href: "#/" + b.c + "/1", "aria-label": nombreLibro(b) + (fe ? ", escrito c. " + fe.replace(/^c\. /, "") : "") + ": " + pct(b.palabras) + " de las palabras ya traducidas en el texto base" },
         h("span", { class: "num", text: String(numLibro(b)).padStart(2, "0") }),
         h("span", { class: "tit", text: b.t || b.n }),
-        h("span", { class: "es", text: b.n }),
+        h("span", { class: "es", text: b.t ? tradQ(b) : "" }),
         fe ? h("span", { class: "fecha" }, svg(ICO.tiempo), h("span", { text: "Escrito " + (/^c\./.test(fe) ? fe : "c. " + fe) + (na && ko === "crono" ? " · narra " + na : "") })) : null,
         h("span", { class: "medidor", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, b.palabras).toFixed(1) + "%" })),
         h("span", { class: "dato" }, h("span", {}, h("strong", { text: pct(b.palabras) }), " texto base"), h("span", { text: completos ? fmt(completos) + " de " + fmt(b.total) + " versos con traducción completa" : fmt(b.total) + " versos" })));
@@ -1532,8 +1540,8 @@
   function barraHoja(b, cap, modo, versos) {
     const ir = (m) => "#/" + b.c + "/" + cap + (m === "a" ? "/a" : "");
     // Tres modos (BiEx, 10-nov-2026): Análisis · Lectura (la traducción en el orden natural del español, para leer de corrido;
-    // ruta /o y prefs.lorg) · Literal (la misma traducción en el orden del griego, con todas sus piezas)
-    const MODO_T = { a: "Análisis: cada palabra con su forma, su lema y su morfología", o: "Lectura: la traducción en el orden natural del español, para leer de corrido", l: "Literal: la traducción en el orden del griego, palabra por palabra y con todas sus piezas" };
+    // ruta /o y prefs.lorg) · Textual (la misma traducción en el orden del griego, con todas sus piezas)
+    const MODO_T = { a: "Análisis: cada palabra con su forma, su lema y su morfología", o: "Lectura: la traducción en el orden natural del español, para leer de corrido", l: "Textual: la traducción en el orden del griego, palabra por palabra y con todas sus piezas" };
     const activo = (m) => (m === "a" ? modo === "a" : modo !== "a" && (m === "o") === !!prefs.lorg);
     const btnModo = (m, t) => h("button", { type: "button", class: "m-" + m, "aria-label": t, "aria-pressed": activo(m) ? "true" : "false", title: MODO_T[m], onclick: () => {
       if (activo(m)) return;
@@ -1558,7 +1566,7 @@
       h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: tradQ(b) }) : null),
       h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom })));
     return h("div", { class: "barra-hoja" },
-      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("a", "Análisis"), btnModo("o", "Lectura"), btnModo("l", "Literal")),
+      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("a", "Análisis"), btnModo("o", "Lectura"), btnModo("l", "Textual")),
       h("div", { class: "cap-grupo movil" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
         h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
@@ -1630,7 +1638,7 @@
     if (!notaObra.visita) { if (Date.now() - (Number(store.get("obraVista", 0)) || 0) < 84 * 36e5) return null; notaObra.visita = true; store.set("obraVista", Date.now()); }
     if (notaObra.cerrada) return null;
     const el = h("div", { class: "nota-obra", role: "note" },
-      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Lectura reflejará de manera precisa e inteligible el mensaje de la traducción Literal. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances en la edición del texto y del proyecto."),
+      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Lectura reflejará de manera precisa e inteligible el mensaje de la traducción Textual. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances en la edición del texto y del proyecto."),
       h("button", { class: "btn chico", type: "button", onclick: () => { store.set("obraVista", Date.now()); notaObra.cerrada = true; el.remove(); } }, "Entendido"));
     return el;
   }
@@ -2505,7 +2513,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "f44c3cf9a1", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "12b8fe151f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3385,7 +3393,7 @@
         if (k === ult) return; ult = k;
         [...chips.children].forEach((c, i) => c.classList.toggle("on", i === k));
         const o = ords[k][0], LO = o === "tradicional" ? D.libros : CRONO.ordenes[o].map(libroDe);
-        lista.replaceChildren(...LO.slice(0, 4).map((b, i) => h("span", { style: "--i:" + i }, h("em", { text: String(i + 1).padStart(2, "0") }), h("b", {}, b.t || b.n, b.t ? h("i", { text: b.n }) : null), fechaEscrito(b) ? h("small", { text: "c. " + fechaEscrito(b).replace(/^c\. /, "") }) : null)));
+        lista.replaceChildren(...LO.slice(0, 4).map((b, i) => h("span", { style: "--i:" + i }, h("em", { text: String(i + 1).padStart(2, "0") }), h("b", {}, b.t || b.n, b.t ? h("i", { text: tradQ(b) }) : null), fechaEscrito(b) ? h("small", { text: "c. " + fechaEscrito(b).replace(/^c\. /, "") }) : null)));
       };
     },
     verso(el) {
@@ -3799,8 +3807,27 @@
     fijarTitulo();
     new MutationObserver(fijarTitulo).observe(document.head, { subtree: true, childList: true, characterData: true });
   }
-  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); PWA.prompt = e; document.documentElement.classList.add("app-instalable"); });
-  window.addEventListener("appinstalled", () => { PWA.prompt = null; PWA.instalada = true; document.documentElement.classList.remove("app-instalable"); avisar("BiEx quedó instalada"); });
+  // Instalar en un toque (BiEx, 10-nov-2026: «cuantos menos pasos, mejor»). Ningún navegador deja abrir la instalación sin
+  // un toque de la persona; lo más corto posible: apenas el navegador la ofrece, aparece «Instalar BiEx» (una sola vez por
+  // semana si se descarta) y el botón de #/app se activa en vivo (antes quedaba apagado si la oferta llegaba después).
+  async function instalarYa() {
+    if (!PWA.prompt) { location.hash = "#/app"; return; }
+    const p = PWA.prompt; PWA.prompt = null; p.prompt();
+    try { const r = await p.userChoice; if (r && r.outcome === "accepted") avisar("Instalando BiEx…"); } catch (e) { /* ignorar */ }
+    for (const b of $$(".btn-instalar")) b.disabled = true; const c = $(".chip-instalar"); if (c) c.remove();
+  }
+  function chipInstalar() {
+    if (EMBED || enApp() || PWA.instalada || $(".chip-instalar") || /^#\/app/.test(location.hash)) return;
+    if (Date.now() - (store.get("instalarNo", 0) || 0) < 7 * 864e5) return;
+    const chip = h("div", { class: "chip-instalar", role: "region", "aria-label": "Instalar BiEx" },
+      h("button", { class: "ci-si", type: "button", onclick: instalarYa }, svg(ICO.descargar), h("span", { text: "Instalar BiEx" })),
+      h("button", { class: "ci-no", type: "button", "aria-label": "Ahora no", onclick: () => { store.set("instalarNo", Date.now()); chip.remove(); } }, "×"));
+    document.body.append(chip); requestAnimationFrame(() => chip.classList.add("si"));
+  }
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); PWA.prompt = e; document.documentElement.classList.add("app-instalable");
+    for (const b of $$(".btn-instalar")) { b.disabled = false; const t = b.querySelector("span"); if (t) t.textContent = "Instalar BiEx"; }
+    setTimeout(chipInstalar, 2500); });
+  window.addEventListener("appinstalled", () => { PWA.prompt = null; PWA.instalada = true; document.documentElement.classList.remove("app-instalable"); const c = $(".chip-instalar"); if (c) c.remove(); avisar("BiEx quedó instalada"); });
   if (puedeSW()) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("sw.js", { scope: "./" }).then((r) => { PWA.reg = r; }).catch(() => {});
@@ -3898,11 +3925,11 @@
     let instalar;
     if (EMBED || !puedeSW()) {
       instalar = tarjeta(ICO.externo, "Abrir BiEx como aplicación", "Para instalar BiEx con su propio ícono y guardar todo su contenido en tu dispositivo, ábrelo en su dirección de aplicación. Allí verás el botón «Instalar» (o, en iPhone y iPad, Compartir › «Agregar a inicio»).",
-        h("a", { class: "btn oro", href: APP_URL, target: "_blank", rel: "noopener" }, svg(ICO.externo), h("span", { text: "Abrir BiEx como aplicación" })));
+        h("a", { class: "btn oro", href: APP_URL + "#/app", target: "_blank", rel: "noopener" }, svg(ICO.externo), h("span", { text: "Abrir BiEx como aplicación" })));
     } else if (enApp() || PWA.instalada) {
       instalar = tarjeta(ICO.marca, "BiEx ya está instalada", "La estás usando como aplicación, con su propio ícono.");
     } else {
-      const btn = h("button", { class: "btn oro", type: "button", disabled: !PWA.prompt, onclick: async () => { if (!PWA.prompt) return; PWA.prompt.prompt(); try { await PWA.prompt.userChoice; } catch (e) { /* ignorar */ } PWA.prompt = null; btn.disabled = true; } }, svg(ICO.descargar), h("span", { text: "Instalar BiEx" }));
+      const btn = h("button", { class: "btn oro btn-instalar", type: "button", disabled: !PWA.prompt, onclick: instalarYa }, svg(ICO.descargar), h("span", { text: PWA.prompt ? "Instalar BiEx" : "Preparando la instalación…" }));
       const pasos = ios ? h("ol", { class: "app-pasos" }, h("li", { text: "Toca el botón Compartir de Safari (el cuadrado con la flecha hacia arriba)." }), h("li", { text: "Elige «Agregar a inicio»." }), h("li", { text: "Confirma con «Agregar»: aparecerá el ícono de BiEx." }))
         : h("p", { class: "nota-ui", text: "Si el botón no se activa, usa el menú del navegador: «Instalar BiEx» o «Agregar a la pantalla de inicio». En Safari para Mac: Archivo › «Agregar al Dock»." });
       instalar = tarjeta(ICO.descargar, "Instalar BiEx", "Queda como una aplicación más, directamente en tu pantalla de inicio o en tu escritorio.", ios ? null : btn, pasos);
@@ -3977,6 +4004,30 @@
   }
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - (store.get("revisionCopia", 0) || 0) >= 3600e3) actualizarCopia(); });
   window.addEventListener("online", () => { if (!store.get("revisionCopia", 0)) setTimeout(actualizarCopia, 3000); });
+  // Aviso de versión nueva (BiEx, 10-nov-2026: «al volver a la app casi nunca avisa»). Antes la consulta dependía de la
+  // copia sin conexión y de una hora de ausencia; ahora es una consulta ligera y propia, sin esa condición: al abrir, al
+  // volver a la app o a la pestaña (también cuando Android la congela y la reanuda, o la devuelve desde la caché de
+  // navegación), al recuperar la conexión o el foco, al cambiar de vista (como mucho cada 3 min) y cada 15 min a la vista.
+  let ultVersion = 0, versionNueva = false;
+  async function revisarVersion(espera) {
+    if (versionNueva || !navigator.onLine || document.hidden) return;
+    const ahora = Date.now(); if (ahora - ultVersion < (espera || 0)) return;
+    ultVersion = ahora;
+    try {
+      const v = await vigente();
+      if (v.firma !== firmaActual()) {
+        versionNueva = true; avisoVersion();
+        if (puedeSW()) navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {});
+      }
+    } catch (e) { ultVersion = 0; }
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => revisarVersion(45e3), 600); });
+  document.addEventListener("resume", () => setTimeout(() => revisarVersion(0), 600));
+  window.addEventListener("pageshow", (e) => { if (e.persisted) setTimeout(() => revisarVersion(0), 600); });
+  window.addEventListener("focus", () => revisarVersion(120e3));
+  window.addEventListener("online", () => setTimeout(() => revisarVersion(0), 2000));
+  window.addEventListener("hashchange", () => revisarVersion(180e3));
+  setInterval(() => revisarVersion(15 * 60e3 - 5000), 60e3);
   // Aviso discreto: hay una versión publicada más reciente que la que está abierta
   function avisoVersion() {
     if ($(".aviso-version")) return;
@@ -4590,6 +4641,7 @@
     prepararPos();
     enrutar();
     setTimeout(actualizarCopia, 8000);
+    setTimeout(() => revisarVersion(0), 5000);
     setTimeout(() => { MET = meteoros($(".meteoros")); window.__biexMet = MET; }, 1500); // __biexMet: para las pruebas
   }).catch((er) => { console.error(er); vista().replaceChildren(fallo("No se pudo cargar el avance.")); });
 })();

@@ -559,6 +559,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .aviso-flot.si { opacity: 1; }
 .aviso-version { position: fixed; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 24px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 79; display: flex; align-items: center; gap: 10px; padding: 5px 5px 5px 16px; border-radius: 999px; font-family: var(--f-ui); font-size: .86rem; color: var(--tinta); background: color-mix(in srgb, var(--hoja-2) 80%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); border: 1px solid color-mix(in srgb, var(--oro) 34%, transparent); box-shadow: var(--sombra); opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; }
 .aviso-version.si { opacity: 1; transform: none; }
+html.jg-con-muelle .aviso-version { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .aviso-version .av-si { font: inherit; font-weight: 500; color: var(--sobre-oro); background: var(--oro); border: 0; border-radius: 999px; padding: 7px 15px; min-height: 34px; cursor: pointer; }
 .aviso-version .av-no { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--tenue); cursor: pointer; }
 .aviso-version .av-no svg { width: 16px; height: 16px; }
@@ -608,7 +609,7 @@ html:not(.ed) .ley-ed { opacity: .45; }
 .orden-libros .rotulo { margin: 0; }
 .orden-nota { flex: 1 1 260px; margin: 0; }
 .seg-orden button:disabled { opacity: .4; cursor: default; }
-.grupo-libros > h3 small { font-family: var(--f-ui); letter-spacing: .08em; text-transform: none; color: var(--tenue); font-size: .78rem; font-weight: 400; }
+.grupo-libros > h3 small { font-family: var(--f-ui); letter-spacing: .08em; text-transform: none; color: var(--tenue); font-size: .78rem; font-weight: 400; white-space: nowrap; flex: none; margin-left: auto; } /* la fecha no se parte en dos renglones (10-nov-2026) */
 .tlibro .fecha { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font-family: var(--f-ui); font-size: .74rem; color: var(--tinta-2); margin-top: 6px; letter-spacing: .02em; }
 .tlibro .fecha svg { width: 15px; height: 15px; color: var(--oro); flex: none; }
 .tira-tiempo { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 18px 20px; margin: 4px 0 34px; border: 1px solid var(--linea); border-radius: var(--radio); background: linear-gradient(90deg, var(--oro-suave), transparent 70%), var(--hoja); text-decoration: none; color: var(--tinta); }
@@ -742,7 +743,8 @@ button.ms-w { border: 0; background: none; font: inherit; color: inherit; cursor
 .mt-s { font-family: var(--f-griego); font-size: 1.35rem; color: var(--oro); text-align: center; }
 .mt-n { display: grid; min-width: 0; }
 .mt-n b { font-weight: 500; }
-.mt-n small { font-family: var(--f-ui); font-size: .72rem; color: var(--tenue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* la línea del siglo y el lugar se ve entera, en dos renglones si hace falta (BiEx, 10-nov-2026) */
+.mt-n small { font-family: var(--f-ui); font-size: .72rem; line-height: 1.4; color: var(--tenue); overflow-wrap: anywhere; }
 .mt-c { position: relative; height: 18px; border-radius: 999px; background: var(--hoja-3); overflow: hidden; }
 .mt-c i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--oro-2), var(--oro)); }
 .mt-c em { position: relative; display: block; text-align: center; font-family: var(--f-ui); font-style: normal; font-size: .7rem; line-height: 18px; color: var(--tinta); }
@@ -997,6 +999,8 @@ html[data-mov="no"] .g-marco * { animation: none !important; transition: none !i
   .filtro-niv select, .filtro-niv .mm-btn { max-width: 132px; }
 }
 .np { text-transform: none !important; }
+/* signos combinados bien apilados en cualquier rótulo (BiEx, 10-nov-2026) */
+.np.cm { font-family: var(--f-texto) !important; letter-spacing: .02em !important; font-style: normal; }
 :is(.mayus, .eyebrow, .rotulo, .m-cab .m-tit b, .btn, .tl-ref, .rv-ref, .codice-cab .ref, .panorama-pie, .grupo-libros > h3, .tarjeta h2, .bloque h4, .encab .s, .navcap .lbl, .fp-tr small, .mv-tipo, .tl-k, .seg button, .nav a, .herr span, .herr-ir, .g-num, .tt-ir, .cifras span, .mini-cifras div, .tlibro .es, .banda-tit .es, .pista, .btn-cap, .ap-fila > h4, .bq-g > h3, .bq-grupo-ej h4, .fv-t small, .tl-dec, .gf-burbuja small, .go-chips span, .gc-modo, .gb-r small) .np { letter-spacing: .03em; font-family: var(--f-texto); font-size: 1.12em; }
 html.ed .tm .gr, html.ed .tm [lang="grc"].gr { color: var(--oro-vivo); text-decoration: underline dotted rgba(232, 207, 148, .55); text-underline-offset: 3px; }
 html[data-theme="light"].ed .tm .gr { color: var(--oro); }
@@ -1910,3 +1914,10 @@ html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; over
 .nota-obra .btn{flex:none}
 @media (max-width:520px){.nota-obra{flex-direction:column;align-items:stretch}.nota-obra .btn{align-self:flex-end}}
 .ap-acc{margin-top:12px}
+/* Instalar en un toque (10-nov-2026) */
+.chip-instalar { position: fixed; left: 50%; top: calc(76px + env(safe-area-inset-top, 0px)); z-index: 78; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--hoja) 88%, transparent); border: 1px solid color-mix(in srgb, var(--oro) 55%, transparent); box-shadow: 0 12px 30px -14px rgba(0,0,0,.8); opacity: 0; transform: translate3d(-50%, -8px, 0); transition: opacity .35s, transform .35s; }
+.chip-instalar.si { opacity: 1; transform: translate3d(-50%, 0, 0); }
+.chip-instalar button { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; font: 600 .86rem/1 var(--f-ui); letter-spacing: .04em; color: var(--sobre-oro, #16120b); background: var(--oro-vivo, #e8cf94); }
+.chip-instalar button svg { width: 18px; height: 18px; }
+.chip-instalar .ci-no { background: transparent; color: var(--tinta-2); padding: 0 12px; font-size: 1.1rem; }
+@media (prefers-reduced-motion: reduce) { .chip-instalar { transition: none; } }

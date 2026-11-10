@@ -142,13 +142,18 @@
     "@media (prefers-reduced-motion:reduce){.pu-l,.pu-ch,.pu-tx{animation:none}.pu-ch{opacity:.6}}" +
     "</style>" +
     '<div class="esc" role="dialog" aria-modal="true" aria-label="' + CFG_BASE.textos.aria + '">' +
-    '<canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
+    '<canvas class="cfondo" aria-hidden="true"></canvas><canvas aria-hidden="true"></canvas><p class="sr" aria-live="polite"></p>' +
     '<div class="puerta" hidden><div class="pu-in"><span class="pu-sello">BiEx</span><span class="pu-tit">BIBLIA EXACTA</span>' +
     '<button class="pu-btn" type="button"><span class="pu-tx">' + CFG_BASE.textos.entrar + '</span></button>' +
     '<span class="pu-nota">' + ICO_SON + '<span>' + CFG_BASE.textos.nota + '</span></span></div></div>' +
     '<div class="ui"><button class="sal" type="button" title="' + CFG_BASE.textos.saltarTitulo + '"><span>' + CFG_BASE.textos.saltar + '</span>' + ICO_SALTAR + "</button></div>" +
     '<div class="prog"></div></div>';
-  const esc = raiz.querySelector(".esc"), cv = raiz.querySelector("canvas"), cx = cv.getContext("2d");
+  // Dos lienzos (10-nov-2026, la idea de las luces del lector llevada a la apertura): el fondo, que no cambia, se pinta una
+  // sola vez en su propio lienzo (el compositor lo mantiene sin volver a dibujarlo); el de encima solo se limpia y dibuja lo
+  // que se mueve. Al abrirse el iris, el fondo pasa al lienzo de encima y el círculo se recorta ahí mismo
+  // (destination-out), en vez de una máscara CSS que obligaba a volver a componer toda la capa en cada cuadro.
+  const esc = raiz.querySelector(".esc"), cv = raiz.querySelector("canvas:not(.cfondo)"), cx = cv.getContext("2d"), cvf = raiz.querySelector("canvas.cfondo");
+  let enApertura = false;
   const ui = raiz.querySelector(".ui"), btnSal = raiz.querySelector(".sal"), prog = raiz.querySelector(".prog"), sr = raiz.querySelector(".sr");
   const puerta = raiz.querySelector(".puerta"), btnPuerta = raiz.querySelector(".pu-btn");
   // Bloqueo del desplazamiento de la página mientras está la presentación (rueda, teclado, tacto y la barra de la derecha)
@@ -400,7 +405,7 @@
   // ------------------------------------------------------------------ fondo
   let fondo = null;
   function pintarFondo() {
-    fondo = document.createElement("canvas"); fondo.width = cv.width; fondo.height = cv.height;
+    fondo = cvf; fondo.width = cv.width; fondo.height = cv.height; fondo.style.visibility = "";
     const g = fondo.getContext("2d"), R = Math.hypot(W, H) * 0.62;
     g.scale(DPR, DPR);
     const gr = g.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.5, R);
@@ -824,6 +829,18 @@
     host.remove();
     try { window.dispatchEvent(new CustomEvent("biex:intro-fin")); } catch (e) { /* nada */ }
   }
+  function recortar(p, cxm, cym) {
+    cx.save(); cx.globalCompositeOperation = "destination-out"; cx.globalAlpha = 1;
+    if (APERTURA === "iris") {
+      const R = Math.hypot(W, H) * 0.55 * curva(p) * 1.15, b = Math.max(30, Math.min(W, H) * 0.12), r0 = Math.max(0, R - b);
+      if (R > 1) { const g = cx.createRadialGradient(cxm, cym, r0, cxm, cym, R + 1); g.addColorStop(0, "#000"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = g; cx.beginPath(); cx.arc(cxm, cym, R + 1, 0, 6.2832); cx.fill(); }
+    } else {
+      const a = (W / 2) * curva(p) * 1.12, b = Math.max(24, W * 0.06);
+      if (a >= b) { const x0 = W / 2 - a - 1, x1 = W / 2 + a + 1, g = cx.createLinearGradient(x0, 0, x1, 0), k = Math.min(0.49, (b + 1) / (x1 - x0));
+        g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(k, "#000"); g.addColorStop(1 - k, "#000"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.fillStyle = g; cx.fillRect(x0, 0, x1 - x0, H); }
+    }
+    cx.restore();
+  }
   function mascara(p) {
     const w = host.clientWidth, hh = host.clientHeight;
     let m = "";
@@ -856,11 +873,13 @@
     const p = PLAN, cxm = W / 2, cym = H / 2;
     cx.setTransform(DPR, 0, 0, DPR, 0, 0);
     cx.globalAlpha = 1; cx.globalCompositeOperation = "source-over";
-    cx.drawImage(fondo, 0, 0, W, H);
     // tiempo de apertura (natural o adelantada al saltar)
     let ab = abrirDesde ? tramo(T, abrirDesde.T, abrirDesde.T + abrirDesde.dur) : tramo(T, p.abrir, p.fin);
     if (!abrirDesde && T >= p.abrir && !fin) { fin = true; ui.classList.add("f"); host.style.pointerEvents = "none"; if (sonando && SON) setTimeout(() => SON && SON.callar(2.4), 900); }
-    if (ab > 0) mascara(ab);
+    const recorte = ab > 0 && MODO !== "quieta" && (APERTURA === "iris" || APERTURA === "puerta");
+    if (recorte && !enApertura) { enApertura = true; esc.style.background = "transparent"; cvf.style.visibility = "hidden"; }
+    if (enApertura) cx.drawImage(fondo, 0, 0, W, H); else cx.clearRect(0, 0, W, H);
+    if (ab > 0 && !recorte) mascara(ab);
     if (ab >= 1) { cerrarTodo(); return; }
     prog.style.transform = "scaleX(" + Math.min(1, T / p.abrir).toFixed(4) + ")";
 
@@ -1018,6 +1037,8 @@
       ponerSprite(M.lema, cxm - M.lema.w / 2, M.y + M.fm * 0.36 + M.lema.asc + M.fm * 0.32 + (1 - salida(le)) * 8, le);
     }
     cx.globalAlpha = 1;
+    // la apertura se recorta en el mismo lienzo (sin máscara CSS)
+    if (recorte) recortar(ab, cxm, cym);
     // borde de luz de la apertura
     if (ab > 0 && ab < 1 && APERTURA === "iris" && MODO !== "quieta") {
       const R = Math.hypot(W, H) * 0.55 * curva(ab) * 1.15;
