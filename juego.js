@@ -1259,7 +1259,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("div", { class: "jg-tesoros" },
         h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
-      y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se sortea en el servidor" },
+      y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se decide aleatoriamente en el servidor" },
         h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + "\u00a0%" })),
         h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(1) + "%" })),
         h("p", { class: "jg-mini", text: "Estimación: sube con cada piedra que hallas y vuelve a empezar al conseguir un lauro." })) : null,
@@ -1540,10 +1540,10 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
   }
   // Rollos de colección (lo acordado en la propuesta del juego: «La Designación»; BiEx, 10-nov-2026: con firma criptográfica).
-  // No es un premio para las Primicias: cada 2 meses se entregan dos Rollos por un sorteo que cualquiera puede comprobar.
+  // No es un premio para las Primicias: cada 2 meses se entregan dos Rollos, asignados aleatoriamente con un método que cualquiera puede comprobar.
   function tarjetaColeccion(y) {
     return h("div", { class: "jg-coleccion" }, h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>')),
-      h("p", {}, h("b", { text: "Rollos de colección. " }), "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna con un sorteo que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre)."));
+      h("p", {}, h("b", { text: "Rollos de colección. " }), "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre)."));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
