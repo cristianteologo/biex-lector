@@ -105,7 +105,8 @@
     llave: "No se pudo comprobar la llave de acceso.", llave_desconocida: "Esa llave de acceso no corresponde a ningún perfil de Escudriña.", llave_usada: "Esa llave ya está en tu perfil.",
     llaves_max: "Ya tienes 10 llaves de acceso.", ya_vinculada: "Esa cuenta ya está vinculada a otro perfil.", sin_google: "La entrada con Google todavía no está activa.", sin_facebook: "La entrada con Facebook todavía no está activa.",
     ya_en_compania: "Ya estás en una compañía: para unirte a otra, primero sal de la tuya.", nombre_usado: "Ese nombre ya lo tiene otra compañía.", compania: "Ese código de compañía no existe.",
-    compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas." };
+    compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.",
+    apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
   const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien. Vuelve a intentarlo.";
 
   function guardarSesion(token, yo) {
@@ -145,7 +146,7 @@
   async function config() {
     if (S.cfg && !S.cfg.sinServidor) return S.cfg;
     const c = await pedir("/config", { sin: true, guardable: true });
-    S.cfg = c.error ? { sinServidor: true, error: c.error, msPalabra: 250, msMin: 1000 } : c;
+    S.cfg = c.error ? { sinServidor: true, error: c.error, msPalabra: 450, msMin: 2500, msAuto: 3000, msAutoMin: 6000 } : c;
     return S.cfg;
   }
   const dispositivo = () => { let d = A.store.get("jg:disp", null); if (!d || typeof d !== "string") { d = b64u(crypto.getRandomValues(new Uint8Array(16))); A.store.set("jg:disp", d); } return d; };
@@ -469,6 +470,7 @@
 .jg-arbol{display:block;width:100%;height:auto;overflow:visible}
 .jg-arbol-vivo{position:relative;overflow:hidden;border-radius:16px;touch-action:pan-y;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 9%,transparent),transparent)}
 .jg-arbol-mov{transform-origin:50% 50%;will-change:transform}
+.jg-arbol-ctl button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .jg-arbol-vivo.cerca{cursor:grab}
 .jg-arbol-luz{position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--oro-vivo) 45%,transparent),transparent 70%);pointer-events:none}
 .jg-arbol-pulso{position:absolute;left:0;top:0;width:100%;aspect-ratio:1;border-radius:50%;border:2px solid color-mix(in srgb,var(--oro-vivo) 70%,transparent);opacity:0;pointer-events:none}
@@ -528,7 +530,7 @@
 .jg-atajo small{font:400 .76rem/1.35 var(--f-ui);color:var(--tenue)}
 @media (min-width:720px){.jg-atajos{grid-template-columns:repeat(4,1fr)}}
 /* menú del juego: cinco secciones siempre a la mano */
-.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
+.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(6,1fr);padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
 @keyframes jg-sube-muelle{from{opacity:0;transform:translate3d(-50%,26px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
 .jg-muelle a{position:relative;z-index:1;display:grid;justify-items:center;gap:4px;padding:8px 2px 7px;border-radius:16px;color:var(--tenue);text-decoration:none;font:500 .68rem/1 var(--f-ui);letter-spacing:.04em;-webkit-tap-highlight-color:transparent;transition:color .2s}
 .jg-muelle a svg{width:24px;height:24px;transition:transform .32s cubic-bezier(.3,1.6,.5,1)}
@@ -536,12 +538,29 @@
 .jg-muelle a.act svg{transform:translate3d(0,-2px,0) scale(1.14)}
 .jg-muelle a:active svg{transform:scale(.88)}
 .jg-muelle a:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:-2px}
-.jg-muelle .luz{position:absolute;z-index:0;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/5);border-radius:16px;background:radial-gradient(120% 100% at 50% 0%,color-mix(in srgb,var(--oro) 36%,transparent),color-mix(in srgb,var(--oro) 10%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);transform:translate3d(calc(var(--i,0)*100%),0,0);transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
+.jg-muelle .luz{position:absolute;z-index:0;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/6);border-radius:16px;background:radial-gradient(120% 100% at 50% 0%,color-mix(in srgb,var(--oro) 36%,transparent),color-mix(in srgb,var(--oro) 10%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);transform:translate3d(calc(var(--i,0)*100%),0,0);transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
 .jg-muelle a[data-n]::after{content:attr(data-n);position:absolute;top:3px;left:calc(50% + 7px);min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--oro);color:var(--sobre-oro,#16120b);font:600 .62rem/16px var(--f-ui);text-align:center}
 html.con-modal .jg-muelle{opacity:0;pointer-events:none}
 html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:7px 12px;font-size:.84rem}
+html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+.jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+.jg-ayuda{display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);text-decoration:none;font:500 .78rem/1 var(--f-ui);letter-spacing:.03em;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.jg-ayuda svg{width:16px;height:16px}
+.jg-ayuda:active{transform:scale(.96)}
+.jg-sello{display:flex;justify-content:flex-end;margin:2px 0 12px;pointer-events:none}
+.continuo .jg-sello{margin:-2px 0 16px}
+.jg-sello button{pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:6px 8px 6px 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 22%,transparent);background:transparent;color:var(--tenue);font:500 .74rem/1 var(--f-ui);letter-spacing:.05em;opacity:.6;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:opacity .35s,color .35s,border-color .35s,box-shadow .35s,background-color .35s}
+.jg-sello .ok{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid currentColor;font-size:.72rem;line-height:1}
+.jg-sello.listo button{opacity:1;color:var(--oro-vivo);border-color:color-mix(in srgb,var(--oro) 62%,transparent);background:color-mix(in srgb,var(--oro) 7%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 9%,transparent),0 8px 20px -12px color-mix(in srgb,var(--oro) 80%,transparent)}
+.jg-sello.listo .ok{background:var(--oro);color:var(--sobre-oro,#16120b);border-color:var(--oro)}
+.jg-sello.hecho button{opacity:.78;color:var(--oro);border-color:transparent}
+.jg-sello.hecho .ok{background:color-mix(in srgb,var(--oro) 24%,transparent);border-color:transparent}
+.jg-sello button:active{transform:scale(.96)}
+.jg-sello button:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+@media print{.jg-sello{display:none}}
 @media print{.jg-muelle{display:none}}
 /* la llave de acceso (código recién creado) */
 .jg-llave{overflow:hidden;text-align:center;justify-items:center;border-color:color-mix(in srgb,var(--oro) 62%,transparent);background:radial-gradient(110% 70% at 50% 0%,color-mix(in srgb,var(--oro) 22%,transparent),transparent 64%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 82%,transparent),var(--hoja))}
@@ -630,21 +649,48 @@ html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0p
 @media (prefers-reduced-motion:reduce){.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
 html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
 /* medidor de avance mientras se lee: nivel y aro que se llena con cada verso validado */
-.jg-med{position:fixed;z-index:61;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box;min-width:46px;height:46px;border-radius:23px;display:grid;place-items:center;text-decoration:none;color:var(--oro-vivo);background:color-mix(in srgb,var(--hoja) 88%,transparent);box-shadow:0 8px 22px -10px rgba(0,0,0,.85);-webkit-tap-highlight-color:transparent;transition:opacity .3s}
-.jg-med .aro{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--oro-vivo) var(--p,0%),color-mix(in srgb,var(--oro) 24%,transparent) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3.2px),#000 calc(100% - 2.6px));mask:radial-gradient(farthest-side,transparent calc(100% - 3.2px),#000 calc(100% - 2.6px))}
-.jg-med::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:2px solid var(--oro-vivo);opacity:0;pointer-events:none}
-.jg-med.pulso::after{animation:jg-med-p .7s ease-out}
-@keyframes jg-med-p{0%{opacity:.85}100%{opacity:0}}
-.jg-med b{position:relative;font:600 1.05rem/1 var(--f-ui);font-variant-numeric:tabular-nums}
-.jg-med i{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translate3d(-50%,0,0);font:600 .82rem/1 var(--f-ui);font-style:normal;color:var(--oro-vivo);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:58px;height:68px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 8px 12px rgba(0,0,0,.62));--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
+.jg-med[data-r="0"]{--m1:#f6d2ad;--m2:#bd844c;--m3:#5a381a;--mg:rgba(189,132,76,.5)}
+.jg-med[data-r="1"]{--m1:#f5f7fb;--m2:#b6bfcc;--m3:#535b67;--mg:rgba(182,191,204,.5)}
+.jg-med[data-r="3"]{--m1:#e6fbea;--m2:#56c48c;--m3:#1b5539;--mg:rgba(86,196,140,.5)}
+.jg-med[data-r="4"]{--m1:#fff7d8;--m2:#f5c64e;--m3:#99560f;--mg:rgba(245,198,78,.72)}
+.jg-med svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.jg-med .arco{transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
+.jg-med .barrido{animation:jg-med-barrido 9s ease-in-out infinite}
+@keyframes jg-med-barrido{0%,62%{transform:translate3d(0,0,0)}100%{transform:translate3d(96px,0,0)}}
+.jg-med .nvk{position:absolute;left:0;right:0;top:22px;text-align:center;font:600 .42rem/1 var(--f-ui);letter-spacing:.16em;text-indent:.16em;color:var(--m2);pointer-events:none}
+.jg-med b{position:absolute;left:0;right:0;top:29px;text-align:center;font:600 1.36rem/1 var(--f-display,serif);font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 10px var(--mg),0 1px 0 rgba(0,0,0,.7);pointer-events:none}
+.jg-med.dos b{font-size:1.14rem;top:31px}
+.jg-med.tres b{font-size:.94rem;top:33px}
+.jg-med i{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translate3d(-50%,0,0);font:600 .84rem/1 var(--f-ui);font-style:normal;color:var(--m1);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 0 8px var(--mg),0 1px 6px rgba(0,0,0,.95)}
+.jg-med.pulso{animation:jg-med-p .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes jg-med-p{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
 .jg-med.pulso i{animation:jg-med-mas 1.4s ease-out both}
 @keyframes jg-med-mas{0%{opacity:0;transform:translate3d(-50%,6px,0)}18%{opacity:1;transform:translate3d(-50%,-3px,0)}75%{opacity:1}100%{opacity:0;transform:translate3d(-50%,-16px,0)}}
-.jg-med .hito{display:none;font:600 .98rem/1 var(--f-ui);letter-spacing:.04em;white-space:nowrap}
-.jg-med.sube{padding:0 18px;background:linear-gradient(180deg,var(--oro-vivo),var(--oro));color:var(--sobre-oro,#16120b);box-shadow:0 0 0 6px color-mix(in srgb,var(--oro) 24%,transparent),0 10px 30px -8px rgba(0,0,0,.85);animation:jg-entra .4s both}
-.jg-med.sube .aro,.jg-med.sube b,.jg-med.sube i{display:none}
-.jg-med.sube .hito{display:inline}
+.jg-med .rayos{position:absolute;left:50%;top:52%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:repeating-conic-gradient(from 0deg,var(--mg) 0 5deg,transparent 5deg 20deg);-webkit-mask:radial-gradient(circle,transparent 17%,#000 30%,transparent 70%);mask:radial-gradient(circle,transparent 17%,#000 30%,transparent 70%);opacity:0;pointer-events:none;transform:scale(.5)}
+.jg-med.sube .rayos{animation:jg-med-rayos 2.6s ease-out both}
+@keyframes jg-med-rayos{0%{opacity:0;transform:scale(.4) rotate(0deg)}18%{opacity:1}100%{opacity:0;transform:scale(1.4) rotate(48deg)}}
+.jg-med .hito{position:absolute;left:calc(100% + 6px);top:50%;display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:999px;background:linear-gradient(180deg,var(--m1),var(--m2));color:#16120b;font:600 1rem/1 var(--f-display,serif);letter-spacing:.05em;white-space:nowrap;opacity:0;pointer-events:none;transform:translate3d(-8px,-50%,0);box-shadow:0 0 0 4px color-mix(in srgb,var(--m2) 26%,transparent),0 10px 26px -10px rgba(0,0,0,.9)}
+.jg-med.sube .hito{animation:jg-med-hito 4.2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes jg-med-hito{0%{opacity:0;transform:translate3d(-12px,-50%,0) scale(.9)}10%{opacity:1;transform:translate3d(0,-50%,0) scale(1)}86%{opacity:1;transform:translate3d(0,-50%,0)}100%{opacity:0;transform:translate3d(6px,-50%,0)}}
+.jg-med:active{transform:scale(.94)}
+.jg-bonos{position:absolute;left:calc(100% + 5px);bottom:3px;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:4px;pointer-events:none}
+.jg-bono{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;font:600 .66rem/1 var(--f-ui);letter-spacing:.02em;white-space:nowrap;color:var(--m1);background:linear-gradient(180deg,color-mix(in srgb,var(--m2) 34%,#0b0906),color-mix(in srgb,var(--m3) 40%,#070504));border:1px solid color-mix(in srgb,var(--m2) 55%,transparent);box-shadow:0 4px 10px -6px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
+.jg-bono.b-dob{color:#fff3c4;border-color:rgba(245,198,78,.75);box-shadow:0 0 10px -2px rgba(245,198,78,.55),inset 0 1px 0 rgba(255,255,255,.18)}
+.jg-bono.b-imp{color:#ffe1b0;border-color:rgba(255,170,80,.7)}
+.jg-bono.b-sala{color:#d6f5e2;border-color:rgba(110,205,150,.7)}
+.jg-med.sube .jg-bonos{opacity:0}
+.jg-emb{position:relative}
+.jg-lapiz{position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,var(--oro-vivo),var(--oro));color:var(--sobre-oro,#16120b);box-shadow:0 0 0 2px var(--hoja),0 4px 10px -4px rgba(0,0,0,.8);pointer-events:none}
+.jg-lapiz svg{width:13px;height:13px}
+.jg-lauro-p{margin-top:10px;display:grid;gap:6px}
+.jg-lauro-p-t{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font:500 .86rem/1.3 var(--f-ui)}
+.jg-lauro-p-t b{color:var(--oro-vivo);font-weight:600;font-variant-numeric:tabular-nums}
+.jg-med:focus-visible{outline:2px solid var(--m1);outline-offset:3px;border-radius:12px}
+@media (prefers-reduced-motion:reduce){.jg-med .barrido,.jg-med.sube .rayos,.jg-med.pulso{animation:none}.jg-med .arco{transition:none}}
+html[data-mov="no"] .jg-med .barrido,html[data-mov="no"] .jg-med.sube .rayos,html[data-mov="no"] .jg-med.pulso{animation:none}
 html.con-modal .jg-med{opacity:0;pointer-events:none}
-html.jg-con-med .adelante{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+html.jg-con-med .adelante{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 .jg-rota{display:inline-block}
 @media print{.jg-med{display:none}}
 @media (prefers-reduced-motion:reduce){.jg-med.pulso::after,.jg-med.pulso i,.jg-med.sube{animation:none!important}}
@@ -947,7 +993,8 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     if (y.imp && y.imp.ms > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Impulso ×" + String(y.imp.f).replace(".", ",") + " · " + horas(y.imp.ms) + " de lectura" }));
     if (y.enTope) chips.push(h("span", { class: "jg-chip tenue", title: "Cada mes se abren de 2 a 7 niveles nuevos", text: "Nivel tope del mes · reserva " + fmt(y.reserva) }));
     const t = tarjeta(null, null, h("div", { class: "jg-perfil" },
-      h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Tu emblema: cambiarlo en Cuenta" }, emblema(l, c, marcoVisible(y))),
+      h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Editar tu emblema y tu apodo", title: "Editar" }, emblema(l, c, marcoVisible(y)),
+        h("span", { class: "jg-lapiz", "aria-hidden": "true" }, A.svg('<path d="M4 20l1.2-4.6L15.8 4.8a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M13.6 7l3.4 3.4" fill="none" stroke="currentColor" stroke-width="1.9"/>'))),
       h("div", {}, h("p", { class: "jg-nombre", text: y.apodo }), h("div", { class: "jg-rango", text: y.rangoNombre + " · nivel " + y.nivel }), chips.length ? h("div", { class: "jg-chips" }, chips) : null),
       h("div", { class: "jg-nv", title: "Tu nivel" }, h("b", { text: String(y.nivel) }), h("small", { text: "nivel" }))),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
@@ -968,7 +1015,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("div", {}, h("div", { class: "jg-pr", text: "+" + m.xp }), h("div", { class: "jg-pr", style: "opacity:.75", text: "+" + m.dr + " dr." }),
         !m.hecha && !y.cambio && i > 0 ? h("button", { class: "jg-cambiar", type: "button", onclick: () => cambiarMision(i) }, "Cambiar") : null))));
     return tarjeta("Misiones de hoy", ico("marca"), lista,
-      h("p", { class: "jg-mini", text: y.completo ? "¡Cumpliste todas las misiones de hoy! Mañana habrá otras." : "Todas a tu ritmo. Al cumplirlas todas ganas 50 de experiencia y 10 dracmas más." + (y.cambio ? "" : " Puedes cambiar una misión por día.") }));
+      h("p", { class: "jg-mini", text: y.completo ? "¡Cumpliste todas las misiones de hoy! Mañana habrá otras." : "Todas a tu ritmo. Al cumplirlas todas ganas 500 de experiencia y 10 dracmas más." + (y.cambio ? "" : " Puedes cambiar una misión por día.") }));
   }
   async function cambiarMision(i) {
     const r = await pedir("/mision/cambiar", { metodo: "POST", cuerpo: { i } });
@@ -992,6 +1039,10 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("div", { class: "jg-tesoros" },
         h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
+      y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se sortea en el servidor" },
+        h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈ " + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + " %" })),
+        h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(1) + "%" })),
+        h("p", { class: "jg-mini", text: "Estimación: sube con cada piedra que hallas y vuelve a empezar al conseguir un lauro." })) : null,
       h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
   }
   function verPiedra(i, veces) {
@@ -1021,6 +1072,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const y = S.yo;
     if (!y) { marco(cont, cabecera(), h("p", { class: "cargando", text: "Abriendo tu avance…" })); }
     else dibujarPanel(cont, y);
+    if (R.cola.length && S.token && !R.enviando) await enviar(false);
     const r = await pedir("/yo");
     if (r.error) { if (!y && S.token) marco(cont, cabecera(), tarjeta(null, null, h("p", { text: mensaje(r) }), h("button", { class: "btn", type: "button", onclick: repintar }, h("span", { text: "Reintentar" })))); return; }
     const igual = y && JSON.stringify(y) === JSON.stringify(r.yo);
@@ -1031,12 +1083,13 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   // ================================================================== menú del juego y secciones (BiEx, 9-nov-2026)
   // «Que la distribución tenga sus propios botones, como los menús de los juegos»: cinco secciones fijas, siempre a la mano.
   // El menú vive fuera de la vista (no parpadea al repintar) y se retira al salir de Escudriña.
-  const SECC = [["hoy", "Hoy", "hoy"], ["tesoro", "Tesoro", "liga"], ["mundo", "Mundo", "mundo"], ["juntos", "Juntos", "compania"], ["mas", "Más", "mas"]];
-  const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "juntos",
-    mas: "mas", cuenta: "mas", propuestas: "mas", guia: "mas" };
+  // El Árbol de la siembra con su propio botón en el menú (BiEx, 10-nov-2026)
+  const SECC = [["hoy", "Hoy", "hoy"], ["tesoro", "Tesoro", "liga"], ["mundo", "Mundo", "mundo"], ["juntos", "Juntos", "compania"], ["arbol", "Árbol", "arbol"], ["mas", "Más", "mas"]];
+  const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "arbol",
+    mas: "mas", cuenta: "mas", propuestas: "mas", guia: "hoy" };
   const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
   const TIT = { hoy: ["Hoy", "Tu lectura y tus misiones"], tesoro: ["Tesoro", "Lo que has hallado leyendo"], mundo: ["Mundo", "Liga, misión mundial y clasificaciones"],
-    juntos: ["Juntos", "Compañía, salas y tu siembra"], mas: ["Más", "Cómo se juega, tu cuenta y tus ideas"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
+    juntos: ["Juntos", "Tu compañía y las salas de lectura"], mas: ["Más", "Tu cuenta, tu avance y tus ideas"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
   let MU = null;
   function muelle(sec) {
     const raiz = document.documentElement;
@@ -1051,11 +1104,14 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     for (const a of MU.querySelectorAll("a")) { const on = a.getAttribute("data-s") === sec; a.classList.toggle("act", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
     const y = S.yo, faltan = y && Array.isArray(y.mis) ? y.mis.filter((m) => !m.hecha).length : 0, hoy = MU.querySelector('a[data-s="hoy"]');
     if (hoy) { if (faltan) hoy.setAttribute("data-n", String(faltan)); else hoy.removeAttribute("data-n"); }
+    const mas = MU.querySelector('a[data-s="mas"]');
+    if (mas) { if (y && !y.asegurado) { mas.setAttribute("data-n", "!"); mas.title = "Asegura tu avance"; } else { mas.removeAttribute("data-n"); mas.removeAttribute("title"); } }
   }
   window.addEventListener("hashchange", () => { if (!/^#\/escudrina(\/|$)/.test(location.hash)) muelle(null); });
   function cabeceraJuego(sec) {
     const t = TIT[sec] || TIT.hoy;
-    return h("div", { class: "panel-cab jg-cab2" }, h("div", {}, h("small", { text: "Escudriña · El Códice Viviente" }), h("h1", { class: "texto", text: t[0] })), h("p", { class: "jg-mini", text: t[1] }));
+    const ayuda = sec === "hoy" ? h("a", { class: "jg-ayuda", href: "#/escudrina/guia", title: "Cómo se juega", "aria-label": "Cómo se juega: paso a paso y a tu ritmo", onclick: () => { S.guiaPaso = 0; vibrar(8); } }, ico("jugar"), h("span", { text: "Cómo se juega" })) : null;
+    return h("div", { class: "panel-cab jg-cab2" }, h("div", {}, h("small", { text: "Escudriña · El Códice Viviente" }), h("h1", { class: "texto", text: t[0] })), h("div", { class: "jg-cab-d" }, h("p", { class: "jg-mini", text: t[1] }), ayuda));
   }
   function tarjetaPotencias(y) {
     const extra = [];
@@ -1073,30 +1129,26 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
           h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea());
   }
-  const tarjetaComoSeJuega = () => tarjeta("Cómo se juega", ico("jugar"),
-    h("p", { text: "Una presentación breve, paso a paso y a tu ritmo: leer, misiones, hallazgos, perseverancia, leer en compañía y tu siembra." }),
-    h("div", { class: "jg-acciones" }, h("a", { class: "btn oro", href: "#/escudrina/guia", onclick: () => { S.guiaPaso = 0; } }, ico("jugar"), h("span", { text: "Ver cómo se juega" }))));
   function dibujarPanel(cont, y) {
     const sec = SECC_DE[S.sub[0] || ""] || "hoy";
-    const atajo = (href, ic, t, d) => h("a", { class: "jg-atajo", href, onclick: () => vibrar(8) }, ico(ic), h("b", { text: t }), h("small", { text: d }));
+    const pend = (() => {
+      const n = pendientes().reduce((a, x) => a + x[1].length, 0); if (!n) return null;
+      return h("div", { class: "jg-aviso" }, h("b", { text: "Lectura por confirmar. " }), "Leíste " + plural(n, "verso", "versos") + " que aún no confirmas con «Leí hasta aquí ✓». ",
+        h("button", { class: "btn chico oro", type: "button", onclick: (e) => { const k = confirmarTodo(); A.avisar(k ? "Confirmado: " + plural(k, "verso", "versos") : "Nada por confirmar"); const a = e.currentTarget.closest(".jg-aviso"); if (a) a.remove(); } }, h("span", { text: "Confirmar" })));
+    })();
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
     if (sec === "tesoro") partes = [tarjetaHallazgos(y), tarjetaPotencias(y)];
     else if (sec === "mundo") partes = [h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
-    else if (sec === "juntos") partes = [salaInv, h("div", { class: "jg-dos" }, tarjetaCompania(y), tarjetaSala(y)), tarjetaCampana(y), tarjetaSiembra(y)];
-    else if (sec === "mas") partes = [tarjetaComoSeJuega(), y.asegurado ? null : tarjetaAsegurar(false),
+    else if (sec === "juntos") partes = [salaInv, h("div", { class: "jg-dos" }, tarjetaCompania(y), tarjetaSala(y)), tarjetaCampana(y)];
+    else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
-    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(),
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
-      salaInv, y.asegurado ? null : tarjetaAsegurar(false),
-      h("nav", { class: "jg-atajos", "aria-label": "Más de Escudriña" },
-        atajo("#/escudrina/tesoro", "liga", "Tesoro", "Tus piedras, lauros y dracmas"),
-        atajo("#/escudrina/mundo", "mundo", "Mundo", "Liga, misión mundial y clasificación"),
-        atajo("#/escudrina/juntos", "compania", "Juntos", "Compañía, salas y tu siembra"),
-        atajo("#/escudrina/guia", "jugar", "Cómo se juega", "En un minuto, paso a paso")),
+      salaInv,
       y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
         "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null];
     marco(cont, cabeceraJuego(sec), ...partes);
@@ -1191,14 +1243,24 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   function tarjetaApodo(provisional) {
     const entrada = h("input", { type: "text", maxlength: "20", value: provisional ? "" : (S.yo && S.yo.apodo) || "", placeholder: "Tu apodo (3 a 20 letras)", "aria-label": "Tu apodo", spellcheck: "false" });
     const pista = h("p", { class: "jg-pista", role: "status" });
+    // BiEx (10-nov-2026): el apodo se cambia una vez cada 3 semanas y cuesta dracmas (el primero, el del invitado, es gratis)
+    const ac = (!provisional && S.yo && S.yo.apodoCambio) || null, espera = ac && ac.desde > Date.now(), precio = ac ? ac.precio || 0 : 0;
     const guardar = async () => {
-      const r = await pedir("/cuenta/apodo", { metodo: "POST", cuerpo: { apodo: entrada.value.trim() } });
-      if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; }
+      const nuevo = entrada.value.trim();
+      if (!provisional && S.yo && nuevo === S.yo.apodo) { pista.textContent = "Ese ya es tu apodo."; pista.className = "jg-pista"; return; }
+      if (precio && !confirm("Cambiar tu apodo cuesta " + precio + " dracmas y el próximo cambio será dentro de 3 semanas. ¿Seguir?")) return;
+      const r = await pedir("/cuenta/apodo", { metodo: "POST", cuerpo: { apodo: nuevo } });
+      if (r.error) {
+        pista.textContent = r.error === "apodo_espera" && r.hasta ? "Podrás cambiarlo de nuevo el " + fechaDia(r.hasta) + "." : r.error === "dracmas" && r.faltan ? "Cambiar tu apodo cuesta " + r.precio + " dracmas: te faltan " + fmt(r.faltan) + "." : mensaje(r);
+        pista.className = "jg-pista mal"; return;
+      }
       actualizarYo(r.yo); A.avisar("Apodo guardado"); repintar();
     };
     entrada.addEventListener("keydown", (e) => { if (e.key === "Enter") guardar(); });
-    return tarjeta(provisional ? "Elige tu apodo" : "Apodo", ico("persona"), provisional ? h("p", { text: "Así aparecerás en las clasificaciones. Nadie verá tu nombre real." }) : null,
-      h("div", { class: "jg-form" }, entrada, h("button", { class: "btn oro", type: "button", onclick: guardar }, h("span", { text: "Guardar" }))), pista);
+    const regla = ac ? h("p", { class: "jg-mini", text: "Cambiarlo cuesta " + precio + " dracmas y se puede una vez cada " + plural(Math.round((ac.dias || 21) / 7), "semana", "semanas") + (espera ? ". Próximo cambio: " + fechaDia(ac.desde) + "." : ". Ya puedes cambiarlo.") }) : null;
+    if (espera) entrada.disabled = true;
+    return tarjeta(provisional ? "Elige tu apodo" : "Apodo", ico("persona"), provisional ? h("p", { text: "Así aparecerás en las clasificaciones. Nadie verá tu nombre real. Elegirlo ahora es gratis; después, cambiarlo cuesta dracmas." }) : null,
+      h("div", { class: "jg-form" }, entrada, h("button", { class: "btn oro", type: "button", disabled: espera ? true : null, onclick: guardar }, h("span", { text: precio ? "Cambiar · " + precio + " dr." : "Guardar" }))), regla, pista);
   }
 
   // --- pre-registro, campaña y escalera del Sembrador
@@ -1285,7 +1347,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("ol", { class: "jg-escalera" }, M.map((m) => h("li", { class: enV >= m[0] ? "ya" : sig && sig[0] === m[0] ? "sig" : "", title: m[1] + " · " + plural(b0 + m[0], "persona", "personas") + " · +" + m[2] + " h de experiencia doble" },
         h("b", { text: fmt(b0 + m[0]) }), h("span", { text: m[1] }), h("small", { text: "+" + m[2] + " h" })))),
       h("p", { class: "jg-mini", text: "La escalera no termina: al llegar a 100 empieza otra vuelta con los mismos peldaños y las mismas horas, y tu emblema conserva «Ciento» y suma una marca por cada vuelta. Y tu siembra sigue: por cada persona que confirma en tu 2.ª generación (las que invitan tus invitados) recibes " + (((S.cfg && S.cfg.micro) || {})[2] || 15) + " min de experiencia doble, y " + (((S.cfg && S.cfg.micro) || {})[3] || 5) + " min en la 3.ª." }),
-      h("p", { class: "jg-mini", text: "Una persona se confirma cuando lee sus primeros 20 versos o asegura su cuenta (compartir red o dispositivo con tu familia no es problema). Además recibes 100 de experiencia cuando lee sus primeros 20 versos, 300 cuando llega al nivel 10, 500 cuando termina su primer libro y un regalo del 5 % de lo que lea en su primer mes de juego. Las horas de experiencia doble solo se gastan mientras lees y no vencen. 30, 60 y 100: Μᾶrκος 4:8; 72: Λουκᾶς 10:1." }));
+      h("p", { class: "jg-mini", text: "Una persona se confirma cuando lee sus primeros 20 versos o asegura su cuenta (compartir red o dispositivo con tu familia no es problema). Además recibes 1000 de experiencia cuando lee sus primeros 20 versos, 3000 cuando llega al nivel 10, 5000 cuando termina su primer libro y un regalo del 5 % de lo que lea en su primer mes de juego. Las horas de experiencia doble solo se gastan mientras lees y no vencen. 30, 60 y 100: Μᾶrκος 4:8; 72: Λουκᾶς 10:1." }));
   }
 
   // --- árbol de la siembra (BiEx, 9-nov-2026): quién llegó con tu enlace, quién llegó por esas personas… hasta dónde llegó
@@ -1407,26 +1469,44 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const capa = h("div", { class: "jg-arbol-mov" }, svg);
     const luz = h("div", { class: "jg-arbol-luz", "aria-hidden": "true" }), pulso = h("div", { class: "jg-arbol-pulso", "aria-hidden": "true" });
     const orbita = h("div", { class: "jg-arbol-orbita", "aria-hidden": "true" }, Array.from({ length: 7 }, (_, i) => h("i", { style: "transform:rotate(" + (i * 51.4 + (i % 2) * 9) + "deg)" })));
+    // Nitidez (BiEx, 10-nov-2026: «al acercar sale borroso»): durante el gesto la capa se escala por el compositor y, al
+    // detenerse, la vista se fija en el viewBox del SVG (vectorial: nítido a cualquier tamaño) y la capa vuelve a su escala 1.
+    // (zc, xc, yc) es la vista ya fijada en el viewBox; la capa solo lleva la diferencia con la vista pedida (z, x, y).
+    const ZMAX = 6;
     let z = 1, x = 0, y = 0, movido = false; const ptrs = new Map(); let d0 = 0, z0 = 1;
+    let zc = 1, xc = 0, yc = 0, tFijar = 0;
     const limitar = () => { const w = caja.clientWidth || 1, m = (z - 1) * w / 2; x = Math.max(-m, Math.min(m, x)); y = Math.max(-m, Math.min(m, y)); };
-    const aplicar = () => { capa.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px) scale(" + z.toFixed(3) + ")"; caja.style.touchAction = z > 1.01 ? "none" : "pan-y"; caja.classList.toggle("cerca", z > 1.01); };
-    const acercar = (f) => { z = Math.max(1, Math.min(4, z * f)); if (z === 1) { x = 0; y = 0; } limitar(); aplicar(); };
-    caja.addEventListener("pointerdown", (e) => { ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); movido = false; if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; d0 = Math.hypot(a.x - b.x, a.y - b.y) || 1; z0 = z; } });
+    const fijar = () => {
+      clearTimeout(tFijar); if (ptrs.size) return;
+      const w = caja.clientWidth || 1, k = 1000 / w, c = w / 2, vw = 1000 / z;
+      svg.setAttribute("viewBox", ((c - (c + x) / z) * k).toFixed(2) + " " + ((c - (c + y) / z) * k).toFixed(2) + " " + vw.toFixed(2) + " " + vw.toFixed(2));
+      zc = z; xc = x; yc = y; capa.style.transform = "none";
+    };
+    const aplicar = (pronto) => {
+      const r = z / zc, tx = x - xc * r, ty = y - yc * r;
+      capa.style.transform = Math.abs(r - 1) < 1e-4 && Math.abs(tx) < 0.05 && Math.abs(ty) < 0.05 ? "none" : "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + r.toFixed(4) + ")";
+      caja.style.touchAction = z > 1.01 ? "none" : "pan-y"; caja.classList.toggle("cerca", z > 1.01);
+      clearTimeout(tFijar); tFijar = setTimeout(fijar, pronto ? 0 : 160);
+    };
+    const acercar = (f) => { z = Math.max(1, Math.min(ZMAX, z * f)); if (z === 1) { x = 0; y = 0; } limitar(); aplicar(); };
+    const verTodo = () => { z = 1; x = 0; y = 0; aplicar(true); };
+    // los botones + − ⟲ no son parte del gesto: pulsarlos rápido ya no se toma como arrastre ni como doble toque
+    caja.addEventListener("pointerdown", (e) => { movido = false; if (e.target.closest && e.target.closest(".jg-arbol-ctl")) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; d0 = Math.hypot(a.x - b.x, a.y - b.y) || 1; z0 = z; } });
     caja.addEventListener("pointermove", (e) => {
       const p = ptrs.get(e.pointerId); if (!p) return;
       const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-      if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; z = Math.max(1, Math.min(4, z0 * Math.hypot(a.x - b.x, a.y - b.y) / d0)); movido = true; }
+      if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; z = Math.max(1, Math.min(ZMAX, z0 * Math.hypot(a.x - b.x, a.y - b.y) / d0)); movido = true; }
       else if (z > 1.01) { x += dx; y += dy; if (Math.abs(dx) + Math.abs(dy) > 2) movido = true; } else return;
       limitar(); aplicar();
     });
-    const soltar = (e) => { ptrs.delete(e.pointerId); };
+    const soltar = (e) => { if (!ptrs.delete(e.pointerId)) return; if (!ptrs.size) aplicar(true); };
     caja.addEventListener("pointerup", soltar); caja.addEventListener("pointercancel", soltar);
     caja.addEventListener("click", (e) => { if (movido) { e.stopPropagation(); e.preventDefault(); movido = false; } }, true);
     caja.addEventListener("wheel", (e) => { if (!e.ctrlKey && z === 1 && e.deltaY > 0) return; e.preventDefault(); acercar(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
-    caja.addEventListener("dblclick", (e) => { if (e.target.closest && e.target.closest(".jg-nodo")) return; z = 1; x = 0; y = 0; aplicar(); });
+    caja.addEventListener("dblclick", (e) => { if (e.target.closest && e.target.closest(".jg-nodo, .jg-arbol-ctl")) return; verTodo(); });
     const ctl = h("div", { class: "jg-arbol-ctl" },
       h("button", { type: "button", "aria-label": "Acercar", onclick: () => acercar(1.4) }, "+"), h("button", { type: "button", "aria-label": "Alejar", onclick: () => acercar(1 / 1.4) }, "−"),
-      h("button", { type: "button", "aria-label": "Ver todo el árbol", onclick: () => { z = 1; x = 0; y = 0; aplicar(); } }, "⟲"));
+      h("button", { type: "button", "aria-label": "Ver todo el árbol", onclick: verTodo }, "⟲"));
     caja.append(luz, orbita, capa, pulso, ctl); aplicar();
     if (!quieto) {
       const P = Math.max(1, ...r.nodos.map((n) => n.k));
@@ -1659,7 +1739,8 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       tarjeta("Formas de entrar", ico("llave"), h("p", { text: estado.length ? "Tu avance está asegurado con: " + estado.join(", ") + "." : "Tu avance todavía depende solo de tu código." })),
       tarjetaAsegurar(true),
       tarjeta("Código de acceso", ico("codigo"), h("p", { text: "Si tu código anterior se pudo ver o lo perdiste, crea uno nuevo." }), h("button", { class: "btn", type: "button", onclick: codigoNuevo }, h("span", { text: "Crear un código nuevo" })), zonaCodigo),
-      tarjeta("Preferencias", null, pref("verCiudad", "Mostrar mi ciudad en las clasificaciones", "Si la ocultas, sigues apareciendo en tu región, tu país, tu continente y el mundo."),
+      tarjeta("Preferencias", null, pref("verApodo", "Mostrar mi apodo", "En las clasificaciones, tu compañía y «quién está leyendo». Si lo ocultas, en su lugar se verá tu ciudad."),
+        pref("verCiudad", "Mostrar mi ciudad en las clasificaciones", "Si la ocultas, sigues apareciendo en tu región, tu país, tu continente y el mundo."),
         pref("tranquilo", "Modo tranquilo", "Sin sonidos. Para menos movimiento, usa también «Sin animaciones» en la apariencia del lector.")),
       tarjeta("Sesiones", null, h("div", { class: "jg-acciones" },
         h("button", { class: "btn", type: "button", onclick: () => { if (confirm("¿Salir de Escudriña en este dispositivo? Para volver necesitarás tu código, tu llave o tu cuenta.")) { olvidarSesion(false); A.irA("#/escudrina"); } } }, h("span", { text: "Salir en este dispositivo" })),
@@ -1768,7 +1849,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   // acto cuando va a ocurrir un suceso (hallazgo, dracmas, nivel, misión, capítulo completo o primer verso del día), para
   // que ningún beneficio se demore ni se pierda. Lo pendiente queda guardado en el dispositivo hasta que el servidor lo recibe.
   const CADA = Number(window.BIEX_JUEGO_CADA) || 5 * MIN; // BIEX_JUEGO_CADA: solo en pruebas locales
-  const R = { lib: null, cap: 0, pal: [], hoy: "", acc: new Map(), hechos: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false, pred: null, prueba: false, recuperada: false, completos: new Set() };
+  const R = { lib: null, cap: 0, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false, pred: null, prueba: false, recuperada: false, completos: new Set() };
   let PAL = null;
   function palabras() {
     if (!PAL) PAL = (A.cargar ? A.cargar("datos/juego/palabras.json") : Promise.reject(new Error("sin cargador")))
@@ -1811,7 +1892,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const t = performance.now();
     if (t - (R.ultPres || 0) > 1000) {
       R.ultPres = t; let ms = 0;
-      for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && valeLeer(v)) ms += Math.max(0, tMin(v) - (R.acc.get(v) || 0)); }
+      for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && !R.pend.has(v) && valeLeer(v)) ms += Math.max(0, tMin(v) - (R.acc.get(v) || 0)); }
       R.ventana = Math.min(150000, Math.max(45000, ms * 1.25));
     }
     R.ultAct = t;
@@ -1833,7 +1914,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     estilos(); escuchar(); recuperarCola(); medidor(true);
     if (R.lib !== lib || R.cap !== cap) {
       soltar();
-      Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), hechos: new Set(), prueba: false });
+      Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false });
       prepararCapitulo(lib, cap);
     } else if (R.prueba) setTimeout(tarjetaPrueba, 50);
     observar();
@@ -1848,21 +1929,23 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     R.pal = String(P[lib].split(";")[cap - 1] || "").split(",").map(Number);
     const lc = lib + "." + cap, e = espejo();
     R.hoy = e.m[lc] || "";
+    R.pend = cargarPend(lc);
     R.prueba = e.p.includes(lc);
     if (R.prueba) tarjetaPrueba();
-    pintarPresencia();
+    pintarPresencia(); sellos();
   }
   // Deja el capítulo (lo leído sigue en la cola: las tandas juntan varios capítulos)
   function soltar() {
     if (R.io) { R.io.disconnect(); R.io = null; }
     Object.assign(R, { els: [], vis: new Map() });
     const p = document.querySelector(".jg-pres"); if (p) p.remove();
+    for (const s of document.querySelectorAll(".jg-sello")) s.remove();
   }
   function salir() {
     guardarCola(true);
     soltar(); medidor(false);
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
-    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), hechos: new Set(), prueba: false });
+    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false });
     // fuera de los capítulos, lo pendiente sale a su hora (o al volver a leer)
     if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && Date.now() - R.ultEnvio > CADA) enviar(false); }, 1000);
   }
@@ -1871,10 +1954,20 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     R.vis = new Map();
     R.els = [...document.querySelectorAll(".hoja [id^='v']")].filter((el) => /^v\d+$/.test(el.id) && /^(vl|vs)$/.test(el.classList[0]));
     if (!("IntersectionObserver" in window)) return;
-    R.io = new IntersectionObserver((ents) => { for (const e of ents) R.vis.set(e.target, e.isIntersecting); }, { rootMargin: "-10% 0px -15% 0px", threshold: 0 });
+    R.io = new IntersectionObserver((ents) => {
+      for (const e of ents) {
+        R.vis.set(e.target, e.isIntersecting);
+        // repasar en la misma visita (BiEx, 10-nov-2026): al salir de la pantalla, el verso ya leído se puede volver a leer
+        if (!e.isIntersecting) { const v = +e.target.id.slice(1); if (R.hechos.has(v)) { R.hechos.delete(v); R.acc.delete(v); R.accA.delete(v); } }
+      }
+    }, { rootMargin: "-10% 0px -15% 0px", threshold: 0 });
     for (const el of R.els) R.io.observe(el);
+    sellos();
   }
-  const tMin = (v) => Math.max((S.cfg && S.cfg.msMin) || 1000, ((S.cfg && S.cfg.msPalabra) || 250) * (R.pal[v - 1] || 0));
+  const tMin = (v) => Math.max((S.cfg && S.cfg.msMin) || 2500, ((S.cfg && S.cfg.msPalabra) || 450) * (R.pal[v - 1] || 0));
+  // Lectura atenta mixta (BiEx, 10-nov-2026): el verso se marca solo si se queda en pantalla 3 s por palabra griega; antes,
+  // quien lee a su ritmo lo confirma con el sello «Leí hasta aquí ✓» al final de la perícopa (vale lo que ya cumplió tMin).
+  const tAuto = (v) => Math.max((S.cfg && S.cfg.msAutoMin) || 6000, ((S.cfg && S.cfg.msAuto) || 3000) * (R.pal[v - 1] || 0));
   const valeLeer = (v) => (R.pal[v - 1] || 0) > 0 && +(R.hoy[v - 1] || 0) < 9; // todo verso leído suma algo (BiEx, 9-nov-2026)
   function tick() {
     const ahora = performance.now(), dt = Math.min(1000, Math.max(0, ahora - (R.ultTick || ahora)));
@@ -1883,12 +1976,101 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
     if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || document.documentElement.classList.contains("con-modal")) return;
     if (R.els.length && !R.els[0].isConnected) observar();
-    let el = null;
-    for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && valeLeer(v)) { el = e; break; } }
-    if (!el) return;
-    const v = +el.id.slice(1), t = (R.acc.get(v) || 0) + dt;
-    R.acc.set(v, t);
-    if (t >= tMin(v)) { R.hechos.add(v); acreditar(R.lib, R.cap, v, Math.round(t)); }
+    let el = null, elA = null;
+    for (const e of R.els) {
+      const v = +e.id.slice(1);
+      if (!R.vis.get(e) || R.hechos.has(v) || !valeLeer(v)) continue;
+      if (!elA) elA = e;
+      if (!el && !R.pend.has(v)) el = e;
+      if (el && elA) break;
+    }
+    if (el) {
+      const v = +el.id.slice(1), t = (R.acc.get(v) || 0) + dt;
+      R.acc.set(v, t);
+      if (t >= tMin(v)) { R.pend.set(v, Math.round(t)); guardarPend(); estadoSellos(v); }
+    }
+    if (elA) {
+      const v = +elA.id.slice(1), t = (R.accA.get(v) || 0) + dt;
+      R.accA.set(v, t);
+      if (t >= tAuto(v)) { const ms = Math.round(Math.max(t, R.pend.get(v) || 0)); R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, ms); estadoSellos(v); }
+    }
+  }
+  // --- sellos «Leí hasta aquí ✓» (al final de cada perícopa: marca § de BiEx o párrafo ¶; sin marcas, cada 8 versos)
+  const PEND_DIAS = 7;
+  function cargarPend(lc) {
+    const o = A.store.get("jg:pend", null) || {}, x = o[lc];
+    if (!x || !Array.isArray(x.v) || Date.now() - (x.t || 0) > PEND_DIAS * 864e5) return new Map();
+    return new Map(x.v.filter((p) => Array.isArray(p) && Number.isInteger(p[0]) && +(R.hoy[p[0] - 1] || 0) < 9).map((p) => [p[0], +p[1] || 0]));
+  }
+  function guardarPend() {
+    if (!R.lib) return;
+    const o = A.store.get("jg:pend", null) || {}, lc = R.lib + "." + R.cap, ahora = Date.now();
+    for (const k of Object.keys(o)) if (!o[k] || ahora - (o[k].t || 0) > PEND_DIAS * 864e5) delete o[k];
+    if (R.pend.size) o[lc] = { t: ahora, v: [...R.pend] }; else delete o[lc];
+    A.store.set("jg:pend", Object.keys(o).length ? o : null);
+  }
+  // versos leídos que esperan su sello, en todos los capítulos (para el aviso de Hoy)
+  function pendientes() {
+    const o = A.store.get("jg:pend", null) || {}, out = [];
+    for (const [lc, x] of Object.entries(o)) if (x && Array.isArray(x.v) && x.v.length && Date.now() - (x.t || 0) <= PEND_DIAS * 864e5) out.push([lc, x.v]);
+    return out;
+  }
+  function confirmarHasta(hasta, boton) {
+    let n = 0;
+    for (const [v, ms] of [...R.pend].sort((a, b) => a[0] - b[0])) if (v <= hasta) { R.pend.delete(v); R.hechos.add(v); acreditar(R.lib, R.cap, v, ms); n++; }
+    guardarPend(); estadoSellos();
+    if (!n) { A.avisar("Todavía no hay versos leídos por confirmar aquí: léelos con calma y vuelve a tocar."); return; }
+    vibrar([10, 40, 14]); sonar("chispa");
+    if (boton && boton.animate && !sinAnim()) boton.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" }], { duration: 420, easing: "cubic-bezier(.3,1.6,.5,1)" });
+    if (!A.store.get("jg:selloOk", 0)) { A.store.set("jg:selloOk", 1); A.avisar("Confirmado: " + plural(n, "verso", "versos") + ". Si lees con calma, también se marcan solos."); }
+  }
+  // Confirma desde el panel lo que quedó por confirmar en otros capítulos (lo que ya cumplió su tiempo mínimo)
+  function confirmarTodo() {
+    let n = 0;
+    for (const [lc, vs] of pendientes()) {
+      const [lib, cap] = lc.split(".");
+      for (const [v, ms] of vs) { R.cola.push([lib, +cap, v, ms]); n++; }
+    }
+    A.store.set("jg:pend", null);
+    if (R.lib) { R.pend = new Map(); estadoSellos(); }
+    if (n) { guardarCola(true); enviar(false); }
+    return n;
+  }
+  function sellos() {
+    for (const s of document.querySelectorAll(".jg-sello")) s.remove();
+    if (!S.token || !R.lib || !R.pal.length || !R.els.length) return;
+    const els = R.els.filter((e) => e.isConnected), grupos = [];
+    const conMarcas = els.some((e) => e.classList.contains("p") || e.closest("p.peri"));
+    let ini = 0;
+    for (let i = 0; i < els.length; i++) {
+      const sig = els[i + 1];
+      const corte = !sig || sig.classList.contains("p") || (sig.closest("p.peri") !== els[i].closest("p.peri")) || (!conMarcas && i - ini >= 7);
+      if (corte) { grupos.push([ini, i]); ini = i + 1; }
+    }
+    for (const [a, b] of grupos) {
+      const vs = els.slice(a, b + 1).map((e) => +e.id.slice(1)).filter((v) => (R.pal[v - 1] || 0) > 0);
+      if (!vs.length) continue;
+      const ult = els[b], hasta = +ult.id.slice(1);
+      const s = h("div", { class: "jg-sello", "data-de": String(vs[0]), "data-hasta": String(hasta) },
+        h("button", { type: "button", onclick: (e) => confirmarHasta(hasta, e.currentTarget) }, h("span", { class: "tx" }), h("span", { class: "ok", "aria-hidden": "true", text: "✓" })));
+      (ult.closest("p.peri") || ult).after(s);
+    }
+    estadoSellos();
+  }
+  function estadoSellos(v) {
+    for (const s of document.querySelectorAll(".jg-sello")) {
+      const de = +s.getAttribute("data-de"), hasta = +s.getAttribute("data-hasta");
+      if (v != null && (v < de || v > hasta)) continue;
+      let pend = 0, leidos = 0, total = 0;
+      for (let x = de; x <= hasta; x++) { if (!(R.pal[x - 1] > 0)) continue; total++; if (R.pend.has(x)) pend++; else if (R.hechos.has(x) || +(R.hoy[x - 1] || 0) > 0) leidos++; }
+      const antes = R.pend.size ? [...R.pend.keys()].filter((x) => x < de).length : 0;
+      const estado = pend || antes ? "listo" : leidos >= total ? "hecho" : "";
+      s.className = "jg-sello" + (estado ? " " + estado : "");
+      const b = s.querySelector("button"), tx = s.querySelector(".tx");
+      tx.textContent = estado === "hecho" ? "Leído" : "Leí hasta aquí";
+      b.setAttribute("aria-label", estado === "hecho" ? "Leído hasta el verso " + hasta : "Leí hasta aquí: confirmar " + (pend + antes ? plural(pend + antes, "verso leído", "versos leídos") : "lo leído hasta el verso " + hasta));
+      b.title = pend + antes ? plural(pend + antes, "verso listo", "versos listos") + " para confirmar" : estado === "hecho" ? "Ya cuenta para tu avance" : "Se confirma lo que ya leíste con calma";
+    }
   }
   function acreditar(lib, cap, v, ms) {
     const lc = lib + "." + cap, cD = +(R.hoy[v - 1] || 0), sie = sieDe(lc);
@@ -1928,6 +2110,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     }
     return suceso;
   }
+  const REINT = new Map();
   async function enviar(final) {
     if (R.enviando || !R.cola.length || !S.token) return;
     R.enviando = true; R.ultEnvio = Date.now();
@@ -1946,7 +2129,16 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       if (x.a && x.a.length && A.marcarLeido) A.marcarLeido(lib, +cap, x.a);
       if (R.lib + "." + R.cap === lc) R.hoy = x.d;
     }
-    for (const x of r.rechazados || []) if (x[0] === R.lib && x[1] === R.cap) { R.hechos.delete(x[2]); R.acc.delete(x[2]); }
+    const reintento = [];
+    for (const x of r.rechazados || []) {
+      if (x[3] === "adelantado") {
+        const it = lote.find((q) => q[0] === x[0] && q[1] === x[1] && q[2] === x[2]), k = it && it.join("|"), n = k ? (REINT.get(k) || 0) : 9;
+        if (it && n < 3) { REINT.set(k, n + 1); reintento.push(it); continue; }
+      }
+      if (x[0] === R.lib && x[1] === R.cap) { R.hechos.delete(x[2]); R.acc.delete(x[2]); R.accA.delete(x[2]); }
+    }
+    if (reintento.length) { R.cola.push(...reintento); guardarCola(false); }
+    if (R.lib) estadoSellos();
     if ((r.rechazados || []).some((x) => x[3] === "rapido")) pedir("/config", { sin: true }).then((c) => { if (c && !c.error) S.cfg = c; });
     for (const lc of r.pruebas || []) if (!e.p.includes(lc)) e.p.push(lc);
     actualizarYo(r.yo); R.pred = null; pintarMedidor();
@@ -1978,18 +2170,56 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const raiz = document.documentElement;
     if (!ver || !S.token || !S.yo) { if (MED.el) { MED.el.remove(); MED.el = null; } raiz.classList.remove("jg-con-med"); return; }
     if (!MED.el) {
+      // Escudo de nivel (BiEx, 10-nov-2026: «vuélvelo épico»): vectorial, con el metal del rango (bronce, plata, oro,
+      // esmeralda y oro radiante), anillo de avance con su punta de luz, laureles, barrido de luz y rayos al subir de nivel
       MED.nv = h("b", {}); MED.mas = h("i", { "aria-hidden": "true" }); MED.hito = h("span", { class: "hito" });
-      MED.el = h("a", { class: "jg-med", href: "#/escudrina" }, h("span", { class: "aro", "aria-hidden": "true" }), MED.nv, MED.mas, MED.hito);
+      const esc = A.svg(SVG_MED, "0 0 58 68"); esc.setAttribute("aria-hidden", "true");
+      MED.arco = esc.querySelector(".arco"); MED.punta = esc.querySelector(".punta");
+      MED.bonos = h("span", { class: "jg-bonos" });
+      MED.el = h("a", { class: "jg-med", href: "#/escudrina" }, h("span", { class: "rayos", "aria-hidden": "true" }), esc, h("span", { class: "nvk", "aria-hidden": "true", text: "NIVEL" }), MED.nv, MED.mas, MED.hito, MED.bonos);
       document.body.append(MED.el);
     }
     raiz.classList.add("jg-con-med");
     pintarMedidor();
   }
+  const LAURO_M = '<path d="M11.5 44.5c1.6 5.6 5.6 10 11 12.4" fill="none" stroke="url(#jgm-m)" stroke-width="1.3" stroke-linecap="round"/><path d="M10.6 40.2c-1.9 1.4-2.1 3.6-.9 5.6 1.9-1 2.4-3.3.9-5.6zM12.4 47.6c-2.3.5-3.2 2.6-2.6 4.8 2.2-.3 3.4-2.4 2.6-4.8zM16 53c-2.2-.2-3.8 1.4-3.8 3.6 2.2.3 3.9-1.3 3.8-3.6zM20.6 56.6c-1.9-.9-4-.2-4.8 1.8 2 .9 4.1.1 4.8-1.8z" fill="url(#jgm-m)" opacity=".9"/>';
+  const SVG_MED = '<defs><linearGradient id="jgm-m" x1="0" y1="0" x2=".85" y2="1"><stop offset="0" style="stop-color:var(--m1)"/><stop offset=".5" style="stop-color:var(--m2)"/><stop offset="1" style="stop-color:var(--m3)"/></linearGradient>' +
+    '<radialGradient id="jgm-f" cx=".5" cy=".36" r=".74"><stop offset="0" stop-color="#2c2317"/><stop offset=".68" stop-color="#110d08"/><stop offset="1" stop-color="#060504"/></radialGradient>' +
+    '<linearGradient id="jgm-b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+    '<clipPath id="jgm-c"><path d="M29 4.6 L52.6 14.2 V37 C52.6 50 42.4 58.8 29 64.2 C15.6 58.8 5.4 50 5.4 37 V14.2 Z"/></clipPath></defs>' +
+    '<path d="M29 2 L55 12.6 V37 C55 51.6 43.6 61.2 29 67 C14.4 61.2 3 51.6 3 37 V12.6 Z" fill="url(#jgm-m)"/>' +
+    '<path d="M29 4.6 L52.6 14.2 V37 C52.6 50 42.4 58.8 29 64.2 C15.6 58.8 5.4 50 5.4 37 V14.2 Z" fill="url(#jgm-f)"/>' +
+    '<path d="M29 7.6 L49.8 16.1 V37 C49.8 48.4 40.7 56.4 29 61.2 C17.3 56.4 8.2 48.4 8.2 37 V16.1 Z" fill="none" stroke="url(#jgm-m)" stroke-opacity=".4" stroke-width=".7"/>' +
+    '<circle cx="29" cy="35" r="18" fill="none" style="stroke:var(--m3)" stroke-opacity=".6" stroke-width="3"/>' +
+    '<circle class="arco" cx="29" cy="35" r="18" fill="none" stroke="url(#jgm-m)" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 29 35)"/>' +
+    '<circle class="punta" cx="29" cy="17" r="2.2" style="fill:var(--m1)"/>' +
+    LAURO_M + '<g transform="translate(58 0) scale(-1 1)">' + LAURO_M + '</g>' +
+    '<path d="M29 .2l1.6 3.3 3.3 1.6-3.3 1.6L29 10l-1.6-3.3-3.3-1.6 3.3-1.6z" style="fill:var(--m1)"/>' +
+    '<g clip-path="url(#jgm-c)"><g transform="skewX(-18)"><rect class="barrido" x="-34" y="0" width="20" height="70" fill="url(#jgm-b)"/></g></g>';
+  // Lo que hoy multiplica la experiencia de la lectura (el servidor decide; esto solo lo muestra)
+  function bonosActivos(y) {
+    const out = [], coma = (n) => String(n).replace(".", ",");
+    if (y.dob > 0) out.push(["×2", "Experiencia doble: " + horas(y.dob) + " de lectura (se gasta solo mientras lees)", "dob"]);
+    if (y.imp && y.imp.ms > 0) out.push(["×" + coma(y.imp.f), "Impulso por tu hallazgo: " + horas(y.imp.ms) + " de lectura", "imp"]);
+    if (SL.cod && SL.ws && SL.ws.readyState === 1) out.push(["×1,25", "Leer en compañía: experiencia ×1,25 mientras estás en la sala", "sala"]);
+    if (y.nivel < 20) out.push([y.nivel < 10 ? "+50 %" : "+25 %", "Primeros pasos: experiencia " + (y.nivel < 10 ? "+50 % hasta el nivel 10" : "+25 % hasta el nivel 20"), "ini"]);
+    if (y.lauros && y.lauros.doce) out.push(["+5 %", "Las doce piedras del fundamento: experiencia +5 % para siempre", "doce"]);
+    return out;
+  }
   function pintarMedidor() {
     const y = S.yo; if (!MED.el || !y) return;
     const extra = R.pred ? R.pred.xp : 0, tramo = Math.max(1, y.xpSig - y.xpNivel), p = y.enTope ? 1 : Math.min(1, Math.max(0, (y.xp - y.xpNivel + extra) / tramo));
     MED.el.style.setProperty("--p", (p * 100).toFixed(1) + "%");
+    MED.arco.setAttribute("stroke-dasharray", (p * 100).toFixed(1) + " 100");
+    const ang = p * 2 * Math.PI - Math.PI / 2; MED.punta.setAttribute("cx", (29 + 18 * Math.cos(ang)).toFixed(2)); MED.punta.setAttribute("cy", (35 + 18 * Math.sin(ang)).toFixed(2));
+    MED.el.setAttribute("data-r", String(Math.max(0, Math.min(4, y.rango | 0))));
+    MED.el.classList.toggle("dos", y.nivel >= 10 && y.nivel < 100); MED.el.classList.toggle("tres", y.nivel >= 100);
     MED.nv.textContent = String(y.nivel);
+    const bonos = bonosActivos(y), firma = bonos.map((b) => b[0] + b[2]).join("|");
+    if (MED.firma !== firma) {
+      MED.firma = firma;
+      MED.bonos.replaceChildren(...bonos.map(([t, d, k]) => h("span", { class: "jg-bono b-" + k, title: d }, t)));
+    }
     MED.el.setAttribute("aria-label", "Escudriña: nivel " + y.nivel + ", " + Math.round(p * 100) + " % hacia el siguiente. Abrir el panel");
     MED.el.title = "Nivel " + y.nivel + " · " + Math.round(p * 100) + " % hacia el siguiente";
   }
@@ -2061,7 +2291,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const fin = document.querySelector(".hoja nav.fin-cap");
     if (!fin || document.querySelector(".jg-prueba")) return;
     const lib = R.lib, cap = R.cap;
-    fin.before(h("div", { class: "jg-prueba" }, lauro(), h("p", {}, h("b", { text: "Prueba del capítulo. " }), "Tres preguntas sobre lo que leíste hoy: 10 de experiencia por acierto y 15 más si aciertas todas."),
+    fin.before(h("div", { class: "jg-prueba" }, lauro(), h("p", {}, h("b", { text: "Prueba del capítulo. " }), "Tres preguntas sobre lo que leíste hoy: 100 de experiencia por acierto y 150 más si aciertas todas."),
       h("button", { class: "btn oro chico", type: "button", onclick: () => abrirPrueba(lib, cap) }, h("span", { text: "Hacer la prueba" }))));
   }
   async function abrirPrueba(lib, cap) {

@@ -58,6 +58,7 @@
     rejilla: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/>',
     libro: '<path d="M4 5.5C6.5 4.2 9.5 4.2 12 6c2.5-1.8 5.5-1.8 8-.5V19c-2.5-1.3-5.5-1.3-8 .5-2.5-1.8-5.5-1.8-8-.5z M12 6v13.5" ' + L1 + '/>',
     lupa: '<circle cx="10" cy="10" r="5.5" ' + L1 + '/><path d="M14 14l5.5 5.5M7.5 10h5M10 7.5v5" ' + L1 + '/>',
+    literal: '<path d="M3 7.5h4M9.5 7.5h3.5M15.5 7.5h5.5M3 12.5h6M11.5 12.5h3.5M17.5 12.5h3.5" ' + L1 + '/><path d="M3 17.5h18" ' + L1 + ' opacity=".5"/>',
     lista: '<path d="M8 6.5h12M8 12h12M8 17.5h12" ' + L1 + '/><circle cx="4.5" cy="6.5" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1" fill="currentColor"/>',
     filtros: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9" ' + L1 + '/><circle cx="15" cy="7" r="2" ' + L1 + '/><circle cx="9" cy="17" r="2" ' + L1 + '/>',
     parrafo: '<path d="M4 6h16M4 10.5h16M4 15h16M4 19.5h10" ' + L1 + '/>',
@@ -258,7 +259,7 @@
   // orden de los libros (cronológico por defecto), ampliaciones [ ] (todas · primera · base), colores de la edición BiEx,
   // paréntesis, < >, marcas voladas y filtro de niveles de la lectura
   let prefs = Object.assign({ tl: true, tr: true, mo: true, color: "clase", resalta: "", caja: "min", heroCaja: "may", disp: "versos",
-    orden: "crono", cor: "todas", ed: true, par: true, ang: true, sup: true, nivel: "", msEsp: false }, store.get("prefs", {}));
+    orden: "crono", lorg: true, cor: "todas", ed: true, par: true, ang: true, sup: true, nivel: "", msEsp: false }, store.get("prefs", {}));
   const guardarPrefs = () => store.set("prefs", prefs);
   const aplicarEd = () => document.documentElement.classList.toggle("ed", !!prefs.ed);
   aplicarEd();
@@ -484,6 +485,8 @@
     return [limpio, h("span", { class: "alt", text: t })];
   }
   const nombreLibro = (b) => (b.t ? b.t + " [" + b.n + "]" : b.n);
+  // Bajo la transliteración originaria, el nombre tradicional va entre comillas: se cita su uso, no se lo da por correcto (BiEx, 10-nov-2026)
+  const tradQ = (b) => (b.t ? "«" + b.n + "»" : b.n);
   // Descripciones de contenido de los manuscritos: los nombres tradicionales de los libros pasan a «transliteración [tradicional]».
   let reLibros = null;
   function conNombres(txt) {
@@ -1083,7 +1086,7 @@
           h("div", { class: "ap-muestra" }, h("p", { class: "eyebrow", text: "Así se ve " + ref }), muestra),
           fila("Colores de la edición BiEx", "El texto en azul; las palabras del Mashíaḥ en anaranjado; las citas de la Antigua Voluntad en mayúsculas; las expresiones del Eterno en cursiva; las ampliaciones en gris.",
             grupo("ed", [[true, "Con colores"], [false, "Sin colores"]]), ley),
-          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la lectura organizada (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones (el significado de cada nombre se ve en su primera aparición)"]])),
+          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la vista Lectura (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones (el significado de cada nombre se ve en su primera aparición)"]])),
           fila("Paréntesis ( )", null, grupo("par", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Signos < >", null, grupo("ang", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Letras voladas y asteriscos (ᵐ ⁿ ᶠ *)", null, grupo("sup", [[true, "Mostrar"], [false, "Ocultar"]])),
@@ -1103,7 +1106,6 @@
     const juego = h("button", { class: "btn-icono btn-juego", type: "button", "aria-label": "Escudriña, el juego de Biblia Exacta", title: "Escudriña · el juego", onclick: () => { location.hash = "#/escudrina"; } }, svg(ICO.juego));
     const herr = h("button", { class: "btn-icono btn-herr", type: "button", "aria-label": "Herramientas: lectura, análisis, buscador, manuscritos, línea del tiempo, concordancia y guía", title: "Herramientas", onclick: () => abrirHerramientas() }, svg(ICO.rejilla));
     const extra = EMBED ? [
-      EMBED ? h("button", { class: "btn-icono", type: "button", "aria-label": "Abrir en una pestaña nueva", title: "Abrir en una pestaña nueva", onclick: () => window.open(enlacePublico(location.hash), "_blank", "noopener") }, svg(ICO.externo)) : null,
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
     ] : [];
     // Fondo vivo: luces muy tenues que se desplazan despacio y motas de luz que suben (se detiene con «Sin animaciones»)
@@ -1180,7 +1182,7 @@
       const b = L[i]; if (!b) return;
       const fe = fechaEscrito(b);
       visor.replaceChildren(h("span", { class: "fv-n", text: String(numLibro(b)).padStart(2, "0") }),
-        h("span", { class: "fv-t" }, h("b", { text: b.t || b.n }), h("small", { text: b.n + (fe ? " · c. " + fe.replace(/^c\. /, "") : "") })),
+        h("span", { class: "fv-t" }, h("b", { text: b.t || b.n }), h("small", { text: tradQ(b) + (fe ? " · c. " + fe.replace(/^c\. /, "") : "") })),
         h("span", { class: "fv-p", text: pct(b.palabras) }));
       const r = cont.getBoundingClientRect(), t = tramos[i].getBoundingClientRect();
       const ancho = visor.offsetWidth || 220, centro = t.left + t.width / 2 - r.left;
@@ -1490,7 +1492,7 @@
       h("div", { class: "banda-tit" },
         h("span", { class: "eyebrow", text: "Libro " + numLibro(b) + " de 27 de la Nueva Voluntad " + nombreOrden() }),
         h("h1", {}, h("a", { class: "banda-lib", href: (MEMLIB && MEMLIB.h) || "#/libros", title: "Volver a la lista de libros", onclick: irALista },
-          h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null)),
+          h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: tradQ(b) }) : null)),
         fechaEscrito(b) ? h("a", { class: "banda-fecha", href: "#/cronologia" }, svg(ICO.tiempo), "Escrito c. " + fechaEscrito(b).replace(/^c\. /, "") + (/H\.D\./.test(fechaEscrito(b)) ? "" : " " + ERA_D) + (fechaNarra(b) ? " · narra " + fechaNarra(b) : "")) : null),
       h("div", { class: "banda-ani" }, anilloSvg(p), h("p", { text: "de las palabras ya traducidas en el texto base (preliminar, en revisión)" })),
       h("div", { class: "mini-cifras" },
@@ -1529,13 +1531,15 @@
   const nombreFiltro = (f) => (FILTROS.find((x) => x[0] === f) || FILTROS[0])[1];
   function barraHoja(b, cap, modo, versos) {
     const ir = (m) => "#/" + b.c + "/" + cap + (m === "a" ? "/a" : "");
-    // Tres modos: Lectura (orden del griego), Organizada (orden del español donde ya existe) y Análisis
+    // Tres modos (BiEx, 10-nov-2026): Análisis · Lectura (la traducción en el orden natural del español, para leer de corrido;
+    // ruta /o y prefs.lorg) · Literal (la misma traducción en el orden del griego, con todas sus piezas)
+    const MODO_T = { a: "Análisis: cada palabra con su forma, su lema y su morfología", o: "Lectura: la traducción en el orden natural del español, para leer de corrido", l: "Literal: la traducción en el orden del griego, palabra por palabra y con todas sus piezas" };
     const activo = (m) => (m === "a" ? modo === "a" : modo !== "a" && (m === "o") === !!prefs.lorg);
-    const btnModo = (m, t, corto) => h("button", { type: "button", class: "m-" + m, "aria-label": m === "o" ? "Organizada" : t, "aria-pressed": activo(m) ? "true" : "false", title: m === "o" ? "Lectura organizada: orden del español donde ya está decidido" : null, onclick: () => {
+    const btnModo = (m, t) => h("button", { type: "button", class: "m-" + m, "aria-label": t, "aria-pressed": activo(m) ? "true" : "false", title: MODO_T[m], onclick: () => {
       if (activo(m)) return;
       if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { RP.anclaEnSitio = capturarAncla(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); } return; } }
       RP.anclaSig = anclaInicioVerso(); RP.enSitio = true; location.hash = ir(m);
-    } }, svg(m === "a" ? ICO.lupa : m === "o" ? ICO.orden : ICO.libro), h("span", { class: "lbl" }, corto ? [h("span", { class: "largo", text: t }), h("span", { class: "corto", "aria-hidden": "true", text: corto })] : t));
+    } }, svg(m === "a" ? ICO.lupa : m === "o" ? ICO.libro : ICO.literal), h("span", { class: "lbl", text: t }));
     const prev = cap > 1 ? "#/" + b.c + "/" + (cap - 1) + (modo === "a" ? "/a" : "") : null;
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
     const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
@@ -1551,10 +1555,10 @@
     const he = capH ? capH[1] : "", rom = capH && capH[2] ? capH[2] : String(cap);
     const titulo = h("button", { class: "bh-tit", type: "button", title: "Elegir capítulo y verso",
       "aria-label": nombreLibro(b) + ", capítulo " + cap + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) },
-      h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: b.n }) : null),
+      h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: tradQ(b) }) : null),
       h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom })));
     return h("div", { class: "barra-hoja" },
-      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("l", "Lectura"), btnModo("o", "Organizada", "Orden"), btnModo("a", "Análisis")),
+      h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("a", "Análisis"), btnModo("o", "Lectura"), btnModo("l", "Literal")),
       h("div", { class: "cap-grupo movil" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
         h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
@@ -1577,7 +1581,7 @@
       h("div", { class: "libs", role: "group", "aria-label": "Elegir otro libro" }, librosEnOrden().map((x) => h("button", {
         type: "button", class: "lib-chip", "aria-current": x === b ? "true" : "false", title: nombreLibro(x),
         onclick: () => { if (x !== b) empujar(vistaNavegador(x, 0, null)); } },
-        h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: x.n }) : null))));
+        h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: tradQ(x) }) : null))));
   }
   const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
   function encabezado(b, cap, modo) {
@@ -1626,7 +1630,7 @@
     if (!notaObra.visita) { if (Date.now() - (Number(store.get("obraVista", 0)) || 0) < 84 * 36e5) return null; notaObra.visita = true; store.set("obraVista", Date.now()); }
     if (notaObra.cerrada) return null;
     const el = h("div", { class: "nota-obra", role: "note" },
-      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Orden (lectura organizada) reflejará de manera precisa e inteligible el mensaje de la traducción literal. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances en la edición del texto y del proyecto."),
+      h("p", {}, h("b", { text: "Biblia Exacta se construye semana a semana. " }), "Con el paso de los días, la vista Lectura reflejará de manera precisa e inteligible el mensaje de la traducción Literal. Te invitamos a ingresar varias veces por semana, e incluso a diario, para escudriñar el texto y ver las novedades y los avances en la edición del texto y del proyecto."),
       h("button", { class: "btn chico", type: "button", onclick: () => { store.set("obraVista", Date.now()); notaObra.cerrada = true; el.remove(); } }, "Entendido"));
     return el;
   }
@@ -1637,7 +1641,7 @@
     const hayBase = todos.some((v) => v.g), hayAutor = todos.some((v) => !v.g);
     const ley = prefs.ed && hayAutor ? h("span", { class: "ley-mini" }, " Colores de la edición BiEx: ", h("span", { class: "tm", text: "palabras del Mashíaḥ" }), " · ", h("span", { class: "tc", text: "citas de la Antigua Voluntad" }), " · ", h("span", { class: "tk", text: "[ampliaciones]" }), " · ",
       h("button", { class: "enlace", type: "button", onclick: abrirOpciones, text: "opciones" }), ".") : null;
-    const nota = prefs.lorg ? h("p", { class: "nota-base nota-org" }, h("b", { text: "Lectura organizada. " }),
+    const nota = prefs.lorg ? h("p", { class: "nota-base nota-org" }, h("b", { text: "Lectura: el orden natural del español. " }),
       hayBase ? ["En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada. "] : null, "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
       hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se presentan palabra por palabra.", h("br"), "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.", h("br"), "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
       h("p", { class: "nota-base" }, "Toca cualquier verso para abrir su griego palabra por palabra.", ley);
@@ -2501,7 +2505,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "3491e8e172", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "f44c3cf9a1", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2669,7 +2673,7 @@
     // libros
     const libros = []; for (const b of [r.cita && !r.cita.cap ? r.cita.b : null, ...r.libros]) if (b && !libros.includes(b)) libros.push(b);
     if (libros.length) grupos.push(grupo("Libros", h("div", { class: "res-libros" }, libros.map((b) => h("a", { class: "res-libro", href: "#/" + b.c + "/1", onclick: abrirRes("#/" + b.c + "/1") },
-      h("b", { text: b.t || b.n }), h("span", { text: b.n + (fechaEscrito(b) ? " · escrito c. " + fechaEscrito(b).replace(/^c\. /, "") : "") }))))));
+      h("b", { text: b.t || b.n }), h("span", { text: tradQ(b) + (fechaEscrito(b) ? " · escrito c. " + fechaEscrito(b).replace(/^c\. /, "") : "") }))))));
     // filtro por libro y correcciones
     const avisos = [];
     if (r.filtro) avisos.push(h("span", { class: "chip" }, "Solo en " + nombreLibro(r.filtro) + " ", h("button", { class: "enlace", type: "button", onclick: () => elegir(q.replace(/\s+(?:en|de|del libro de|en el libro de)\s+[^]*$/i, "")), text: "(quitar)" })));
@@ -2825,7 +2829,7 @@
       const b = D.libros[bi];
       const lista = h("ol", { class: "citas" }), mas = h("button", { class: "btn chico", type: "button", hidden: true, text: "Mostrar más" });
       const det = h("details", { class: "ap-libro", "data-c": b.c, open: abiertos.has(b.c) ? true : null },
-        h("summary", {}, h("span", { class: "apl-t" }, h("b", { text: b.t || b.n }), b.t ? h("small", { text: b.n }) : null),
+        h("summary", {}, h("span", { class: "apl-t" }, h("b", { text: b.t || b.n }), b.t ? h("small", { text: tradQ(b) }) : null),
           h("span", { class: "apl-n", text: fmt(n) + (n === 1 ? " aparición" : " apariciones") }), svg(ICO.abajo)),
         h("div", { class: "apl-cuerpo" }, lista, mas));
       let cargado = false;
@@ -2973,7 +2977,7 @@
       if (x.tipo === "es") {
         const b = x.b;
         lista.append(h("li", { class: "tl-it tl-es", id: x.id }, h("span", { class: "tl-f", text: fechaDe(x) }),
-          h("a", { class: "tl-c", href: "#/" + b.c + "/1" }, h("span", { class: "tl-k", text: "Se escribe" }), h("b", { text: b.t || b.n }), h("small", { text: b.n }))));
+          h("a", { class: "tl-c", href: "#/" + b.c + "/1" }, h("span", { class: "tl-k", text: "Se escribe" }), h("b", { text: b.t || b.n }), h("small", { text: tradQ(b) }))));
       } else {
         const e = x.e;
         const li = h("li", { class: "tl-it tl-ev" + (e.clave ? " tl-clave" : ""), id: x.id },
@@ -3113,7 +3117,7 @@
     } else if (k === "fechas") {
       const L = CRONO ? CRONO.ordenes.escritura.map(libroDe).filter(Boolean) : [];
       const tabla = L.length ? h("div", { class: "est-fechas" }, h("h2", { text: "Los 27 libros por su fecha de escritura" }),
-        h("ol", { class: "est-tabla" }, L.map((b) => h("li", {}, h("a", { href: "#/" + b.c + "/1" }, h("b", { text: b.t || b.n }), b.t ? h("small", { text: b.n }) : null), h("span", { text: (fechaEscrito(b) || "").replace(/^c\. /, "c. ") + (/H\.D\./.test(fechaEscrito(b)) ? "" : " " + ERA_D) }))))) : null;
+        h("ol", { class: "est-tabla" }, L.map((b) => h("li", {}, h("a", { href: "#/" + b.c + "/1" }, h("b", { text: b.t || b.n }), b.t ? h("small", { text: tradQ(b) }) : null), h("span", { text: (fechaEscrito(b) || "").replace(/^c\. /, "c. ") + (/H\.D\./.test(fechaEscrito(b)) ? "" : " " + ERA_D) }))))) : null;
       cuerpo = h("div", { class: "est-secs" }, pg.secciones.map((sc, i) => h("section", { class: "est-sec", id: "s" + (i + 1) }, h("h2", { text: sc.t }), pars(sc.p), refs(sc.r))), tabla, fuentes(pg.f));
     } else {
       cuerpo = [h("section", { class: "est-etica" }, h("h2", { text: pg.etica.t }), pars(pg.etica.p), refs(pg.etica.r)),
@@ -3366,7 +3370,7 @@
         dedo.style.left = (x * 100) + "%"; burbuja.style.left = (x * 100) + "%";
         dedo.classList.toggle("toca", t > 0.6 && t < 5.4 || t >= 99);
         [...barras.children].forEach((b, i) => b.classList.toggle("on", i === k));
-        const b = L[k]; burbuja.replaceChildren(h("b", { text: b.t || b.n }), h("small", { text: b.n }));
+        const b = L[k]; burbuja.replaceChildren(h("b", { text: b.t || b.n }), h("small", { text: tradQ(b) }));
         el.classList.toggle("abre", t > 5.6 && t < 99);
       };
     },
