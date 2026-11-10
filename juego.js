@@ -281,7 +281,7 @@
 .jg-nivel{display:flex;justify-content:space-between;gap:10px;font:400 .8rem/1.3 var(--f-ui);color:var(--tenue);margin-top:6px}
 .jg-grande{width:100%;justify-content:center;min-height:52px;font-size:1.02rem}
 .jg-grande small{display:block;font-size:.78em;opacity:.8;font-weight:400}
-.jg-cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.jg-cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jg-cifras div{text-align:center;padding:10px 6px;border-radius:12px;background:var(--hoja-2)}
 .jg-cifras b{display:block;font:500 1.45rem/1.1 var(--f-display);color:var(--oro-vivo)}
 .jg-cifras span{font:400 .74rem/1.3 var(--f-ui);color:var(--tenue)}
@@ -295,7 +295,11 @@
 .jg-mision .jg-barra{height:5px;margin-top:6px}
 .jg-mision .jg-pr{font:500 .76rem/1.2 var(--f-ui);color:var(--oro);text-align:right;white-space:nowrap}
 .jg-mision .jg-cambiar{display:block;margin:6px 0 0 auto;background:none;border:0;color:var(--tenue);font:400 .74rem var(--f-ui);cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
-.jg-piedras{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.jg-piedras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px}
+@media (min-width:560px){.jg-piedras{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.jg-tarjeta>*{min-width:0}
+.jg-lauro-p-t b{white-space:nowrap}
+.jg-piedra span{overflow-wrap:anywhere;text-align:center}
 .jg-piedra{display:grid;justify-items:center;gap:2px;background:none;border:0;padding:4px 0;color:var(--linea);cursor:pointer;border-radius:10px}
 .jg-piedra svg{width:100%;max-width:46px;height:auto;display:block}
 .jg-piedra span{font:400 .66rem/1.2 var(--f-ui);color:var(--tenue)}
@@ -327,7 +331,7 @@
 .ap-ap b{font:500 1.5rem/1.15 var(--f-display);color:var(--tinta)}
 .ap-ap span{font:500 .86rem/1.3 var(--f-ui);color:var(--oro)}
 .ap-prog{text-align:center;margin:0}
-.ap-cifras{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ap-cifras{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ap-cifras li{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid var(--linea);background:color-mix(in srgb,var(--hoja-2) 72%,transparent);text-align:center}
 .ap-cifras b{font:600 1.08rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .ap-cifras small{font:400 .72rem/1.2 var(--f-ui);color:var(--tinta-2)}
@@ -506,7 +510,7 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-liga-cab{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
 .jg-gema-viva{width:64px;height:64px;display:block;filter:drop-shadow(0 0 14px color-mix(in srgb,var(--g) 55%,transparent))}
 .jg-gema-viva svg{width:100%;height:100%;display:block}
-.jg-escalera-p{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:4px}
+.jg-escalera-p{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;margin-top:4px}
 .jg-pel{display:block;opacity:.34}
 .jg-pel svg{width:100%;height:auto;display:block}
 .jg-pel.ya{opacity:.78}
@@ -543,7 +547,7 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 @keyframes jg-sube{0%{opacity:0;transform:translate(-50%,10px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1;transform:translate(-50%,-6px)}100%{opacity:0;transform:translate(-50%,-14px)}}
 @keyframes jg-brilla{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 .jg-cel .arte.anim{animation:jg-brilla 1.6s ease-in-out 2}
-@media (min-width:720px){.jg-piedras{grid-template-columns:repeat(12,1fr)}.jg-dos{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}}
+@media (min-width:720px){.jg-piedras{grid-template-columns:repeat(12,minmax(0,1fr))}.jg-dos{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}}
 @media (prefers-reduced-motion:reduce){.jg-cel .arte.anim{animation:none}}
 .jg-subt{margin:.1em 0 0;font:italic 400 1.22rem/1.2 var(--f-display,var(--f-texto));color:var(--oro);letter-spacing:.02em}
 .jg-campana{position:relative;display:grid;gap:10px;text-align:center;padding:22px 18px 20px;border-radius:var(--radio);border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 70%),color-mix(in srgb,var(--hoja) 88%,transparent)}
@@ -667,9 +671,9 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-atajo svg{width:26px;height:26px;color:var(--oro-vivo)}
 .jg-atajo b{font:600 1rem/1.2 var(--f-ui);letter-spacing:.02em}
 .jg-atajo small{font:400 .76rem/1.35 var(--f-ui);color:var(--tenue)}
-@media (min-width:720px){.jg-atajos{grid-template-columns:repeat(4,1fr)}}
+@media (min-width:720px){.jg-atajos{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* menú del juego: cinco secciones siempre a la mano */
-.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(6,1fr);padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
+.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
 @keyframes jg-sube-muelle{from{opacity:0;transform:translate3d(-50%,26px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
 .jg-muelle a{position:relative;z-index:1;display:grid;justify-items:center;gap:4px;padding:8px 2px 7px;border-radius:16px;color:var(--tenue);text-decoration:none;font:500 .68rem/1 var(--f-ui);letter-spacing:.04em;-webkit-tap-highlight-color:transparent;transition:color .2s}
 .jg-muelle a svg{width:24px;height:24px;transition:transform .32s cubic-bezier(.3,1.6,.5,1)}
@@ -714,7 +718,7 @@ html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inse
 .jg-llave .jg-codigo{border-style:solid;border-color:color-mix(in srgb,var(--oro) 58%,transparent);background:color-mix(in srgb,#000 32%,var(--hoja-2));box-shadow:inset 0 2px 10px rgba(0,0,0,.45),0 0 0 4px color-mix(in srgb,var(--oro) 10%,transparent);outline:none}
 .jg-llave .jg-codigo span{display:inline-block;animation:jg-entra .55s cubic-bezier(.2,.7,.2,1) both}
 .jg-llave .jg-codigo span:nth-of-type(2){animation-delay:.14s}.jg-llave .jg-codigo span:nth-of-type(3){animation-delay:.28s}.jg-llave .jg-codigo span:nth-of-type(4){animation-delay:.42s}
-.jg-pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;list-style:none;margin:0;padding:0;counter-reset:jgp}
+.jg-pasos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0;counter-reset:jgp}
 .jg-pasos li{counter-increment:jgp;display:grid;justify-items:center;align-content:start;gap:6px;font:500 .78rem/1.25 var(--f-ui);color:var(--tenue);text-align:center}
 .jg-pasos li::before{content:counter(jgp);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--linea);font:600 .9rem/1 var(--f-ui);transition:background .3s,border-color .3s,box-shadow .3s}
 .jg-pasos li.ya{color:var(--tinta)}
@@ -779,7 +783,7 @@ html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inse
 .g-dias i:nth-child(2)::after{animation-delay:.45s}.g-dias i:nth-child(3)::after{animation-delay:.9s}.g-dias i:nth-child(4)::after{animation-delay:1.35s}.g-dias i:nth-child(5)::after{animation-delay:1.8s}.g-dias i:nth-child(6)::after{animation-delay:2.25s}.g-dias i:nth-child(7)::after{animation-delay:2.7s}
 .g-arbol{width:min(70%,230px)}
 .g-arbol svg{width:100%;height:auto;display:block}
-.g-menu{position:relative;display:grid;grid-template-columns:repeat(5,1fr);width:min(88%,340px);box-sizing:border-box;padding:6px;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--hoja) 82%,transparent)}
+.g-menu{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:min(88%,340px);box-sizing:border-box;padding:6px;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--hoja) 82%,transparent)}
 .g-menu>span:not(.luz){position:relative;display:grid;justify-items:center;gap:4px;padding:8px 0 6px;color:var(--oro-vivo);font:500 .62rem/1 var(--f-ui)}
 .g-menu svg{width:22px;height:22px}
 .g-menu .luz{position:absolute;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/5);border-radius:14px;background:color-mix(in srgb,var(--oro) 26%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);animation:g-menu 7.5s cubic-bezier(.3,1.3,.5,1) infinite}
@@ -1256,7 +1260,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
       y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se sortea en el servidor" },
-        h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈ " + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + " %" })),
+        h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + "\u00a0%" })),
         h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(1) + "%" })),
         h("p", { class: "jg-mini", text: "Estimación: sube con cada piedra que hallas y vuelve a empezar al conseguir un lauro." })) : null,
       h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
