@@ -1108,7 +1108,9 @@
     ] : [];
     // Fondo vivo: luces muy tenues que se desplazan despacio y motas de luz que suben (se detiene con «Sin animaciones»)
     const motas = Array.from({ length: 16 }, (_, i) => h("i", { style: "--x:" + ((i * 61 + 7) % 100) + "%;--d:" + (34 + (i * 13) % 30) + "s;--r:-" + ((i * 7.3) % 40).toFixed(1) + "s;--s:" + (1.4 + (i % 4) * 0.5) + "px;--w:" + (((i * 37) % 9) - 4) + "vw" }));
-    const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, h("i", { class: "vivo-a" }), h("i", { class: "vivo-b" }), h("i", { class: "vivo-c" }), h("div", { class: "vivo-motas" }, motas));
+    const lienzoLuces = h("canvas", { class: "vivo-luces" });
+    setTimeout(() => lucesVivas(lienzoLuces), 0);
+    const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, lienzoLuces, h("div", { class: "vivo-motas" }, motas));
     // letras hebreas y griegas que cruzan como meteoritos: lienzo propio, por delante de los contenedores y por detrás del texto
     const lienzoMet = h("div", { class: "meteoros", "aria-hidden": "true" });
     raiz.replaceChildren(fondo, lienzoMet,
@@ -2499,7 +2501,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "94a75280ef", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "9d7839f92e", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4001,14 +4003,18 @@
       RP.fin = performance.now();
       try { window.scrollTo({ top: y, left: 0, behavior: quieto() ? "auto" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
     };
-    const aro = svg('<circle cx="20" cy="20" r="17.5" class="sr-fondo"/><circle cx="20" cy="20" r="17.5" class="sr-av" transform="rotate(-90 20 20)"/>', "0 0 40 40");
-    aro.classList.add("sr-aro");
+    // Aro de avance en tiempo real y sin repintar la página: dos medios aros que solo giran (una transformación por capa,
+    // en el compositor). Donde el navegador lo permite, el giro va atado al desplazamiento por CSS (animation-timeline:
+    // scroll()) y no pasa por JavaScript; si no, se ajusta una vez por cuadro tocando solo esas dos transformaciones.
+    // (Antes era un trazo SVG: cambiarlo en cada cuadro repintaba el documento, y por eso se actualizaba solo al detenerse.)
+    const m1 = h("i"), m2 = h("i");
+    const aro = h("span", { class: "sr-aro", "aria-hidden": "true" }, h("span", { class: "sr-m sr-m1" }, m1), h("span", { class: "sr-m sr-m2" }, m2));
     const btn = (cls, et, ico, f, extra) => h("button", { type: "button", class: "sr-btn " + cls, "aria-label": et, title: et, onclick: () => { ir(f); mostrar(); } }, extra || null, svg(ico));
     const caja = h("div", { class: "saltos-rap", role: "group", "aria-label": "Ir rápido por la página" },
       btn("sr-ini", "Ir al inicio de la página", ICO.subir, 0), btn("sr-med", "Ir a la mitad de la página", ICO.centro, 0.5, aro), btn("sr-fin", "Ir al final de la página", ICO.bajar, 1));
     document.body.append(caja);
-    const av = aro.querySelector(".sr-av"), CIR = 2 * Math.PI * 17.5;
-    av.setAttribute("stroke-dasharray", "0 " + CIR.toFixed(1));
+    const ATADO = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
+    if (ATADO) caja.classList.add("sr-atado");
     let reloj = 0, pendiente = false;
     const largo = () => document.documentElement.scrollHeight > window.innerHeight * 2.6;
     function mostrar() {
@@ -4017,16 +4023,11 @@
       clearTimeout(reloj);
       reloj = setTimeout(() => { if (!caja.matches(":hover") && !caja.contains(document.activeElement)) caja.classList.remove("vis"); }, 2600);
     }
-    function medir() {
-      pendiente = false;
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight), p = Math.min(1, Math.max(0, window.scrollY / max));
-      av.setAttribute("stroke-dasharray", (CIR * p).toFixed(1) + " " + CIR.toFixed(1));
-      caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98);
-    }
-    // el aro de avance se actualiza cuando el desplazamiento se detiene: cambiarlo en cada cuadro obligaba a repintar toda la
-    // página mientras se desplazaba (medido con la traza: ~150 repintados del documento en 2 s; ahora, ninguno)
+    const avance = () => { const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); return Math.min(1, Math.max(0, window.scrollY / max)); };
+    function girar() { pendiente = false; const g = avance() * 360; m1.style.transform = "rotate(" + Math.min(180, g).toFixed(1) + "deg)"; m2.style.transform = "rotate(" + Math.max(0, g - 180).toFixed(1) + "deg)"; }
+    function medir() { const p = avance(); caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98); if (!ATADO) girar(); }
     let tMed = 0;
-    window.addEventListener("scroll", () => { clearTimeout(tMed); tMed = setTimeout(medir, 180); mostrar(); }, { passive: true });
+    window.addEventListener("scroll", () => { clearTimeout(tMed); tMed = setTimeout(medir, 180); mostrar(); if (!ATADO && !pendiente) { pendiente = true; requestAnimationFrame(girar); } }, { passive: true });
     window.addEventListener("hashchange", () => { caja.classList.remove("vis"); });
     caja.addEventListener("mouseleave", mostrar);
     caja.addEventListener("focusout", mostrar);
@@ -4038,8 +4039,20 @@
   // Además, al leer hacia abajo la barra superior se retira y vuelve con cualquier movimiento hacia arriba o del puntero.
   const TACTIL = window.matchMedia && matchMedia("(pointer: coarse)").matches;
   let pidioPantalla = (() => { try { return sessionStorage.getItem("biex:pc") === "1"; } catch (e) { return false; } })();
+  // Navegadores integrados de otras aplicaciones (Messenger, Facebook, Instagram…): la pantalla completa descoloca su
+  // propia barra, así que no se pide; además, en Android agrandan todo el texto con el tamaño de letra del sistema sin
+  // agrandar las cajas (los rótulos se desbordan): se mide y se compensa en la raíz (BiEx, 9-nov-2026).
+  const EN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|TikTok|musical_ly|Snapchat|Pinterest|LinkedInApp/i.test(navigator.userAgent || "") || (/Android/i.test(navigator.userAgent || "") && /; wv\)/.test(navigator.userAgent || ""));
+  if (EN_APP) document.documentElement.classList.add("en-app");
+  (function zoomTexto() {
+    try {
+      const m = document.createElement("div"); m.style.cssText = "position:absolute;left:-999px;top:0;visibility:hidden;font:100px/1 sans-serif;white-space:nowrap"; m.textContent = "M";
+      document.body.append(m); const z = m.offsetHeight / 100; m.remove();
+      if (z > 1.06 && z < 3) { document.documentElement.style.setProperty("--zoom-texto", z.toFixed(3)); document.documentElement.classList.add("zoom-texto"); }
+    } catch (e) { /* sin medición */ }
+  })();
   function pedirPantalla() {
-    if (pidioPantalla || !TACTIL) return;
+    if (pidioPantalla || !TACTIL || EN_APP) return;
     pidioPantalla = true; try { sessionStorage.setItem("biex:pc", "1"); } catch (e) { /* ignorar */ }
     if (EMBED) { alPadre({ biex: "pantalla" }); return; }
     const el = document.documentElement;
@@ -4047,11 +4060,6 @@
   }
   document.addEventListener("touchend", pedirPantalla, { passive: true });
   let yInm = window.scrollY, tInm = 0, tDesp = 0;
-  window.addEventListener("scroll", () => {
-    const r = document.documentElement;
-    if (!tDesp) r.classList.add("desplazando"); else clearTimeout(tDesp);
-    tDesp = setTimeout(() => { tDesp = 0; r.classList.remove("desplazando"); }, 220);
-  }, { passive: true });
   // (con la lupa puesta las barras no se retiran: la del capítulo va en el flujo y su cambio de altura movería la página)
   const inmersivo = (si) => { if (si && document.documentElement.classList.contains("lupa")) si = false; if (si) { medirBarraHoja(); marcarPegada(); } document.documentElement.classList.toggle("inmersivo", !!si); };
   // ¿la barra del capítulo está pegada arriba? (el centinela, justo antes de ella, ya pasó por debajo de su tope)
@@ -4409,6 +4417,43 @@
   // (texto y degradados CSS) y lo anima el compositor (Web Animations, solo transform y opacidad): nítido a cualquier
   // densidad y sin trabajo del hilo principal mientras se desplaza la página. Se apaga con «Sin animaciones» o
   // prefers-reduced-motion; no lanza con la pestaña oculta ni con una ventana abierta.
+  // Luces del fondo (tres resplandores que derivan muy despacio). Antes eran tres capas de hasta 120 vmax (unos 85 MB de
+  // texturas en un teléfono a 3×, que la GPU mezclaba en cada cuadro); ahora se dibujan en un lienzo diminuto (1 píxel por
+  // cada 8 de pantalla) que la GPU amplía: al ser degradados suaves se ven igual, cuestan casi nada y ya no hace falta
+  // detenerlas al desplazar (BiEx, 9-nov-2026: movimiento siempre disponible y fluido).
+  function lucesVivas(cv) {
+    const cx = cv && cv.getContext && cv.getContext("2d"); if (!cx) return;
+    const F = 8, red = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+    const LUZ = {
+      dark: [[[214, 178, 104], [[0, 0.13], [0.45, 0.045], [0.72, 0]]], [[86, 112, 190], [[0, 0.12], [0.48, 0.04], [0.72, 0]]], [[150, 102, 170], [[0, 0.07], [0.7, 0]]]],
+      light: [[[176, 130, 48], [[0, 0.12], [0.45, 0.04], [0.72, 0]]], [[70, 100, 170], [[0, 0.08], [0.7, 0]]], [[150, 100, 150], [[0, 0.05], [0.7, 0]]]],
+    };
+    let W = 0, H = 0, vw = 0, vh = 0, vmax = 0;
+    const medir = () => { vw = window.innerWidth / 100; vh = window.innerHeight / 100; vmax = Math.max(vw, vh); W = Math.max(8, Math.round(window.innerWidth / F)); H = Math.max(8, Math.round(window.innerHeight / F)); if (cv.width !== W) cv.width = W; if (cv.height !== H) cv.height = H; };
+    const suave = (x) => 0.5 - 0.5 * Math.cos(Math.PI * x);
+    // ciclo de ida y vuelta por tres puntos (0 %, 50 %, 100 %), con entrada y salida suaves en cada tramo
+    const en = (t, dur, a, b, c) => { let q = (t / dur) % 2; if (q > 1) q = 2 - q; return q < 0.5 ? a + (b - a) * suave(q * 2) : b + (c - b) * suave((q - 0.5) * 2); };
+    function pintar(ms) {
+      const t = ms / 1000, tema = document.documentElement.getAttribute("data-theme") === "light" ? LUZ.light : LUZ.dark;
+      const discos = [
+        [en(t, 74, 0, 22, 8) * vw, -2 * vmax + en(t, 74, 0, 14, 34) * vh, 60 * vmax, 1],
+        [window.innerWidth + 4 * vmax + en(t, 96, 0, -26, -10) * vw, window.innerHeight + 6 * vmax + en(t, 96, 0, -10, -30) * vh, 60 * vmax, 1],
+        [35 * vmax + en(t, 118, 0, 30, -12) * vw, 18 * vh + 45 * vmax + en(t, 118, 0, -12, 20) * vh, 45 * vmax, en(t, 118, 0.6, 1, 0.7)],
+      ];
+      cx.clearRect(0, 0, W, H);
+      discos.forEach(([x, y, r, op], i) => {
+        const g = cx.createRadialGradient(x / F, y / F, 0, x / F, y / F, r / F);
+        for (const [pos, a] of tema[i][1]) g.addColorStop(pos, "rgba(" + tema[i][0].join(",") + "," + (a * op).toFixed(4) + ")");
+        cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+      });
+    }
+    medir(); pintar(0);
+    let tr = 0;
+    window.addEventListener("resize", () => { clearTimeout(tr); tr = setTimeout(() => { medir(); pintar(performance.now()); }, 200); });
+    // derivan a menos de 4 px por segundo: con unos 7 dibujos por segundo el movimiento se ve continuo
+    setInterval(() => { if (document.hidden || ap.mov === "no" || red.matches || document.documentElement.classList.contains("con-modal")) return; pintar(performance.now()); }, 140);
+    try { new MutationObserver(() => pintar(performance.now())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { /* sin observador */ }
+  }
   function meteoros(capa) {
     if (!capa || !capa.animate) return null;
     const GR = ["Α", "Β", "Γ", "Δ", "Θ", "Λ", "Ξ", "Σ", "Φ", "Ψ", "Ω", "λ", "φ", "ψ", "ω", "ξ", "ζ"], HE = ["א", "ב", "ג", "ד", "ה", "ו", "י", "ל", "מ", "ר", "ש", "ת"];
@@ -4442,7 +4487,7 @@
       const W = window.innerWidth;
       t = setTimeout(() => {
         // el lanzamiento espera un momento libre del hilo principal: nunca compite con un desplazamiento ni con una carga
-        const ir = () => { if (!quieto() && !document.hidden && !modal.open && !document.documentElement.classList.contains("desplazando")) lanzar(); };
+        const ir = () => { if (!quieto() && !document.hidden && !modal.open) lanzar(); };
         if (window.requestIdleCallback) requestIdleCallback(ir, { timeout: 1500 }); else ir();
         programar(false);
       }, primero ? 1400 + Math.random() * 1600 : (W < 700 ? 14000 : 11000) * (0.55 + Math.random() * 0.9));
@@ -4484,8 +4529,8 @@
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
     // Direcciones del juego mal escritas («#/escudrinabuzonn», «#/Escudriña/Buzón»): se corrigen solas a la ruta real
     const pj = sinMarcas(partes[0] || "").toLowerCase();
-    if (/^escudri/.test(pj) && (partes[0] !== "escudrina" || (partes[1] && !/^(i|c|sala|arbol|clasificacion|prestigio|propuestas|buzon|cuenta|liga|compania|companias)$/.test(partes[1])))) {
-      const SUB = ["clasificacion", "prestigio", "arbol", "propuestas", "buzon", "cuenta", "liga", "companias", "compania", "sala"];
+    if (/^escudri/.test(pj) && (partes[0] !== "escudrina" || (partes[1] && !/^(i|c|sala|arbol|clasificacion|prestigio|propuestas|buzon|cuenta|liga|compania|companias|tesoro|mundo|juntos|mas|guia)$/.test(partes[1])))) {
+      const SUB = ["clasificacion", "prestigio", "arbol", "propuestas", "buzon", "cuenta", "liga", "companias", "compania", "sala", "tesoro", "mundo", "juntos", "guia", "mas"];
       const dist = (a, b) => { const d = Array.from({ length: b.length + 1 }, (_, j) => j); for (let i = 1; i <= a.length; i++) { let pr = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, pr + (a[i - 1] === b[j - 1] ? 0 : 1)); pr = t; } } return d[b.length]; };
       const cerca = (x) => { x = sinMarcas(x || "").toLowerCase().replace(/[^a-z]/g, ""); if (!x) return null; if (x === "i") return "i"; return SUB.find((k) => k === x) || SUB.find((k) => x.length >= 3 && (k.startsWith(x) || x.startsWith(k))) || SUB.find((k) => dist(x, k) <= 2) || null; };
       const resto = pj.replace(/^escudri(n|ni)?a?/, "");

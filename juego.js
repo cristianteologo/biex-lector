@@ -36,6 +36,12 @@
     return "#" + c.map((x) => x.toString(16).padStart(2, "0")).join("");
   };
   const sinAnim = () => (A && A.sinAnimaciones && A.sinAnimaciones()) || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  // Navegadores integrados de otras aplicaciones (Messenger, Facebook, Instagram, TikTok…): no guardan contraseñas ni llaves
+  // de acceso y Google no deja iniciar sesión en ellos. Se detectan para ofrecer «Abrir en mi navegador» (BiEx, 9-nov-2026).
+  const UA = navigator.userAgent || "";
+  const EN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|TikTok|musical_ly|Snapchat|Pinterest|LinkedInApp/i.test(UA) || (/Android/i.test(UA) && /; wv\)/.test(UA));
+  // Vibración breve al tocar (solo teléfonos que la tienen; nunca en modo tranquilo ni sin animaciones)
+  const vibrar = (p) => { try { if (navigator.vibrate && !(S.yo && S.yo.tranquilo) && !sinAnim()) navigator.vibrate(p); } catch (e) { /* sin vibración */ } };
   function copiar(texto, ok) {
     const fin = () => A.avisar(ok || "Copiado");
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto).then(fin, () => copiarViejo(texto, fin));
@@ -214,6 +220,9 @@
     arbol: '<path d="M12 20.5V13.5M12 13.5L7.6 9.1M12 13.5l4.4-4.4M7.6 9.1L5.2 6.7M7.6 9.1V5.6M16.4 9.1l2.4-2.4M16.4 9.1V5.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="6.3" r="1.5" fill="currentColor"/><circle cx="7.6" cy="4.6" r="1.5" fill="currentColor"/><circle cx="16.4" cy="4.6" r="1.5" fill="currentColor"/><circle cx="19" cy="6.3" r="1.5" fill="currentColor"/>',
     liga: '<path d="M6 9.5L9 5h6l3 4.5L12 19z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 9.5h12M9.6 9.5L12 19l2.4-9.5M9 5l.6 4.5M15 5l-.6 4.5" fill="none" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>',
     compania: '<circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.8" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="18.2" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 19.5c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M2.5 18c.3-2 1.6-3.3 3.3-3.6M21.5 18c-.3-2-1.6-3.3-3.3-3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    hoy: '<path d="M3.5 18h17M6.5 18a5.5 5.5 0 0 1 11 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 5.5v2.7M5.3 9l1.9 1.9M18.7 9l-1.9 1.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    mas: '<rect x="4.5" y="4.5" width="6" height="6" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.7" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    jugar: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.2 8.4l5.6 3.6-5.6 3.6z" fill="currentColor"/>',
     sala: '<path d="M3.5 6.5c2.8-.9 5.6-.6 8.5 1.2 2.9-1.8 5.7-2.1 8.5-1.2v11.5c-2.8-.9-5.6-.6-8.5 1.2-2.9-1.8-5.7-2.1-8.5-1.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 7.7v11.5" fill="none" stroke="currentColor" stroke-width="1.3"/>',
   };
   const ico = (k) => A.svg(ICO_JG[k]);
@@ -482,6 +491,145 @@
 .jg-arbol-lista li>span:first-child{min-width:0;overflow-wrap:anywhere}
 .jg-arbol-lista li small{font:400 .78rem var(--f-ui);color:var(--tenue)}
 .jg-arbol-lista li.ok{border-color:color-mix(in srgb,var(--oro) 50%,transparent)}
+/* ===== Interfaz de juego (9-nov-2026): menú de secciones, tarjetas con profundidad, llave de acceso y guía.
+   Todo lo que se mueve usa solo transformaciones y opacidad; el cristal (desenfoque) queda solo en el menú fijo. */
+.jg-tarjeta{background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 58%,transparent),color-mix(in srgb,var(--hoja) 90%,transparent));border-color:color-mix(in srgb,var(--oro) 20%,var(--linea-2));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent),0 22px 44px -34px rgba(0,0,0,.8)}
+:root[data-theme="light"] .jg-tarjeta{box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 36px -30px rgba(60,45,20,.45)}
+.jg .btn{transition:transform .15s cubic-bezier(.3,1.4,.5,1),border-color .2s,background .2s}
+.jg .btn:active{transform:scale(.97)}
+@keyframes jg-gira{to{transform:rotate(360deg)}}
+@keyframes jg-entra{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
+@keyframes jg-luz{from{transform:translate3d(-110%,0,0)}to{transform:translate3d(290%,0,0)}}
+.jg-cab2{display:flex;align-items:flex-end;justify-content:space-between;gap:6px 14px;flex-wrap:wrap}
+.jg-cab2 small{display:block;font:600 .7rem/1.2 var(--f-ui);letter-spacing:.24em;text-transform:uppercase;color:var(--oro)}
+.jg-cab2 h1{margin:.08em 0 0;font:600 clamp(1.9rem,7vw,2.5rem)/1.02 var(--f-display);letter-spacing:.01em;color:var(--tinta)}
+.jg-cab2 p{margin:0 0 .3em}
+/* tu perfil: el emblema con su órbita, el nivel y la barra con luz */
+.jg-yo{overflow:hidden;border-color:color-mix(in srgb,var(--oro) 46%,transparent);background:radial-gradient(120% 150% at 0% 0%,color-mix(in srgb,var(--oro) 17%,transparent),transparent 58%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 66%,transparent),color-mix(in srgb,var(--hoja) 92%,transparent))}
+.jg-yo::before{content:"א";position:absolute;right:.02em;bottom:-.46em;font:500 9rem/1 "Frank Ruhl Libre",var(--f-texto);color:var(--oro);opacity:.055;pointer-events:none}
+.jg-yo>*{position:relative}
+.jg-yo .jg-perfil{grid-template-columns:auto 1fr auto}
+.jg-yo .jg-perfil .jg-emb{position:relative;width:76px;height:76px;margin:6px}
+.jg-yo .jg-emb::after{content:"";position:absolute;inset:-7px;border-radius:50%;border:1.5px dashed color-mix(in srgb,var(--oro) 62%,transparent);animation:jg-gira 28s linear infinite}
+.jg-nv{display:grid;justify-items:center;align-content:center;width:62px;height:62px;border-radius:50%;border:1.5px solid var(--oro);background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--oro) 30%,transparent),color-mix(in srgb,var(--oro) 6%,transparent));box-shadow:0 0 0 4px color-mix(in srgb,var(--oro) 10%,transparent)}
+.jg-nv b{font:600 1.45rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.jg-nv small{font:600 .54rem/1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--tenue);margin-top:3px}
+.jg-yo .jg-barra{height:11px;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+.jg-yo .jg-barra>i{position:relative;overflow:hidden}
+.jg-yo .jg-barra>i::after{content:"";position:absolute;top:0;bottom:0;left:0;width:36%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:translate3d(-110%,0,0);animation:jg-luz 3.2s ease-in-out 1.4s infinite}
+@media (max-width:380px){.jg-nv{width:52px;height:52px}.jg-nv b{font-size:1.2rem}.jg-yo .jg-perfil .jg-emb{width:64px;height:64px}}
+/* accesos del panel */
+.jg-atajos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jg-atajo{position:relative;display:grid;gap:4px;align-content:start;padding:14px 14px 13px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 26%,var(--linea-2));background:linear-gradient(160deg,color-mix(in srgb,var(--oro) 11%,transparent),transparent 62%),color-mix(in srgb,var(--hoja) 88%,transparent);color:var(--tinta);text-decoration:none;box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent);transition:transform .16s cubic-bezier(.3,1.4,.5,1),border-color .2s;-webkit-tap-highlight-color:transparent}
+.jg-atajo:active{transform:scale(.97)}
+.jg-atajo:hover,.jg-atajo:focus-visible{border-color:var(--oro);outline:none}
+.jg-atajo svg{width:26px;height:26px;color:var(--oro-vivo)}
+.jg-atajo b{font:600 1rem/1.2 var(--f-ui);letter-spacing:.02em}
+.jg-atajo small{font:400 .76rem/1.35 var(--f-ui);color:var(--tenue)}
+@media (min-width:720px){.jg-atajos{grid-template-columns:repeat(4,1fr)}}
+/* menú del juego: cinco secciones siempre a la mano */
+.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes jg-sube-muelle{from{opacity:0;transform:translate3d(-50%,26px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
+.jg-muelle a{position:relative;z-index:1;display:grid;justify-items:center;gap:4px;padding:8px 2px 7px;border-radius:16px;color:var(--tenue);text-decoration:none;font:500 .68rem/1 var(--f-ui);letter-spacing:.04em;-webkit-tap-highlight-color:transparent;transition:color .2s}
+.jg-muelle a svg{width:24px;height:24px;transition:transform .32s cubic-bezier(.3,1.6,.5,1)}
+.jg-muelle a.act{color:var(--oro-vivo)}
+.jg-muelle a.act svg{transform:translate3d(0,-2px,0) scale(1.14)}
+.jg-muelle a:active svg{transform:scale(.88)}
+.jg-muelle a:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:-2px}
+.jg-muelle .luz{position:absolute;z-index:0;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/5);border-radius:16px;background:radial-gradient(120% 100% at 50% 0%,color-mix(in srgb,var(--oro) 36%,transparent),color-mix(in srgb,var(--oro) 10%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);transform:translate3d(calc(var(--i,0)*100%),0,0);transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
+.jg-muelle a[data-n]::after{content:attr(data-n);position:absolute;top:3px;left:calc(50% + 7px);min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--oro);color:var(--sobre-oro,#16120b);font:600 .62rem/16px var(--f-ui);text-align:center}
+html.con-modal .jg-muelle{opacity:0;pointer-events:none}
+html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+@media print{.jg-muelle{display:none}}
+/* la llave de acceso (código recién creado) */
+.jg-llave{overflow:hidden;text-align:center;justify-items:center;border-color:color-mix(in srgb,var(--oro) 62%,transparent);background:radial-gradient(110% 70% at 50% 0%,color-mix(in srgb,var(--oro) 22%,transparent),transparent 64%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 82%,transparent),var(--hoja))}
+.jg-llave::before{content:"";position:absolute;left:50%;top:0;width:170%;aspect-ratio:1;margin:-45% 0 0 -85%;background:conic-gradient(from 0deg,transparent 0 80%,color-mix(in srgb,var(--oro-vivo) 20%,transparent) 90%,transparent 100%);animation:jg-gira 11s linear infinite;pointer-events:none}
+.jg-llave>*{position:relative;max-width:100%}
+.jg-llave>p,.jg-llave>.jg-aviso,.jg-llave>.jg-guardar,.jg-llave>.jg-pasos,.jg-llave>.jg-codigo{justify-self:stretch}
+.jg-llave>.jg-aviso{text-align:left}
+.jg-llave .jg-emb{display:block;width:88px;height:88px;margin-top:4px}
+.jg-llave .jg-emb svg{width:100%;height:100%;display:block}
+.jg-bienv{font:500 clamp(1.45rem,6vw,2rem)/1.15 var(--f-display)!important;color:var(--tinta)!important}
+.jg-bienv b{color:var(--oro-vivo);font-weight:600;overflow-wrap:anywhere}
+.jg-llave .jg-codigo{border-style:solid;border-color:color-mix(in srgb,var(--oro) 58%,transparent);background:color-mix(in srgb,#000 32%,var(--hoja-2));box-shadow:inset 0 2px 10px rgba(0,0,0,.45),0 0 0 4px color-mix(in srgb,var(--oro) 10%,transparent);outline:none}
+.jg-llave .jg-codigo span{display:inline-block;animation:jg-entra .55s cubic-bezier(.2,.7,.2,1) both}
+.jg-llave .jg-codigo span:nth-of-type(2){animation-delay:.14s}.jg-llave .jg-codigo span:nth-of-type(3){animation-delay:.28s}.jg-llave .jg-codigo span:nth-of-type(4){animation-delay:.42s}
+.jg-pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;list-style:none;margin:0;padding:0;counter-reset:jgp}
+.jg-pasos li{counter-increment:jgp;display:grid;justify-items:center;align-content:start;gap:6px;font:500 .78rem/1.25 var(--f-ui);color:var(--tenue);text-align:center}
+.jg-pasos li::before{content:counter(jgp);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--linea);font:600 .9rem/1 var(--f-ui);transition:background .3s,border-color .3s,box-shadow .3s}
+.jg-pasos li.ya{color:var(--tinta)}
+.jg-pasos li.ya::before{content:"✓";background:var(--oro);border-color:var(--oro);color:var(--sobre-oro,#16120b)}
+.jg-pasos li.ahora{color:var(--oro-vivo)}
+.jg-pasos li.ahora::before{border-color:var(--oro-vivo);box-shadow:0 0 0 4px color-mix(in srgb,var(--oro) 18%,transparent)}
+.jg-guardar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jg-guardar .btn{flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:78px;padding:10px 8px;text-align:center;white-space:normal}
+.jg-guardar .btn svg{width:22px;height:22px}
+.jg-guardar .btn small{display:block;font:400 .72rem/1.25 var(--f-ui);color:var(--tenue);letter-spacing:0;text-transform:none}
+.jg-guardar .btn:last-child:nth-child(odd){grid-column:1/-1}
+.jg-guardar .btn.hecho{border-color:var(--oro);background:var(--oro-suave)}
+.jg-enlace-b{background:none;border:0;padding:4px 0;color:var(--tenue);font:400 .8rem/1.3 var(--f-ui);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.jg-llave-fin .jg-check{padding:13px 12px;border-radius:12px;border:1px solid var(--linea);font-size:1rem;transition:background .2s,border-color .2s}
+.jg-llave-fin .jg-check input{width:26px;height:26px;margin-top:0}
+.jg-llave-fin .jg-check.si{border-color:var(--oro);background:var(--oro-suave)}
+.jg-llave-fin .jg-check.jg-falta{border-color:#e0866f;background:color-mix(in srgb,#e0866f 12%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,#e0866f 30%,transparent)}
+.jg-espera{opacity:.55;filter:saturate(.55)}
+.jg-porque{margin:0;padding:12px 14px;border-radius:12px;border:1px solid #e0866f;background:color-mix(in srgb,#e0866f 14%,transparent);color:var(--tinta)!important;font:400 .95rem/1.5 var(--f-ui);animation:jg-entra .3s both}
+@keyframes jg-tiembla{10%,90%{transform:translate3d(-2px,0,0)}20%,80%{transform:translate3d(4px,0,0)}30%,50%,70%{transform:translate3d(-7px,0,0)}40%,60%{transform:translate3d(7px,0,0)}}
+.jg-tiembla{animation:jg-tiembla .55s cubic-bezier(.36,.07,.19,.97) both}
+/* cómo se juega: escenas vectoriales que se mueven solas; se avanza a tu ritmo */
+.jg-guia{gap:14px}
+.jg-escena{position:relative;height:clamp(210px,36vh,300px);border-radius:16px;overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:radial-gradient(90% 90% at 50% 18%,color-mix(in srgb,var(--oro) 17%,transparent),transparent 70%),color-mix(in srgb,#000 34%,var(--hoja-2));display:grid;place-items:center;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.jg-escena>*{animation:jg-entra .6s cubic-bezier(.2,.7,.2,1) both}
+.jg-guia>h2{font:600 clamp(1.5rem,6vw,2rem)/1.1 var(--f-display);color:var(--tinta);margin:0;letter-spacing:.01em;text-transform:none;display:block}
+.jg-guia .jg-gt{font:400 1.08rem/1.55 var(--f-texto);color:var(--tinta-2);margin:0;min-height:5em}
+.jg-guia-pie{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.jg-puntos{display:flex;gap:4px}
+.jg-puntos button{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.jg-puntos button::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--linea);transition:transform .2s,background .2s}
+.jg-puntos button.act::before{background:var(--oro-vivo);transform:scale(1.4)}
+.jg-guia-nav{display:flex;gap:8px}
+.jg-guia-nav .jg-grande{flex:1}
+.g-pila{display:grid;place-items:center}
+.g-pila>*{grid-area:1/1}
+.g-versos{position:relative;display:grid;gap:13px;width:min(76%,320px)}
+.g-versos i{display:block;height:12px;border-radius:6px;background:var(--linea);position:relative;overflow:hidden}
+.g-versos i:nth-child(2){width:86%}.g-versos i:nth-child(4){width:64%}
+.g-versos i::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,var(--oro),var(--oro-vivo));transform:translate3d(-101%,0,0);animation:g-lee 5.4s ease-in-out infinite}
+.g-versos i:nth-child(2)::after{animation-delay:.8s}.g-versos i:nth-child(3)::after{animation-delay:1.6s}.g-versos i:nth-child(4)::after{animation-delay:2.4s}
+@keyframes g-lee{0%{transform:translate3d(-101%,0,0);opacity:1}16%,84%{transform:none;opacity:1}100%{transform:none;opacity:0}}
+.g-xp{position:absolute;right:-8%;top:-34px;font:600 1.35rem/1 var(--f-ui);color:var(--oro-vivo);animation:g-pop 5.4s ease-out infinite}
+@keyframes g-pop{0%,52%{opacity:0;transform:translate3d(0,10px,0) scale(.8)}60%{opacity:1;transform:none}82%{opacity:1}92%,100%{opacity:0;transform:translate3d(0,-14px,0)}}
+.g-mis{display:grid;gap:14px;width:min(78%,320px)}
+.g-mis div{display:flex;align-items:center;gap:12px}
+.g-mis b,.g-dias i{position:relative;flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--oro)}
+.g-mis b::after,.g-dias i::after{content:"✓";position:absolute;inset:-1.5px;border-radius:50%;background:var(--oro);color:var(--sobre-oro,#16120b);display:grid;place-items:center;font:700 .86rem/1 var(--f-ui);transform:scale(0);animation:g-ok 6s cubic-bezier(.3,1.5,.5,1) infinite}
+.g-mis div:nth-child(2) b::after{animation-delay:.9s}.g-mis div:nth-child(3) b::after{animation-delay:1.8s}
+@keyframes g-ok{0%,10%{transform:scale(0)}20%,88%{transform:scale(1)}97%,100%{transform:scale(0)}}
+.g-mis i{flex:1;height:11px;border-radius:6px;background:var(--linea)}
+.g-mis div:nth-child(2) i{flex:.7}
+.g-gemas{position:relative;width:204px;height:204px;animation:jg-gira 44s linear infinite}
+.g-gemas>span{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px}
+.g-gemas svg{width:100%;height:100%;display:block}
+.g-orbita>span{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;box-shadow:0 0 0 2px color-mix(in srgb,#000 40%,transparent),0 0 12px 1px color-mix(in srgb,var(--oro) 40%,transparent)}
+.g-centro{width:84px;height:84px}
+.g-centro svg{width:100%;height:100%;display:block}
+.g-pers{display:grid;justify-items:center;gap:18px}
+.g-pers>svg{width:66px;height:66px;color:var(--oro-vivo);animation:jg-brilla 1.9s ease-in-out infinite}
+.g-dias{display:flex;gap:8px}
+.g-dias i:nth-child(2)::after{animation-delay:.45s}.g-dias i:nth-child(3)::after{animation-delay:.9s}.g-dias i:nth-child(4)::after{animation-delay:1.35s}.g-dias i:nth-child(5)::after{animation-delay:1.8s}.g-dias i:nth-child(6)::after{animation-delay:2.25s}.g-dias i:nth-child(7)::after{animation-delay:2.7s}
+.g-arbol{width:min(70%,230px)}
+.g-arbol svg{width:100%;height:auto;display:block}
+.g-menu{position:relative;display:grid;grid-template-columns:repeat(5,1fr);width:min(88%,340px);box-sizing:border-box;padding:6px;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--hoja) 82%,transparent)}
+.g-menu>span:not(.luz){position:relative;display:grid;justify-items:center;gap:4px;padding:8px 0 6px;color:var(--oro-vivo);font:500 .62rem/1 var(--f-ui)}
+.g-menu svg{width:22px;height:22px}
+.g-menu .luz{position:absolute;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/5);border-radius:14px;background:color-mix(in srgb,var(--oro) 26%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);animation:g-menu 7.5s cubic-bezier(.3,1.3,.5,1) infinite}
+@keyframes g-menu{0%,14%{transform:translate3d(0,0,0)}20%,34%{transform:translate3d(100%,0,0)}40%,54%{transform:translate3d(200%,0,0)}60%,74%{transform:translate3d(300%,0,0)}80%,94%{transform:translate3d(400%,0,0)}100%{transform:translate3d(0,0,0)}}
+.jg-enapp .jg-acciones{margin-top:10px}
+@media (prefers-reduced-motion:reduce){.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
+html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
+html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis b::after,html[data-mov="no"] .g-dias i::after{transform:scale(1)}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -509,7 +657,9 @@
     if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null);
     await config();
     if (cont !== S.cont) return;
+    muelle(S.token && !S.codigoNuevo && que !== "buzon" ? SECC_DE[que] || "hoy" : null);
     if (S.codigoNuevo) return pintarCodigo(cont);
+    if (que === "guia") return pintarGuia(cont);
     if (que === "propuestas" && !S.token) return pintarPropuestas(cont);
     if (que === "c" && S.sub[1]) A.store.set("jg:compInv", { c: String(S.sub[1]).toUpperCase().slice(0, 10), t: Date.now() });
     if (que === "sala" && S.sub[1]) A.store.set("jg:salaInv", { c: String(S.sub[1]).toUpperCase().slice(0, 8), t: Date.now() });
@@ -578,7 +728,7 @@
       guardarSesion(r.token, r.yo);
       S.codigoNuevo = r.codigo;
       repintar();
-      cinematica(r.yo);
+      cinematica(r.yo, arriba);
     };
     btn.addEventListener("click", crear);
     entrada.addEventListener("keydown", (e) => { if (e.key === "Enter") crear(); });
@@ -600,10 +750,11 @@
       cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pistaC) }, ico("google"), h("span", { text: "Entrar con Google" })) : null,
       cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pistaC) }, ico("facebook"), h("span", { text: "Entrar con Facebook" })) : null);
     marco(cont, cabecera(),
-      franjaInv, franjaGrupo, tarjetaPrerregistro(entrada),
+      avisoEnApp(), franjaInv, franjaGrupo, tarjetaPrerregistro(entrada),
       tarjeta("Cómo se juega", null,
         h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, una de las doce piedras del fundamento o un lauro trenzado incorruptible." }),
-        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, departamento o estado, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Cada persona que llega con tu enlace hace crecer tu árbol de la siembra. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." })),
+        h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, departamento o estado, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Cada persona que llega con tu enlace hace crecer tu árbol de la siembra. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." }),
+        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/guia", onclick: () => { S.guiaPaso = 0; } }, ico("jugar"), h("span", { text: "Ver cómo se juega, paso a paso" })))),
       h("div", { class: "jg-dos" },
         tarjeta("Empezar con un apodo", null, h("div", { class: "jg-form" }, entrada, btn), pista,
           h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso o con Google." }),
@@ -618,30 +769,130 @@
       vivoLinea());
   }
 
-  // --- código recién creado (se muestra una sola vez)
+  // --- código recién creado (se muestra una sola vez): la llave de acceso
+  // BiEx (9-nov-2026, prueba en el teléfono): la vista sube de inmediato al código; «Continuar» explica qué falta en vez de
+  // quedarse mudo; «Guardar en el teléfono» nunca falla (si el gestor de contraseñas no responde, queda la imagen de la
+  // llave en el teléfono y el código copiado).
+  const arriba = () => { try { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } };
+  function descargarBlob(nombre, blob) {
+    const u = URL.createObjectURL(blob), a = h("a", { href: u, download: nombre }); document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 6000);
+  }
+  async function imagenLlave(codigo) {
+    const y = S.yo || {}, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const c = cv.getContext("2d"), T = "'BiEx Texto',Georgia,serif", D = "'BiEx Titular','BiEx Texto',Georgia,serif", U = "'BiEx Interfaz','Segoe UI',sans-serif", M = "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace";
+    try { await Promise.all(["600 90px 'BiEx Titular'", "italic 400 46px 'BiEx Titular'", "400 40px 'BiEx Texto'", "500 28px 'BiEx Interfaz'"].map((f) => document.fonts.load(f))); } catch (e) { /* sin fuentes: respaldo */ }
+    c.fillStyle = "#07070a"; c.fillRect(0, 0, W, H);
+    const luz = (x, y0, r, a) => { const g = c.createRadialGradient(x, y0, 10, x, y0, r); g.addColorStop(0, "rgba(201,168,101," + a + ")"); g.addColorStop(1, "rgba(201,168,101,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); };
+    luz(W / 2, 330, 720, 0.30); luz(140, 1230, 520, 0.10); luz(960, 1180, 460, 0.08);
+    c.textAlign = "center"; c.textBaseline = "alphabetic";
+    for (let i = 0; i < 46; i++) { const l = LETRAS[(i * 7) % LETRAS.length]; c.font = (26 + (i * 13) % 40) + "px " + T; c.fillStyle = "rgba(232,207,148," + (0.03 + ((i * 5) % 7) / 160).toFixed(3) + ")"; c.fillText(l, (i * 233) % W, 60 + (i * 397) % (H - 80)); }
+    const rr = (x, y0, w, hh, r) => { c.beginPath(); c.moveTo(x + r, y0); c.arcTo(x + w, y0, x + w, y0 + hh, r); c.arcTo(x + w, y0 + hh, x, y0 + hh, r); c.arcTo(x, y0 + hh, x, y0, r); c.arcTo(x, y0, x + w, y0, r); c.closePath(); };
+    c.strokeStyle = "rgba(201,168,101,.62)"; c.lineWidth = 2.5; rr(44, 44, W - 88, H - 88, 38); c.stroke();
+    c.strokeStyle = "rgba(201,168,101,.22)"; c.lineWidth = 1; rr(62, 62, W - 124, H - 124, 28); c.stroke();
+    const txt = (t, y0, f, col, ls) => { c.font = f; c.fillStyle = col; try { c.letterSpacing = ls || "0px"; } catch (e) { /* ignorar */ } c.fillText(t, W / 2, y0); try { c.letterSpacing = "0px"; } catch (e) { /* ignorar */ } };
+    const ajustar = (t, max, f0, tam) => { let s = tam; c.font = f0.replace("{t}", s); while (c.measureText(t).width > max && s > 20) { s -= 2; c.font = f0.replace("{t}", s); } return f0.replace("{t}", s); };
+    txt("ESCUDRIÑA", 170, "600 76px " + D, "#e8cf94", "14px");
+    txt("El Códice Viviente", 228, "italic 400 44px " + D, "#c9a865");
+    const col = COLORES[(y.emb && y.emb.c) || 0] || COLORES[0], l = (y.emb && y.emb.l) || "α";
+    c.beginPath(); c.arc(W / 2, 392, 86, 0, 2 * Math.PI); c.fillStyle = "#121216"; c.fill(); c.lineWidth = 6; c.strokeStyle = col; c.stroke();
+    c.font = "500 104px " + (/[֐-׿]/.test(l) ? "'Frank Ruhl Libre'," + T : T); c.fillStyle = col; c.fillText(l, W / 2, 428);
+    txt(y.apodo || "", 548, ajustar(y.apodo || "", W - 260, "600 {t}px " + D, 62), "#f3ecdc");
+    if (y.fundador) txt("Primicia n.º " + fmt(y.n) + " de 1440", 606, "500 32px " + U, "#c9a865", "3px");
+    txt("MI LLAVE DE ACCESO", 716, "600 34px " + U, "#e8cf94", "8px");
+    c.fillStyle = "rgba(0,0,0,.5)"; rr(110, 752, W - 220, 150, 26); c.fill(); c.strokeStyle = "rgba(232,207,148,.8)"; c.lineWidth = 2.5; c.stroke();
+    txt(codigo, 850, ajustar(codigo, W - 300, "600 {t}px " + M, 64), "#f3e3b5", "3px");
+    txt("Con este código entras a tu avance", 978, "400 38px " + T, "#ece5d6");
+    txt("desde cualquier teléfono o computadora.", 1028, "400 38px " + T, "#ece5d6");
+    txt("Guárdala solo para ti: quien tenga este código", 1112, "italic 400 32px " + T, "#bdb4a3");
+    txt("puede entrar a tu avance.", 1156, "italic 400 32px " + T, "#bdb4a3");
+    txt("bibliaexacta.pages.dev/escudrina", 1250, "500 32px " + U, "#c9a865", "2px");
+    return new Promise((ok) => cv.toBlob((b) => ok(b), "image/png"));
+  }
+  function verImagenLlave(blob) {
+    const u = URL.createObjectURL(blob);
+    A.abrirModal(() => A.cajaModal(A.cabModal("Tu llave de acceso", "Escudriña"), h("div", { class: "jg-cel" },
+      h("img", { class: "jg-img", src: u, alt: "Imagen con tu apodo y tu código de acceso", width: "1080", height: "1350" }),
+      h("p", { class: "jg-mini", text: "Mantén pulsada la imagen y elige «Guardar imagen» o «Descargar imagen»." }))));
+  }
   function pintarCodigo(cont) {
-    const c = S.codigoNuevo;
-    document.title = "Tu código de acceso · Escudriña · BiEx";
-    const sigue = h("button", { class: "btn oro jg-grande", type: "button", disabled: true, onclick: () => { S.codigoNuevo = null; A.irA("#/escudrina"); repintar(); try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } } }, h("span", { text: "Continuar" }));
-    const casilla = h("input", { type: "checkbox", onchange: () => { sigue.disabled = !casilla.checked; } });
-    const texto = "Escudriña · Biblia Exacta\nApodo: " + (S.yo ? S.yo.apodo : "") + "\nCódigo de acceso: " + c + "\n\nGuárdalo: es tu llave para entrar desde otros dispositivos mientras no asegures tu avance.";
-    const guardarTel = window.PasswordCredential ? h("button", { class: "btn", type: "button", onclick: async () => {
-      try { await navigator.credentials.store(new window.PasswordCredential({ id: (S.yo && S.yo.apodo) || "Escudriña", password: c, name: "Escudriña · Biblia Exacta" })); A.avisar("Guardado en el gestor de contraseñas"); }
-      catch (e) { A.avisar("El navegador no permitió guardarlo; usa Copiar o Descargar"); }
-    } }, ico("llave"), h("span", { text: "Guardar en el teléfono" })) : null;
-    marco(cont, cabecera(),
-      tarjeta("Tu código de acceso", ico("codigo"),
-        h("p", { text: "Te damos la bienvenida, " + (S.yo ? S.yo.apodo : "") + ". Este es tu código para entrar desde cualquier otro dispositivo:" }),
-        h("div", { class: "jg-codigo", "data-codigo": "" , text: c }),
-        h("div", { class: "jg-acciones" },
-          h("button", { class: "btn", type: "button", onclick: () => copiar(c, "Código copiado") }, ico("copiar"), h("span", { text: "Copiar" })),
-          h("button", { class: "btn", type: "button", onclick: () => descargarTexto("escudrina-codigo.txt", texto) }, ico("descargar"), h("span", { text: "Descargar" })),
-          navigator.share ? h("button", { class: "btn", type: "button", onclick: () => compartir("Mi código de Escudriña", texto, OFICIAL) }, ico("compartir"), h("span", { text: "Enviármelo" })) : null,
-          guardarTel),
+    const c = S.codigoNuevo, y = S.yo || {}, e = y.emb || {};
+    document.title = "Tu llave de acceso · Escudriña · BiEx";
+    const texto = "Escudriña · Biblia Exacta\nApodo: " + (y.apodo || "") + "\nCódigo de acceso: " + c + "\n\nGuárdalo: es tu llave para entrar desde otros dispositivos mientras no asegures tu avance.\n" + PUBLICO + "/escudrina";
+    let guardado = false;
+    const pasos = h("ol", { class: "jg-pasos", "aria-label": "Tres pasos para continuar" }, h("li", { class: "ahora", text: "Guarda tu código" }), h("li", { text: "Marca la casilla" }), h("li", { text: "Continúa" }));
+    const [p1, p2, p3] = pasos.children;
+    const porque = h("p", { class: "jg-porque", role: "alert", hidden: true });
+    const casilla = h("input", { type: "checkbox" });
+    const etiqueta = h("label", { class: "jg-check" }, casilla, h("span", { text: "Ya guardé mi código" }));
+    const sigue = h("button", { class: "btn oro jg-grande jg-espera", type: "button", "aria-disabled": "true" }, h("span", { text: "Continuar" }));
+    const estado = () => {
+      const si = casilla.checked;
+      p1.className = guardado || si ? "ya" : "ahora"; p2.className = si ? "ya" : guardado ? "ahora" : ""; p3.className = si ? "ahora" : "";
+      sigue.classList.toggle("jg-espera", !si); sigue.setAttribute("aria-disabled", String(!si)); etiqueta.classList.toggle("si", si);
+      if (si) { porque.hidden = true; etiqueta.classList.remove("jg-falta"); }
+    };
+    const hecho = (btn) => { guardado = true; if (btn) btn.classList.add("hecho"); vibrar(12); estado(); };
+    casilla.addEventListener("change", () => { vibrar(10); estado(); });
+    sigue.addEventListener("click", () => {
+      if (!casilla.checked) {
+        // no se queda mudo: dice qué falta y lo señala (BiEx: personas con dislexia, TDAH o poca práctica con la tecnología)
+        porque.hidden = false;
+        porque.replaceChildren(h("b", { text: "Falta un paso. " }), guardado
+          ? "Marca la casilla «Ya guardé mi código» y vuelve a tocar «Continuar». Así confirmas que lo tienes a salvo."
+          : "Primero guarda tu código con uno de los botones de arriba (Copiar, Guardar imagen…). Después marca la casilla «Ya guardé mi código». Sin ese código no podrías volver a entrar desde otro teléfono.");
+        etiqueta.classList.add("jg-falta"); etiqueta.classList.remove("jg-tiembla"); void etiqueta.offsetWidth; etiqueta.classList.add("jg-tiembla");
+        try { etiqueta.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (er) { /* ignorar */ }
+        vibrar([30, 50, 30]);
+        return;
+      }
+      S.codigoNuevo = null; S.codigoArriba = null; vibrar(15);
+      const guia = !A.store.get("jg:guia", 0);
+      if (guia) S.guiaPaso = 0;
+      A.irA(guia ? "#/escudrina/guia" : "#/escudrina"); repintar(); arriba();
+    });
+    const accion = (ic, t, d, fn) => { const b = h("button", { class: "btn", type: "button" }, ico(ic), h("span", { text: t }), h("small", { text: d })); b.addEventListener("click", () => fn(b)); return b; };
+    const guardarImg = async (b, callado) => {
+      let blob = null; try { blob = await imagenLlave(c); } catch (er) { blob = null; }
+      if (!blob) { if (!callado) A.avisar("No se pudo crear la imagen; usa Copiar"); return false; }
+      if (A.sinDescargas && A.sinDescargas()) verImagenLlave(blob); else descargarBlob("escudrina-mi-llave.png", blob);
+      hecho(b);
+      if (!callado) A.avisar("Imagen guardada en tu teléfono (Descargas o Galería)");
+      return true;
+    };
+    const guardarTel = async (b) => {
+      let ok = false;
+      if (window.PasswordCredential && !EN_APP) { try { await navigator.credentials.store(new window.PasswordCredential({ id: y.apodo || "Escudriña", password: c, name: "Escudriña · Biblia Exacta" })); ok = true; } catch (er) { ok = false; } }
+      if (ok) { hecho(b); return A.avisar("Tu teléfono te ofrece guardarlo en su gestor de contraseñas: acepta «Guardar»"); }
+      // respaldo que no depende del navegador: la imagen de la llave queda en el teléfono y el código, copiado
+      const img = await guardarImg(b, true);
+      let cop = false; try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(c); cop = true; } } catch (er) { cop = false; }
+      if (!img && !cop) return copiar(c, "Código copiado: pégalo en tus notas");
+      hecho(b);
+      A.avisar(img ? "Guardamos la imagen de tu llave en el teléfono" + (cop ? " y copiamos el código" : "") : "Código copiado: pégalo en tus notas");
+    };
+    const partes = String(c).split("-"), codigoEl = h("div", { class: "jg-codigo", "data-codigo": "", tabindex: "-1", role: "group", "aria-label": "Tu código de acceso" });
+    partes.forEach((g, i) => { if (i) codigoEl.append("-"); codigoEl.append(h("span", { text: g })); });
+    marco(cont,
+      h("section", { class: "jg-tarjeta jg-llave" },
+        h("span", { class: "jg-emb", "aria-hidden": "true" }, emblema(e.l, e.c, marcoVisible(y))),
+        h("p", { class: "jg-bienv" }, "Te damos la bienvenida, ", h("b", { text: y.apodo || "" })),
+        y.fundador ? h("div", { class: "jg-chips" }, h("span", { class: "jg-chip", text: "Primicia n.º " + fmt(y.n) + " de 1440" })) : null,
+        h("h2", {}, ico("llave"), h("span", { text: "Tu código de acceso" })),
+        h("p", { text: "Con este código entras a tu avance desde cualquier otro teléfono o computadora. Guárdalo ahora: solo se muestra esta vez." }),
+        codigoEl, pasos,
+        h("div", { class: "jg-guardar" },
+          accion("copiar", "Copiar", "Pégalo en tus notas", (b) => { copiar(c, "Código copiado"); hecho(b); }),
+          accion("imagen", "Guardar imagen", "Queda en tu teléfono", (b) => guardarImg(b, false)),
+          navigator.share ? accion("compartir", "Enviármelo", "WhatsApp, correo…", (b) => { compartir("Mi código de Escudriña", texto, PUBLICO + "/escudrina"); hecho(b); }) : null,
+          accion("llave", "Guardar en el teléfono", "Gestor de contraseñas", guardarTel)),
+        (() => { const b = h("button", { class: "jg-enlace-b", type: "button", text: "Descargar como archivo de texto" }); b.addEventListener("click", () => { descargarTexto("escudrina-codigo.txt", texto); hecho(null); }); return b; })(),
         h("div", { class: "jg-aviso" }, h("b", { text: "Guárdalo bien. " }), "Este código es tu única llave mientras no asegures tu avance. Si lo pierdes antes de vincular tu perfil con una llave de acceso o con Google, tu avance no se podrá recuperar: no guardamos datos personales para reconocerte."),
-        S.yo && S.yo.fundador ? h("div", { class: "jg-aviso tenue" }, h("b", { text: "Eres la Primicia n.º " + fmt(S.yo.n) + " de 1440. " }), "Ese número es solo tuyo y no se repite: si pierdes el acceso, no vuelve. Por eso conviene vincular tu cuenta de una vez.") : null),
+        y.fundador ? h("div", { class: "jg-aviso tenue" }, h("b", { text: "Eres la Primicia n.º " + fmt(y.n) + " de 1440. " }), "Ese número es solo tuyo y no se repite: si pierdes el acceso, no vuelve. Por eso conviene vincular tu cuenta de una vez.") : null),
       tarjetaAsegurar(true),
-      tarjeta(null, null, h("label", { class: "jg-check" }, casilla, h("span", { text: "Ya guardé mi código" })), sigue));
+      h("section", { class: "jg-tarjeta jg-llave-fin" }, etiqueta, porque, sigue));
+    // la vista sube al código en el acto (quien se registra desde abajo de la página no lo vería)
+    if (S.codigoArriba !== c) { S.codigoArriba = c; arriba(); requestAnimationFrame(() => { arriba(); try { codigoEl.focus({ preventScroll: true }); } catch (er) { /* ignorar */ } }); }
   }
 
   // --- asegurar el avance (llave de acceso, Google, Facebook)
@@ -676,11 +927,14 @@
     if (y.dob > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Experiencia doble · " + horas(y.dob) + " de lectura" }));
     if (y.imp && y.imp.ms > 0) chips.push(h("span", { class: "jg-chip tenue", title: "Se gasta solo mientras lees y no vence", text: "Impulso ×" + String(y.imp.f).replace(".", ",") + " · " + horas(y.imp.ms) + " de lectura" }));
     if (y.enTope) chips.push(h("span", { class: "jg-chip tenue", title: "Cada mes se abren de 2 a 7 niveles nuevos", text: "Nivel tope del mes · reserva " + fmt(y.reserva) }));
-    return tarjeta(null, null, h("div", { class: "jg-perfil" },
+    const t = tarjeta(null, null, h("div", { class: "jg-perfil" },
       h("a", { class: "jg-emb", href: "#/escudrina/cuenta", "aria-label": "Tu emblema: cambiarlo en Cuenta" }, emblema(l, c, marcoVisible(y))),
-      h("div", {}, h("p", { class: "jg-nombre", text: y.apodo }), h("div", { class: "jg-rango", text: y.rangoNombre + " · nivel " + y.nivel }), chips.length ? h("div", { class: "jg-chips" }, chips) : null)),
+      h("div", {}, h("p", { class: "jg-nombre", text: y.apodo }), h("div", { class: "jg-rango", text: y.rangoNombre + " · nivel " + y.nivel }), chips.length ? h("div", { class: "jg-chips" }, chips) : null),
+      h("div", { class: "jg-nv", title: "Tu nivel" }, h("b", { text: String(y.nivel) }), h("small", { text: "nivel" }))),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
+    t.classList.add("jg-yo");
+    return t;
   }
   function botonSeguir() {
     const u = A.ultimo && A.ultimo();
@@ -753,28 +1007,160 @@
     const igual = y && JSON.stringify(y) === JSON.stringify(r.yo);
     actualizarYo(r.yo);
     // sin cambios no se vuelve a pintar (nada salta ni se cierra mientras se lee el panel)
-    if (!igual && cont === S.cont && S.cont.isConnected && (S.sub[0] || "") === "") dibujarPanel(cont, r.yo);
+    if (!igual && cont === S.cont && S.cont.isConnected && HUB[S.sub[0] || ""]) dibujarPanel(cont, r.yo);
   }
-  function dibujarPanel(cont, y) {
-    const apodo = y.apodoProvisional ? tarjetaApodo(true) : null;
-    marco(cont, cabecera(),
-      y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
-        "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null,
-      tarjetaPerfil(y), apodo, botonSeguir(),
-      h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
-      tarjetaHallazgos(y),
-      (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })(),
-      h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)),
-      h("div", { class: "jg-dos" }, tarjetaCompania(y), tarjetaSala(y)),
-      y.asegurado ? null : tarjetaAsegurar(false),
-      tarjetaCampana(y),
-      tarjetaSiembra(y),
-      tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu " + nombreRegion((y.lugar || {}).pais).toLowerCase() + ", tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
+  // ================================================================== menú del juego y secciones (BiEx, 9-nov-2026)
+  // «Que la distribución tenga sus propios botones, como los menús de los juegos»: cinco secciones fijas, siempre a la mano.
+  // El menú vive fuera de la vista (no parpadea al repintar) y se retira al salir de Escudriña.
+  const SECC = [["hoy", "Hoy", "hoy"], ["tesoro", "Tesoro", "liga"], ["mundo", "Mundo", "mundo"], ["juntos", "Juntos", "compania"], ["mas", "Más", "mas"]];
+  const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "juntos",
+    mas: "mas", cuenta: "mas", propuestas: "mas", guia: "mas" };
+  const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
+  const TIT = { hoy: ["Hoy", "Tu lectura y tus misiones"], tesoro: ["Tesoro", "Lo que has hallado leyendo"], mundo: ["Mundo", "Liga, misión mundial y clasificaciones"],
+    juntos: ["Juntos", "Compañía, salas y tu siembra"], mas: ["Más", "Cómo se juega, tu cuenta y tus ideas"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
+  let MU = null;
+  function muelle(sec) {
+    const raiz = document.documentElement;
+    if (sec == null) { if (MU) { MU.remove(); MU = null; } raiz.classList.remove("jg-con-muelle"); return; }
+    if (!MU) {
+      MU = h("nav", { class: "jg-muelle", "aria-label": "Secciones de Escudriña" }, h("span", { class: "luz", "aria-hidden": "true" }),
+        SECC.map(([k, t, ic]) => h("a", { href: "#/escudrina" + (k === "hoy" ? "" : "/" + k), "data-s": k, onclick: () => vibrar(8) }, ico(ic), h("span", { text: t }))));
+      document.body.append(MU);
+    }
+    raiz.classList.add("jg-con-muelle");
+    MU.style.setProperty("--i", String(Math.max(0, SECC.findIndex((s) => s[0] === sec))));
+    for (const a of MU.querySelectorAll("a")) { const on = a.getAttribute("data-s") === sec; a.classList.toggle("act", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
+    const y = S.yo, faltan = y && Array.isArray(y.mis) ? y.mis.filter((m) => !m.hecha).length : 0, hoy = MU.querySelector('a[data-s="hoy"]');
+    if (hoy) { if (faltan) hoy.setAttribute("data-n", String(faltan)); else hoy.removeAttribute("data-n"); }
+  }
+  window.addEventListener("hashchange", () => { if (!/^#\/escudrina(\/|$)/.test(location.hash)) muelle(null); });
+  function cabeceraJuego(sec) {
+    const t = TIT[sec] || TIT.hoy;
+    return h("div", { class: "panel-cab jg-cab2" }, h("div", {}, h("small", { text: "Escudriña · El Códice Viviente" }), h("h1", { class: "texto", text: t[0] })), h("p", { class: "jg-mini", text: t[1] }));
+  }
+  function tarjetaPotencias(y) {
+    const extra = [];
+    if (y.dob > 0) extra.push("Experiencia doble: " + horas(y.dob) + " de lectura (no vence).");
+    if (y.imp && y.imp.ms > 0) extra.push("Impulso ×" + String(y.imp.f).replace(".", ",") + ": " + horas(y.imp.ms) + " de lectura.");
+    extra.push("Tu mejor marca de perseverancia: " + plural(y.persMejor || 0, "día", "días") + ". Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.");
+    return tarjeta("Tus reservas", ico("llama"), h("div", { class: "jg-cifras" },
+      h("div", {}, cifra(y.dr), h("span", { text: "dracmas" })),
+      h("div", {}, cifra(y.pers), h("span", { text: y.pers === 1 ? "día de perseverancia" : "días de perseverancia" })),
+      h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" }))),
+      h("p", { class: "jg-mini", text: extra.join(" ") }));
+  }
+  function tarjetaClasificacion(y) {
+    return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu " + nombreRegion((y.lugar || {}).pais).toLowerCase() + ", tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
-          h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea()),
-      tarjetaOpinion(true),
-      notaConstruccion(),
-      h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" }))));
+          h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea());
+  }
+  const tarjetaComoSeJuega = () => tarjeta("Cómo se juega", ico("jugar"),
+    h("p", { text: "Una presentación breve, paso a paso y a tu ritmo: leer, misiones, hallazgos, perseverancia, leer en compañía y tu siembra." }),
+    h("div", { class: "jg-acciones" }, h("a", { class: "btn oro", href: "#/escudrina/guia", onclick: () => { S.guiaPaso = 0; } }, ico("jugar"), h("span", { text: "Ver cómo se juega" }))));
+  function dibujarPanel(cont, y) {
+    const sec = SECC_DE[S.sub[0] || ""] || "hoy";
+    const atajo = (href, ic, t, d) => h("a", { class: "jg-atajo", href, onclick: () => vibrar(8) }, ico(ic), h("b", { text: t }), h("small", { text: d }));
+    const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
+    let partes;
+    if (sec === "tesoro") partes = [tarjetaHallazgos(y), tarjetaPotencias(y)];
+    else if (sec === "mundo") partes = [h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
+    else if (sec === "juntos") partes = [salaInv, h("div", { class: "jg-dos" }, tarjetaCompania(y), tarjetaSala(y)), tarjetaCampana(y), tarjetaSiembra(y)];
+    else if (sec === "mas") partes = [tarjetaComoSeJuega(), y.asegurado ? null : tarjetaAsegurar(false),
+      tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
+        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
+      tarjetaOpinion(true), notaConstruccion()];
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(),
+      A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
+      h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
+      salaInv, y.asegurado ? null : tarjetaAsegurar(false),
+      h("nav", { class: "jg-atajos", "aria-label": "Más de Escudriña" },
+        atajo("#/escudrina/tesoro", "liga", "Tesoro", "Tus piedras, lauros y dracmas"),
+        atajo("#/escudrina/mundo", "mundo", "Mundo", "Liga, misión mundial y clasificación"),
+        atajo("#/escudrina/juntos", "compania", "Juntos", "Compañía, salas y tu siembra"),
+        atajo("#/escudrina/guia", "jugar", "Cómo se juega", "En un minuto, paso a paso")),
+      y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
+        "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null];
+    marco(cont, cabeceraJuego(sec), ...partes);
+  }
+
+  // ================================================================== navegadores dentro de otras aplicaciones
+  const enlaceFuera = (inv) => PUBLICO + (inv ? "/e/" + inv : "/escudrina");
+  function abrirFuera(inv) {
+    const u = enlaceFuera(inv);
+    if (/Android/i.test(UA)) { location.href = "intent://" + u.replace(/^https:\/\//, "") + "#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end"; setTimeout(() => copiar(u, "Si no se abrió, el enlace quedó copiado: pégalo en tu navegador"), 1500); return; }
+    if (/iPhone|iPad|iPod/i.test(UA)) { location.href = "x-safari-" + u; setTimeout(() => copiar(u, "Enlace copiado: pégalo en Safari"), 1500); return; }
+    try { window.open(u, "_blank", "noopener"); } catch (e) { copiar(u, "Enlace copiado: pégalo en tu navegador"); }
+  }
+  function avisoEnApp() {
+    if (!EN_APP) return null;
+    const inv = invitacionPendiente();
+    return h("div", { class: "jg-aviso jg-enapp" }, h("b", { text: "Estás en el navegador de otra aplicación. " }),
+      "Aquí puedes leer y jugar, pero para guardar bien tu acceso, entrar con Google o instalar Biblia Exacta conviene abrirla en tu navegador (Chrome o Safari).",
+      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro chico", type: "button", onclick: () => abrirFuera(inv) }, h("span", { text: "Abrir en mi navegador" })),
+        h("button", { class: "btn chico", type: "button", onclick: () => copiar(enlaceFuera(inv), "Enlace copiado: pégalo en tu navegador") }, ico("copiar"), h("span", { text: "Copiar el enlace" }))));
+  }
+  function avisoGoogleEnApp() {
+    const inv = invitacionPendiente();
+    A.abrirModal(() => A.cajaModal(A.cabModal("Abre Escudriña en tu navegador", "Entrar con Google"), h("div", { class: "jg-cel" },
+      h("p", { text: "Google no permite iniciar sesión desde el navegador interno de otras aplicaciones (Messenger, Facebook, Instagram…). Abre Escudriña en Chrome o Safari y allí podrás entrar con Google." }),
+      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => abrirFuera(inv) }, h("span", { text: "Abrir en mi navegador" })),
+        h("button", { class: "btn", type: "button", onclick: () => copiar(enlaceFuera(inv), "Enlace copiado: pégalo en tu navegador") }, ico("copiar"), h("span", { text: "Copiar el enlace" }))),
+      h("p", { class: "jg-mini", text: "También puedes empezar aquí mismo con un apodo y vincular Google después." }))));
+  }
+
+  // ================================================================== cómo se juega: presentación animada, a tu ritmo
+  // Siete escenas vectoriales que se mueven solas (solo transformaciones y opacidad). Se avanza con «Siguiente», con los
+  // puntos, deslizando o con las flechas del teclado; nunca avanza sola (BiEx: accesible para dislexia y TDAH).
+  const GUIA = [
+    ["Lee de verdad", "Abre cualquier capítulo de la Nueva Voluntad y lee a tu ritmo. Cada verso que de verdad lees te da experiencia y te hace subir de nivel.", "versos"],
+    ["Misiones pequeñas cada día", "Cada día recibes de 2 a 5 misiones sencillas, como leer unos versos o completar un capítulo. Sin prisa y sin culpa: si un día no puedes, tu avance sigue ahí.", "misiones"],
+    ["Hallazgos", "Muy de vez en cuando, un verso revela una de las doce piedras del fundamento o un lauro trenzado incorruptible. Solo aparecen leyendo.", "hallazgos"],
+    ["Perseverancia", "Cada día que lees suma a tu perseverancia. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.", "perseverancia"],
+    ["Nunca a solas", "Entra en la liga de la semana, aporta a la misión mundial, forma una compañía de 2 a 24 personas o abre una sala para leer en compañía.", "juntos"],
+    ["Tu siembra", "Comparte tu enlace. Quien llega contigo empieza con 3 horas de experiencia doble, y tu árbol de la siembra crece generación tras generación.", "siembra"],
+    ["El menú del juego", "Abajo tienes cinco botones: Hoy, Tesoro, Mundo, Juntos y Más. Con ellos llegas a todo. Y guarda bien tu acceso: es tu llave.", "menu"]];
+  function escenaGuia(k) {
+    const giro = (el, grados) => { el.style.transform = "rotate(" + grados + "deg) translate3d(0,-84px,0)"; return el; };
+    if (k === "versos") return h("div", { class: "g-versos" }, h("i"), h("i"), h("i"), h("i"), h("b", { class: "g-xp", text: "+12" }));
+    if (k === "misiones") return h("div", { class: "g-mis" }, [0, 1, 2].map(() => h("div", {}, h("b"), h("i"))));
+    if (k === "hallazgos") return h("div", { class: "g-pila" }, h("div", { class: "g-gemas" }, PIEDRAS.map((p, i) => giro(h("span", {}, gema(i, true)), i * 30))), h("div", { class: "g-centro" }, lauro()));
+    if (k === "perseverancia") return h("div", { class: "g-pers" }, A.svg(ICO_JG.llama, "0 0 24 24"), h("div", { class: "g-dias" }, [0, 1, 2, 3, 4, 5, 6].map(() => h("i"))));
+    if (k === "juntos") {
+      const e = (S.yo && S.yo.emb) || {};
+      return h("div", { class: "g-pila" }, h("div", { class: "g-gemas g-orbita" }, COLORES.map((col, i) => { const s = giro(h("span"), i * 45); s.style.background = col; return s; })), h("div", { class: "g-centro" }, emblema(e.l || "α", e.c || 0, 0)));
+    }
+    if (k === "siembra") {
+      const n = (c, p, g, ok, d, hh) => ({ c, p, k: g, a: "", ok, d, h: hh });
+      return h("div", { class: "g-arbol" }, dibujoArbol({ prof: 2, raiz: { propia: true, d: 7, a: "" }, nodos: [n("a", null, 1, 1, 2, 2), n("b", null, 1, 1, 1, 1), n("c", null, 1, 0, 1, 1), n("d", "a", 2, 1, 0, 0), n("e", "a", 2, 0, 0, 0), n("f", "b", 2, 1, 0, 0), n("g", "c", 2, 0, 0, 0)] }, true));
+    }
+    return h("div", { class: "g-menu" }, h("span", { class: "luz" }), SECC.map(([, t, ic]) => h("span", {}, ico(ic), h("small", { text: t }))));
+  }
+  function pintarGuia(cont) {
+    document.title = "Cómo se juega · Escudriña · BiEx";
+    let i = Math.max(0, Math.min(GUIA.length - 1, S.guiaPaso || 0)), x0 = null;
+    const escena = h("div", { class: "jg-escena", "aria-hidden": "true" }), tit = h("h2", {}), txt = h("p", { class: "jg-gt", "aria-live": "polite" }), cuenta = h("span", { class: "jg-mini" });
+    const puntos = h("div", { class: "jg-puntos" }, GUIA.map((g, k) => h("button", { type: "button", "aria-label": "Paso " + (k + 1) + ": " + g[0], onclick: () => ir(k) })));
+    const rot = h("span", {}), atras = h("button", { class: "btn", type: "button", onclick: () => ir(i - 1) }, h("span", { text: "Atrás" }));
+    const sig = h("button", { class: "btn oro jg-grande", type: "button", onclick: () => (i === GUIA.length - 1 ? fin() : ir(i + 1)) }, rot);
+    const fin = () => { A.store.set("jg:guia", 1); S.guiaPaso = 0; vibrar(15); if (S.token) { const u = A.ultimo && A.ultimo(); A.irA(u ? u.h : "#/MAT/1"); } else A.irA("#/escudrina"); };
+    function ir(k) {
+      i = Math.max(0, Math.min(GUIA.length - 1, k)); S.guiaPaso = i;
+      const g = GUIA[i];
+      escena.replaceChildren(escenaGuia(g[2])); tit.textContent = g[0]; txt.textContent = g[1];
+      Array.from(puntos.children).forEach((b, n) => { b.classList.toggle("act", n === i); if (n === i) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+      atras.hidden = i === 0;
+      rot.textContent = i === GUIA.length - 1 ? (S.token ? "Empezar a leer" : "Crear mi cuenta") : "Siguiente";
+      cuenta.textContent = (i + 1) + " de " + GUIA.length;
+      if (i === GUIA.length - 1) A.store.set("jg:guia", 1);
+    }
+    escena.addEventListener("pointerdown", (ev) => { x0 = ev.clientX; });
+    escena.addEventListener("pointerup", (ev) => { if (x0 == null) return; const d = ev.clientX - x0; x0 = null; if (Math.abs(d) > 40) { vibrar(8); ir(i + (d < 0 ? 1 : -1)); } });
+    escena.addEventListener("pointercancel", () => { x0 = null; });
+    const caja = h("section", { class: "jg-tarjeta jg-guia", tabindex: "-1" }, escena, h("div", { class: "jg-guia-pie" }, puntos, cuenta), tit, txt, h("div", { class: "jg-guia-nav" }, atras, sig));
+    caja.addEventListener("keydown", (ev) => { if (ev.key === "ArrowRight") ir(i + 1); else if (ev.key === "ArrowLeft") ir(i - 1); });
+    marco(cont, cabeceraJuego("guia"), caja,
+      h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina", onclick: () => { A.store.set("jg:guia", 1); S.guiaPaso = 0; } }, h("span", { text: S.token ? "Saltar y volver al juego" : "Volver" }))));
+    ir(i);
   }
   // BiEx (9-nov-2026): que nadie confunda el proceso semana a semana con el resultado final
   // Sale como mucho un par de veces por semana (cada 84 h); en la misma visita se mantiene para que no desaparezca al repintar
@@ -1272,6 +1658,7 @@
   // ------------------------------------------------------------------ Google, Facebook y llaves de acceso
   let espera = null;
   async function conectar(prov, modo, pista) {
+    if (prov === "google" && EN_APP) return avisoGoogleEnApp();
     // la ventana se abre ya, dentro del toque (si no, el navegador la bloquea); luego se le da su dirección
     const w = window.open("", "biex-entrar", "popup,width=480,height=680");
     const r = await pedir("/auth/" + prov + "/preparar", { metodo: "POST", cuerpo: { modo, inv: modo === "vincular" ? null : invitacionPendiente() }, sin: modo !== "vincular" });

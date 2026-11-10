@@ -27,7 +27,7 @@ export async function onRequestGet({ request, env, params }) {
   const titulo = (apodo ? apodo + " te invita" : "Te invitan") + " a Escudriña · El Códice Viviente";
   const desc = "Solo hay 1440 Primicias" + (quedan != null ? " (quedan " + quedan + ")" : "") + ". Lee la Nueva Voluntad traducida palabra por palabra del griego y juega: misiones diarias, hallazgos y clasificaciones. Llegas con 3 horas de lectura con experiencia doble.";
   const destino = "/#/escudrina/i/" + c;
-  const img = url.origin + "/escudrina/og.png";
+  const img = url.origin + "/escudrina/og.jpg";
   const html = `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${esc(titulo)}</title><meta name="description" content="${esc(desc)}"><meta name="robots" content="noindex"><meta name="theme-color" content="#09090a">

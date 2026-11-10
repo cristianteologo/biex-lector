@@ -182,7 +182,11 @@ self.addEventListener("fetch", (e) => {
   if (u.origin === self.location.origin && u.pathname.startsWith(ALCANCE.pathname + "api/")) return; // el juego: siempre a la red, sin copia
   if (req.mode === "navigate") {
     if (u.origin !== self.location.origin) return;
-    // la página del lector (y su dirección con #/…) se guarda como «index.html»
+    // Solo la página del lector (y su dirección con #/…) se guarda como «index.html». Las demás páginas del sitio (las
+    // invitaciones /e/…, /escudrina, privacidad) van directo a la red: antes se guardaban encima de la página del lector y,
+    // sin conexión, la app instalada podía abrir una de ellas en su lugar.
+    const resto = u.pathname.startsWith(ALCANCE.pathname) ? u.pathname.slice(ALCANCE.pathname.length) : null;
+    if (resto !== "" && resto !== "index.html") return;
     e.respondWith(redPrimero(e, req, "index.html", true));
     return;
   }

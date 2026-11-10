@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UpZ+2KC5YgDkUjAxFmz1Qc7N2iTX9cy4obwUfH3tfCI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; media-src 'self'; connect-src 'self' https://bibliaexacta.pages.dev wss://bibliaexacta.pages.dev; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UpZ+2KC5YgDkUjAxFmz1Qc7N2iTX9cy4obwUfH3tfCI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://bibliaexacta.pages.dev wss://bibliaexacta.pages.dev; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BiEx · Lector y analizador</title>
@@ -16,17 +16,31 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2309090a' stroke='%23c9a865' stroke-width='2'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='34' text-anchor='middle' fill='%23e8cf94'%3E%CE%B1%3C/text%3E%3C/svg%3E">
 <meta name="description" content="La Nueva Voluntad traducida del griego al español palabra por palabra, con el análisis morfológico de cada palabra. BiEx – Biblia Exacta.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Biblia Exacta">
+<meta property="og:locale" content="es_LA">
+<meta property="og:title" content="Biblia Exacta · la Nueva Voluntad, palabra por palabra">
+<meta property="og:description" content="Lee la Nueva Voluntad traducida del griego palabra por palabra, analiza cada palabra y juega a Escudriña · El Códice Viviente: cada verso que lees de verdad cuenta.">
+<meta property="og:url" content="https://bibliaexacta.pages.dev/">
+<meta property="og:image" content="https://bibliaexacta.pages.dev/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Biblia Exacta: la Nueva Voluntad, palabra por palabra">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Biblia Exacta · la Nueva Voluntad, palabra por palabra">
+<meta name="twitter:description" content="Lee la Nueva Voluntad traducida del griego palabra por palabra, analiza cada palabra y juega a Escudriña · El Códice Viviente.">
+<meta name="twitter:image" content="https://bibliaexacta.pages.dev/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500&text=%D7%90%D7%91%D7%92%D7%93%D7%94%D7%95%D7%99%D7%9C%D7%9E%D7%A8%D7%A9%D7%AA&display=swap" media="print" data-asinc>
 <link rel="preload" href="fuentes/biex-texto.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="app.css?v=8a4b1792dc">
+<link rel="stylesheet" href="app.css?v=acac3f6cf2">
 <script>try { var t = localStorage.getItem("biex:tema"); if (t) { t = JSON.parse(t); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } } catch (e) {}</script>
 <script src="intro-cargador.js?v=a413feac80"></script>
 </head>
 <body style="background:#09090a">
 <div id="app"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">El lector de BiEx necesita JavaScript activado.</p></noscript>
-<script src="app.js?v=c98b9346fc"></script>
+<script src="app.js?v=d74acc4d57"></script>
 </body>
 </html>
