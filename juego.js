@@ -1346,6 +1346,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   }
   function tarjetaClasificacion(y) {
     return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu " + nombreRegion((y.lugar || {}).pais).toLowerCase() + ", tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
+        tarjetaColeccion(y),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
           h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea());
   }
@@ -1538,9 +1539,11 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       h("p", { text: "Reserva hoy tu apodo y tu número de Primicia (se asigna de forma aleatoria), comparte tu enlace y sube la escalera del Sembrador antes del lanzamiento: cada persona que llegue contigo y confirme su lugar te da horas de experiencia doble que no vencen. Quien se inscribe antes del lanzamiento recibe además 3 horas de experiencia doble, y lo que avance en la práctica no se pierde del todo: ese día conserva, de forma aleatoria, " + textoConserva() + " de su experiencia, sus dracmas y sus hallazgos." }),
       h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
   }
+  // Rollos de colección (lo acordado en la propuesta del juego: «La Designación»; BiEx, 10-nov-2026: con firma criptográfica).
+  // No es un premio para las Primicias: cada 2 meses se entregan dos Rollos por un sorteo que cualquiera puede comprobar.
   function tarjetaColeccion(y) {
-    return h("div", { class: "jg-coleccion" }, h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M7 3h7l5 5v13H7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 13h6M10 16.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>')),
-      h("p", {}, h("b", { text: "Edición de colección. " }), y.fundador ? "Con tu Primicia n.º " + fmt(y.n) + " podrás obtener un PDF original numerado con ese mismo número, exclusivo de colección: solo existirán 1440." : "Cada Primicia podrá obtener un PDF original numerado con su número, exclusivo de colección: solo existirán 1440."));
+    return h("div", { class: "jg-coleccion" }, h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>')),
+      h("p", {}, h("b", { text: "Rollos de colección. " }), "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna con un sorteo que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre)."));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
@@ -1555,8 +1558,6 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     return tarjeta(y.practica ? "Pre-registro · tu escalera del Sembrador" : "Invita a leer · escalera del Sembrador", ico("compartir"),
       v ? h("div", { class: "jg-campana mini" }, h("p", { class: "jg-quedan" }, "Primicias: quedan ", v.quedan, " de 1440 · ", v.ins), h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
         y.fundador ? h("p", { class: "jg-mini", text: "La tuya ya está reservada: Primicia n.º " + fmt(y.n) + "." } ) : null, cuentaAtras(y.lanzamiento)) : null,
-      // BiEx (10-nov-2026): «la posibilidad de obtener un PDF original numerado, exclusivo de colección» (condiciones por precisar)
-      tarjetaColeccion(y),
       h("p", { text: "Tu enlace propio: quien entra con él recibe 3 horas de lectura con experiencia doble, y cada persona que confirma su lugar te sube en la escalera." }),
       h("div", { class: "jg-enlace" }, h("code", { text: url.replace(/^https:\/\//, "") }),
         h("button", { class: "btn oro chico", type: "button", onclick: compartirInvitacion }, ico("compartir"), h("span", { text: "Compartir" })),
@@ -1715,34 +1716,98 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : ""));
     return el;
   }
-  // Figura por capas con la armadura (Efesios 6:13-17; nombres provisionales) y los accesorios
+  // Figura por capas con la armadura (Efesios 6:13-17; nombres provisionales) y los accesorios. Vectorial y estática (se
+  // dibuja una sola vez a la densidad real): cada pieza forjada es metal con luz, sombra y filo según su grado; la que falta
+  // se insinúa con un trazo dorado tenue, para que la figura nunca se vea incompleta. Sin yelmo, la capucha del manto.
+  let FA_N = 0;
   function figuraArmadura(av) {
-    const g = (id) => Math.max(0, Math.min(5, (av.eq || {})[id] | 0)), c = (id) => GR_COL[g(id)], acc = av.acc || {};
-    const auraC = { "aura-oro": "#f5c64e", "aura-zafiro": "#4f86f7", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#a874f2", "aura-alba": "#ffb38a" }[acc.aura];
-    const mantoC = { "manto-lino": "#e8e0c8", "manto-escarlata": "#b8323a", "manto-azul": "#2d5fb3" }[acc.manto];
-    const s = '<defs><linearGradient id="av-gema" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9ff3e0"/><stop offset=".5" stop-color="#7a9cff"/><stop offset="1" stop-color="#c58bff"/></linearGradient>' +
-      '<radialGradient id="av-aura"><stop offset="0" stop-color="' + (auraC || "#f5c64e") + '" stop-opacity=".55"/><stop offset="1" stop-color="' + (auraC || "#f5c64e") + '" stop-opacity="0"/></radialGradient></defs>' +
-      (auraC ? '<ellipse class="av-aura" cx="100" cy="150" rx="96" ry="140" fill="url(#av-aura)"/>' : "") +
-      (mantoC ? '<path d="M64 84C40 150 34 220 40 272L160 272C166 220 160 150 136 84Z" fill="' + mantoC + '" opacity=".9"/>' : "") +
-      // cuerpo y túnica
-      '<circle cx="100" cy="50" r="20" fill="#d9b48a"/><path d="M92 68h16v12H92z" fill="#c79f74"/>' +
-      '<path d="M70 82Q100 74 130 82L146 250Q100 262 54 250Z" fill="#3a3024"/><path d="M70 82L56 160 66 162 78 98ZM130 82L144 160 134 162 122 98Z" fill="#33291e"/>' +
-      // coraza
-      (g("coraza") ? '<path d="M74 86Q100 78 126 86L122 140Q100 152 78 140Z" fill="' + c("coraza") + '" stroke="rgba(0,0,0,.35)"/><path d="M100 86V146" stroke="rgba(0,0,0,.25)"/>' : "") +
-      // cinto
-      (g("cinto") ? '<rect x="70" y="146" width="60" height="12" rx="4" fill="' + c("cinto") + '" stroke="rgba(0,0,0,.35)"/><rect x="95" y="144" width="10" height="16" rx="2" fill="' + c("cinto") + '" stroke="rgba(0,0,0,.45)"/>' : "") +
-      // calzado
-      (g("calzado") ? '<path d="M72 252h22v14H66q0-10 6-14zM106 252h22q6 4 6 14h-28z" fill="' + c("calzado") + '" stroke="rgba(0,0,0,.35)"/>' : '<path d="M74 252h18v10H70zM108 252h18l4 10h-22z" fill="#2a2119"/>') +
-      // escudo
-      (g("escudo") ? '<path d="M22 112Q44 100 66 112V170Q66 196 44 208 22 196 22 170Z" fill="' + c("escudo") + '" stroke="rgba(0,0,0,.4)" stroke-width="1.5"/><path d="M44 118V200M28 150H60" stroke="rgba(0,0,0,.28)" stroke-width="2"/>' : "") +
-      // yelmo
-      (g("yelmo") ? '<path d="M78 50Q78 24 100 22 122 24 122 50L118 52Q100 40 82 52Z" fill="' + c("yelmo") + '" stroke="rgba(0,0,0,.35)"/><path d="M100 22V8" stroke="' + c("yelmo") + '" stroke-width="4" stroke-linecap="round"/>' : "") +
-      // espada
-      (g("espada") ? '<path d="M156 96L162 96 164 214 159 222 154 214Z" fill="' + c("espada") + '" stroke="rgba(0,0,0,.35)"/><rect x="146" y="214" width="26" height="6" rx="3" fill="' + c("espada") + '"/><rect x="156" y="220" width="6" height="18" rx="2" fill="#5a3d1c"/>' : "") +
-      // corona y sello
-      (acc.corona ? '<path d="M80 34Q100 18 120 34" fill="none" stroke="' + (acc.corona === "corona-laurel" ? "#9fcf6a" : "#8db36b") + '" stroke-width="5" stroke-linecap="round" stroke-dasharray="6 3"/>' : "") +
-      (acc.sello ? '<circle cx="100" cy="112" r="8" fill="#f5c64e" stroke="#7a5212"/><path d="M100 106l1.8 3.8 4.2.4-3.2 2.8 1 4.1-3.8-2.2-3.8 2.2 1-4.1-3.2-2.8 4.2-.4z" fill="#7a5212"/>' : "");
-    const el = A.svg(s, "0 0 200 280"); el.setAttribute("class", "av-fig"); return el;
+    const g = (id) => Math.max(0, Math.min(5, (av.eq || {})[id] | 0)), acc = av.acc || {}, u = "fa" + (++FA_N) + "-";
+    const MET = [null, ["#fbf6e6", "#e6d9b6", "#a8966a"], ["#ffd9a6", "#c9813f", "#5e3210"], ["#ffffff", "#c3ccd8", "#5f6b7a"], ["#fff3c4", "#f0c04a", "#8a5a0c"], ["#dcfff6", "#7fb8ff", "#7a4dff"]];
+    const grad = (id, n) => { const c = MET[n]; return '<linearGradient id="' + u + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset=".48" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></linearGradient>'; };
+    const piezas = ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"];
+    let defs = piezas.filter((p) => g(p)).map((p) => grad(p, g(p))).join("");
+    const auraC = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a" }[acc.aura] || "#f5c64e";
+    const mantoC = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#c23a40", "#4e1014"], "manto-azul": ["#3a6fd0", "#101f4a"] }[acc.manto] || ["#2f3a47", "#0b1015"];
+    defs += '<radialGradient id="' + u + 'halo" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="' + auraC + '" stop-opacity="' + (acc.aura ? ".55" : ".3") + '"/><stop offset=".55" stop-color="' + auraC + '" stop-opacity=".08"/><stop offset="1" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + u + 'rayo" gradientUnits="userSpaceOnUse" cx="120" cy="140" r="124"><stop offset=".1" stop-color="' + auraC + '" stop-opacity="0"/><stop offset=".34" stop-color="' + auraC + '" stop-opacity="' + (acc.aura ? ".24" : ".15") + '"/><stop offset=".96" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="' + u + 'haz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6dc" stop-opacity="0"/><stop offset=".1" stop-color="#fff6dc" stop-opacity=".15"/><stop offset=".72" stop-color="#fff6dc" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="' + u + 'manto" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + mantoC[0] + '"/><stop offset="1" stop-color="' + mantoC[1] + '"/></linearGradient>' +
+      '<linearGradient id="' + u + 'tela" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d3124"/><stop offset=".5" stop-color="#4d3e2c"/><stop offset="1" stop-color="#1d1610"/></linearGradient>' +
+      '<linearGradient id="' + u + 'piel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ebc59c"/><stop offset=".55" stop-color="#c79a70"/><stop offset="1" stop-color="#7a5536"/></linearGradient>' +
+      '<radialGradient id="' + u + 'suelo"><stop offset="0" stop-color="' + auraC + '" stop-opacity=".55"/><stop offset="1" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>';
+    const F = (id) => "url(#" + u + id + ")";
+    const fant = (d) => '<path d="' + d + '" fill="none" stroke="#e8cf94" stroke-opacity=".36" stroke-width="1.2" stroke-dasharray="3 3"/>'; // pieza por forjar
+    const filo = 'stroke="rgba(0,0,0,.45)" stroke-width="1"';
+    const brillo = (d) => '<path d="' + d + '" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/>';
+    const chispa = (x, y, s) => '<path d="M' + x + " " + (y - s) + "L" + (x + s * 0.28) + " " + (y - s * 0.28) + "L" + (x + s) + " " + y + "L" + (x + s * 0.28) + " " + (y + s * 0.28) + "L" + x + " " + (y + s) + "L" + (x - s * 0.28) + " " + (y + s * 0.28) + "L" + (x - s) + " " + y + "L" + (x - s * 0.28) + " " + (y - s * 0.28) + 'Z" fill="#fff" opacity=".9"/>';
+    let rayos = ""; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; rayos += '<path d="M120 140L' + (120 + 170 * Math.cos(a - 0.05)).toFixed(1) + " " + (140 + 170 * Math.sin(a - 0.05)).toFixed(1) + "L" + (120 + 170 * Math.cos(a + 0.05)).toFixed(1) + " " + (140 + 170 * Math.sin(a + 0.05)).toFixed(1) + 'Z"/>'; }
+    const P = {
+      coraza: "M93 90Q120 81 147 90L144 141Q120 153 96 141Z",
+      hombros: "M74 98Q76 84 92 86L100 94Q90 98 84 108ZM166 98Q164 84 148 86L140 94Q150 98 156 108Z",
+      cinto: "M94 147L146 147L147 160L93 160Z",
+      escudo: "M146 128Q178 114 210 128L208 204Q178 228 148 204Z",
+      espada: "M60.5 166L67.5 166L66.5 52L64 38L61.5 52Z",
+      yelmo: "M104 60Q103 33 120 30Q137 33 136 60L132 63Q120 55 108 63Z",
+      grebas: "M99 250L115 250L114 294L100 294ZM125 250L141 250L140 294L126 294Z",
+    };
+    const yelmo = g("yelmo");
+    let s = "<defs>" + defs + "</defs>" +
+      '<ellipse cx="120" cy="150" rx="118" ry="160" fill="' + F("halo") + '"/><g fill="' + F("rayo") + '">' + rayos + "</g>" +
+      '<path d="M96 0L144 0L200 320L40 320Z" fill="' + F("haz") + '"/>' +
+      '<ellipse cx="120" cy="310" rx="88" ry="11" fill="' + F("suelo") + '"/>' +
+      // manto (y la capucha, si no hay yelmo)
+      '<path d="M88 92C70 140 56 222 48 306L192 306C184 222 170 140 152 92Z" fill="' + F("manto") + '"/>' +
+      '<path d="M96 120C88 190 82 250 80 304M144 120C152 190 158 250 160 304M120 160C120 220 120 270 120 304" stroke="rgba(0,0,0,.28)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M88 92C70 140 56 222 48 306" stroke="' + mantoC[0] + '" stroke-opacity=".55" stroke-width="1.4" fill="none"/>' +
+      (yelmo ? "" : '<path d="M101 64C99 40 107 25 120 24C133 25 141 40 139 64C138 76 134 84 126 90L114 90C106 84 102 76 101 64Z" fill="' + F("manto") + '"/>') +
+      // piernas, faldón y torso de tela
+      '<path d="M104 206L100 298L114 298L117 206ZM123 206L126 298L140 298L136 206Z" fill="#241c14"/>' +
+      '<path d="M96 150L144 150L153 214Q120 224 87 214Z" fill="' + F("tela") + '"/>' +
+      '<path d="M92 88Q120 79 148 88L145 152L95 152Z" fill="' + F("tela") + '"/>' +
+      // brazos (la mano izquierda empuña la espada; la derecha sostiene el escudo)
+      '<path d="M82 92C70 112 63 140 60 168L71 170C74 144 81 120 93 100Z" fill="' + F("tela") + '"/><circle cx="65" cy="172" r="6.5" fill="' + F("piel") + '"/>' +
+      '<path d="M158 92C170 112 176 138 176 160L166 161C166 140 160 118 147 100Z" fill="' + F("tela") + '"/>' + (g("escudo") ? "" : '<circle cx="171" cy="164" r="6" fill="' + F("piel") + '"/>') +
+      // cuello y rostro en penumbra, con la mirada encendida
+      '<path d="M113.5 68h13v18h-13z" fill="#7a5536"/><ellipse cx="120" cy="56" rx="12.5" ry="15.5" fill="' + F("piel") + '"/>' +
+      '<path d="M108.5 53.5Q120 49 131.5 53.5L131 57.8Q120 54.6 109 57.8Z" fill="rgba(40,22,10,.5)"/>' +
+      '<circle cx="115" cy="56.5" r="1.15" fill="#fff8e6" opacity=".9"/><circle cx="125" cy="56.5" r="1.15" fill="#fff8e6" opacity=".9"/>' +
+      '<path d="M120 58L118.7 63.6L121.3 63.9" fill="none" stroke="rgba(60,34,16,.55)" stroke-width="1" stroke-linecap="round"/><path d="M116.5 66.8Q120 68.2 123.5 66.8" fill="none" stroke="rgba(60,34,16,.45)" stroke-width="1" stroke-linecap="round"/>' +
+      '<path d="M132.4 55Q131.6 67.5 120 71.6Q127.5 66.8 129.4 57Z" fill="rgba(40,22,10,.32)"/>' +
+      (yelmo ? "" : '<path d="M105 52Q105 33 120 32Q135 33 135 52Q129 41.5 120 41.5Q111 41.5 105 52Z" fill="' + F("manto") + '"/><path d="M106.5 51Q120 39 133.5 51L133 55Q120 45 107 55Z" fill="rgba(0,0,0,.38)"/>' +
+        '<path d="M105 52Q105 33 120 32" fill="none" stroke="' + mantoC[0] + '" stroke-opacity=".6" stroke-width="1"/>');
+    // grebas y sandalias
+    s += g("calzado") ? '<path d="' + P.grebas + '" fill="' + F("calzado") + '" ' + filo + '/><ellipse cx="107" cy="250" rx="9" ry="6" fill="' + F("calzado") + '" ' + filo + '/><ellipse cx="133" cy="250" rx="9" ry="6" fill="' + F("calzado") + '" ' + filo + "/>" + brillo("M103 256L103 290M129 256L129 290")
+      : fant(P.grebas);
+    s += '<path d="M96 296h21v9q-12 3-24 0zM123 296h21q3 3 3 9q-12 3-24 0z" fill="' + (g("calzado") ? F("calzado") : "#1a140e") + '"' + (g("calzado") ? " " + filo : "") + "/>";
+    // coraza con hombreras
+    s += g("coraza") ? '<path d="' + P.hombros + '" fill="' + F("coraza") + '" ' + filo + '/><path d="' + P.coraza + '" fill="' + F("coraza") + '" ' + filo + "/>" +
+      '<path d="M120 86V148M100 112Q110 120 120 112Q130 120 140 112M100 126Q120 134 140 126M101 136Q120 144 139 136" stroke="rgba(0,0,0,.28)" stroke-width="1.1" fill="none"/>' + brillo("M98 96Q106 92 114 92M78 96Q82 90 90 89") +
+      (g("coraza") === 5 ? chispa(106, 100, 4) : "") : fant(P.coraza) + fant(P.hombros);
+    // cinto con su hebilla y tiras
+    if (g("cinto")) { let tiras = ""; for (let i = 0; i < 7; i++) tiras += '<rect x="' + (96 + i * 7) + '" y="161" width="5.6" height="' + (34 + (i % 2) * 4) + '" rx="2" fill="' + F("cinto") + '" opacity=".92" ' + filo + "/>";
+      s += tiras + '<path d="' + P.cinto + '" fill="' + F("cinto") + '" ' + filo + '/><rect x="113" y="144" width="14" height="19" rx="3" fill="' + F("cinto") + '" stroke="rgba(0,0,0,.5)"/>' + (g("cinto") >= 4 ? '<circle cx="120" cy="153.5" r="3.4" fill="#fff" opacity=".85"/>' : ""); }
+    else s += fant(P.cinto);
+    // espada en alto
+    s += g("espada") ? (g("espada") >= 4 ? '<path d="M64 160V44" stroke="' + (g("espada") === 5 ? "#9fe0ff" : "#ffe08a") + '" stroke-opacity=".45" stroke-width="7" stroke-linecap="round"/>' : "") +
+      '<path d="' + P.espada + '" fill="' + F("espada") + '" ' + filo + '/><path d="M64.6 158V54" stroke="rgba(0,0,0,.28)" stroke-width="1.3"/><path d="M62.6 160V52" stroke="#fff" stroke-opacity=".6" stroke-width=".8"/>' +
+      '<rect x="50" y="163" width="28" height="5.4" rx="2.7" fill="' + F("espada") + '" ' + filo + '/><rect x="61" y="168" width="6" height="15" rx="2" fill="#4a2f16"/><circle cx="64" cy="186" r="4.2" fill="' + F("espada") + '" ' + filo + "/>" +
+      (g("espada") === 5 ? chispa(64, 42, 5) : "") : fant(P.espada + "M51 165.5h26");
+    // escudo
+    s += g("escudo") ? '<path d="' + P.escudo + '" fill="' + F("escudo") + '" stroke="rgba(0,0,0,.55)" stroke-width="1.6"/><path d="M152 133Q178 121 204 133L202 202Q178 220 154 202Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>' +
+      '<circle cx="178" cy="166" r="10" fill="' + F("escudo") + '" stroke="rgba(0,0,0,.5)"/><path d="M178 146l4 12 12 0-10 7 4 12-10-8-10 8 4-12-10-7 12 0z" fill="rgba(0,0,0,.22)"/>' + brillo("M156 136Q170 128 186 128") +
+      (g("escudo") === 5 ? chispa(196, 140, 4.5) : "") : fant(P.escudo);
+    // yelmo con cimera
+    s += yelmo ? '<path d="M120 31C121 15 134 6 152 12C140 15 130 22 125 33Z" fill="' + (yelmo >= 4 ? F("yelmo") : "#9b2c2c") + '"/><path d="' + P.yelmo + '" fill="' + F("yelmo") + '" ' + filo + '/><path d="M106 60L109 74L114 70M134 60L131 74L126 70" fill="' + F("yelmo") + '" ' + filo + "/>" + brillo("M110 42Q114 34 122 33") + (yelmo === 5 ? chispa(136, 36, 4) : "")
+      : fant(P.yelmo);
+    // corona y sello
+    if (acc.corona) { const verde = acc.corona === "corona-laurel" ? "#a8d672" : "#8fbf6a", cy = yelmo ? 45 : 43; let h2 = "";
+      for (let i = 0; i < 6; i++) for (const a of [Math.PI * (1.08 + i * 0.07), Math.PI * (1.92 - i * 0.07)]) { const x = 120 + 17 * Math.cos(a), y = cy + 9 * Math.sin(a);
+        h2 += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="3.4" ry="1.6" transform="rotate(' + ((a * 180) / Math.PI + 90).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + verde + '"/>'; }
+      s += h2; }
+    if (acc.sello) s += '<circle cx="120" cy="114" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M120 108.5l1.6 3.6 3.9.4-2.9 2.6.8 3.9-3.4-2-3.4 2 .8-3.9-2.9-2.6 3.9-.4z" fill="#7a5212"/>' : '<path d="M116.5 116h7l-1.2 2.6h-4.6zM118.5 116c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
+    const el = A.svg(s, "0 0 240 320"); el.setAttribute("class", "av-fig"); el.setAttribute("role", "img");
+    el.setAttribute("aria-label", "Tu armadura: " + piezas.map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", "));
+    return el;
   }
   const errPoder = (r) => r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
   async function accionPoder(ruta, cuerpo, ok) {
@@ -1781,7 +1846,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         sig ? h("button", { class: "btn chico" + (P.dr >= sig.dr && cantos >= sig.cantos ? " oro" : ""), type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, n + " forjado en " + d.grados[gr + 1].toLowerCase()); if (r) { chispas(18); rehacer(); } } },
           h("span", { text: "Forjar · " + sig.dr + " dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") })) : h("span", { class: "jg-chip", text: "Máximo" })); });
     return tarjeta("Armadura", ico("liga"), h("div", { class: "ap-arm" }, h("div", { class: "ap-fig" }, figuraArmadura(av)), h("ul", { class: "ap-piezas" }, filas)),
-      h("p", { class: "jg-mini", text: "Efesios 6:13-17. Grados: " + d.grados.slice(1).join(", ") + ". Desde la plata, la forja pide cantos de tus hallazgos (salen de los más repetidos). Nombres provisionales: se precisarán con la traducción." }));
+      h("p", { class: "ap-nota", text: "Efesios 6:13-17 · " + d.grados.slice(1).join(" › ") + " · desde la plata la forja pide cantos · nombres provisionales" }));
   }
   function tarjetaTienda(y, P, rehacer) {
     const av = P.av, d = P.def;
