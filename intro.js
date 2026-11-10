@@ -185,7 +185,13 @@
     W = Math.max(1, Math.round(host.clientWidth * K));
     H = Math.max(1, Math.round(host.clientHeight * K));
     // densidad real de la pantalla hasta 3× (alta definición); solo en pantallas gigantes se limita a ~20 megapíxeles
-    DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 3, Math.sqrt(2e7 / (W * H))));
+    // Rendimiento recordado (BiEx, 10-nov-2026: a veces se veían caídas de cuadros en el teléfono). Si en la presentación
+    // anterior este dispositivo no sostuvo unos 45 cuadros por segundo, esta vez se dibuja medio escalón por debajo de su
+    // densidad máxima (nunca menos de 2×, que sigue siendo alta definición); si la sostuvo con holgura, vuelve a subir.
+    // Así la máxima nitidez queda para quien puede moverla con fluidez, y nadie ve la apertura a saltos.
+    let tope = 3;
+    try { const r = JSON.parse(localStorage.getItem("biex:intro:rend") || "null"); if (r && r.d >= 1 && r.ms > 0) tope = r.ms > 22 ? Math.max(2, r.d - 0.5) : r.ms < 17.5 ? Math.min(3, r.d + 0.5) : r.d; } catch (e) { /* sin memoria */ }
+    DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, tope, Math.sqrt(2e7 / (W * H))));
     cv.width = Math.round(W * DPR);
     cv.height = Math.round(H * DPR);
     cx.imageSmoothingEnabled = true;
@@ -793,7 +799,7 @@
   document.addEventListener("visibilitychange", visibilidad);
 
   // ------------------------------------------------------------------ cuadro por cuadro
-  let ultimo = 0, rafId = 0, abrirDesde = null, ultimaFase = -1, listo = false, lento = 0, salto = 1;
+  let ultimo = 0, rafId = 0, abrirDesde = null, ultimaFase = -1, listo = false, lento = 0, salto = 1, sumaDt = 0, nDt = 0;
   function terminar(rapido, inmediato) {
     if (!PLAN) { cerrarTodo(); return; }
     if (fin) return;
@@ -807,6 +813,7 @@
   }
   function cerrarTodo() {
     cancelAnimationFrame(rafId);
+    if (nDt > 90) { try { localStorage.setItem("biex:intro:rend", JSON.stringify({ ms: +(1000 * sumaDt / nDt).toFixed(1), d: DPR })); } catch (e) { /* sin memoria */ } }
     document.removeEventListener("keydown", teclas, true);
     document.removeEventListener("visibilitychange", visibilidad);
     window.removeEventListener("resize", alCambiarTam);
@@ -841,6 +848,7 @@
     T += dt;
     // si el equipo va lento, se dibujan menos destellos (el tiempo de la presentación no se alarga)
     lento = lento * 0.94 + (dt > 0.034 ? 1 : 0) * 0.06;
+    if (dt > 0 && dt < 0.25) { sumaDt += dt; nDt++; }
     salto = lento > 0.55 ? 3 : lento > 0.3 ? 2 : 1;
     try { pintar(T, dt); } catch (e) { terminar(true, true); }
   }

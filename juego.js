@@ -629,6 +629,25 @@ html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0p
 .jg-enapp .jg-acciones{margin-top:10px}
 @media (prefers-reduced-motion:reduce){.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
 html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
+/* medidor de avance mientras se lee: nivel y aro que se llena con cada verso validado */
+.jg-med{position:fixed;z-index:61;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box;min-width:46px;height:46px;border-radius:23px;display:grid;place-items:center;text-decoration:none;color:var(--oro-vivo);background:color-mix(in srgb,var(--hoja) 88%,transparent);box-shadow:0 8px 22px -10px rgba(0,0,0,.85);-webkit-tap-highlight-color:transparent;transition:opacity .3s}
+.jg-med .aro{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--oro-vivo) var(--p,0%),color-mix(in srgb,var(--oro) 24%,transparent) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3.2px),#000 calc(100% - 2.6px));mask:radial-gradient(farthest-side,transparent calc(100% - 3.2px),#000 calc(100% - 2.6px))}
+.jg-med::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:2px solid var(--oro-vivo);opacity:0;pointer-events:none}
+.jg-med.pulso::after{animation:jg-med-p .7s ease-out}
+@keyframes jg-med-p{0%{opacity:.85}100%{opacity:0}}
+.jg-med b{position:relative;font:600 1.05rem/1 var(--f-ui);font-variant-numeric:tabular-nums}
+.jg-med i{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translate3d(-50%,0,0);font:600 .82rem/1 var(--f-ui);font-style:normal;color:var(--oro-vivo);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.jg-med.pulso i{animation:jg-med-mas 1.4s ease-out both}
+@keyframes jg-med-mas{0%{opacity:0;transform:translate3d(-50%,6px,0)}18%{opacity:1;transform:translate3d(-50%,-3px,0)}75%{opacity:1}100%{opacity:0;transform:translate3d(-50%,-16px,0)}}
+.jg-med .hito{display:none;font:600 .98rem/1 var(--f-ui);letter-spacing:.04em;white-space:nowrap}
+.jg-med.sube{padding:0 18px;background:linear-gradient(180deg,var(--oro-vivo),var(--oro));color:var(--sobre-oro,#16120b);box-shadow:0 0 0 6px color-mix(in srgb,var(--oro) 24%,transparent),0 10px 30px -8px rgba(0,0,0,.85);animation:jg-entra .4s both}
+.jg-med.sube .aro,.jg-med.sube b,.jg-med.sube i{display:none}
+.jg-med.sube .hito{display:inline}
+html.con-modal .jg-med{opacity:0;pointer-events:none}
+html.jg-con-med .adelante{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+.jg-rota{display:inline-block}
+@media print{.jg-med{display:none}}
+@media (prefers-reduced-motion:reduce){.jg-med.pulso::after,.jg-med.pulso i,.jg-med.sube{animation:none!important}}
 html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis b::after,html[data-mov="no"] .g-dias i::after{transform:scale(1)}
 `;
 
@@ -1783,12 +1802,27 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     R.cola.unshift(...p.c.filter((x) => Array.isArray(x) && x.length === 4 && !ya.has(x.join("|"))));
     setTimeout(() => enviar(false), 2500);
   }
-  const actividad = () => { R.ultAct = performance.now(); };
+  // BiEx (10-nov-2026): dejar un pasaje abierto no es leerlo. La lectura cuenta mientras hay señales de presencia:
+  //  · la pestaña visible y la ventana con el foco (al cambiar de ventana o de aplicación se detiene hasta el próximo gesto);
+  //  · un gesto reciente (desplazar, tocar, tecla, mover el puntero) dentro de una ventana de tiempo que depende de cuánto
+  //    texto había en pantalla en ese gesto: lo que tarda en leerse esa pantalla, entre 45 s y 2 min 30 s. Así quien lee una
+  //    pantalla entera sin tocar nada recibe su lectura, y una página olvidada deja de sumar enseguida.
+  const actividad = () => {
+    const t = performance.now();
+    if (t - (R.ultPres || 0) > 1000) {
+      R.ultPres = t; let ms = 0;
+      for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && valeLeer(v)) ms += Math.max(0, tMin(v) - (R.acc.get(v) || 0)); }
+      R.ventana = Math.min(150000, Math.max(45000, ms * 1.25));
+    }
+    R.ultAct = t;
+  };
   let escuchando = false;
   function escuchar() {
     if (escuchando) return; escuchando = true;
     for (const ev of ["scroll", "wheel", "touchstart", "keydown", "pointerdown"]) window.addEventListener(ev, actividad, { passive: true, capture: true });
     let pm = 0; window.addEventListener("pointermove", () => { const t = performance.now(); if (t - pm > 2000) { pm = t; actividad(); } }, { passive: true });
+    // la ventana perdió el foco (otra ventana, otra aplicación, la barra del sistema): la lectura espera al próximo gesto
+    window.addEventListener("blur", () => { R.ultAct = 0; });
     // al salir de la app o de la pestaña, lo pendiente sale de una vez (cuenta en el día en que se leyó)
     document.addEventListener("visibilitychange", () => { if (document.hidden) { guardarCola(true); if (Date.now() - R.ultEnvio > 30000) enviar(true); } else { R.ultTick = performance.now(); actividad(); } });
     window.addEventListener("pagehide", () => { guardarCola(true); enviar(true); });
@@ -1796,7 +1830,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   function capitulo(lib, cap, modo) {
     if (!S.token) S.token = A.store.get("jg:t", null);
     if (!S.token || modo !== "l") { salir(); return; }
-    estilos(); escuchar(); recuperarCola();
+    estilos(); escuchar(); recuperarCola(); medidor(true);
     if (R.lib !== lib || R.cap !== cap) {
       soltar();
       Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), hechos: new Set(), prueba: false });
@@ -1826,7 +1860,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   }
   function salir() {
     guardarCola(true);
-    soltar();
+    soltar(); medidor(false);
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
     Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), hechos: new Set(), prueba: false });
     // fuera de los capítulos, lo pendiente sale a su hora (o al volver a leer)
@@ -1847,7 +1881,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     R.ultTick = ahora;
     if (SL.cod) posSala(false);
     if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
-    if (!R.pal.length || document.hidden || ahora - R.ultAct > 60000 || document.documentElement.classList.contains("con-modal")) return;
+    if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || document.documentElement.classList.contains("con-modal")) return;
     if (R.els.length && !R.els[0].isConnected) observar();
     let el = null;
     for (const e of R.els) { const v = +e.id.slice(1); if (R.vis.get(e) && !R.hechos.has(v) && valeLeer(v)) { el = e; break; } }
@@ -1864,7 +1898,9 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     R.cola.push([lib, cap, v, ms]);
     if (!R.ultEnvio) R.ultEnvio = Date.now();
     guardarCola(false);
-    if (predecir(lib, cap, v, ms, nuevo, cD)) enviar(false);
+    const antes = R.pred ? R.pred.xp : 0, suceso = predecir(lib, cap, v, ms, nuevo, cD);
+    pulsoMedidor((R.pred ? R.pred.xp : 0) - antes);
+    if (suceso) enviar(false);
   }
   // ¿Va a ocurrir un suceso con este verso? (estimación local; el servidor decide)
   function predecir(lib, cap, v, ms, nuevo, cD) {
@@ -1911,8 +1947,10 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       if (R.lib + "." + R.cap === lc) R.hoy = x.d;
     }
     for (const x of r.rechazados || []) if (x[0] === R.lib && x[1] === R.cap) { R.hechos.delete(x[2]); R.acc.delete(x[2]); }
+    if ((r.rechazados || []).some((x) => x[3] === "rapido")) pedir("/config", { sin: true }).then((c) => { if (c && !c.error) S.cfg = c; });
     for (const lc of r.pruebas || []) if (!e.p.includes(lc)) e.p.push(lc);
-    actualizarYo(r.yo); R.pred = null;
+    actualizarYo(r.yo); R.pred = null; pintarMedidor();
+    if (r.subio) hitoNivel(r.subio.nivel);
     if (e.f !== r.yo.hoy.f) { e.f = r.yo.hoy.f; }
     A.store.set("jg:hoy", e);
     if (r.pres) { S.pres = r.pres; pintarPresencia(); }
@@ -1931,6 +1969,42 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   }
 
   // ------------------------------------------------------------------ celebraciones
+  // ------------------------------------------------------------------ medidor de avance mientras se lee (BiEx, 10-nov-2026)
+  // «Que la subida de nivel se vea como un hito, y un medidor del avance en la vista donde se gana la experiencia.»
+  // Un sello pequeño abajo a la izquierda: el nivel y un aro que se llena con cada verso validado (estimación local al
+  // instante; el servidor la confirma con cada tanda). Al subir de nivel se abre un momento con el hito. Tocarlo lleva al panel.
+  const MED = { el: null, nv: null, mas: null, hito: null, t: 0 };
+  function medidor(ver) {
+    const raiz = document.documentElement;
+    if (!ver || !S.token || !S.yo) { if (MED.el) { MED.el.remove(); MED.el = null; } raiz.classList.remove("jg-con-med"); return; }
+    if (!MED.el) {
+      MED.nv = h("b", {}); MED.mas = h("i", { "aria-hidden": "true" }); MED.hito = h("span", { class: "hito" });
+      MED.el = h("a", { class: "jg-med", href: "#/escudrina" }, h("span", { class: "aro", "aria-hidden": "true" }), MED.nv, MED.mas, MED.hito);
+      document.body.append(MED.el);
+    }
+    raiz.classList.add("jg-con-med");
+    pintarMedidor();
+  }
+  function pintarMedidor() {
+    const y = S.yo; if (!MED.el || !y) return;
+    const extra = R.pred ? R.pred.xp : 0, tramo = Math.max(1, y.xpSig - y.xpNivel), p = y.enTope ? 1 : Math.min(1, Math.max(0, (y.xp - y.xpNivel + extra) / tramo));
+    MED.el.style.setProperty("--p", (p * 100).toFixed(1) + "%");
+    MED.nv.textContent = String(y.nivel);
+    MED.el.setAttribute("aria-label", "Escudriña: nivel " + y.nivel + ", " + Math.round(p * 100) + " % hacia el siguiente. Abrir el panel");
+    MED.el.title = "Nivel " + y.nivel + " · " + Math.round(p * 100) + " % hacia el siguiente";
+  }
+  function pulsoMedidor(xp) {
+    if (!MED.el) return;
+    pintarMedidor();
+    if (xp > 0) MED.mas.textContent = "+" + fmt(Math.max(1, Math.round(xp)));
+    MED.el.classList.remove("pulso"); void MED.el.offsetWidth; MED.el.classList.add("pulso");
+  }
+  function hitoNivel(n) {
+    if (!MED.el) return;
+    MED.hito.textContent = "¡Nivel " + n + "!";
+    MED.el.classList.add("sube"); vibrar([20, 40, 20]);
+    clearTimeout(MED.t); MED.t = setTimeout(() => { if (MED.el) MED.el.classList.remove("sube"); }, 4200);
+  }
   function pop(xp) {
     const el = h("div", { class: "jg-pop", role: "status" }, "+" + fmt(xp), h("small", { text: "de experiencia" }));
     document.body.append(el);
@@ -2319,6 +2393,19 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (m.tipo === "lectores") return "Que " + n + " personas lean al menos " + ((S.cfg && S.cfg.misMin) || 10) + " versos";
     return "Entre todos, lean " + n + " versos" + (m.ambito === "vida" ? " de los relatos de la vida de YēshŪ́ʿa" : m.ambito === "cartas" ? " de las cartas" : m.ambito === "libro" ? " de " + nombreLibro(m.lib) : "");
   }
+  // La misma hora del suceso vista desde distintas ciudades, una tras otra (BiEx, 10-nov-2026: que no salga siempre la
+  // misma ciudad). Empieza por una ciudad aleatoria y cambia cada pocos segundos con un fundido.
+  function relojCiudades(ms, prefijo) {
+    const el = h("span", { class: "jg-rota" }); let i = Math.floor(Math.random() * CIUDADES.length);
+    const pinta = () => { const c = CIUDADES[i % CIUDADES.length]; el.textContent = prefijo + " " + horaEn(ms, c[0]).replace(",", "") + " · hora de " + c[1].split(" · ")[0]; i++; };
+    pinta();
+    const t = setInterval(() => {
+      if (!el.isConnected) { clearInterval(t); return; }
+      if (sinAnim() || !el.animate) { pinta(); return; }
+      el.animate([{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], { duration: 700, easing: "ease-in-out" }); setTimeout(pinta, 350);
+    }, 3800);
+    return el;
+  }
   function tarjetaMision(y) {
     const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando la misión…" }));
     pedir("/vivo", { sin: true, guardable: true }).then((v) => {
@@ -2329,8 +2416,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       zona.replaceChildren(h("p", { class: "jg-tit jg-mis-t", text: textoMisionMundial(m) }),
         h("p", { class: "jg-total" }, cifra(m.total), " de " + fmt(m.meta) + (m.ok ? " · ¡lograda!" : "")),
         h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
-        h("p", { class: "jg-mini", text: plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + " (empezó a las 20:00 de " + m.ciudad + ")" + (mio ? " · tu aporte: " + fmt(mio) : "") }),
-        h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble si se logra, y 15 min si no se alcanza. Hay una misión nueva cada dos días, por turnos a las 20:00 de Bogotá y a las 20:00 de Madrid." }));
+        h("p", { class: "jg-mini" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
+        h("p", { class: "jg-mini" }, relojCiudades(m.fin, "Termina el")),
+        h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble si se logra, y 15 min si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda." }),
+        v.proxMision ? h("p", { class: "jg-mini" }, relojCiudades(v.proxMision, "La siguiente empieza el")) : "");
       animarCifras(zona);
     });
     return tarjeta("Misión mundial", ico("mundo"), zona);
@@ -2346,24 +2435,44 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     A.store.set("jg:sala", { c: cod, t: Date.now() });
     conectarSala(); return true;
   }
+  // BiEx (10-nov-2026): la sala quedó en «conectando…» hasta recargar. Ahora: tope de 10 s para abrir, latido que detecta
+  // una conexión muerta, reintentos sin rendirse (espera creciente, tope 20 s) y reconexión inmediata al volver a la página,
+  // a la ventana o a la red.
   async function conectarSala() {
-    if (SL.cerrada || !SL.cod || !S.token) return;
+    if (SL.cerrada || !SL.cod || !S.token || SL.conectando || (SL.ws && SL.ws.readyState <= 1)) return;
+    SL.conectando = true; clearTimeout(SL.tr);
+    const otra = (ms) => { clearTimeout(SL.tr); SL.tr = setTimeout(conectarSala, ms); };
     // boleto de un minuto, solo para esta sala: la sesión nunca va en la dirección del WebSocket
-    const bo = await pedir("/sala/boleto", { metodo: "POST", cuerpo: { c: SL.cod } });
-    if (bo.error) { if (bo.error === "sala") { A.avisar("Esa sala ya no existe"); salirSala(true); } else setTimeout(conectarSala, 8000); return; }
+    let bo; try { bo = await pedir("/sala/boleto", { metodo: "POST", cuerpo: { c: SL.cod } }); } catch (e) { bo = { error: "red" }; }
+    SL.conectando = false;
+    if (bo.error) { if (bo.error === "sala") { A.avisar("Esa sala ya no existe"); salirSala(true); } else otra(6000); return; }
     if (SL.cerrada) return;
-    let ws; try { ws = new WebSocket(API_ABS.replace(/^http/, "ws") + "/sala/ws?c=" + SL.cod + "&b=" + encodeURIComponent(bo.b)); } catch (e) { return; }
-    SL.ws = ws;
-    ws.onopen = () => { SL.intentos = 0; SL.pos = ""; clearInterval(SL.t); SL.t = setInterval(() => { try { if (ws.readyState === 1) ws.send("ping"); } catch (e) { /* ignorar */ } }, 25000); posSala(true); };
-    ws.onmessage = (ev) => { if (ev.data === "pong") return; let m; try { m = JSON.parse(ev.data); } catch (e) { return; } mensajeSala(m); };
+    let ws; try { ws = new WebSocket(API_ABS.replace(/^http/, "ws") + "/sala/ws?c=" + SL.cod + "&b=" + encodeURIComponent(bo.b)); } catch (e) { otra(6000); return; }
+    SL.ws = ws; SL.pong = Date.now();
+    const tAbrir = setTimeout(() => { if (ws.readyState === 0) { try { ws.close(); } catch (e) { /* ignorar */ } } }, 10000);
+    ws.onopen = () => {
+      clearTimeout(tAbrir); SL.intentos = 0; SL.pos = ""; SL.pong = Date.now(); clearInterval(SL.t);
+      SL.t = setInterval(() => {
+        if (Date.now() - SL.pong > 65000) { try { ws.close(); } catch (e) { /* ignorar */ } return; } // sin respuesta: la conexión está muerta
+        try { if (ws.readyState === 1) ws.send("ping"); } catch (e) { /* ignorar */ }
+      }, 25000);
+      posSala(true); pintarSalaPildora();
+    };
+    ws.onmessage = (ev) => { SL.pong = Date.now(); if (ev.data === "pong") return; let m; try { m = JSON.parse(ev.data); } catch (e) { return; } mensajeSala(m); };
     ws.onclose = (ev) => {
-      clearInterval(SL.t); if (SL.ws === ws) SL.ws = null;
+      clearTimeout(tAbrir); clearInterval(SL.t); if (SL.ws === ws) SL.ws = null;
       if (SL.cerrada || ev.code === 4000) { pintarSalaPildora(); return; }
-      if (ev.code === 1006 && SL.intentos === 0 && !SL.miembros.length) { /* puede ser una sala que no existe */ }
-      SL.intentos++; if (SL.intentos > 8) { A.avisar("Se perdió la conexión con la sala"); salirSala(true); return; }
-      setTimeout(conectarSala, Math.min(30000, 1500 * 2 ** SL.intentos));
+      SL.intentos = (SL.intentos || 0) + 1; pintarSalaPildora();
+      otra(Math.min(20000, 800 * 2 ** Math.min(SL.intentos, 5)));
     };
   }
+  function reanimarSala() {
+    if (!SL.cod || SL.cerrada) return;
+    if (SL.ws && SL.ws.readyState === 1) { if (Date.now() - (SL.pong || 0) < 65000) return; try { SL.ws.close(); } catch (e) { /* ignorar */ } }
+    SL.intentos = 0; clearTimeout(SL.tr); conectarSala();
+  }
+  window.addEventListener("online", reanimarSala); window.addEventListener("focus", reanimarSala); window.addEventListener("pageshow", reanimarSala);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) reanimarSala(); });
   function salirSala(silencio) {
     SL.cerrada = true; clearInterval(SL.t);
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
@@ -2429,7 +2538,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (!SL.cod) { if (p) p.remove(); return; }
     if (!p) { p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala }); document.body.append(p); }
     const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1;
-    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: "Sala " + SL.cod }), h("b", { text: conectada ? plural(n, "lectora", "lectores") : "conectando…" }));
+    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: "Sala " + SL.cod }), h("b", { text: conectada ? plural(n, "persona", "personas") : "conectando…" }));
     p.setAttribute("aria-label", "Sala de lectura " + SL.cod + ": " + (conectada ? plural(n, "persona", "personas") : "conectando"));
   }
   function abrirSala() {
@@ -2444,7 +2553,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.guia, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "guia", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Guiar la lectura (quien te siga irá contigo)" }))
           : anf && anf.guia ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.seguir, onchange: (e) => { SL.seguir = e.currentTarget.checked; if (SL.seguir && anf.lc) seguirA(anf); } }), h("span", { text: "Seguir a " + anf.apodo })) : null,
         h("div", { class: "jg-acciones" },
-          R.lib ? h("button", { class: "btn", type: "button", onclick: () => { const v = versoVisible(); if (v && SL.ws && SL.ws.readyState === 1) { SL.ws.send(JSON.stringify({ t: "luz", lc: R.lib + "." + R.cap, v })); sonar("chispa"); } } }, ico("idea"), h("span", { text: "Encender una luz aquí" })) : null,
+          R.lib ? h("button", { class: "btn", type: "button", onclick: () => { const v = versoVisible(); if (v && SL.ws && SL.ws.readyState === 1) { SL.ws.send(JSON.stringify({ t: "luz", lc: R.lib + "." + R.cap, v })); sonar("chispa"); A.avisar("Quienes están en la sala ven ahora una luz en el verso " + v); } }, title: "Enciende por unos segundos una luz en el verso que tienes en pantalla, para que los demás lo vean en su texto" }, ico("idea"), h("span", { text: "Señalar este verso a la sala" })) : null,
           h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · leamos juntos", "Leamos juntos la Nueva Voluntad en Escudriña: entra a mi sala.", PUBLICO + "/#/escudrina/sala/" + SL.cod) }, ico("compartir"), h("span", { text: "Invitar" })),
           h("button", { class: "btn", type: "button", onclick: () => { salirSala(false); SL.abierta = false; A.cerrarModal(); } }, h("span", { text: "Salir de la sala" })))));
     };
