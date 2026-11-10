@@ -205,7 +205,7 @@
   const marcoVisible = (y) => (y && y.vuelta >= 1 ? 9 + y.vuelta : (y && y.marco) || 0);
   const embDe = (s) => { const t = String(s || ""); const m = /^(.+?)(\d)$/u.exec(t); return m ? [m[1], +m[2]] : ["α", 0]; };
   const ICO_JG = {
-    dracma: '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1" opacity=".6"/><path d="M12 8.6v6.8M9.8 10.2h4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    dracma: '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/>', // moneda sin cruz (cuidado con el arte bíblico)
     llave: '<circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.6 12H20.5M17.5 12v3M20.5 12v2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
     google: '<path d="M20.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.4h4.8a4.2 4.2 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" fill="currentColor" opacity=".9"/><path d="M12 21c2.4 0 4.5-.8 5.9-2.2L15 16.6c-.8.5-1.8.9-3 .9-2.3 0-4.3-1.6-5-3.7H4v2.3A9 9 0 0 0 12 21z" fill="currentColor" opacity=".7"/><path d="M7 13.8a5.4 5.4 0 0 1 0-3.5V8H4a9 9 0 0 0 0 8z" fill="currentColor" opacity=".5"/><path d="M12 6.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 4 8l3 2.3c.7-2.1 2.7-3.7 5-3.7z" fill="currentColor" opacity=".8"/>',
     facebook: '<path d="M13.3 20.5v-7h2.4l.4-2.8h-2.8V8.9c0-.8.2-1.4 1.4-1.4h1.5V5a19 19 0 0 0-2.2-.1c-2.2 0-3.6 1.3-3.6 3.7v2.1H8v2.8h2.4v7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
@@ -311,65 +311,95 @@
 .ap-sub{font:500 1.35rem/1.2 var(--f-display);color:var(--tinta);margin:26px 0 4px}
 .ap-heroe{position:relative;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);border-radius:22px;overflow:hidden;background:radial-gradient(120% 80% at 50% 30%,rgba(60,44,18,.55),rgba(8,7,5,.92) 70%),#070605;box-shadow:0 18px 48px -24px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,236,180,.12)}
 .ap-lienzo{position:relative;padding:8px 6px 0}
-.ap-svg{display:block;width:100%;height:auto;max-height:78vh;margin:0 auto}
+.ap-arbol{position:relative;width:min(100%,70vh);margin:0 auto}
+.ap-svg{display:block;width:100%;height:auto}
 .ap-svg .ap-ramas path{stroke-opacity:.92}
-.ap-svg .ap-h{opacity:var(--o);animation:ap-titila 5.5s ease-in-out var(--d) infinite;transform-box:fill-box;transform-origin:center}
-.ap-svg .ap-mota{fill:#ffe7a0;opacity:0;animation:ap-mota var(--t) linear var(--d) infinite}
-.ap-svg .ap-fr{animation:ap-fruto 3.6s ease-in-out var(--d) infinite;transform-box:fill-box;transform-origin:center}
-.ap-svg .ap-raiz{stroke-dasharray:8 14;animation:ap-savia 2.4s linear var(--d) infinite}
-.ap-svg .ap-rayos{transform-origin:500px 640px;animation:ap-gira 90s linear infinite}
-.ap-svg .ap-copa{animation:ap-respira 7s ease-in-out infinite}
-@keyframes ap-respira{0%,100%{opacity:.75}50%{opacity:1}}
 .ap-svg .ap-aro{transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1)}
-@keyframes ap-titila{0%,100%{opacity:calc(var(--o) * .55)}50%{opacity:var(--o)}}
-@keyframes ap-mota{0%{opacity:0;transform:translate3d(0,0,0)}15%{opacity:.85}100%{opacity:0;transform:translate3d(0,-120px,0)}}
-@keyframes ap-fruto{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-4px,0)}}
-@keyframes ap-savia{to{stroke-dashoffset:-44}}
-@keyframes ap-gira{to{transform:rotate(360deg)}}
-.ap-datos{display:grid;gap:10px;padding:4px 18px 18px}
+.ap-vida{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ap-vida i{position:absolute;display:block;border-radius:50%;opacity:0;will-change:transform,opacity}
+.ap-gl{width:calc(var(--s) * 1%);aspect-ratio:1;background:radial-gradient(circle,#fffbe9 0,rgba(255,229,150,.85) 18%,rgba(245,198,78,.28) 42%,rgba(245,198,78,0) 70%);animation:ap-gl var(--t) ease-in-out var(--d) infinite}
+.ap-gl.fr{background:radial-gradient(circle,rgba(255,250,230,.9) 0,rgba(255,226,140,.45) 30%,rgba(245,198,78,0) 70%)}
+.ap-mo{width:4px;height:4px;margin:-2px 0 0 -2px;background:#ffe7a0;box-shadow:0 0 6px 1px rgba(255,220,130,.55);animation:ap-mo var(--t) linear var(--d) infinite}
+.ap-copa-v{left:7%;top:4.5%;width:86%;height:45%;background:radial-gradient(closest-side,rgba(255,224,138,.2),rgba(245,198,78,.07) 60%,rgba(245,198,78,0));animation:ap-respira 7s ease-in-out infinite}
+@keyframes ap-respira{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes ap-gl{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35)}40%{opacity:1;transform:translate(-50%,-50%) scale(1)}62%{opacity:.7;transform:translate(-50%,-50%) scale(.85)}}
+@keyframes ap-mo{0%{opacity:0;transform:translate3d(0,0,0)}15%{opacity:.85}100%{opacity:0;transform:translate3d(0,-90px,0)}}
+.ap-arbol.quieto .ap-vida i{animation-play-state:paused}
+.ap-datos{display:grid;gap:10px;padding:4px 16px 16px}
 .ap-ap{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:4px 12px;margin:0;text-align:center}
 .ap-ap b{font:500 1.5rem/1.15 var(--f-display);color:var(--tinta)}
 .ap-ap span{font:500 .86rem/1.3 var(--f-ui);color:var(--oro)}
 .ap-prog{text-align:center;margin:0}
-.ap-cifras{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.ap-cifras li{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid var(--linea);background:color-mix(in srgb,var(--hoja-2) 72%,transparent);text-align:center}
-.ap-cifras b{font:600 1.08rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
-.ap-cifras small{font:400 .72rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.ap-cifras{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap-cifras li{display:grid;justify-items:center;align-content:center;gap:3px;padding:9px 4px;border-radius:13px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 6%,transparent),color-mix(in srgb,var(--tinta) 1.5%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.06);text-align:center}
+.ap-cifras b{font:600 1.05rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.ap-cifras small{font:400 .7rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .ap-foto{justify-content:center}
-.ap-cab{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0 6px}
-.ap-pts{font:500 .92rem/1.2 var(--f-ui);color:var(--tinta)}
-.ap-pts b{font-size:1.25rem;color:var(--oro-vivo);margin-right:2px}
-.ap-poder{font:500 .86rem/1 var(--f-ui);color:var(--tinta-2)}
-.ap-poder b{color:var(--oro-vivo);font-size:1.05rem}
-.ap-atr,.ap-piezas,.ap-uso,.ap-acc{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.ap-atr li{display:grid;grid-template-columns:40px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--ac) 30%,var(--linea));background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 10%,transparent),transparent 60%)}
-.ap-ico{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ac) 35%,transparent)}
-.ap-ico svg{width:22px;height:22px}
-.ap-n{display:grid;gap:2px;min-width:0}
-.ap-n b{font:600 .95rem/1.25 var(--f-ui);color:var(--tinta)}
-.ap-n small{font:400 .78rem/1.35 var(--f-ui);color:var(--tinta-2)}
-.ap-v{display:grid;justify-items:center;min-width:2.4em}
-.ap-v b{font:600 1.2rem/1 var(--f-ui);color:var(--ac);font-variant-numeric:tabular-nums}
-.ap-plan{font:600 .7rem/1 var(--f-ui);color:var(--oro-vivo);min-height:.7rem}
-.ap-bs{display:flex;gap:6px}
-.ap-b{width:34px;height:34px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);background:var(--hoja-2);color:var(--tinta);font:600 1.1rem/1 var(--f-ui);cursor:pointer;display:grid;place-items:center}
+.ap-cab{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ap-pts{font:500 .88rem/1.2 var(--f-ui);color:var(--tinta)}
+.ap-pts b{font-size:1.2rem;color:var(--oro-vivo);margin-right:2px}
+.ap-poder{display:inline-flex;align-items:baseline;gap:5px;padding:5px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 35%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2)}
+.ap-poder b{color:var(--oro-vivo);font-size:1rem}
+.ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
+.ap-atr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ap-atr li{display:grid;justify-items:center;gap:7px;padding:10px 6px 9px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 26%,var(--linea-2));background:radial-gradient(120% 85% at 50% 0%,color-mix(in srgb,var(--ac) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
+.ap-atr li.sel{border-color:color-mix(in srgb,var(--ac) 72%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 14%,transparent),inset 0 1px 0 rgba(255,255,255,.1)}
+.ap-atr li.sube .ap-val{text-shadow:0 0 12px color-mix(in srgb,var(--ac) 70%,transparent)}
+.ap-cara{all:unset;box-sizing:border-box;display:grid;justify-items:center;gap:4px;width:100%;cursor:pointer;text-align:center;border-radius:12px}
+.ap-cara:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:3px}
+.ap-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--ac);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--ac) 26%,transparent),color-mix(in srgb,var(--ac) 8%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ac) 40%,transparent),0 0 14px -4px color-mix(in srgb,var(--ac) 60%,transparent)}
+.ap-ico svg{width:19px;height:19px}
+.ap-nom{display:grid;place-items:center;min-height:2.3em;font:600 .74rem/1.15 var(--f-ui);letter-spacing:.01em;color:var(--tinta)}
+.ap-v{display:flex;align-items:baseline;justify-content:center;gap:3px;min-height:1.4rem}
+.ap-val{font:600 1.3rem/1 var(--f-ui);color:var(--ac);font-variant-numeric:tabular-nums;transition:text-shadow .2s}
+.ap-plan{font:600 .7rem/1 var(--f-ui);color:var(--oro-vivo)}
+.ap-bs{display:flex;gap:8px}
+.ap-b{width:30px;height:30px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 9%,transparent),color-mix(in srgb,var(--tinta) 2%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.1);color:var(--tinta);font:500 1.05rem/1 var(--f-ui);cursor:pointer;display:grid;place-items:center;padding:0}
 .ap-b:active{transform:scale(.9)}
-.ap-arm{display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:12px;align-items:center}
-.ap-fig{display:grid;place-items:center;padding:6px;border-radius:16px;background:radial-gradient(circle at 50% 40%,rgba(245,198,78,.14),transparent 70%)}
-.av-fig{width:100%;max-width:190px;height:auto}
-.av-fig .av-aura{animation:ap-titila 4s ease-in-out infinite;--o:1}
-.ap-piezas li,.ap-uso li,.ap-acc li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;border:1px solid var(--linea)}
-.ap-uso li,.ap-acc li{grid-template-columns:1fr auto}
-.ap-acc li.puesto{border-color:color-mix(in srgb,var(--oro) 60%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 12%,transparent)}
-.ap-gr{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font:700 .82rem/1 var(--f-ui);color:#16120b;background:var(--gc);box-shadow:0 0 10px -2px var(--gc)}
-.ap-ran{margin-top:12px}
-.ap-ran>.jg-mini{margin:0 0 6px;text-transform:uppercase;letter-spacing:.12em;font-size:.7rem;color:var(--oro)}
-.ap-dr b{color:var(--oro-vivo)}
+.ap-desc{margin:0;min-height:2.9em;font:400 .84rem/1.45 var(--f-ui)!important;color:var(--tinta-2)}
+.ap-desc b{color:var(--oro-vivo);font-weight:600}
+.ap-arm{display:grid;grid-template-columns:minmax(112px,40%) minmax(0,1fr);gap:10px;align-items:center}
+.ap-fig{display:grid;place-items:center;padding:4px;border-radius:16px;background:radial-gradient(circle at 50% 40%,rgba(245,198,78,.12),transparent 70%)}
+.av-fig{display:block;width:100%;max-width:210px;height:auto;margin:0 auto}
+.ap-piezas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.ap-piezas li{position:relative;display:grid}
+.ap-pz{all:unset;box-sizing:border-box;display:grid;gap:6px;align-content:center;min-height:54px;padding:9px 10px;border-radius:13px;cursor:pointer;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 6.5%,transparent),color-mix(in srgb,var(--tinta) 1.5%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
+.ap-pz:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.ap-piezas li.sel .ap-pz{border-color:color-mix(in srgb,var(--oro-vivo) 62%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 13%,transparent),inset 0 1px 0 rgba(255,255,255,.1)}
+.ap-piezas li.lista::after{content:"";position:absolute;top:8px;right:9px;width:6px;height:6px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro-vivo) 22%,transparent),0 0 8px var(--oro-vivo);pointer-events:none}
+.ap-pz-n{font:600 .8rem/1.1 var(--f-ui);color:var(--tinta)}
+.ap-pips{display:flex;gap:4px}
+.ap-pips i{width:8px;height:8px;border-radius:50%;border:1px solid color-mix(in srgb,var(--tinta) 24%,transparent);box-sizing:border-box}
+.ap-pips i.on{background:var(--gc);border-color:var(--gc);box-shadow:0 0 6px -1px var(--gc)}
+.ap-forja{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 26%,var(--linea-2));background:linear-gradient(110deg,color-mix(in srgb,var(--oro) 9%,transparent),transparent 70%)}
+.ap-forja .btn svg{width:15px;height:15px}
+.ap-n{display:grid;gap:2px;min-width:0}
+.ap-n b{font:600 .86rem/1.25 var(--f-ui);color:var(--tinta)}
+.ap-n small{font:400 .76rem/1.35 var(--f-ui);color:var(--tinta-2)}
+.jg-tarjeta .ap-nota{margin:0;font:400 .72rem/1.45 var(--f-ui);color:var(--tenue);text-align:center}
+.ap-tienda-cab{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.ap-saldo{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 16%,transparent),color-mix(in srgb,var(--oro) 6%,transparent));box-shadow:inset 0 1px 0 rgba(255,240,200,.18);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2);white-space:nowrap}
+.ap-saldo b{font:600 1.02rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.ap-saldo svg{width:16px;height:16px;color:var(--oro-vivo)}
+.ap-uso{display:grid;gap:6px}
+.ap-uso li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:13px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4.5%,transparent),transparent)}
+.ap-ui{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 28%,transparent)}
+.ap-ui svg{width:18px;height:18px}
+.ap-uso .ap-n b{font-size:.84rem}
+.ap-uso .ap-n small{font-size:.72rem;color:var(--tenue)}
+.ap-vitrina{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.ap-vitrina li{flex:0 0 calc((100% - 16px) / 3);box-sizing:border-box;display:grid;grid-template-rows:auto 1fr auto;justify-items:center;gap:6px;padding:10px 6px 9px;border-radius:14px;border:1px solid var(--linea-2);background:radial-gradient(110% 70% at 50% 0%,color-mix(in srgb,var(--oro) 8%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4.5%,transparent),transparent);text-align:center}
+.ap-vitrina li.puesto{border-color:color-mix(in srgb,var(--oro-vivo) 62%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 13%,transparent)}
+.ap-mu{display:grid;place-items:center;width:46px;height:46px}
+.ap-mu svg{width:46px;height:46px}
+.ap-mn{display:grid;place-items:center;font:500 .72rem/1.2 var(--f-ui);color:var(--tinta)}
+.ap-vitrina .btn.chico{min-height:30px;padding:4px 12px;font-size:.76rem}
 .ap-verfoto img{display:block;width:min(256px,70vw);height:auto;aspect-ratio:1;border-radius:50%;margin:6px auto 12px;border:2px solid var(--oro);object-fit:cover}
 .emb-foto{cursor:pointer}
-@media (max-width:420px){.ap-arm{grid-template-columns:1fr}.ap-fig{max-width:200px;margin:0 auto}.ap-atr li{grid-template-columns:36px 1fr auto;grid-template-areas:"i n v" "b b b"}.ap-atr .ap-ico{grid-area:i;width:36px;height:36px}.ap-atr .ap-n{grid-area:n}.ap-atr .ap-v{grid-area:v}.ap-atr .ap-bs{grid-area:b;justify-content:flex-end}}
-@media (prefers-reduced-motion:reduce){.ap-svg *,.av-fig *{animation:none!important}}
-html[data-mov="no"] .ap-svg *,html[data-mov="no"] .av-fig *{animation:none!important}
+@media (min-width:700px){.ap-atr{grid-template-columns:repeat(6,minmax(0,1fr))}.ap-vitrina li{flex-basis:calc((100% - 24px) / 4)}}
+@media (max-width:359px){.ap-arm{grid-template-columns:1fr}.ap-fig{max-width:180px;margin:0 auto}}
+@media (prefers-reduced-motion:reduce){.ap-vida{display:none}}
+html[data-mov="no"] .ap-vida{display:none}
 .jg-ciu{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--oro);background:color-mix(in srgb,var(--oro) 10%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 30%,transparent)}
 .jg-ciu svg{width:18px;height:18px}
 .jg-fila .n{min-width:0}
@@ -392,6 +422,15 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-coleccion b{color:var(--oro-vivo)}
 .jg-col-ico{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 14%,transparent)}
 .jg-col-ico svg{width:22px;height:22px}
+.jg-coleccion.plegable{display:block;padding:0;margin:4px 0 0}
+.jg-coleccion.plegable summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;cursor:pointer;list-style:none}
+.jg-coleccion.plegable summary::-webkit-details-marker{display:none}
+.jg-coleccion.plegable summary>span:nth-child(2){display:grid;gap:2px}
+.jg-coleccion.plegable summary b{font:600 .9rem/1.2 var(--f-ui);color:var(--oro-vivo)}
+.jg-coleccion.plegable summary small{font:400 .76rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-col-v{width:9px;height:9px;border-right:1.6px solid var(--oro-vivo);border-bottom:1.6px solid var(--oro-vivo);transform:rotate(45deg) translate(-2px,-2px);transition:transform .25s}
+.jg-coleccion.plegable[open] .jg-col-v{transform:rotate(-135deg) translate(-2px,-2px)}
+.jg-coleccion.plegable p{padding:0 14px 12px;font-size:.84rem}
 .jg-salas-l{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
 .jg-salas-l li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--linea);border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent)}
 .jg-salas-l li.yo{border-color:color-mix(in srgb,var(--oro) 60%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 12%,transparent)}
@@ -449,9 +488,17 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-pista.mal{color:#e0866f}.jg-pista.bien{color:var(--oro)}
 .jg-check{display:flex;gap:10px;align-items:flex-start;font:400 .92rem/1.45 var(--f-ui);color:var(--tinta);cursor:pointer}
 .jg-check input{width:20px;height:20px;accent-color:var(--oro);flex:none;margin-top:1px}
-.jg-seg{display:flex;flex-wrap:wrap;gap:6px}
-.jg-seg button{font:400 .82rem/1 var(--f-ui);padding:9px 12px;border-radius:999px;border:1px solid var(--linea-2);background:none;color:var(--tinta-2);cursor:pointer}
-.jg-seg button[aria-pressed=true]{background:var(--oro);border-color:var(--oro);color:var(--sobre-oro)}
+/* Control segmentado simétrico (BiEx, 10-nov-2026: «feamente distribuidas las categorías»): pista de vidrio en 6 columnas;
+   2, 3 o 6 opciones por fila según cuántas haya (5 → 3 + 2, 4 → 2 + 2), nunca una sola huérfana; «.fila» las pone todas en fila. */
+.jg-seg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:4px;border-radius:16px;border:1px solid color-mix(in srgb,var(--tinta) 10%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 5%,transparent),color-mix(in srgb,var(--tinta) 1.5%,transparent));box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.jg-seg button{grid-column:span 2;min-width:0;min-height:36px;padding:7px 6px;border-radius:12px;border:1px solid transparent;background:none;font:500 .8rem/1.15 var(--f-ui);color:var(--tinta-2);text-align:center;cursor:pointer;overflow-wrap:anywhere;transition:background .2s,color .2s,border-color .2s}
+.jg-seg button:first-child:nth-last-child(2),.jg-seg button:first-child:nth-last-child(2)~button,.jg-seg button:first-child:nth-last-child(4),.jg-seg button:first-child:nth-last-child(4)~button,.jg-seg button:first-child:nth-last-child(5)~button:nth-child(n+4){grid-column:span 3}
+.jg-seg button:first-child:nth-last-child(n+7),.jg-seg button:first-child:nth-last-child(n+7)~button{grid-column:span 2}
+.jg-seg.fila{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.jg-seg.fila button{grid-column:auto}
+.jg-seg button[aria-pressed=true]{color:var(--oro-vivo);font-weight:600;border-color:color-mix(in srgb,var(--oro-vivo) 52%,transparent);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 55%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 32%,transparent),color-mix(in srgb,var(--oro) 12%,transparent));box-shadow:inset 0 1px 0 rgba(255,244,210,.3),0 8px 18px -12px color-mix(in srgb,var(--oro) 80%,transparent)}
+.jg-seg+.jg-seg{margin-top:-2px}
+@media (min-width:640px){.jg-seg{display:flex}.jg-seg button{flex:1 1 0}}
 .jg-lista{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .jg-fila{display:grid;grid-template-columns:2.2em 34px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px}
 .jg-fila:nth-child(odd){background:var(--hoja-2)}
@@ -565,14 +612,17 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-reloj>span{display:grid;justify-items:center;min-width:64px;padding:6px 8px;border-radius:10px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 80%,transparent)}
 .jg-reloj b{font:600 1.5rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .jg-reloj small{font:500 .7rem/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tenue)}
-.jg-enlace{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.jg-enlace{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:center}
+.jg-enlace code{grid-column:1/-1}
+.jg-enlace .btn{min-width:0}
 .jg-enlace code{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;font:500 .98rem/1.3 var(--f-ui);padding:10px 12px;border-radius:10px;border:1px dashed color-mix(in srgb,var(--oro) 60%,transparent);color:var(--oro-vivo);background:color-mix(in srgb,var(--hoja-2) 70%,transparent)}
-.jg-redes{display:flex;flex-wrap:wrap;gap:6px}
+.jg-redes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.jg-redes .btn{min-width:0;padding-left:8px;padding-right:8px;white-space:normal;text-align:center}
 .jg-redes .btn svg,.jg-enlace .btn svg{width:16px;height:16px}
-.jg-escalera{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.jg-escalera{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .jg-escalera li{display:grid;justify-items:center;gap:1px;padding:7px 4px;border-radius:10px;border:1px solid var(--linea-2);text-align:center;opacity:.62}
 .jg-escalera li b{font:600 1.05rem/1.1 var(--f-ui);color:var(--tinta)}
-.jg-escalera li span{font:500 .72rem/1.2 var(--f-ui);color:var(--tenue)}
+.jg-escalera li span{font:500 .66rem/1.18 var(--f-ui);color:var(--tenue);overflow-wrap:anywhere;hyphens:auto}
 .jg-escalera li small{font:500 .68rem/1.2 var(--f-ui);color:var(--oro)}
 .jg-escalera li.ya{opacity:1;border-color:color-mix(in srgb,var(--oro) 70%,transparent);background:color-mix(in srgb,var(--oro) 10%,transparent)}
 .jg-escalera li.ya b{color:var(--oro-vivo)}
@@ -637,8 +687,20 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
    Todo lo que se mueve usa solo transformaciones y opacidad; el cristal (desenfoque) queda solo en el menú fijo. */
 .jg-tarjeta{background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 58%,transparent),color-mix(in srgb,var(--hoja) 90%,transparent));border-color:color-mix(in srgb,var(--oro) 20%,var(--linea-2));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent),0 22px 44px -34px rgba(0,0,0,.8)}
 :root[data-theme="light"] .jg-tarjeta{box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 36px -30px rgba(60,45,20,.45)}
-.jg .btn{transition:transform .15s cubic-bezier(.3,1.4,.5,1),border-color .2s,background .2s}
+.jg .btn{transition:transform .15s cubic-bezier(.3,1.4,.5,1),border-color .2s,background .2s,box-shadow .2s}
 .jg .btn:active{transform:scale(.97)}
+/* Botones de vidrio pulido y letra armoniosa (BiEx, 10-nov-2026: «los botones amarillos están horribles»). Vidrio sin
+   backdrop-filter: sobre las tarjetas se ve igual y el navegador no tiene que volver a difuminar el fondo al desplazarse. */
+.jg{--vid-b:color-mix(in srgb,var(--tinta) 14%,transparent);--vid-1:color-mix(in srgb,var(--tinta) 9%,transparent);--vid-2:color-mix(in srgb,var(--tinta) 2.5%,transparent)}
+.jg .btn{min-height:40px;padding:9px 18px;border-radius:999px;font:500 .86rem/1.2 var(--f-ui);letter-spacing:.012em;text-transform:none;color:var(--tinta);border:1px solid var(--vid-b);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 55%),linear-gradient(180deg,var(--vid-1),var(--vid-2));box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -1px 0 rgba(0,0,0,.2),0 10px 22px -16px rgba(0,0,0,.85)}
+.jg .btn:hover{border-color:color-mix(in srgb,var(--oro-vivo) 48%,transparent);color:var(--tinta)}
+.jg .btn.oro{color:var(--oro-vivo);font-weight:600;border-color:color-mix(in srgb,var(--oro-vivo) 55%,transparent);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 52%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 36%,transparent),color-mix(in srgb,var(--oro) 14%,transparent));box-shadow:inset 0 1px 0 rgba(255,244,210,.34),inset 0 -1px 0 rgba(60,40,8,.32),0 0 0 3px color-mix(in srgb,var(--oro) 7%,transparent),0 12px 26px -16px color-mix(in srgb,var(--oro) 85%,transparent)}
+.jg .btn.oro:hover{color:var(--oro-vivo);border-color:var(--oro-vivo);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 52%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 46%,transparent),color-mix(in srgb,var(--oro) 20%,transparent))}
+.jg .btn.chico{min-height:34px;padding:6px 13px;font-size:.8rem}
+.jg .btn svg{width:16px;height:16px}
+.jg .btn:disabled,.jg .btn[aria-disabled=true]{opacity:.45;box-shadow:none;cursor:default}
+.jg .btn.oro .trad{color:inherit}
+:where(.jg-tarjeta) p{font-family:var(--f-ui);font-size:.92rem}
 @keyframes jg-gira{to{transform:rotate(360deg)}}
 @keyframes jg-entra{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
 @keyframes jg-luz{from{transform:translate3d(-110%,0,0)}to{transform:translate3d(290%,0,0)}}
@@ -838,6 +900,8 @@ html.jg-con-med .adelante{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 @media print{.jg-med{display:none}}
 @media (prefers-reduced-motion:reduce){.jg-med.pulso::after,.jg-med.pulso i,.jg-med.sube{animation:none!important}}
 html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis b::after,html[data-mov="no"] .g-dias i::after{transform:scale(1)}
+/* Cifras con números de caja alta en la letra de los títulos (su «0» de estilo antiguo se confundía con una «o») */
+.jg-cifras b,.jg-fila .p,.jg-total b,.jg-med b,.jg-med .hito,.ap-ap b,.jg-cel h3{font-variant-numeric:lining-nums tabular-nums}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -1541,9 +1605,11 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   }
   // Rollos de colección (lo acordado en la propuesta del juego: «La Designación»; BiEx, 10-nov-2026: con firma criptográfica).
   // No es un premio para las Primicias: cada 2 meses se entregan dos Rollos, asignados aleatoriamente con un método que cualquiera puede comprobar.
-  function tarjetaColeccion(y) {
-    return h("div", { class: "jg-coleccion" }, h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>')),
-      h("p", {}, h("b", { text: "Rollos de colección. " }), "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre)."));
+  function tarjetaColeccion(y, plegable) {
+    const ico0 = () => h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'));
+    const texto = "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre).";
+    if (plegable) return h("details", { class: "jg-coleccion plegable" }, h("summary", {}, ico0(), h("span", {}, h("b", { text: "Rollos de colección" }), h("small", { text: "Cada 2 meses, dos PDF exclusivos y numerados" })), h("i", { class: "jg-col-v", "aria-hidden": "true" })), h("p", { text: texto }));
+    return h("div", { class: "jg-coleccion" }, ico0(), h("p", {}, h("b", { text: "Rollos de colección. " }), texto));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
@@ -1568,7 +1634,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         red("avion", "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(TEXTO_INV), "Telegram"),
         red("publicar", "https://twitter.com/intent/tweet?text=" + encodeURIComponent(TEXTO_INV) + "&url=" + encodeURIComponent(url), "X"),
         red("correo", "mailto:?subject=" + encodeURIComponent("Te invito a Escudriña · El Códice Viviente") + "&body=" + encodeURIComponent(TEXTO_INV + "\n\n" + url), "Correo"),
-        h("button", { class: "btn chico", type: "button", onclick: () => verTarjetaImagen({ tipo: "prerregistro" }) }, ico("imagen"), h("span", { text: "Imagen para compartir" }))),
+        h("button", { class: "btn chico", type: "button", "aria-label": "Imagen para compartir", onclick: () => verTarjetaImagen({ tipo: "prerregistro" }) }, ico("imagen"), h("span", { text: "Imagen" }))),
       h("div", { class: "jg-cifras" }, h("div", {}, ab, h("span", { text: "abrieron tu enlace" })), h("div", {}, ins, h("span", { text: "se inscribieron" })), h("div", {}, h("b", { text: fmt(conf) }), h("span", { text: "confirmaron" }))),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": pct.toFixed(0), "aria-label": "Avance hacia el peldaño siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         h("p", { class: "jg-mini", text: (vuelta > 1 ? "Vuelta " + vuelta + " de la escalera · " : "") + (sig ? "Te " + (sig[0] - enV === 1 ? "falta 1 persona confirmada" : "faltan " + fmt(sig[0] - enV) + " personas confirmadas") + " para «" + sig[1] + "» (+" + sig[2] + " h de experiencia doble)." : "") })),
@@ -1631,7 +1697,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   // capas, la tienda de dracmas y los accesorios. Todo vectorial; lo que se mueve va por el compositor.
   const ATR_COL = { v: "#f2c14e", c: "#7fb6ff", j: "#e07a5f", p: "#7fd6a8", r: "#c9a7ff", b: "#ffd59a" };
   const ATR_ICO = {
-    v: '<path d="M12 3l2.4 5.6 6 .5-4.6 4 1.4 5.9L12 16l-5.2 3 1.4-5.9-4.6-4 6-.5z" fill="currentColor"/>',
+    v: '<circle cx="12" cy="3.9" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M12 5.5v7.9" stroke="currentColor" stroke-width="1.5"/><path d="M9.3 13.4h5.4l-.8 2.5L12 21.4l-1.9-5.5z" fill="currentColor"/>', // la plomada (Amós 7:7-8), colgada de su argolla
     c: '<path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 12l2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     j: '<path d="M12 4v16M5 7h14M7 7l-3 6h6zM17 7l-3 6h6zM8 20h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
     p: '<path d="M5 13c3-6 11-6 14 0-3 5-11 5-14 0z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4v4M12 18v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
@@ -1649,13 +1715,13 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
   const semilla32 = (s) => { let h = 2166136261; for (const ch of String(s || "biex")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
   const azar = (k) => () => { k = (k + 0x6d2b79f5) >>> 0; let t = k; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   function fotoUrl(f) { return /^[a-z0-9]{4,12}\.[0-9a-f]{10}$/.test(f || "") ? API_ABS + "/foto/" + f : ""; }
-  let FOTO_N = 0;
+  let FOTO_N = 0, IO_ARBOL = null;
   // Árbol de poder (héroe de la sección)
   function arbolPoder(y, av, frutos) {
     const rnd = azar(semilla32(y.inv)), f1 = (v) => v.toFixed(1), ef = av.ef || {}, nivel = y.nivel || 1;
     const prof = 3 + Math.min(3, Math.floor(nivel / 8)), hojasMax = 110 + Math.min(420, Math.round((y.vt || 0) / 4));
     let ramas = "", luces = "", frut = "", hojas = 0;
-    const puntas = [];
+    const puntas = [], brillos = [], frutXY = [];
     const rama = (x, yy, ang, len, w, d) => {
       const x2 = x + len * Math.cos(ang), y2 = yy + len * Math.sin(ang), cx = x + len * 0.5 * Math.cos(ang + (rnd() - 0.5) * 0.5), cy = yy + len * 0.5 * Math.sin(ang + (rnd() - 0.5) * 0.5);
       ramas += '<path d="M' + f1(x) + " " + f1(yy) + "Q" + f1(cx) + " " + f1(cy) + " " + f1(x2) + " " + f1(y2) + '" stroke-width="' + f1(w) + '"/>';
@@ -1671,20 +1737,22 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       const k = 3 + Math.floor(rnd() * 3);
       for (let i = 0; i < k && hojas < hojasMax; i++, hojas++) {
         const r = 4 + rnd() * 11, dx = (rnd() - 0.5) * 58, dy = (rnd() - 0.5) * 50;
-        luces += '<circle class="ap-h" cx="' + f1(x + dx) + '" cy="' + f1(yy + dy) + '" r="' + f1(r) + '" style="--d:' + (rnd() * 6).toFixed(2) + 's;--o:' + (0.35 + rnd() * 0.55).toFixed(2) + '"/>';
+        const dl = rnd() * 6, o = 0.35 + rnd() * 0.55; // (mismo orden de números que antes: el árbol de cada quien no cambia)
+        luces += '<circle cx="' + f1(x + dx) + '" cy="' + f1(yy + dy) + '" r="' + f1(r) + '" opacity="' + o.toFixed(2) + '"/>';
+        if (r > 7.5 && o > 0.55) brillos.push([x + dx, yy + dy, r, dl]);
       }
     }
     // frutos: las personas de tu siembra (hasta 24) en las puntas más altas
     const altas = puntas.slice().sort((a, b) => a[1] - b[1]);
     for (let i = 0; i < Math.min(24, frutos || 0, altas.length); i++) { const [x, yy] = altas[Math.floor(i * altas.length / Math.min(24, frutos, altas.length))];
-      frut += '<g class="ap-fr" style="--d:' + (i * 0.17).toFixed(2) + 's"><circle cx="' + f1(x) + '" cy="' + f1(yy) + '" r="13" fill="url(#ap-fruto)"/><circle cx="' + f1(x - 4) + '" cy="' + f1(yy - 4) + '" r="3.4" fill="#fff" opacity=".8"/></g>'; }
+      frutXY.push([x, yy]); frut += '<g><circle cx="' + f1(x) + '" cy="' + f1(yy) + '" r="13" fill="url(#ap-fruto)"/><circle cx="' + f1(x - 4) + '" cy="' + f1(yy - 4) + '" r="3.4" fill="#fff" opacity=".8"/></g>'; }
     // raíces: los seis atributos
     let raices = "", med = "";
     const claves = ["v", "c", "j", "p", "r", "b"], nombres = { v: "Verdad", c: "Certeza", j: "Justicia", p: "Paz", r: "Principio Racional", b: "Bienestar" };
     claves.forEach((k, i) => {
       const val = ef[k] || 0, x = 105 + i * 158, yy = 1000 + (i % 2 ? 28 : 0), w = 5 + Math.min(20, val * 0.6), op = (0.35 + Math.min(0.65, val / 40)).toFixed(2), col = ATR_COL[k];
       const d = "M" + (488 + i * 5) + " 800C" + f1(470 + (x - 500) * 0.25) + " " + (880 + rnd() * 30).toFixed(0) + " " + f1(x + (500 - x) * 0.25) + " " + (900 + rnd() * 30).toFixed(0) + " " + x + " " + (yy - 46);
-      raices += '<path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w + 10) + '" opacity=".14" fill="none" stroke-linecap="round"/><path class="ap-raiz" d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w) + '" opacity="' + op + '" fill="none" stroke-linecap="round" style="--d:' + (i * 0.4).toFixed(1) + 's"/>';
+      raices += '<path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w + 10) + '" opacity=".14" fill="none" stroke-linecap="round"/><path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w) + '" opacity="' + op + '" fill="none" stroke-linecap="round"/>';
       med += '<g class="ap-med" style="color:' + col + '"><circle cx="' + x + '" cy="' + yy + '" r="44" fill="#0d0b08" stroke="' + col + '" stroke-width="3" stroke-opacity="' + op + '"/><circle cx="' + x + '" cy="' + yy + '" r="38" fill="' + col + '" opacity=".1"/>' +
         '<g transform="translate(' + (x - 15) + " " + (yy - 30) + ') scale(1.25)">' + ATR_ICO[k] + '</g><text x="' + x + '" y="' + (yy + 25) + '" text-anchor="middle" font-size="25" font-weight="600" fill="currentColor" style="font-family:var(--f-ui)">' + val + '</text>' +
         '<text x="' + x + '" y="' + (yy + 76) + '" text-anchor="middle" font-size="' + (k === "r" ? 19 : 22) + '" fill="var(--tinta-2)" style="font-family:var(--f-ui);letter-spacing:.04em">' + nombres[k] + "</text></g>";
@@ -1696,8 +1764,16 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         : '<text x="500" y="' + (/[֐-׿]/.test(e.l || "") ? 664 : 670) + '" text-anchor="middle" font-size="78" fill="' + col + '" style="font-family:' + (/[֐-׿]/.test(e.l || "") ? "'Frank Ruhl Libre'," : "") + "'BiEx Texto','Gentium Book Plus',serif\">" + esc(e.l || "α") + "</text>") +
       '<circle cx="500" cy="640" r="86" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/><circle class="ap-aro" cx="500" cy="640" r="86" fill="none" stroke="url(#ap-oro)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="' + (p * 100).toFixed(1) + ' 100" transform="rotate(-90 500 640)"/>' +
       '<g transform="translate(500 752)"><rect x="-62" y="-20" width="124" height="40" rx="20" fill="url(#ap-oro)"/><text y="9" text-anchor="middle" font-size="25" font-weight="700" fill="#16120b" style="font-family:var(--f-ui);letter-spacing:.06em">NIVEL ' + nivel + "</text></g>";
-    let rayos = ""; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; rayos += '<path d="M500 640L' + f1(500 + 520 * Math.cos(a - 0.05)) + " " + f1(640 + 520 * Math.sin(a - 0.05)) + "L" + f1(500 + 520 * Math.cos(a + 0.05)) + " " + f1(640 + 520 * Math.sin(a + 0.05)) + 'Z"/>'; }
-    let motas = ""; for (let i = 0; i < 26; i++) motas += '<circle class="ap-mota" cx="' + f1(80 + rnd() * 840) + '" cy="' + f1(120 + rnd() * 760) + '" r="' + f1(1.6 + rnd() * 2.6) + '" style="--d:' + (rnd() * 9).toFixed(2) + 's;--t:' + (7 + rnd() * 7).toFixed(1) + 's"/>';
+    // Vida del árbol fuera del SVG (BiEx, 10-nov-2026: «está borroso»): el dibujo queda quieto y se rasteriza una sola vez a la
+    // densidad real; los destellos de la copa, los frutos y las motas son capas pequeñas que solo cambian opacidad y posición
+    // (las mueve el compositor, sin volver a pintar el árbol) y se detienen cuando el árbol sale de la pantalla.
+    const pc = (x, yy) => "left:" + (x / 10).toFixed(2) + "%;top:" + (yy / 11.1).toFixed(2) + "%";
+    const vida = h("div", { class: "ap-vida", "aria-hidden": "true" }, h("i", { class: "ap-copa-v" }));
+    const paso = Math.max(1, Math.floor(brillos.length / 16));
+    for (let i = 0, n = 0; i < brillos.length && n < 16; i += paso, n++) { const [x, yy, r, dl] = brillos[i];
+      vida.append(h("i", { class: "ap-gl", style: pc(x, yy) + ";--s:" + (1.6 + r / 7).toFixed(2) + ";--d:" + dl.toFixed(2) + "s;--t:" + (4.6 + (i % 5) * 0.7).toFixed(1) + "s" })); }
+    frutXY.slice(0, 8).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
+    for (let i = 0; i < 14; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
     const el = A.svg('<defs><radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="ap-halo2"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#f5c64e" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="ap-tronco" x1="0" x2="1"><stop offset="0" stop-color="#4a3415"/><stop offset=".45" stop-color="#b8873a"/><stop offset=".6" stop-color="#e2b55a"/><stop offset="1" stop-color="#3b2a10"/></linearGradient>' +
@@ -1705,8 +1781,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       '<radialGradient id="ap-copa" cx=".5" cy=".55" r=".5"><stop offset="0" stop-color="#ffe08a" stop-opacity=".30"/><stop offset=".6" stop-color="#f5c64e" stop-opacity=".1"/><stop offset="1" stop-color="#f5c64e" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="ap-fruto" cx=".38" cy=".35" r=".7"><stop offset="0" stop-color="#fff6d6"/><stop offset=".45" stop-color="#f5c64e"/><stop offset="1" stop-color="#9a5f12"/></radialGradient></defs>' +
       '<ellipse cx="500" cy="420" rx="500" ry="440" fill="url(#ap-halo)"/>' +
-      '<g class="ap-rayos" fill="#f5c64e" opacity=".028">' + rayos + "</g>" +
-      '<ellipse class="ap-copa" cx="500" cy="300" rx="430" ry="250" fill="url(#ap-copa)"/>' + motas +
+      '<ellipse cx="500" cy="300" rx="430" ry="250" fill="url(#ap-copa)" opacity=".85"/>' +
       '<path d="M500 806C452 790 448 640 470 470 482 446 518 446 530 470 552 640 548 790 500 806Z" fill="url(#ap-tronco)"/>' +
       '<path d="M488 790C476 700 478 600 490 500M512 792C524 700 522 600 510 500M500 800V520" fill="none" stroke="#2a1d0a" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>' +
       '<path d="M430 818C462 796 478 786 500 776 522 786 538 796 570 818Z" fill="#3b2a10"/><ellipse cx="500" cy="818" rx="300" ry="26" fill="url(#ap-halo2)" opacity=".55"/>' +
@@ -1714,7 +1789,9 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       '<line x1="40" y1="812" x2="960" y2="812" stroke="url(#ap-oro)" stroke-opacity=".35" stroke-width="2"/>' + raices + med + corazon, "0 0 1000 1110");
     el.setAttribute("class", "ap-svg"); el.setAttribute("role", "img");
     el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : ""));
-    return el;
+    const caja = h("div", { class: "ap-arbol" }, el, vida);
+    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("quieto", !e.isIntersecting); }); IO_ARBOL.observe(caja); }
+    return caja;
   }
   // Figura por capas con la armadura (Efesios 6:13-17; nombres provisionales) y los accesorios. Vectorial y estática (se
   // dibuja una sola vez a la densidad real): cada pieza forjada es metal con luz, sombra y filo según su grado; la que falta
@@ -1729,7 +1806,6 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const auraC = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a" }[acc.aura] || "#f5c64e";
     const mantoC = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#c23a40", "#4e1014"], "manto-azul": ["#3a6fd0", "#101f4a"] }[acc.manto] || ["#2f3a47", "#0b1015"];
     defs += '<radialGradient id="' + u + 'halo" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="' + auraC + '" stop-opacity="' + (acc.aura ? ".55" : ".3") + '"/><stop offset=".55" stop-color="' + auraC + '" stop-opacity=".08"/><stop offset="1" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>' +
-      '<radialGradient id="' + u + 'rayo" gradientUnits="userSpaceOnUse" cx="120" cy="140" r="124"><stop offset=".1" stop-color="' + auraC + '" stop-opacity="0"/><stop offset=".34" stop-color="' + auraC + '" stop-opacity="' + (acc.aura ? ".24" : ".15") + '"/><stop offset=".96" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="' + u + 'haz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6dc" stop-opacity="0"/><stop offset=".1" stop-color="#fff6dc" stop-opacity=".15"/><stop offset=".72" stop-color="#fff6dc" stop-opacity="0"/></linearGradient>' +
       '<linearGradient id="' + u + 'manto" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + mantoC[0] + '"/><stop offset="1" stop-color="' + mantoC[1] + '"/></linearGradient>' +
       '<linearGradient id="' + u + 'tela" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d3124"/><stop offset=".5" stop-color="#4d3e2c"/><stop offset="1" stop-color="#1d1610"/></linearGradient>' +
@@ -1740,7 +1816,6 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const filo = 'stroke="rgba(0,0,0,.45)" stroke-width="1"';
     const brillo = (d) => '<path d="' + d + '" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/>';
     const chispa = (x, y, s) => '<path d="M' + x + " " + (y - s) + "L" + (x + s * 0.28) + " " + (y - s * 0.28) + "L" + (x + s) + " " + y + "L" + (x + s * 0.28) + " " + (y + s * 0.28) + "L" + x + " " + (y + s) + "L" + (x - s * 0.28) + " " + (y + s * 0.28) + "L" + (x - s) + " " + y + "L" + (x - s * 0.28) + " " + (y - s * 0.28) + 'Z" fill="#fff" opacity=".9"/>';
-    let rayos = ""; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; rayos += '<path d="M120 140L' + (120 + 170 * Math.cos(a - 0.05)).toFixed(1) + " " + (140 + 170 * Math.sin(a - 0.05)).toFixed(1) + "L" + (120 + 170 * Math.cos(a + 0.05)).toFixed(1) + " " + (140 + 170 * Math.sin(a + 0.05)).toFixed(1) + 'Z"/>'; }
     const P = {
       coraza: "M93 90Q120 81 147 90L144 141Q120 153 96 141Z",
       hombros: "M74 98Q76 84 92 86L100 94Q90 98 84 108ZM166 98Q164 84 148 86L140 94Q150 98 156 108Z",
@@ -1752,7 +1827,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     };
     const yelmo = g("yelmo");
     let s = "<defs>" + defs + "</defs>" +
-      '<ellipse cx="120" cy="150" rx="118" ry="160" fill="' + F("halo") + '"/><g fill="' + F("rayo") + '">' + rayos + "</g>" +
+      '<ellipse cx="120" cy="150" rx="118" ry="160" fill="' + F("halo") + '"/>' +
       '<path d="M96 0L144 0L200 320L40 320Z" fill="' + F("haz") + '"/>' +
       '<ellipse cx="120" cy="310" rx="88" ry="11" fill="' + F("suelo") + '"/>' +
       // manto (y la capucha, si no hay yelmo)
@@ -1794,7 +1869,8 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       (g("espada") === 5 ? chispa(64, 42, 5) : "") : fant(P.espada + "M51 165.5h26");
     // escudo
     s += g("escudo") ? '<path d="' + P.escudo + '" fill="' + F("escudo") + '" stroke="rgba(0,0,0,.55)" stroke-width="1.6"/><path d="M152 133Q178 121 204 133L202 202Q178 220 154 202Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>' +
-      '<circle cx="178" cy="166" r="10" fill="' + F("escudo") + '" stroke="rgba(0,0,0,.5)"/><path d="M178 146l4 12 12 0-10 7 4 12-10-8-10 8 4-12-10-7 12 0z" fill="rgba(0,0,0,.22)"/>' + brillo("M156 136Q170 128 186 128") +
+      '<path d="M162 156Q170 152.5 178 156.5Q186 152.5 194 156V178Q186 174.5 178 178.5Q170 174.5 162 178Z" fill="rgba(0,0,0,.2)" stroke="rgba(0,0,0,.38)" stroke-width=".9"/><path d="M178 156.5V178.5" stroke="rgba(0,0,0,.42)" stroke-width="1.1"/>' +
+      '<path d="M165.5 161.5Q170.5 159.6 175 161.5M165.5 165.6Q170.5 163.7 175 165.6M165.5 169.7Q170.5 167.8 175 169.7M181 161.5Q185.5 159.6 190.5 161.5M181 165.6Q185.5 163.7 190.5 165.6M181 169.7Q185.5 167.8 190.5 169.7" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width=".8" stroke-linecap="round"/>' + brillo("M156 136Q170 128 186 128") +
       (g("escudo") === 5 ? chispa(196, 140, 4.5) : "") : fant(P.escudo);
     // yelmo con cimera
     s += yelmo ? '<path d="M120 31C121 15 134 6 152 12C140 15 130 22 125 33Z" fill="' + (yelmo >= 4 ? F("yelmo") : "#9b2c2c") + '"/><path d="' + P.yelmo + '" fill="' + F("yelmo") + '" ' + filo + '/><path d="M106 60L109 74L114 70M134 60L131 74L126 70" fill="' + F("yelmo") + '" ' + filo + "/>" + brillo("M110 42Q114 34 122 33") + (yelmo === 5 ? chispa(136, 36, 4) : "")
@@ -1804,7 +1880,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       for (let i = 0; i < 6; i++) for (const a of [Math.PI * (1.08 + i * 0.07), Math.PI * (1.92 - i * 0.07)]) { const x = 120 + 17 * Math.cos(a), y = cy + 9 * Math.sin(a);
         h2 += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="3.4" ry="1.6" transform="rotate(' + ((a * 180) / Math.PI + 90).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + verde + '"/>'; }
       s += h2; }
-    if (acc.sello) s += '<circle cx="120" cy="114" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M120 108.5l1.6 3.6 3.9.4-2.9 2.6.8 3.9-3.4-2-3.4 2 .8-3.9-2.9-2.6 3.9-.4z" fill="#7a5212"/>' : '<path d="M116.5 116h7l-1.2 2.6h-4.6zM118.5 116c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
+    if (acc.sello) s += '<circle cx="120" cy="114" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M114.6 116.6h10.8" stroke="#7a5212" stroke-width="1.2" stroke-linecap="round"/><circle cx="120" cy="112.8" r="3.9" fill="#fff6d6" opacity=".4"/><circle cx="120" cy="112.8" r="2.1" fill="#fffaf0"/>' : '<path d="M116.5 116h7l-1.2 2.6h-4.6zM118.5 116c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
     const el = A.svg(s, "0 0 240 320"); el.setAttribute("class", "av-fig"); el.setAttribute("role", "img");
     el.setAttribute("aria-label", "Tu armadura: " + piezas.map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", "));
     return el;
@@ -1817,49 +1893,104 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     if (ok) A.avisar(ok); sonar("chispa"); vibrar([10, 30, 12]);
     return r;
   }
+  // Atributos (BiEx, 10-nov-2026: «más compacto, impactante y épico»): seis medallones en rejilla simétrica (3 × 2 en
+  // teléfonos, 6 en fila en pantallas anchas); al tocar uno se lee qué hace en la línea de abajo.
   function tarjetaAtributos(y, P, rehacer) {
     const av = P.av, defs = P.def.atrib, plan = {}; let libres = av.pts;
-    const filas = defs.map(([k, n, efecto]) => {
-      const val = h("b", { text: String(av.ef[k]) }), mas = h("span", { class: "ap-plan" });
-      const pint = () => { mas.textContent = plan[k] ? "+" + plan[k] : ""; val.textContent = String(av.ef[k] + (plan[k] || 0)); };
-      const btn = (d, t, lbl) => h("button", { class: "ap-b", type: "button", "aria-label": lbl + " " + n, onclick: () => { if (d > 0 && libres <= 0) return A.avisar(av.pts ? "Ya repartiste todos tus puntos" : "Sube de nivel o compra un punto en la tienda"); if (d < 0 && !plan[k]) return; plan[k] = (plan[k] || 0) + d; libres -= d; pint(); total(); vibrar(6); } }, t);
-      return h("li", { style: "--ac:" + ATR_COL[k] }, h("span", { class: "ap-ico", "aria-hidden": "true" }, A.svg(ATR_ICO[k])), h("span", { class: "ap-n" }, h("b", { text: n }), h("small", { text: efecto })),
-        h("span", { class: "ap-v" }, val, mas), h("span", { class: "ap-bs" }, btn(-1, "−", "Quitar un punto de"), btn(1, "+", "Sumar un punto a")));
-    });
+    const lista = h("ul", { class: "ap-atr" });
+    const desc = h("p", { class: "ap-desc", "aria-live": "polite", text: "Cada nivel te da " + P.def.ptsNivel + " puntos: repártelos como quieras (la armadura suma 2 por grado a su atributo). Toca un atributo para ver qué hace." });
+    const ver = (n, efecto, li) => { desc.replaceChildren(h("b", { text: n + ": " }), efecto + "."); for (const x of lista.children) x.classList.toggle("sel", x === li); };
+    for (const [k, n, efecto] of defs) {
+      const val = h("b", { class: "ap-val", text: String(av.ef[k]) }), mas = h("span", { class: "ap-plan" }), li = h("li", { style: "--ac:" + ATR_COL[k] });
+      const pint = () => { mas.textContent = plan[k] ? "+" + plan[k] : ""; val.textContent = String(av.ef[k] + (plan[k] || 0)); li.classList.toggle("sube", !!plan[k]); };
+      const btn = (dd, t, lbl) => h("button", { class: "ap-b", type: "button", "aria-label": lbl + " " + n, onclick: () => {
+        ver(n, efecto, li);
+        if (dd > 0 && libres <= 0) return A.avisar(av.pts ? "Ya repartiste todos tus puntos" : "Sube de nivel o compra un punto en la tienda");
+        if (dd < 0 && !plan[k]) return;
+        plan[k] = (plan[k] || 0) + dd; libres -= dd; pint(); total(); vibrar(6); } }, t);
+      li.append(h("button", { class: "ap-cara", type: "button", "aria-label": n + " " + av.ef[k] + ": " + efecto, onclick: () => ver(n, efecto, li) },
+        h("span", { class: "ap-ico", "aria-hidden": "true" }, A.svg(ATR_ICO[k])), h("span", { class: "ap-nom", text: n }), h("span", { class: "ap-v" }, val, mas)),
+        h("span", { class: "ap-bs" }, btn(-1, "−", "Quitar un punto de"), btn(1, "+", "Sumar un punto a")));
+      lista.append(li);
+    }
     const quedan = h("span", { class: "ap-pts" }), confirmar = h("button", { class: "btn oro", type: "button", disabled: true, onclick: async (e) => {
       e.currentTarget.disabled = true; const r = await accionPoder("/poder/repartir", { at: plan }, "Puntos repartidos"); if (r) { chispas(16); rehacer(); } else e.currentTarget.disabled = false; } }, h("span", { text: "Repartir" }));
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); confirmar.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
-    return tarjeta("Atributos", ico("arbol"), h("p", { class: "jg-mini", text: "Cada nivel te da " + P.def.ptsNivel + " puntos. Repártelos como quieras: tu poder crece hacia donde decidas. La armadura suma 2 por grado a su atributo." }),
-      h("div", { class: "ap-cab" }, quedan, h("span", { class: "ap-poder" }, "Poder ", h("b", { text: fmt(av.poder) }))),
-      h("ul", { class: "ap-atr" }, filas),
-      h("div", { class: "jg-acciones" }, confirmar,
+    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, h("span", { class: "ap-poder" }, "Poder ", h("b", { text: fmt(av.poder) }))),
+      lista, desc,
+      h("div", { class: "jg-acciones ap-acc-b" }, confirmar,
         h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo"); if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
         av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
   }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
+  const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
+  // Armadura: la figura y las seis piezas en rejilla (2 × 3) con su grado en cinco cuentas; la pieza elegida muestra abajo
+  // qué gana con la forja siguiente y el botón para forjarla (se elige sola la primera que ya se puede forjar).
   function tarjetaArmadura(y, P, rehacer) {
     const av = P.av, d = P.def, cantos = (P.piedras || []).reduce((a, x) => a + x, 0);
-    const filas = d.piezas.map(([id, n, at]) => { const gr = av.eq[id] | 0, sig = d.forja[gr + 1], nAt = (d.atrib.find((a) => a[0] === at) || [])[1];
-      return h("li", {}, h("span", { class: "ap-gr", style: "--gc:" + (gr === 5 ? "#9ff3e0" : GR_COL[gr]) }, String(gr)), h("span", { class: "ap-n" }, h("b", { text: n + " · " + d.grados[gr] }), h("small", { text: "Fortalece " + nAt + (gr ? " (+" + 2 * gr + ")" : "") })),
-        sig ? h("button", { class: "btn chico" + (P.dr >= sig.dr && cantos >= sig.cantos ? " oro" : ""), type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, n + " forjado en " + d.grados[gr + 1].toLowerCase()); if (r) { chispas(18); rehacer(); } } },
-          h("span", { text: "Forjar · " + sig.dr + " dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") })) : h("span", { class: "jg-chip", text: "Máximo" })); });
-    return tarjeta("Armadura", ico("liga"), h("div", { class: "ap-arm" }, h("div", { class: "ap-fig" }, figuraArmadura(av)), h("ul", { class: "ap-piezas" }, filas)),
+    const puede = (gr) => { const s = d.forja[gr + 1]; return !!s && P.dr >= s.dr && cantos >= s.cantos; };
+    const piezas = h("ul", { class: "ap-piezas" }), det = h("div", { class: "ap-forja", "aria-live": "polite" });
+    const elegir = (i) => {
+      const [id, n, at] = d.piezas[i], gr = av.eq[id] | 0, sig = d.forja[gr + 1], nAt = (d.atrib.find((a) => a[0] === at) || [])[1];
+      [...piezas.children].forEach((li, j) => li.classList.toggle("sel", j === i));
+      det.replaceChildren(h("span", { class: "ap-n" }, h("b", { text: n + " · " + d.grados[gr] + (sig ? " › " + d.grados[gr + 1] : "") }),
+        h("small", { text: "Fortalece " + nAt + " (+" + 2 * gr + (sig ? " › +" + 2 * (gr + 1) : "") + ")" + (sig ? " · " + sig.dr + " dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") : " · grado máximo") })),
+        sig ? h("button", { class: "btn chico" + (puede(gr) ? " oro" : ""), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
+          const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, n + " forjado en " + d.grados[gr + 1].toLowerCase()); if (r) { chispas(18); rehacer(); } else b.disabled = false; } },
+          A.svg(ICO_FORJA), h("span", { text: "Forjar" })) : h("span", { class: "jg-chip", text: "Máximo" }));
+    };
+    d.piezas.forEach(([id, n], i) => { const gr = av.eq[id] | 0, col = gr === 5 ? "#9ff3e0" : GR_COL[gr];
+      piezas.append(h("li", { class: puede(gr) ? "lista" : "" }, h("button", { class: "ap-pz", type: "button", "aria-label": n + ": " + d.grados[gr] + (puede(gr) ? ", lista para forjar" : ""), onclick: () => elegir(i) },
+        h("span", { class: "ap-pz-n", text: n }), h("span", { class: "ap-pips", "aria-hidden": "true" }, [1, 2, 3, 4, 5].map((k) => h("i", k <= gr ? { class: "on", style: "--gc:" + col } : {}))))));
+    });
+    let i0 = d.piezas.findIndex(([id]) => puede(av.eq[id] | 0)); if (i0 < 0) i0 = d.piezas.findIndex(([id]) => (av.eq[id] | 0) < 5); elegir(Math.max(0, i0));
+    return tarjeta("Armadura", ico("liga"), h("div", { class: "ap-arm" }, h("div", { class: "ap-fig" }, figuraArmadura(av)), piezas), det,
       h("p", { class: "ap-nota", text: "Efesios 6:13-17 · " + d.grados.slice(1).join(" › ") + " · desde la plata la forja pide cantos · nombres provisionales" }));
   }
+  // Muestra de cada accesorio (48 × 48), sin degradados con id para poder repetirse en la página
+  const AURA_C = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a" };
+  const MANTO_C = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#d0454b", "#5e1418"], "manto-azul": ["#4a7fe0", "#14275a"] };
+  function muestraAcc(id, ran) {
+    if (ran === "aura") { const c = AURA_C[id] || "#f5c64e";
+      return '<circle cx="24" cy="24" r="22" fill="' + c + '" opacity=".08"/><circle cx="24" cy="24" r="17" fill="' + c + '" opacity=".14"/><circle cx="24" cy="24" r="11.5" fill="' + c + '" opacity=".32"/><circle cx="24" cy="24" r="6.5" fill="' + c + '" opacity=".75"/><circle cx="24" cy="24" r="3" fill="#fff" opacity=".9"/>'; }
+    if (ran === "manto") { const [a, b] = MANTO_C[id] || ["#2f3a47", "#0b1015"];
+      return '<path d="M17 9Q24 6 31 9L41 42Q24 46 7 42Z" fill="' + b + '"/><path d="M17 9Q24 6 31 9L36 41Q24 44 12 41Z" fill="' + a + '" opacity=".92"/><path d="M20 14L17 40M28 14L31 40M24 13V42" stroke="rgba(0,0,0,.22)" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="24" cy="10.5" r="3" fill="#f2c14e" stroke="#7a5212"/>'; }
+    if (ran === "corona") { const v = id === "corona-laurel" ? "#a8d672" : "#8fbf6a"; let s = "";
+      for (let i = 0; i < 7; i++) for (const lado of [-1, 1]) { const g = (lado < 0 ? 200 - i * 24 : -20 + i * 24) * Math.PI / 180, x = 24 + 15 * Math.cos(g), y = 26 + 15 * Math.sin(g);
+        s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="4.6" ry="2" transform="rotate(' + ((g * 180) / Math.PI + 90 + lado * 32).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + v + '"/>'; }
+      return s + '<path d="M20 41.5c2.6 1.4 5.4 1.4 8 0" fill="none" stroke="#f2c14e" stroke-width="1.6" stroke-linecap="round"/>' + (id === "corona-olivo" ? '<circle cx="15" cy="17" r="1.8" fill="#4b6b2a"/><circle cx="33" cy="17" r="1.8" fill="#4b6b2a"/>' : ""); }
+    return '<circle cx="24" cy="24" r="17" fill="#f2c14e" stroke="#7a5212" stroke-width="1.5"/><circle cx="24" cy="24" r="13" fill="none" stroke="#7a5212" stroke-width="1" stroke-dasharray="2 2"/>' +
+      (id === "sello-estrella" ? '<path d="M13.5 29.5h21" stroke="#7a5212" stroke-width="1.9" stroke-linecap="round"/><path d="M17 33.6h14" stroke="#7a5212" stroke-width="1.3" stroke-linecap="round" opacity=".7"/><circle cx="24" cy="22.4" r="6.6" fill="#fff6d6" opacity=".4"/><circle cx="24" cy="22.4" r="3.4" fill="#fffaf0"/>' : '<path d="M17 29h14l-2.2 4h-9.6zM20.5 29c0-5 3.5-9 3.5-9s3.5 4 3.5 9" fill="#7a5212"/><path d="M24 14.5c1.6 1.8 1.6 3.6 0 5-1.6-1.4-1.6-3.2 0-5z" fill="#fff6d6"/>');
+  }
+  const ICO_USO = {
+    pergamino: '<path d="M7 4.5h9.5a2.5 2.5 0 0 1 0 5H9v9.5a2 2 0 0 1-4 0V6.5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9.5h8.5V18a2 2 0 0 1-2 2H7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 13h3.5M11.5 16h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    descanso: '<path d="M18.5 15.2A7.5 7.5 0 0 1 8.8 5.5a7.5 7.5 0 1 0 9.7 9.7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 4.5h3l-3 3.5h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    apodo: '<path d="M4 20l1.2-4.6L15.8 4.8a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13.8 6.8l3.4 3.4" stroke="currentColor" stroke-width="1.6"/>',
+  };
+  // Tienda: saldo a la vista, objetos de uso en filas finas y los accesorios en una vitrina por pestañas (una ranura a la vez)
   function tarjetaTienda(y, P, rehacer) {
     const av = P.av, d = P.def;
-    const uso = d.uso.map(([id, n, pr, ds]) => h("li", {}, h("span", { class: "ap-n" }, h("b", { text: n }), h("small", { text: ds })),
-      h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "uso:" + id }, n + ": listo"); if (r) rehacer(); } }, h("span", { text: pr + " dr." }))));
-    const acc = d.ranuras.map((ran) => h("div", { class: "ap-ran" }, h("p", { class: "jg-mini", text: { aura: "Auras", manto: "Mantos", corona: "Coronas", sello: "Sellos" }[ran] }),
-      h("ul", { class: "ap-acc" }, d.acc.filter((x) => x[1] === ran).map(([id, , n, pr]) => { const tiene = av.inv.includes(id), puesto = av.acc[ran] === id;
-        return h("li", { class: puesto ? "puesto" : "" }, h("span", { class: "ap-n" }, h("b", { text: n })),
-          tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async () => { const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
-            : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "acc:" + id }, n + ": tuyo y equipado"); if (r) { chispas(14); rehacer(); } } }, h("span", { text: pr + " dr." }))); }))));
-    return tarjeta("Tienda de dracmas", ico("dracma"), h("p", { class: "ap-dr" }, "Tienes ", h("b", { text: fmt(P.dr) }), " dracmas. Se ganan leyendo: misiones, hallazgos y perícopas confirmadas. Nada se compra con dinero."),
-      h("ul", { class: "ap-uso" }, uso, h("li", {}, h("span", { class: "ap-n" }, h("b", { text: "Cambio de apodo" }), h("small", { text: "Una vez cada 3 semanas" })), h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, h("span", { text: ((y.apodoCambio && y.apodoCambio.precio) || 120) + " dr." })))),
-      ...acc);
+    const comprar = async (e, item, ok, fx) => { const b = e.currentTarget; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item }, ok); if (r) { if (fx) chispas(fx); rehacer(); } else b.disabled = false; };
+    const fila = (ic, n, ds, boton) => h("li", {}, h("span", { class: "ap-ui", "aria-hidden": "true" }, A.svg(ICO_USO[ic])), h("span", { class: "ap-n" }, h("b", { text: n }), h("small", { text: ds })), boton);
+    const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, ds, h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: pr + " dr." })))),
+      fila("apodo", "Cambio de apodo", "Una vez cada 3 semanas", h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, h("span", { text: ((y.apodoCambio && y.apodoCambio.precio) || 120) + " dr." }))));
+    const NOM = { aura: "Auras", manto: "Mantos", corona: "Coronas", sello: "Sellos" };
+    let ran = A.store.get("jg:tiendaRan", "aura"); if (!d.ranuras.includes(ran)) ran = d.ranuras[0];
+    const vitrina = h("ul", { class: "ap-vitrina", "aria-live": "polite" });
+    const pestanas = h("div", { class: "jg-seg fila", role: "group", "aria-label": "Accesorios" }, d.ranuras.map((r) => h("button", { type: "button", "aria-pressed": String(r === ran), onclick: (e) => {
+      ran = r; A.store.set("jg:tiendaRan", r); for (const b of pestanas.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintarV(); vibrar(6); } }, NOM[r] || r)));
+    function pintarV() {
+      vitrina.replaceChildren(...d.acc.filter((x) => x[1] === ran).map(([id, , n, pr]) => { const tiene = av.inv.includes(id), puesto = av.acc[ran] === id;
+        return h("li", { class: puesto ? "puesto" : "" }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }),
+          tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
+            const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); else b.disabled = false; } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
+            : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." }))); }));
+    }
+    pintarV();
+    return tarjeta("Tienda de dracmas", ico("dracma"), h("div", { class: "ap-tienda-cab" }, h("p", { class: "jg-mini", text: "Se ganan leyendo: misiones, hallazgos y perícopas confirmadas. Nada se compra con dinero." }),
+      h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.")), uso, pestanas, vitrina);
   }
   // Foto de perfil: se recorta al centro, 256 × 256 a la densidad exacta, WebP (o JPEG) de menos de 90 KB
   async function elegirFoto(rehacer) {
@@ -1900,7 +2031,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
         h("li", {}, h("b", { text: String(av.pts) }), h("small", { text: av.pts === 1 ? "punto libre" : "puntos libres" })),
         h("li", {}, h("b", { text: fmt((yy.lect && yy.lect.est) || yy.vt || 0) }), h("small", { text: "versos leídos (est.)" })),
         h("li", {}, h("b", { text: fmt((yy.invi && yy.invi.unidos) || 0) }), h("small", { text: "frutos de tu siembra" }))),
-      tarjetaColeccion(yy),
+      tarjetaColeccion(yy, true),
       h("div", { class: "jg-acciones ap-foto" }, h("button", { class: "btn", type: "button", onclick: () => elegirFoto(rehacer) }, ico("persona"), h("span", { text: yy.foto ? "Cambiar mi foto" : "Subir mi foto" })),
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu foto"); if (r) rehacer(); } }, h("span", { text: "Quitar la foto" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu foto está oculta mientras el equipo la revisa." }) : null));
@@ -1941,7 +2072,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu árbol…" }));
     const poder = raiz ? null : h("div", { class: "jg ap" }, h("p", { class: "cargando", text: "Despertando tu árbol…" }));
     if (raiz) marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje."), zona);
-    else { marco(cont, cabeceraJuego("arbol"), poder, h("h2", { class: "ap-sub", text: "Tu siembra" }), zona); (S.yo ? Promise.resolve(S.yo) : pedir("/yo").then((r) => { if (!r.error) actualizarYo(r.yo); return S.yo; })).then((y) => { if (y) pintarPoder(poder, y); else poder.replaceChildren(); }); }
+    else { marco(cont, cabeceraJuego("arbol"), poder, zona); (S.yo ? Promise.resolve(S.yo) : pedir("/yo").then((r) => { if (!r.error) actualizarYo(r.yo); return S.yo; })).then((y) => { if (y) pintarPoder(poder, y); else poder.replaceChildren(); }); }
     const r = await pedir("/arbol?" + new URLSearchParams(raiz ? { raiz, prof: "3" } : { prof: "3" }), { guardable: true });
     if (cont !== S.cont || !zona.isConnected) return;
     limpiarArbol(r);
@@ -2216,7 +2347,7 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
       zona.replaceChildren(h("p", { class: "cargando", text: "Cargando…" }));
       const r = await pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(q.rango) }));
       if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
-      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + (r.lugar ? lugarDe(q.ambito) : q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar") });
+      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
       const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
         h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
