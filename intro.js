@@ -800,7 +800,7 @@
   btnSal.addEventListener("click", (e) => { e.stopPropagation(); clearTimeout(relojPuerta); terminar(true); });
   const teclas = (e) => { if (e.key === "Escape") { e.preventDefault(); terminar(true); } };
   document.addEventListener("keydown", teclas, true);
-  const visibilidad = () => { if (document.hidden && T > 0.4) terminar(true, true); };
+  const visibilidad = () => { if (!document.hidden) return; if (!empezada && listo) { devolverTurno(); terminar(true, true); } else if (T > 0.4) terminar(true, true); };
   document.addEventListener("visibilitychange", visibilidad);
 
   // ------------------------------------------------------------------ cuadro por cuadro
@@ -815,8 +815,12 @@
     if (sonando && SON) { SON.callar(rapido ? 0.6 : 2.6); }
     if (inmediato) { cerrarTodo(); return; }
     if (rapido) { abrirDesde = { T, dur: 0.75 }; }
+    // red de seguridad (11-nov-2026): si el cierre animado no llega a terminar (el sistema congeló la página), se cierra igual
+    setTimeout(cerrarTodo, rapido ? 2500 : 6000);
   }
+  let cerrada = false;
   function cerrarTodo() {
+    if (cerrada) return; cerrada = true;
     cancelAnimationFrame(rafId);
     if (nDt > 90) { try { localStorage.setItem("biex:intro:rend", JSON.stringify({ ms: +(1000 * sumaDt / nDt).toFixed(1), d: DPR })); } catch (e) { /* sin memoria */ } }
     document.removeEventListener("keydown", teclas, true);
@@ -875,7 +879,7 @@
     cx.globalAlpha = 1; cx.globalCompositeOperation = "source-over";
     // tiempo de apertura (natural o adelantada al saltar)
     let ab = abrirDesde ? tramo(T, abrirDesde.T, abrirDesde.T + abrirDesde.dur) : tramo(T, p.abrir, p.fin);
-    if (!abrirDesde && T >= p.abrir && !fin) { fin = true; ui.classList.add("f"); host.style.pointerEvents = "none"; if (sonando && SON) setTimeout(() => SON && SON.callar(2.4), 900); }
+    if (!abrirDesde && T >= p.abrir && !fin) { fin = true; ui.classList.add("f"); host.style.pointerEvents = "none"; setTimeout(cerrarTodo, (p.fin - p.abrir) * 2000 + 3000); if (sonando && SON) setTimeout(() => SON && SON.callar(2.4), 900); }
     const recorte = ab > 0 && MODO !== "quieta" && (APERTURA === "iris" || APERTURA === "puerta");
     if (recorte && !enApertura) { enApertura = true; esc.style.background = "transparent"; cvf.style.visibility = "hidden"; }
     if (enApertura) cx.drawImage(fondo, 0, 0, W, H); else cx.clearRect(0, 0, W, H);

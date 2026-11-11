@@ -1419,11 +1419,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + "\u00a0%" })),
         h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(1) + "%" })),
         h("p", { class: "jg-mini", text: "Estimación: sube con cada piedra que hallas y vuelve a empezar al conseguir un lauro." })) : null,
-      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
+      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
   }
   function verPiedra(i, veces) {
     const pd = PIEDRAS[i];
-    A.abrirModal(() => A.cajaModal(A.cabModal("Las doce piedras", "Ḥăzṓn Hiṯgallū́ṯ 21:19-20"), h("div", { class: "jg-cel" },
+    A.abrirModal(() => A.cajaModal(A.cabModal("Las doce piedras", "Ἀpοκάlυpsις 21:19-20"), h("div", { class: "jg-cel" },
       h("div", { class: "arte" }, gema(i, veces > 0)), h("h3", { text: piedraNombre(i) }), h("p", { class: "jg-mini", lang: "grc", text: pd[0] }),
       h("p", { text: "La " + ORDINAL[i] + " piedra del fundamento del muro de la ciudad. " + (veces ? "La hallaste " + plural(veces, "vez", "veces") + "." : "Aún no la hallas: sigue leyendo.") }),
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
@@ -2074,8 +2074,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   // Muestra de cada accesorio (48 × 48), sin degradados con id para poder repetirse en la página
   // los accesorios raros (por si la configuración del servidor aún no los trae): [id, ranura, nombre, cita]
-  const RAROS_C = [["aura-columna", "aura", "Aura de la columna de fuego", "Éxodo 13:21"], ["corona-palmas", "corona", "Lauro de palmas", "Ḥăzṓn Hiṯgallū́ṯ 7:9"], ["manto-purpura", "manto", "Manto de púrpura", "Prάc̅ṣεις 16:14"],
-    ["sello-rollo", "sello", "Sello del rollo de siete sellos", "Ḥăzṓn Hiṯgallū́ṯ 5:1"], ["aura-nube", "aura", "Aura de la columna de nube", "Éxodo 13:21"], ["sello-candelero", "sello", "Sello del candelero de oro", "Ḥăzṓn Hiṯgallū́ṯ 1:12"]];
+  const RAROS_C = [["aura-columna", "aura", "Aura de la columna de fuego", "Éxodo 13:21"], ["corona-palmas", "corona", "Lauro de palmas", "Ἀpοκάlυpsις 7:9"], ["manto-purpura", "manto", "Manto de púrpura", "Prάc̅ṣεις 16:14"],
+    ["sello-rollo", "sello", "Sello del rollo de siete sellos", "Ἀpοκάlυpsις 5:1"], ["aura-nube", "aura", "Aura de la columna de nube", "Éxodo 13:21"], ["sello-candelero", "sello", "Sello del candelero de oro", "Ἀpοκάlυpsις 1:12"]];
   const AURA_C = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a", "aura-columna": "#ff8a3d", "aura-nube": "#e3ecf8" };
   const MANTO_C = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#d0454b", "#5e1418"], "manto-azul": ["#4a7fe0", "#14275a"], "manto-purpura": ["#9a48b3", "#2f0c3b"] };
   // sellos raros (vitrina y pecho de la figura): el rollo con sus siete sellos y el candelero de siete brazos
@@ -2344,7 +2344,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const x = op.x || {};
     let l1, l2, l3;
     if (op.tipo === "lauro") { l1 = "Hallé un lauro trenzado"; l2 = "incorruptible"; l3 = "1 Κοrίndsιοι 9:25"; }
-    else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][3] + " [" + PIEDRAS[x.i][1] + "],"; l2 = "una de las doce piedras"; l3 = "Ḥăzṓn Hiṯgallū́ṯ 21:19-20"; }
+    else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][3] + " [" + PIEDRAS[x.i][1] + "],"; l2 = "una de las doce piedras"; l3 = "Ἀpοκάlυpsις 21:19-20"; }
     else if (op.tipo === "rango") { l1 = "Llegué al rango de"; l2 = x.rango || y.rangoNombre || ""; l3 = "nivel " + (x.nivel || y.nivel || 1); }
     else { l1 = "Ya tengo mi lugar entre"; l2 = "las 1440 Primicias"; l3 = y.fundador ? "Primicia n.º " + fmt(y.n) : "Únete antes del lanzamiento"; }
     txt(l1, 680, ajustar(l1, W - 200, "400 {t}px " + D, 66), "#ece5d6");
@@ -3240,7 +3240,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (!x._sin) sonar("hallazgo");
     let arte, titulo, texto, compartirT;
     if (x.tipo === "lauro") { arte = lauro(); titulo = h("h3", { text: "¡Un lauro trenzado incorruptible!" }); texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Timoteo 2:5). Durante tus próximos 30 minutos de lectura tu experiencia vale el doble: el tiempo solo corre mientras lees y no vence."; compartirT = "¡Hallé un lauro trenzado incorruptible en Escudriña, el juego de Biblia Exacta!"; }
-    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", { text: piedraNombre(x.i) }); texto = "Hallaste la " + ORDINAL[x.i] + " piedra del fundamento (Ḥăzṓn Hiṯgallū́ṯ 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste las doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", una de las doce piedras del fundamento, en Escudriña, el juego de Biblia Exacta."; }
+    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", { text: piedraNombre(x.i) }); texto = "Hallaste la " + ORDINAL[x.i] + " piedra del fundamento (Ἀpοκάlυpsις 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste las doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", una de las doce piedras del fundamento, en Escudriña, el juego de Biblia Exacta."; }
     else if (x.tipo === "liga") { arte = gema(x.nvNuevo - 1, true); titulo = h("h3", { text: "¡Subiste a la liga " + ligaNombre(x.nvNuevo) + "!" }); texto = "Quedaste en el puesto " + x.pos + " de " + x.n + " de tu grupo" + (x.h ? ": +" + horas(x.h * 3600e3) + " de experiencia doble y " + x.dr + " dracmas" : "") + ". Esta semana lees en el " + ORDF[x.nvNuevo - 1] + " fundamento."; compartirT = "¡Subí a la liga " + ligaNombre(x.nvNuevo) + " en Escudriña!"; }
     else if (x.tipo === "raro") { const d = ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) || [x.id, "aura", "Accesorio raro", ""]; arte = A.svg(muestraAcc(d[0], d[1]), "0 0 48 48"); titulo = h("h3", { text: d[2] }); texto = "Reuniste 70 fragmentos de papiro marcando «Leído»: se abrió un accesorio raro" + (d[3] ? " (" + d[3] + ")" : "") + ". Ya está en tu Árbol, en la tienda, para llevarlo puesto. Solo se consigue leyendo."; compartirT = "Reuní 70 fragmentos de papiro leyendo la Nueva Voluntad y se abrió «" + d[2] + "» en Escudriña, el juego de Biblia Exacta."; }
     else { arte = emblema(S.yo && S.yo.emb ? S.yo.emb.l : "α", S.yo && S.yo.emb ? S.yo.emb.c : 0, S.yo && S.yo.marco); titulo = h("h3", { text: "Nuevo rango: " + x.rango }); texto = "Llegaste al nivel " + x.nivel + ". Desde ahora compites en la clasificación de " + x.rango + "."; compartirT = "Llegué al rango de " + x.rango + " en Escudriña, el juego de Biblia Exacta."; }
@@ -3479,7 +3479,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarLiga(cont) {
     document.title = "Liga de la semana · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu liga…" }));
-    marco(cont, cabSub("Liga de la semana", "De domingo a sábado, hora de Bogotá. Cada liga lleva el nombre de una de las doce piedras del fundamento (Ḥăzṓn Hiṯgallū́ṯ 21:19-20): se sube de fundamento en fundamento."), zona);
+    marco(cont, cabSub("Liga de la semana", "De domingo a sábado, hora de Bogotá. Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento."), zona);
     const r = await pedir("/liga");
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));

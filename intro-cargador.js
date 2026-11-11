@@ -34,7 +34,7 @@
     setTimeout(function () { if (!window.__biexIntro) quitar(); }, 4500);
     setTimeout(quitar, 30000);
     var s = document.createElement("script");
-    s.src = "intro.js?v=2b42c9d232";
+    s.src = "intro.js?v=367b1fa5bb";
     s.async = true;
     s.setAttribute("data-modo", modo);
     s.onerror = quitar;

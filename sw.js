@@ -146,22 +146,32 @@ self.addEventListener("activate", (e) => {
   })());
 });
 
+// Red primero, con plazo (BiEx, 11-nov-2026: tras un rato largo sin usarla, la app no respondía ni dejaba recargar). Con la
+// conexión a medias (la red del teléfono despertando, un wifi sin salida) una petición puede quedarse colgada minutos y,
+// con ella, la página y el gesto de recargar. Si hay copia guardada, la red tiene un plazo: pasado ese plazo se responde con
+// la copia y la respuesta de la red, cuando llegue, se guarda igual para la próxima vez. Sin copia, se espera a la red.
+const PLAZO_NAV = 3500, PLAZO_RED = 4500;
 async function redPrimero(e, req, r, esNavegacion) {
   const c = await caches.open(CACHE);
-  try {
-    // los archivos de otros sitios se piden con CORS para poder guardarlos completos (no opacos)
-    const pedido = req.mode === "navigate" || new URL(req.url).origin === self.location.origin ? req : new Request(req.url, { mode: "cors", credentials: "omit", headers: req.headers.get("Range") ? {} : undefined });
-    const resp = await fetch(pedido);
-    if (resp && resp.ok && resp.status === 200 && (resp.type === "basic" || resp.type === "cors" || resp.type === "default")) {
-      e.waitUntil(guardar(c, r, resp.clone()).catch(() => {}));
-    }
+  // los archivos de otros sitios se piden con CORS para poder guardarlos completos (no opacos)
+  const pedido = req.mode === "navigate" || new URL(req.url).origin === self.location.origin ? req : new Request(req.url, { mode: "cors", credentials: "omit", headers: req.headers.get("Range") ? {} : undefined });
+  let paraGuardar = null, reloj = 0;
+  const red = fetch(pedido).then((resp) => {
+    if (resp && resp.ok && resp.status === 200 && (resp.type === "basic" || resp.type === "cors" || resp.type === "default")) paraGuardar = resp.clone();
     return resp;
+  });
+  e.waitUntil(red.then(() => paraGuardar && guardar(c, r, paraGuardar)).catch(() => {}));
+  const guardada = async () => (await c.match(claveDe(r))) || (esNavegacion ? await c.match(claveDe("index.html")) : null) || null;
+  try {
+    const tarde = new Promise((ok) => { reloj = setTimeout(ok, esNavegacion ? PLAZO_NAV : PLAZO_RED, null); });
+    const resp = await Promise.race([red, tarde]);
+    if (resp) return resp;
+    return (await guardada()) || (await red); // la red tarda: la copia si la hay; si no, se sigue esperando a la red
   } catch (err) {
-    const copia = await c.match(claveDe(r));
+    const copia = await guardada();
     if (copia) return copia;
-    if (esNavegacion) { const ini = await c.match(claveDe("index.html")); if (ini) return ini; }
     throw err;
-  }
+  } finally { clearTimeout(reloj); }
 }
 
 async function fuentes(req) {

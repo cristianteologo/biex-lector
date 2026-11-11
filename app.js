@@ -1062,7 +1062,7 @@
           h("div", { class: "ap-pie" },
             h("button", { class: "btn chico oro", type: "button", onclick: () => empujar(vistaOpciones()) }, svg(ICO.opciones), "Opciones del texto: colores, corchetes, paréntesis"),
             h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura")),
-          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para todas las personas, incluidas las neurodivergentes (con TDAH, dislexia, autismo…), y busca, de forma progresiva, la máxima accesibilidad para las personas ciegas y con otras limitaciones, para que el Lógos llegue a todos los hablantes del idioma español." })));
+          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para todas las personas, incluidas las neurodivergentes (con TDAH, dislexia, autismo…), y busca, de forma progresiva, la máxima accesibilidad para las personas ciegas y con otras limitaciones, para que el Lόgος llegue a todos los hablantes del idioma español." })));
     });
   }
 
@@ -2541,7 +2541,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "0c4dd8f140", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "49d2404cea", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4074,24 +4074,35 @@
       const vEl = bajo && bajo.closest && bajo.closest("#vista [id^='v']");
       const rv = vEl ? vEl.getBoundingClientRect() : null;
       pinza = { d0: distT(e.touches), cx, cy, paso: 0, raiz, v: vEl && /^v\d+$/.test(vEl.id) ? +vEl.id.slice(1) : null, frac: rv && rv.height ? (cy - rv.top) / rv.height : 0 };
+      escucharPinza(true);
       return;
     }
     if (e.touches.length !== 1 || pinza) { gesto = null; return; }
     if ((window.visualViewport && window.visualViewport.scale > 1.01) || evitaDeslizar(e.target)) { gesto = null; return; }
     gesto = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() };
   }, { passive: true });
-  document.addEventListener("touchmove", (e) => {
-    if (!pinza) return;
-    if (e.touches.length !== 2) return;
-    e.preventDefault();
+  // El oyente que puede detener el desplazamiento (passive: false) existe solo mientras dura un pellizco: con él siempre
+  // puesto, cada toque esperaba al hilo principal y, si este tardaba al volver a la app, ni el desplazamiento ni el gesto
+  // de recargar respondían (BiEx, 11-nov-2026).
+  const moverPinza = (e) => {
+    if (!pinza || e.touches.length !== 2) return;
+    if (e.cancelable) e.preventDefault();
     if (pinza.paso) return; // un gesto, un paso
     const r = distT(e.touches) / pinza.d0;
     if (r > 1.12 || r < 0.89) { pinza.paso = r > 1 ? 1 : -1; pasoPellizco(pinza, pinza.paso); }
-  }, { passive: false });
+  };
+  let conPinza = false;
+  function escucharPinza(si) {
+    if (si === conPinza) return;
+    conPinza = si;
+    if (si) document.addEventListener("touchmove", moverPinza, { passive: false });
+    else document.removeEventListener("touchmove", moverPinza);
+  }
+  const soltarGestos = () => { gesto = null; pinza = null; escucharPinza(false); };
   document.addEventListener("touchend", (e) => {
     if (pinza) {
       if (e.touches.length) return;
-      pinza = null; RP.fin = performance.now();
+      soltarGestos(); RP.fin = performance.now();
       return;
     }
     const g = gesto; gesto = null;
@@ -4105,7 +4116,21 @@
     location.hash = destino;
     setTimeout(() => document.documentElement.removeAttribute("data-paso"), 700);
   }, { passive: true });
-  document.addEventListener("touchcancel", () => { gesto = null; pinza = null; }, { passive: true });
+  document.addEventListener("touchcancel", soltarGestos, { passive: true });
+  // al salir de la app (o si el sistema la congela) un toque a medias no queda pendiente para cuando se vuelva
+  document.addEventListener("visibilitychange", () => { if (document.hidden) soltarGestos(); });
+  window.addEventListener("pagehide", soltarGestos);
+  document.addEventListener("freeze", soltarGestos);
+  // Rescate al volver: si una presentación de apertura quedó a medias (el sistema la congeló o la descartó), nada debe seguir
+  // bloqueando la página: ni la cortina negra ni el desplazamiento detenido.
+  const rescatar = () => {
+    if (document.hidden || document.querySelector("#biex-intro")) return;
+    const c = document.getElementById("biex-cortina"); if (c) c.remove();
+    for (const el of [document.documentElement, document.body]) if (el && el.style.getPropertyValue("overflow") === "hidden" && el.style.getPropertyPriority("overflow") === "important") el.style.removeProperty("overflow");
+  };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(rescatar, 1200); });
+  window.addEventListener("pageshow", () => setTimeout(rescatar, 1200));
+  document.addEventListener("resume", () => setTimeout(rescatar, 1200));
   // un tamaño más o menos; el verso bajo los dedos se queda en su sitio y un sello discreto junto a los dedos lo confirma
   function pasoPellizco(p, dir) {
     const nuevo = Math.max(1, Math.min(K_TAM.length, ap.tam + dir));
@@ -4423,7 +4448,9 @@
     } catch (e) { store.set("revisionCopia", 0); /* sin conexión o sin respuesta: se intenta otra vez */ }
     finally { revisando = false; }
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - (store.get("revisionCopia", 0) || 0) >= 3600e3) actualizarCopia(); });
+  // al volver, la revisión espera unos segundos y un momento libre: lo primero es que la página responda al tacto
+  const enCalma = (fn, ms) => setTimeout(() => { if (document.hidden) return; if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 4000 }); else fn(); }, ms);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - (store.get("revisionCopia", 0) || 0) >= 3600e3) enCalma(actualizarCopia, 6000); });
   window.addEventListener("online", () => { if (!store.get("revisionCopia", 0)) setTimeout(actualizarCopia, 3000); });
   // Aviso de versión nueva (BiEx, 10-nov-2026: «al volver a la app casi nunca avisa»). Antes la consulta dependía de la
   // copia sin conexión y de una hora de ausencia; ahora es una consulta ligera y propia, sin esa condición: al abrir, al
@@ -4442,9 +4469,9 @@
       }
     } catch (e) { ultVersion = 0; }
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => revisarVersion(45e3), 600); });
-  document.addEventListener("resume", () => setTimeout(() => revisarVersion(0), 600));
-  window.addEventListener("pageshow", (e) => { if (e.persisted) setTimeout(() => revisarVersion(0), 600); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") enCalma(() => revisarVersion(45e3), 1500); });
+  document.addEventListener("resume", () => enCalma(() => revisarVersion(0), 1500));
+  window.addEventListener("pageshow", (e) => { if (e.persisted) enCalma(() => revisarVersion(0), 1500); });
   window.addEventListener("focus", () => revisarVersion(120e3));
   window.addEventListener("online", () => setTimeout(() => revisarVersion(0), 2000));
   window.addEventListener("hashchange", () => revisarVersion(180e3));
@@ -4601,7 +4628,7 @@
   }
   // ------------------------------------------------------------------ planes de lectura
   // Sobre el orden cronológico de BiEx (los relatos por su primer acontecimiento, luego Prάc̅ṣεις y las cartas por su fecha de
-  // escritura, Ḥăzṓn Hiṯgallū́ṯ al final): el reparto por días equilibra el número de versos. El avance queda en el dispositivo
+  // escritura, Ἀpοκάlυpsις al final): el reparto por días equilibra el número de versos. El avance queda en el dispositivo
   // (biex:planes) y la siguiente lectura aparece en la portada y al terminar su último capítulo.
   const NO_CARTAS = ["MAT", "MRK", "LUK", "JHN", "ACT", "REV"];
   const PLANES = [
