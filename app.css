@@ -1981,3 +1981,84 @@ html:has(.cargando.inicio) .pie { visibility: hidden; }
    velo, que no cambia al desplazar por dentro): con un fondo del 95 % el desenfoque de 28 px no se veía y en el teléfono
    se recalculaba en cada cuadro del desplazamiento interno */
 .modal { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--hoja) 95%, transparent); }
+
+/* Estudio de la palabra (11-nov-2026): código Strong, origen y palabra hebrea o aramea, composición visible, formación,
+   raíz y familia (diccionario de raíces), tabla de formas, tira por fecha de escritura, pronunciación y analizador de texto */
+.fp-pron { display: flex; flex-wrap: wrap; gap: 2px 16px; margin: 2px 0 0; font-family: var(--f-ui); font-size: .78rem; color: var(--tenue); }
+.fp-pron b { font-family: var(--f-griego); font-weight: 400; font-size: .98rem; color: var(--tinta-2); letter-spacing: .01em; }
+.panel-cab .fp-pron { margin: 4px 0 6px; }
+.lx-strong { font-family: var(--f-ui); font-variant-numeric: tabular-nums; color: var(--oro); letter-spacing: .04em; }
+.chip.lx-strong { border-color: color-mix(in srgb, var(--oro) 45%, transparent); }
+.lx-ext { color: var(--tenue); font-family: var(--f-ui); font-size: .76rem; }
+.lx-he, .fm-h { font-size: 1.18em; color: var(--oro); line-height: 1.2; }
+.fm-l { color: var(--oro); text-decoration: none; font-family: var(--f-griego); border-bottom: 1px solid color-mix(in srgb, var(--oro) 38%, transparent); }
+.fm-l:hover, .fm-l:focus-visible { border-bottom-color: var(--oro); outline: none; }
+.fm-g { font-family: var(--f-griego); color: var(--tinta-2); }
+.lx-caja { display: grid; gap: 10px; }
+.lx-fam { margin-top: 2px; }
+.lx-chip { display: inline-flex; align-items: baseline; gap: 6px; text-decoration: none; }
+.lx-chip span { font-family: var(--f-griego); font-size: .95rem; color: var(--tinta); }
+.lx-chip small { color: var(--tenue); font-size: .7rem; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lx-chip:hover, .lx-chip:focus-visible, .lx-mas:hover { border-color: var(--oro); outline: none; }
+.lx-mas { text-decoration: none; color: var(--oro); }
+.lx-fuente { font-size: .7rem; margin: 0; }
+.chip-n { margin-left: 6px; color: var(--oro); font-variant-numeric: tabular-nums; }
+.cc-st { margin-right: 8px; color: var(--tenue); font-size: .68rem; letter-spacing: .03em; }
+.seg-mini { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border: 1px solid var(--linea-2); border-radius: 999px; }
+.seg-mini button { font: 500 .74rem/1 var(--f-ui); color: var(--tenue); background: none; border: 0; border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.seg-mini button[aria-pressed="true"] { color: var(--tinta); background: color-mix(in srgb, var(--oro) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 40%, transparent); }
+.seg-mini button:focus-visible { outline: 2px solid var(--oro); outline-offset: 1px; }
+/* tabla de formas */
+.tf-caja { display: grid; gap: 4px; }
+.tf-sec { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--linea-2); }
+.tf-sec:first-child { padding-top: 0; border-top: 0; }
+.tf-sec h3 { margin: 0; font-family: var(--f-ui); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--oro); font-weight: 500; }
+.tf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tf { border-collapse: collapse; width: 100%; font-size: .98rem; }
+.tf th { font-family: var(--f-ui); font-size: .68rem; font-weight: 500; color: var(--tenue); text-align: left; padding: 3px 10px 3px 0; white-space: nowrap; }
+.tf tbody th { padding-top: 7px; vertical-align: top; }
+.tf td { padding: 4px 10px 4px 0; border-top: 1px solid var(--linea-2); vertical-align: top; }
+.tf-f { display: inline-flex; align-items: baseline; gap: 3px; margin-right: 10px; white-space: nowrap; }
+.tf-f small { font-family: var(--f-ui); font-size: .62rem; color: var(--tenue); font-variant-numeric: tabular-nums; }
+.tf-no { color: var(--tenue); opacity: .45; }
+.tf-lista { display: flex; flex-wrap: wrap; gap: 4px 0; }
+/* tira por fecha de escritura */
+.tt { display: grid; gap: 6px; }
+.tt-tira { display: grid; grid-template-columns: repeat(27, minmax(0, 1fr)); gap: 3px; height: 40px; }
+.tt-c { position: relative; display: block; padding: 0; border: 0; border-radius: 4px; background: var(--hoja-2); cursor: pointer; }
+.tt-c i { position: absolute; inset: 0; border-radius: 4px; background: linear-gradient(180deg, var(--oro-vivo, var(--oro)), var(--oro)); opacity: var(--a); }
+.tt-c.cero { cursor: default; }
+.tt-c:not(.cero):hover i, .tt-c:focus-visible i { opacity: 1; }
+.tt-c:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+.tt-ejes { display: flex; justify-content: space-between; font-family: var(--f-ui); font-size: .66rem; color: var(--tenue); }
+/* diccionario de raíces */
+.rz-it .cc-gl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rz-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0 18px; }
+.rz-m a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 2px 10px; padding: 10px 2px; border-top: 1px solid var(--linea-2); text-decoration: none; color: inherit; }
+.rz-m a:hover .rz-g, .rz-m a:focus-visible .rz-g { color: var(--oro-vivo, var(--oro)); }
+.rz-m a:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; border-radius: 6px; }
+.rz-g { font-family: var(--f-griego); font-size: 1.18rem; color: var(--oro); }
+.rz-tl { font-family: var(--f-griego); font-style: italic; color: var(--tenue); font-size: .86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rz-m em { font-style: normal; font-family: var(--f-ui); font-size: .74rem; color: var(--oro); font-variant-numeric: tabular-nums; }
+.rz-c { grid-column: 1 / -1; font-family: var(--f-griego); font-size: .82rem; color: var(--tenue); }
+.rz-gl { grid-column: 1 / -1; font-size: .9rem; color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* analizador de texto griego */
+.an-entrada { display: grid; gap: 12px; }
+.an-txt { width: 100%; box-sizing: border-box; min-height: 128px; padding: 14px 16px; border: 1px solid var(--linea); border-radius: 14px; background: var(--hoja); color: var(--tinta); font-family: var(--f-griego); font-size: 1.18rem; line-height: 1.6; resize: vertical; }
+.an-txt:focus { outline: none; border-color: var(--oro); box-shadow: 0 0 0 3px var(--oro-suave); }
+.an-sal { font-family: var(--f-griego); font-size: 1.22rem; line-height: 2.15; white-space: pre-wrap; word-break: normal; }
+.an-pal { font: inherit; color: var(--tinta); background: none; border: 0; padding: 0 2px; margin: 0; border-radius: 6px; cursor: pointer; border-bottom: 2px solid color-mix(in srgb, var(--k, var(--oro)) 60%, transparent); }
+.an-pal:hover { background: color-mix(in srgb, var(--k, var(--oro)) 10%, transparent); }
+.an-pal[aria-pressed="true"] { background: color-mix(in srgb, var(--k, var(--oro)) 20%, transparent); color: var(--oro-vivo, var(--oro)); }
+.an-pal:focus-visible { outline: 2px solid var(--oro); outline-offset: 1px; }
+.an-pal.desconocida { border-bottom-style: dashed; border-bottom-color: color-mix(in srgb, var(--tenue) 70%, transparent); }
+.an-res { margin: 0 0 6px; }
+.an-ficha:empty { display: none; }
+.an-card { display: grid; gap: 10px; align-content: start; }
+.an-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.an-fijas { display: grid; gap: 8px; margin-top: 14px; }
+.an-fijas[hidden] { display: none; }
+.an-fijas > .btn { justify-self: start; }
+.an-card .lema-l a.g { text-decoration: none; }
+.an-card .lema-l a.g:hover, .an-card .lema-l a.g:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+@media (min-width: 900px) { .an-cols .an-ficha { position: sticky; top: 84px; align-self: start; } }

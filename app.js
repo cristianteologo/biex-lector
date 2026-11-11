@@ -56,7 +56,7 @@
     abajo: '<path d="M6.5 9.5L12 15l5.5-5.5" ' + L1 + '/>',
     // gema tallada con su destello (BiEx, 10-nov-2026: nada de estrellas ni formas de cruz)
     chispa: '<path d="M12 3.5l6.5 8.5-6.5 8.5-6.5-8.5z" ' + L1 + '/><path d="M12 7.6l3.3 4.4-3.3 4.4-3.3-4.4z" ' + L1 + '/><path d="M18.4 3.6l1.1 1.4-1.1 1.4-1.1-1.4z" fill="currentColor"/>',
-    balanza: '<path d="M12 4v16M7 20h10M5 7h14M12 4.5v2.5" ' + L1 + '/><path d="M5 7l-2.6 6.2a2.8 2.8 0 0 0 5.2 0zM19 7l-2.6 6.2a2.8 2.8 0 0 0 5.2 0z" ' + L1 + '/>',
+    balanza: '<path d="M12 10.4L9.6 19.6h4.8z" ' + L1 + '/><path d="M8 20.4h8" ' + L1 + '/><path d="M4.4 9.4L19.6 6.6" ' + L1 + '/><circle cx="12" cy="8" r="1.15" fill="currentColor"/><path d="M4.4 9.4l-2.2 4.6a2.4 2.4 0 0 0 4.4 0zM19.6 6.6l-2.2 4.6a2.4 2.4 0 0 0 4.4 0z" ' + L1 + '/>',
     marca: '<path d="M5.5 12.5l4.2 4.2L18.5 7.8" ' + L1 + '/>',
     cerrar: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + L1 + '/>',
     atras: '<path d="M10 6l-6 6 6 6M4.5 12H20" ' + L1 + '/>',
@@ -66,7 +66,9 @@
     externo: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" ' + L1 + '/>',
     rejilla: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/>',
     libro: '<path d="M4 5.5C6.5 4.2 9.5 4.2 12 6c2.5-1.8 5.5-1.8 8-.5V19c-2.5-1.3-5.5-1.3-8 .5-2.5-1.8-5.5-1.8-8-.5z M12 6v13.5" ' + L1 + '/>',
-    lupa: '<circle cx="10" cy="10" r="5.5" ' + L1 + '/><path d="M14 14l5.5 5.5M7.5 10h5M10 7.5v5" ' + L1 + '/>',
+    lupa: '<circle cx="10" cy="10" r="5.5" ' + L1 + '/><path d="M14 14l5.5 5.5" ' + L1 + '/><path d="M7.3 9.3a3 3 0 0 1 2.2-2.1" ' + L1 + '/>',
+    raiz: '<path d="M12 3.2v9.3" ' + L1 + '/><path d="M12 8.6c-1.7-1.9-3.9-2.4-5.6-1.9M12 6.8c1.5-1.7 3.4-2.2 5-1.8" ' + L1 + '/><path d="M12 12.5c-.5 2.6-2.4 4.5-5.4 5.4M12 12.5c.5 2.6 2.4 4.5 5.4 5.4M12 12.5v7.6M8.9 15.9c-1.6.6-2.6 1.9-3 3.6M15.1 15.9c1.6.6 2.6 1.9 3 3.6" ' + L1 + '/>',
+    texto: '<path d="M5 5.5h14M5 9.5h14M5 13.5h7" ' + L1 + '/><circle cx="16.4" cy="16.4" r="3.1" ' + L1 + '/><path d="M18.7 18.7l2.3 2.3" ' + L1 + '/>',
     literal: '<path d="M3 7.5h4M9.5 7.5h3.5M15.5 7.5h5.5M3 12.5h6M11.5 12.5h3.5M17.5 12.5h3.5" ' + L1 + '/><path d="M3 17.5h18" ' + L1 + ' opacity=".5"/>',
     lista: '<path d="M8 6.5h12M8 12h12M8 17.5h12" ' + L1 + '/><circle cx="4.5" cy="6.5" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1" fill="currentColor"/>',
     filtros: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9" ' + L1 + '/><circle cx="15" cy="7" r="2" ' + L1 + '/><circle cx="9" cy="17" r="2" ' + L1 + '/>',
@@ -1145,6 +1147,7 @@
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
           "Transcripciones de los manuscritos: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración del Nuevo Testamento] (Alan Bunning), con licencia CC BY-SA 4.0; la comparación con el texto base se publica con la misma licencia.", h("br"),
           "Para reconocer las palabras con que se recuerda un verso, el buscador usa, sin mostrarlas, las traducciones de dominio público Reina-Valera 1909 y 1865, World English Bible [Biblia Mundial English], King James Version [Versión del Rey James] y Berean Standard Bible [Biblia Estándar Berean], y la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0).", h("br"),
+          "Códigos Strong y formación de las palabras: códigos Strong extendidos de ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT" }), " (STEPBible.org, CC BY 4.0) y Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890; datos de ", h("a", { href: "https://github.com/openscriptures/strongs", target: "_blank", rel: "noopener", text: "Open Scriptures" }), " [Escrituras Abiertas], CC BY-SA), con las familias morfológicas de BiEx; el léxico de estudio que se deriva de ellos se publica con licencia CC BY-SA 4.0.", h("br"),
           "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación del Nuevo Testamento] (1976)."))),
       modal);
     const tg = store.get("tema", null);
@@ -1392,7 +1395,9 @@
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
           hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
-          hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso.", "Buscar una palabra", "#/lema"),
+          hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
+          hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
+          hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar"),
           hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
           hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia")), redesBiex()]));
   }
@@ -2142,6 +2147,9 @@
       const contexto = h("div", { class: "contexto", lang: "grc" });
       toks.forEach((x, k) => { if (k) contexto.append(" "); contexto.append(h("button", { type: "button", "aria-current": k === ctx.i ? "true" : "false", onclick: () => mover(k), text: gk(T.F[x[0]]) }), punt(x[4])); });
       const enCap = ctx.desde === "analisis" && esc.libro === b.c && esc.cap === cap && esc.modo === "a";
+      const lxFicha = () => bloqueRaiz(li, "ficha", strongTok(b.c, cap, v, ctx.i, li)).filter(Boolean);
+      const cajaLx = h("div", { class: "lx-caja" }, LX ? lxFicha() : h("p", { class: "nota-ui", text: "Cargando…" }));
+      if (!LX) lexico().then(() => cajaLx.replaceChildren(...lxFicha())).catch(() => cajaLx.replaceChildren(h("p", { class: "nota-ui", text: "No se pudo cargar el estudio de la palabra." })));
       const pie = h("div", { class: "m-pie" },
         h("a", { class: "btn chico", href: "#/lema/" + li }, svg(ICO.lista), "Concordancia del lema"),
         enCap ? h("button", { class: "btn chico oro", type: "button", onclick: () => { const k = ctx.i; cerrarModal(); setTimeout(() => destellarPalabra(v, k), 60); } }, svg(ICO.lupa), "Ver en el análisis del capítulo")
@@ -2151,6 +2159,7 @@
           h("div", { class: "fp-pal" },
             h("div", { class: "fp-g", lang: "grc", text: T.F[t[0]] }),
             h("div", { class: "fp-tl" }, T.FT[t[0]], h("span", { class: "eyebrow", style: "margin-left:12px;font-style:normal", lang: "grc", text: uncial(T.F[t[0]]) })),
+            lineaPron(T.F[t[0]]),
             h("div", { class: "fp-tr" + (tr ? "" : " sin") }, h("small", { text: "Traducción" }), tr || "Aún sin traducción fijada"),
             h("div", { class: "chips" }, chips.filter((c) => c[0]).map(([x, k]) => h("span", { class: "chip" + (k ? " k" : ""), style: k ? "--k:var(--c-" + cl + ")" : null, text: x }))),
             h("div", { class: "bloque" }, h("h4", { text: "En el verso" }), contexto, ctx.L ? (() => {
@@ -2165,6 +2174,7 @@
             h("div", { class: "bloque" }, h("h4", { text: "Lema" }),
               h("div", { class: "lema-l" }, h("span", { class: "g", lang: "grc", text: T.L[li] }), h("small", { text: T.LT[li] })),
               h("p", { class: "nota-ui", text: fmt(T.LN[li]) + " veces en la Nueva Voluntad; esta forma, " + fmt(T.FN[t[0]]) + "." })),
+            h("div", { class: "bloque" }, h("h4", { text: "Raíz y formación" }), cajaLx),
             h("div", { class: "bloque" }, h("h4", { text: "Formas del lema" + (par.length > 14 ? " · las 14 más frecuentes de " + par.length : "") }), tabla),
             pares.length > 1 ? h("div", { class: "bloque" }, h("h4", { text: "Dónde aparece" }), h("div", { class: "barras" }, pares.slice(0, 10).map(([bi, k]) => {
               const bb = D.libros[bi];
@@ -2791,29 +2801,16 @@
     vista().replaceChildren(cargando("Preparando la concordancia…"));
     alTope();
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
+    try { await lexico(); } catch (e) { /* sin el léxico de estudio: la búsqueda por Strong no estará */ }
     let X = null; try { X = await prepararBuscador(); } catch (e) { X = null; }
     const glosas = (li) => [...new Set((T.LP[li] || []).map((r) => r[3]).filter(Boolean))].slice(0, 3).map((x) => T.TR[x]).join(" · ");
     const fila = (li) => h("li", {}, h("a", { class: "cc-it", href: "#/lema/" + li },
       h("b", { lang: "grc", text: T.L[li] }), h("span", { class: "cc-tr", text: T.LT[li] !== T.L[li] ? T.LT[li] : "" }),
-      h("span", { class: "cc-gl", text: glosas(li) }), h("em", { text: fmt(T.LN[li]) })));
+      h("span", { class: "cc-gl", text: glosas(li) }), h("em", {}, LX && LX.S[li] ? h("span", { class: "cc-st", text: strongN(LX.S[li]) }) : null, fmt(T.LN[li]))));
     const frecuentes = T.L.map((_, i) => i).sort((a, b) => T.LN[b] - T.LN[a]).slice(0, 60);
-    let latinos = null;
-    const buscarLemas = (q) => {
-      const out = new Map(), pon = (li, v) => { if (li != null && li >= 0) out.set(li, Math.max(out.get(li) || 0, v)); };
-      if (/[\u0370-\u03ff\u1f00-\u1fff]/.test(q)) {
-        const k = claveGr(q);
-        T.Fk.forEach((x, fi) => { if (x === k) pon(T.formaLema.get(fi), 5); });
-        T.Lk.forEach((x, li) => { if (x === k) pon(li, 6); else if (x.startsWith(k)) pon(li, 4); else if (k.length > 2 && x.includes(k)) pon(li, 2); });
-      } else if (X) {
-        const B = X.BQ, kq = B.claveLatina(q.replace(/\s+/g, ""));
-        if (!latinos) latinos = T.L.map((l) => B.claveLatina(B.translit(String(l).split(/,\s*/)[0])));
-        if (kq.length >= 2) latinos.forEach((x, li) => { if (x === kq) pon(li, 6); else if (x.startsWith(kq)) pon(li, 4); });
-        const e = claveEs(q);
-        if (e.length >= 3) T.TRk.forEach((x, ti) => { if (ti && x.includes(e)) for (const li of T.TL[ti] || []) pon(li, x === e ? 3 : 1); });
-      }
-      return [...out.entries()].sort((a, b) => b[1] - a[1] || T.LN[b[0]] - T.LN[a[0]]).slice(0, 60).map(([li]) => li);
-    };
-    const entrada = h("input", { type: "search", class: "cc-q", placeholder: "λόγος · logos · discurso", "aria-label": "Buscar un lema", autocomplete: "off", autocapitalize: "off", spellcheck: "false" });
+    const buscador = buscadorLemas(X);
+    const buscarLemas = (q) => buscador(q).slice(0, 60);
+    const entrada = h("input", { type: "search", class: "cc-q", placeholder: "λόγος · logos · discurso · G3056", "aria-label": "Buscar un lema", autocomplete: "off", autocapitalize: "off", spellcheck: "false" });
     const titulo = h("h2", { text: "Los más frecuentes" });
     const lista = h("ol", { class: "cc-lista" });
     const pintar = () => {
@@ -2829,7 +2826,7 @@
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Concordancia" }), h("h1", { text: "Elige una palabra griega" }),
-        h("p", { class: "nota-ui", text: "Cada lema (la forma de diccionario) reúne todas sus formas y apariciones en la Nueva Voluntad. Escríbelo en griego, con letras latinas o por su traducción." })),
+        h("p", { class: "nota-ui", text: "Cada lema (la forma de diccionario) reúne todas sus formas y apariciones en la Nueva Voluntad. Escríbelo en griego, con letras latinas, por su traducción o por su código Strong (G3056)." })),
       h("div", { class: "cc-buscar" }, svg(ICO.buscar), entrada),
       vistos.length ? h("div", { class: "cc-vistos" }, h("span", { class: "rotulo", text: "Vistos hace poco" }), h("div", { class: "chips" }, vistos.map((li) => h("a", { class: "chip", lang: "grc", href: "#/lema/" + li, text: T.L[li] })))) : null,
       h("div", { class: "tarjeta" }, titulo, lista))));
@@ -2841,6 +2838,7 @@
     vista().replaceChildren(cargando("Cargando el lema…"));
     alTope();
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
+    try { await lexico(); } catch (e) { /* sin el léxico de estudio */ }
     if (!(li >= 0 && li < T.L.length)) return noEncontrado();
     document.title = T.L[li] + " · BiEx";
     store.set("lemasVistos", [li].concat(store.get("lemasVistos", []).filter((x) => x !== li)).slice(0, 12));
@@ -2848,7 +2846,15 @@
     const lb = T.LB[li] || [];
     const pares = []; for (let k = 0; k < lb.length; k += 2) pares.push([lb[k], lb[k + 1]]);
     const max = Math.max(1, ...pares.map((p) => p[1]));
-    const trads = [...new Set(par.map((r) => r[3]).filter(Boolean))].slice(0, 12);
+    const trads = glosasLema(li, 12);
+    // formas: tabla del paradigma o lista; se recuerda la elección
+    const listaF = h("table", { class: "paradigma" }, h("tbody", {}, par.map((r) => h("tr", {},
+      h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: mdTok([r[0], 0, r[1], 0, "", 0, 0, r[4]]) }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))));
+    const tablaF = h("div", { class: "tf-caja" }, tablaFormas(li));
+    let modoF = store.get("formasModo", "tabla") === "lista" ? "lista" : "tabla";
+    const cajaF = h("div", {}, modoF === "tabla" ? tablaF : listaF);
+    const togF = h("div", { class: "seg-mini", role: "group", "aria-label": "Mostrar las formas" }, [["tabla", "Tabla"], ["lista", "Lista"]].map(([k, t]) => h("button", { type: "button", "data-k": k, "aria-pressed": modoF === k ? "true" : "false", text: t, onclick: () => {
+      modoF = k; store.set("formasModo", k); cajaF.replaceChildren(k === "tabla" ? tablaF : listaF); for (const x of togF.children) x.setAttribute("aria-pressed", x.dataset.k === k ? "true" : "false"); } })));
     // Apariciones plegadas por libro: se ve cada libro con su número de apariciones y se abre solo el que interesa
     // (sus datos se traen al abrirlo); lo abierto se recuerda al volver atrás
     const abiertos = new Set((() => { try { return JSON.parse(sessionStorage.getItem("biex:lemaAb") || "{}")[li] || []; } catch (e) { return []; } })());
@@ -2882,16 +2888,18 @@
       h("div", { class: "barra-volver" }, h("button", { class: "btn chico", type: "button", onclick: volverAtras }, svg(ICO.atras), "Volver"),
         h("a", { class: "btn chico", href: "#/lema" }, svg(ICO.buscar), "Otra palabra")),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Concordancia del lema" }),
-        h("h1", { lang: "grc" }, T.L[li], h("small", { text: T.LT[li] })),
+        h("h1", { lang: "grc" }, T.L[li], h("small", { text: T.LT[li] })), lineaPron(lemaCorto(li)),
         h("p", { class: "nota-ui", text: fmt(T.LN[li]) + " apariciones en " + pares.length + (pares.length === 1 ? " libro" : " libros") + ", en " + par.length + (par.length === 1 ? " forma" : " formas") + " distintas." }),
-        trads.length ? h("div", { class: "chips" }, trads.map((x) => h("span", { class: "chip", text: T.TR[x] }))) : null),
+        trads.length ? h("div", { class: "chips" }, trads.map(([x, n]) => h("span", { class: "chip", title: fmt(n) + (n === 1 ? " vez" : " veces") }, T.TR[x], h("small", { class: "chip-n", text: fmt(n) })))) : null),
       h("div", { class: "columnas" },
-        h("div", { class: "tarjeta" }, h("h2", { text: "Formas" }), h("table", { class: "paradigma" }, h("tbody", {}, par.map((r) => h("tr", {},
-          h("td", {}, spanGk(T.F[r[0]])), h("td", { class: "m", text: mdTok([r[0], 0, r[1], 0, "", 0, 0, r[4]]) }), h("td", { text: r[3] ? T.TR[r[3]] : "" }), h("td", { class: "n", text: fmt(r[2]) })))))),
+        h("div", { class: "tarjeta" }, h("div", { class: "apl-cab" }, h("h2", { text: "Formas" }), togF), cajaF),
+        LX ? h("div", { class: "tarjeta" }, h("h2", { text: "Raíz y formación" }), bloqueRaiz(li, "lema")) : null),
+      h("div", { class: "columnas" },
         h("div", { class: "tarjeta" }, h("h2", { text: "Por libro" }), h("div", { class: "barras" }, pares.map(([bi, n]) => {
           const b = D.libros[bi];
           return h("div", {}, h("a", { href: "#/" + b.c + "/1/a", text: b.t || b.n, title: "Ver sus apariciones en " + nombreLibro(b), onclick: (e) => { e.preventDefault(); abrirLibroAp(b.c); } }), h("i", { style: "width:" + (100 * n / max).toFixed(1) + "%" }), h("em", { text: fmt(n) }));
-        })))),
+        }))),
+        h("div", { class: "tarjeta" }, h("h2", { text: "A lo largo del tiempo" }), h("p", { class: "nota-ui", text: "Los libros en el orden en que se escribieron; toca uno para ver sus apariciones." }), tiraTiempo(pares, abrirLibroAp))),
       h("div", { class: "tarjeta" }, h("div", { class: "apl-cab" }, h("h2", { text: "Apariciones por libro" }), todosBtn),
         h("p", { class: "nota-ui", text: "Abre el libro que quieras revisar; toca una aparición para ver su análisis." }),
         h("div", { class: "ap-libros" }, grupos)))));
@@ -2905,6 +2913,399 @@
     return h("li", {}, h("button", { type: "button", class: "cita", onclick: () => abrirModal(vistaPalabra({ b: x.b, cap: x.cap, v: x.v, toks: x.toks, i: x.i, L: x.L, desde: "cita" })) },
       h("span", { class: "ref", text: ref }), g,
       x.L ? h("span", { class: "stx" }, txtVerso(x.L)) : (tr ? h("span", { class: "stx", text: tr }) : null)));
+  }
+
+  // ------------------------------------------------------------------ estudio de la palabra: Strong, origen, raíz, formas y pronunciación
+  // datos/lexico.json (Taller: tools/lexico/hacer_lexico.py.txt). S: código Strong extendido de cada lema (TAGNT de STEPBible,
+  // Tyndale House, CC BY 4.0); X: código de una palabra cuando difiere del de su lema ({LIB: {"cap.v.i": código}}); O: origen
+  // (h hebreo, a arameo, l latino, e extranjero, i incierto, p primaria, g formada en griego, - sin dato); D: formación en español,
+  // con {n} = lema n, {g:…} = griego que no aparece en la Nueva Voluntad y {h:…} = hebreo (diccionario de Strong, 1890, en el JSON
+  // de Open Scriptures, CC BY-SA); R: lemas relacionados cuando la formación no está traducida; H: palabra hebrea o aramea de base;
+  // F: raíz de cada lema; B y P: base visible y prefijos de cada compuesto (familias morfológicas de BiEx).
+  let LX = null, LXp = null;
+  function lexico() {
+    if (LX) return Promise.resolve(LX);
+    return LXp || (LXp = Promise.all([cargar("datos/lexico.json"), tablas()]).then(([x]) => {
+      const m = new Map();
+      x.F.forEach((r, li) => { if (!m.has(r)) m.set(r, []); m.get(r).push(li); });
+      for (const a of m.values()) a.sort((p, q) => T.LN[q] - T.LN[p]);
+      x.fam = m; LX = x; return x;
+    }).catch((e) => { LXp = null; throw e; }));
+  }
+  const ORIGEN = { h: "Origen hebreo", a: "Origen arameo", l: "Origen latino", e: "Origen extranjero", i: "Origen incierto", p: "Palabra primaria", g: "Formada en griego" };
+  const strongN = (s) => (s || "").replace(/^([GH])0*(\d+).*$/, "$1$2");
+  const strongX = (s) => (s || "").replace(/^([GH])0*(\d+)/, "$1$2");
+  const strongNum = (s) => +String(s || "").replace(/^[GH]0*/, "").replace(/\D.*$/, "") || 0;
+  const strongTok = (c, cap, v, i, li) => (LX && LX.X[c] && LX.X[c][cap + "." + v + "." + i]) || (LX ? LX.S[li] : "");
+  const lemaCorto = (li) => String(T.L[li] == null ? "" : T.L[li]).split(",")[0];
+  const tlCorta = (li) => String(T.LT[li] == null ? "" : T.LT[li]).split(",")[0];
+  // traducciones de un lema por frecuencia, tal como salen en el texto
+  function glosasLema(li, n) {
+    const c = new Map();
+    for (const r of T.LP[li] || []) if (r[3]) c.set(r[3], (c.get(r[3]) || 0) + r[2]);
+    return [...c.entries()].sort((a, b) => b[1] - a[1]).slice(0, n || 99);
+  }
+  // glosa breve de un lema: la traducción de su infinitivo de presente (verbos) o de su nominativo singular (nombres);
+  // si no la hay, la más frecuente
+  function glosaBreve(li) {
+    const rows = T.LP[li] || [];
+    const pick = (f) => { let best = null; for (const r of rows) if (r[3] && f(T.P[r[1]] || {}) && (!best || r[2] > best[2])) best = r; return best ? T.TR[best[3]] : ""; };
+    const g = claseLema(li) === "V" ? pick((m) => m.mood === "N" && m.tense === "P") || pick((m) => m.mood === "N") || pick((m) => m.mood === "I" && m.tense === "P")
+      : pick((m) => m.case === "N" && m.number === "S" && m.gender !== "F" && m.gender !== "N") || pick((m) => m.case === "N" && m.number === "S") || pick((m) => m.case === "N");
+    if (g) return g;
+    const f = glosasLema(li, 1)[0]; return f ? T.TR[f[0]] : "";
+  }
+  function claseLema(li) {
+    const c = new Map(); for (const r of T.LP[li] || []) { const k = T.MC[r[1]]; c.set(k, (c.get(k) || 0) + r[2]); }
+    let best = "", bn = -1; for (const [k, n] of c) if (n > bn) { best = k; bn = n; } return best;
+  }
+  function textoFormacion(s) {
+    const out = []; let k = 0; s = String(s);
+    for (const m of s.matchAll(/\{(\d+)\}|\{g:([^}]*)\}|\{h:([^}]*)\}/g)) {
+      if (m.index > k) out.push(s.slice(k, m.index));
+      if (m[1] != null) out.push(h("a", { class: "fm-l", href: "#/lema/" + m[1], lang: "grc", text: lemaCorto(+m[1]) }));
+      else if (m[2] != null) out.push(h("span", { class: "fm-g", lang: "grc", text: m[2] }));
+      else out.push(h("bdi", { class: "he fm-h", lang: "he", dir: "rtl", text: m[3] }));
+      k = m.index + m[0].length;
+    }
+    if (k < s.length) out.push(s.slice(k));
+    return out;
+  }
+  // «Raíz y formación»: código Strong, origen (y la palabra hebrea o aramea), composición visible, formación, raíz y familia
+  function bloqueRaiz(li, modo, codigo) {
+    const r = LX.F[li], fam = LX.fam.get(r) || [li], o = LX.O[li];
+    const filas = [];
+    const fila = (a, ...x) => filas.push(h("dt", { text: a }), h("dd", {}, ...x));
+    const s = codigo || LX.S[li];
+    if (s) fila("Código Strong", h("span", { class: "lx-strong", text: strongN(s) }), strongX(s) !== strongN(s) ? h("small", { class: "lx-ext", text: " · extendido " + strongX(s) }) : null);
+    if (ORIGEN[o]) fila("Origen", ORIGEN[o], LX.H[li] ? [" · ", h("bdi", { class: "he lx-he", lang: "he", dir: "rtl", text: LX.H[li][0] })] : null);
+    const b = LX.B[li], pre = LX.P[li] || [];
+    if (b != null) fila("Composición", pre.map((p) => [h("span", { class: "fm-g", lang: "grc", text: p + "-" }), " + "]), h("a", { class: "fm-l", href: "#/lema/" + b, lang: "grc", text: lemaCorto(b) }));
+    if (LX.D[li]) fila("Formación", ...textoFormacion(LX.D[li]));
+    else if (LX.R[li]) fila("Relacionada con", ...LX.R[li].map((x, k) => [k ? ", " : null, h("a", { class: "fm-l", href: "#/lema/" + x, lang: "grc", text: lemaCorto(x) })]));
+    if (modo !== "raiz") fila("Raíz", h("a", { class: "fm-l", href: "#/raiz/" + r, lang: "grc", text: lemaCorto(r) }), fam.length > 1 ? " · familia de " + fmt(fam.length) + " palabras" : " · única de su familia en la Nueva Voluntad");
+    const otros = modo === "raiz" ? [] : fam.filter((x) => x !== li).slice(0, modo === "lema" ? 24 : 8);
+    return [h("dl", { class: "dl" }, filas),
+      otros.length ? h("div", { class: "chips lx-fam" }, otros.map((x) => { const g = glosaBreve(x); return h("a", { class: "chip lx-chip", href: "#/lema/" + x, title: g }, h("span", { lang: "grc", text: lemaCorto(x) }), g ? h("small", { text: g }) : null); }),
+        fam.length - 1 > otros.length ? h("a", { class: "chip lx-mas", href: "#/raiz/" + r, text: "+" + fmt(fam.length - 1 - otros.length) }) : null) : null,
+      h("p", { class: "nota-ui lx-fuente", text: "Códigos Strong de STEPBible (Tyndale House). Formación según el diccionario de Strong (1890): algunas derivaciones antiguas son discutidas." })];
+  }
+  // Apariciones por libro en el orden en que se escribieron los libros (datación temprana)
+  const fechaCorta = (b) => { const f = fechaEscrito(b); return f ? "c. " + f.replace(/^c\. /, "") + (/H\.D\./.test(f) ? "" : " " + ERA_D) : ""; };
+  function tiraTiempo(pares, alTocar) {
+    const orden = CRONO && CRONO.ordenes && CRONO.ordenes.escritura ? CRONO.ordenes.escritura.map(libroDe).filter(Boolean) : D.libros;
+    const m = new Map(pares.map(([bi, n]) => [D.libros[bi].c, n]));
+    const max = Math.max(1, ...pares.map((p) => p[1]));
+    const primero = orden.find((b) => m.get(b.c));
+    return h("div", { class: "tt" },
+      h("div", { class: "tt-tira" }, orden.map((b) => {
+        const n = m.get(b.c) || 0, et = (b.t || b.n) + (fechaCorta(b) ? " · " + fechaCorta(b) : "") + " · " + (n ? fmt(n) + (n === 1 ? " vez" : " veces") : "no aparece");
+        return h("button", { type: "button", class: "tt-c" + (n ? "" : " cero"), title: et, "aria-label": et, disabled: n ? null : true, style: "--a:" + (n ? (0.2 + 0.8 * Math.sqrt(n / max)).toFixed(3) : "0"), onclick: () => alTocar && alTocar(b.c) }, h("i"));
+      })),
+      h("div", { class: "tt-ejes" }, h("span", { text: orden[0] ? fechaCorta(orden[0]) : "" }), h("span", { text: orden.length ? fechaCorta(orden[orden.length - 1]) : "" })),
+      primero ? h("p", { class: "nota-ui", text: "Por fecha de escritura, aparece primero en " + (primero.t || primero.n) + (fechaCorta(primero) ? " (" + fechaCorta(primero) + ")" : "") + "." }) : null);
+  }
+  // Tabla de formas: el paradigma con las formas que de verdad aparecen (tiempo, modo y voz; persona y número; caso, número y género)
+  const VOZ_L = { A: "activa", M: "media", D: "media", P: "pasiva", O: "pasiva", E: "media o pasiva", N: "media o pasiva" };
+  const ORD_T = "PIFARL", ORD_M = "ISOMNPR";
+  function tablaFormas(li) {
+    const rows = (T.LP[li] || []).map((r) => ({ f: r[0], mi: r[1], n: r[2], tr: r[3], m: T.P[r[1]] || {} }));
+    const celda = (xs) => xs.length ? xs.sort((a, b) => b.n - a.n).map((x) => h("span", { class: "tf-f", title: (x.tr ? T.TR[x.tr] + " · " : "") + fmt(x.n) + (x.n === 1 ? " vez" : " veces") }, spanGk(T.F[x.f]), h("small", { text: fmt(x.n) }))) : h("span", { class: "tf-no", text: "·" });
+    const nominal = (xs) => {
+      const gens = ["M", "F", "N"].filter((g) => xs.some((x) => x.m.gender === g));
+      const cols = [];
+      for (const nn of ["S", "P"]) { if (!xs.some((x) => x.m.number === nn)) continue; if (gens.length > 1) for (const g of gens) cols.push([nn, g]); else cols.push([nn, ""]); }
+      const casos = ["N", "G", "D", "A", "V"].filter((c) => xs.some((x) => x.m.case === c));
+      return h("div", { class: "tf-scroll" }, h("table", { class: "tf" },
+        h("thead", {}, h("tr", {}, h("th"), cols.map(([nn, g]) => h("th", { text: (nn === "S" ? "singular" : "plural") + (g ? " " + ABG[g] : "") })))),
+        h("tbody", {}, casos.map((c) => h("tr", {}, h("th", { text: CASO[c] }), cols.map(([nn, g]) => h("td", {}, celda(xs.filter((x) => x.m.case === c && x.m.number === nn && (!g || x.m.gender === g))))))))));
+    };
+    const secs = [];
+    const V = rows.filter((x) => x.m.pos === "V");
+    if (V.length) {
+      const g = new Map();
+      for (const x of V) { const k = x.m.mood + x.m.tense + (x.m.second ? "2" : "") + (VOZ_L[x.m.voice] || ""); if (!g.has(k)) g.set(k, []); g.get(k).push(x); }
+      const ks = [...g.keys()].sort((a, b) => ORD_M.indexOf(a[0]) - ORD_M.indexOf(b[0]) || ORD_T.indexOf(a[1]) - ORD_T.indexOf(b[1]) || a.localeCompare(b));
+      for (const k of ks) {
+        const xs = g.get(k), m = xs[0].m;
+        const tit = mayus1([TIEMPO[m.tense], m.second ? "segundo" : "", MODO[m.mood], VOZ_L[m.voice] ? "· voz " + VOZ_L[m.voice] : ""].filter(Boolean).join(" "));
+        let cuerpo;
+        if (m.mood === "N") cuerpo = h("div", { class: "tf-lista" }, celda(xs));
+        else if (m.mood === "P" || m.mood === "R") cuerpo = nominal(xs);
+        else {
+          const pn = (p, nn) => celda(xs.filter((x) => x.m.person === p && x.m.number === nn));
+          const pers = ["1", "2", "3"].filter((p) => xs.some((x) => x.m.person === p));
+          cuerpo = h("div", { class: "tf-scroll" }, h("table", { class: "tf" }, h("thead", {}, h("tr", {}, h("th"), h("th", { text: "singular" }), h("th", { text: "plural" }))),
+            h("tbody", {}, pers.map((p) => h("tr", {}, h("th", { text: p + ".ª persona" }), h("td", {}, pn(p, "S")), h("td", {}, pn(p, "P")))))));
+        }
+        secs.push(h("section", { class: "tf-sec" }, h("h3", { text: tit }), cuerpo));
+      }
+    }
+    const N = rows.filter((x) => x.m.pos !== "V" && x.m.case);
+    if (N.length) secs.push(h("section", { class: "tf-sec" }, V.length ? h("h3", { text: "Formas declinadas" }) : null, nominal(N)));
+    const O = rows.filter((x) => x.m.pos !== "V" && !x.m.case);
+    if (O.length) secs.push(h("section", { class: "tf-sec" }, (V.length || N.length) ? h("h3", { text: "Formas invariables" }) : null, h("div", { class: "tf-lista" }, celda(O))));
+    return secs;
+  }
+  // Pronunciación (AFI): koiné del siglo I, reconstruida, y erasmiana (la de la enseñanza académica en español);
+  // ˈ va antes de la sílaba tónica. Reglas generales de la lectura griega (los nombres hebreos se leen igual en griego).
+  const PR_V = "αεηιουω";
+  function pronunciar(forma) {
+    const L = [];
+    for (const ch of String(forma || "").normalize("NFD")) {
+      const cp = ch.codePointAt(0);
+      if (cp >= 0x300 && cp <= 0x36f) { const u = L[L.length - 1]; if (u) { if (cp === 0x301 || cp === 0x300 || cp === 0x342) u.t = 1; else if (cp === 0x314) u.a = 1; else if (cp === 0x308) u.d = 1; } continue; }
+      const c = ch.toLowerCase();
+      if (c === "ς") L.push({ c: "σ" }); else if (/[α-ω]/.test(c)) L.push({ c });
+    }
+    const U = [];
+    const sorda = (x) => !x || "θκξπστφχψ".includes(x.c);
+    const anterior = (j) => { const x = L[j], y = L[j + 1]; if (!x) return false; if ("εηιυ".includes(x.c)) return !(x.c === "υ" && false); if ((x.c === "α" || x.c === "ο") && y && y.c === "ι" && !y.d) return true; return false; };
+    for (let i = 0; i < L.length; i++) {
+      const x = L[i], n = L[i + 1];
+      if (PR_V.includes(x.c)) {
+        const dg = n && PR_V.includes(n.c) && !n.d ? x.c + n.c : "";
+        if (i === 0 && (x.a || (dg && n.a))) U.push({ k: "", e: "h", c: "" });
+        if (["αι", "ει", "οι", "υι", "ου"].includes(dg)) {
+          U.push({ k: { αι: "ɛ", ει: "i", οι: "y", υι: "yi", ου: "u" }[dg], e: { αι: "ai̯", ει: "ei̯", οι: "oi̯", υι: "yi̯", ου: "uː" }[dg], v: 1, t: x.t || n.t }); i++; continue;
+        }
+        if (["αυ", "ευ", "ηυ"].includes(dg)) {
+          U.push({ k: { αυ: "a", ευ: "ɛ", ηυ: "e" }[dg], e: { αυ: "au̯", ευ: "eu̯", ηυ: "eːu̯" }[dg], v: 1, t: x.t || n.t });
+          U.push({ k: sorda(L[i + 2]) ? "f" : "v", e: "", c: "υ" }); i++; continue;
+        }
+        U.push({ k: { α: "a", ε: "ɛ", η: "e", ι: "i", ο: "o", υ: "y", ω: "o" }[x.c], e: { α: "a", ε: "e", η: "eː", ι: "i", ο: "o", υ: "y", ω: "oː" }[x.c], v: 1, t: x.t });
+        continue;
+      }
+      const sig = n ? n.c : "";
+      let K = "", E = "";
+      switch (x.c) {
+        case "β": K = "v"; E = "b"; break;
+        case "γ": if (sig && "γκξχ".includes(sig)) { K = E = "ŋ"; } else { K = anterior(i + 1) ? "ʝ" : "ɣ"; E = "g"; } break;
+        case "δ": K = "ð"; E = "d"; break;
+        case "ζ": K = "z"; E = "dz"; break;
+        case "θ": K = E = "θ"; break;
+        case "κ": K = E = "k"; break;
+        case "λ": K = E = "l"; break;
+        case "μ": K = E = "m"; break;
+        case "ν": K = E = "n"; break;
+        case "ξ": K = E = "ks"; break;
+        case "π": K = E = "p"; break;
+        case "ρ": K = "r"; E = i === 0 && x.a ? "rʰ" : "r"; break;
+        case "σ": K = sig && "βγδμ".includes(sig) ? "z" : "s"; E = "s"; break;
+        case "τ": K = E = "t"; break;
+        case "φ": K = E = "f"; break;
+        case "χ": K = anterior(i + 1) ? "ç" : "x"; E = "x"; break;
+        case "ψ": K = E = "ps"; break;
+      }
+      U.push({ k: K, e: E, c: x.c });
+    }
+    // la consonante (o el grupo que puede empezar palabra) que precede a la vocal tónica va con ella
+    const INI = /^([πκτβγδθφχ][λρνμ]|σ[τκπθφχμ]|κτ|πτ|φθ|χθ|βδ|μν|γν|κν|πν|θν|τμ|δμ)$/;
+    const marcar = (campo) => {
+      const nuc = U.map((u, k) => (u.v ? k : -1)).filter((k) => k >= 0);
+      const kt = nuc.find((k) => U[k].t);
+      let ini = -1;
+      if (kt != null && nuc.length > 1) {
+        const j = nuc.filter((k) => k < kt).pop();
+        if (j == null) ini = 0;
+        else {
+          const cs = []; for (let k = j + 1; k < kt; k++) if (U[k][campo]) cs.push(k);
+          if (!cs.length) ini = kt;
+          else if (cs.length === 1) ini = cs[0];
+          else ini = INI.test(U[cs[cs.length - 2]].c + U[cs[cs.length - 1]].c) ? cs[cs.length - 2] : cs[cs.length - 1];
+        }
+      }
+      return U.map((u, k) => (k === ini ? "ˈ" : "") + (u[campo] || "")).join("");
+    };
+    return { k: marcar("k"), e: marcar("e") };
+  }
+  const lineaPron = (forma) => { const p = pronunciar(forma); return h("p", { class: "fp-pron", title: "Pronunciación en el alfabeto fonético internacional" }, h("span", {}, "Koiné ", h("b", { text: "[" + p.k + "]" })), h("span", {}, "Erasmiana ", h("b", { text: "[" + p.e + "]" }))); };
+  // búsqueda de lemas compartida (concordancia y diccionario de raíces): griego, letras latinas, traducción o código Strong
+  function buscadorLemas(X) {
+    let latinos = null;
+    return (q) => {
+      const out = new Map(), pon = (li, v) => { if (li != null && li >= 0) out.set(li, Math.max(out.get(li) || 0, v)); };
+      const st = /^\s*(?:strong\s*)?([gG])?\s*0*(\d{1,4})\s*([a-zA-Z])?\s*$/.exec(q);
+      if (st && LX) { const n = +st[2], ext = st[3] ? st[3].toUpperCase() : ""; LX.S.forEach((s, li) => { if (s && strongNum(s) === n) pon(li, ext && strongX(s).endsWith(ext) ? 10 : 9); }); }
+      else if (/[Ͱ-Ͽἀ-῿]/.test(q)) {
+        const k = claveGr(q);
+        T.Fk.forEach((x, fi) => { if (x === k) pon(T.formaLema.get(fi), 5); });
+        T.Lk.forEach((x, li) => { if (x === k) pon(li, 6); else if (x.startsWith(k)) pon(li, 4); else if (k.length > 2 && x.includes(k)) pon(li, 2); });
+      } else {
+        if (X) {
+          const B = X.BQ, kq = B.claveLatina(q.replace(/\s+/g, ""));
+          if (!latinos) latinos = T.L.map((l) => B.claveLatina(B.translit(String(l).split(/,\s*/)[0])));
+          if (kq.length >= 2) latinos.forEach((x, li) => { if (x === kq) pon(li, 6); else if (x.startsWith(kq)) pon(li, 4); });
+        }
+        const e = claveEs(q);
+        if (e.length >= 3) T.TRk.forEach((x, ti) => { if (ti && x.includes(e)) for (const li of T.TL[ti] || []) pon(li, x === e ? 3 : 1); });
+      }
+      return [...out.entries()].sort((a, b) => b[1] - a[1] || T.LN[b[0]] - T.LN[a[0]]).map(([li]) => li);
+    };
+  }
+
+  // ------------------------------------------------------------------ diccionario de raíces
+  async function vistaRaices() {
+    document.title = "Diccionario de raíces · BiEx";
+    navActual("#/buscar");
+    vista().replaceChildren(cargando("Preparando el diccionario de raíces…"));
+    alTope();
+    try { await lexico(); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el diccionario.")); return; }
+    let X = null; try { X = await prepararBuscador(); } catch (e) { X = null; }
+    const buscar = buscadorLemas(X);
+    const raices = [...LX.fam.keys()];
+    const tot = new Map(raices.map((r) => [r, LX.fam.get(r).reduce((s, li) => s + T.LN[li], 0)]));
+    const ORD = {
+      fam: () => raices.slice().sort((a, b) => LX.fam.get(b).length - LX.fam.get(a).length || tot.get(b) - tot.get(a)),
+      alfa: () => raices.slice().sort((a, b) => claveGr(lemaCorto(a)).localeCompare(claveGr(lemaCorto(b)), "el")),
+      frec: () => raices.slice().sort((a, b) => tot.get(b) - tot.get(a)),
+    };
+    let modo = store.get("raicesOrden", "fam"); if (!ORD[modo]) modo = "fam";
+    const item = (r) => {
+      const fam = LX.fam.get(r), g = glosaBreve(r);
+      return h("li", {}, h("a", { class: "cc-it rz-it", href: "#/raiz/" + r },
+        h("b", { lang: "grc", text: lemaCorto(r) }), h("span", { class: "cc-tr", text: tlCorta(r) !== lemaCorto(r) ? tlCorta(r) : "" }),
+        h("span", { class: "cc-gl", text: g }), h("em", { text: fam.length === 1 ? "1 palabra" : fmt(fam.length) + " palabras" })));
+    };
+    const entrada = h("input", { type: "search", class: "cc-q", placeholder: "καλέω · kaleō · llamar · G2564", "aria-label": "Buscar una raíz", autocomplete: "off", autocapitalize: "off", spellcheck: "false" });
+    const titulo = h("h2");
+    const lista = h("ol", { class: "cc-lista" });
+    const mas = h("button", { class: "btn chico", type: "button", hidden: true, text: "Mostrar más" });
+    const ords = h("div", { class: "seg-mini", role: "group", "aria-label": "Orden" }, [["fam", "Familias más grandes"], ["frec", "Más frecuentes"], ["alfa", "De α a ω"]].map(([k, t]) => h("button", { type: "button", "data-k": k, "aria-pressed": modo === k ? "true" : "false", text: t, onclick: () => { modo = k; store.set("raicesOrden", k); for (const b of ords.children) b.setAttribute("aria-pressed", b.dataset.k === k ? "true" : "false"); pintar(); } })));
+    let todas = [], k = 0;
+    const tanda = () => { const l = todas.slice(k, k + 80); k += l.length; lista.append(...l.map(item)); mas.hidden = k >= todas.length; };
+    mas.onclick = tanda;
+    const pintar = () => {
+      const q = entrada.value.trim();
+      if (q) { const vistos = new Set(); todas = buscar(q).map((li) => LX.F[li]).filter((r) => !vistos.has(r) && vistos.add(r)); }
+      else todas = ORD[modo]();
+      titulo.textContent = q ? (todas.length ? "Raíces que coinciden" : "Ninguna raíz coincide con «" + q + "»") : fmt(raices.length) + " raíces";
+      ords.hidden = !!q;
+      k = 0; lista.replaceChildren(); tanda();
+      try { history.replaceState(history.state, "", urlHash("#/raices" + (q ? "?" + encodeURIComponent(q) : ""))); } catch (e) { /* ignorar */ }
+    };
+    let tq = 0; entrada.addEventListener("input", () => { clearTimeout(tq); tq = setTimeout(pintar, 140); });
+    const previo = decodificar(location.hash.split("?")[1] || ""); if (previo) entrada.value = previo;
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Diccionario de raíces" }), h("h1", { text: "Las palabras por su raíz" }),
+        h("p", { class: "nota-ui", text: "Cada raíz reúne las palabras de la Nueva Voluntad que la comparten: sus prefijos visibles, su formación, su origen y cómo se traduce cada una según su morfología y su contexto. Busca en griego, con letras latinas, por su traducción o por su código Strong." })),
+      h("div", { class: "cc-buscar" }, svg(ICO.buscar), entrada),
+      h("div", { class: "tarjeta" }, h("div", { class: "apl-cab" }, titulo, ords), lista, mas))));
+    pintar();
+    if (restaurando()) intentarRestaurar();
+  }
+  async function vistaRaiz(r) {
+    navActual("#/buscar");
+    vista().replaceChildren(cargando("Cargando la raíz…"));
+    alTope();
+    try { await lexico(); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el diccionario.")); return; }
+    if (!(r >= 0 && r < T.L.length)) return noEncontrado();
+    if (LX.F[r] !== r) { r = LX.F[r]; try { history.replaceState(history.state, "", urlHash("#/raiz/" + r)); } catch (e) { /* ignorar */ } }
+    document.title = lemaCorto(r) + " · raíz · BiEx";
+    const fam = LX.fam.get(r) || [r];
+    const G = [["V", "Verbos"], ["N", "Sustantivos"], ["A", "Adjetivos"], ["", "Otras palabras"]];
+    const por = new Map(G.map(([c]) => [c, []]));
+    for (const li of fam) { const c = claseLema(li); por.get(["V", "N", "A"].includes(c) ? c : "").push(li); }
+    const suma = new Map();
+    for (const li of fam) { const lb = T.LB[li] || []; for (let k = 0; k < lb.length; k += 2) suma.set(lb[k], (suma.get(lb[k]) || 0) + lb[k + 1]); }
+    const pares = [...suma.entries()], total = pares.reduce((s, p) => s + p[1], 0);
+    const miembro = (li) => {
+      const b = LX.B[li], pre = LX.P[li] || [], gb = glosaBreve(li), gl = [gb].concat(glosasLema(li, 3).map(([t]) => T.TR[t]).filter((x) => x !== gb)).filter(Boolean).slice(0, 3);
+      return h("li", { class: "rz-m" }, h("a", { href: "#/lema/" + li },
+        h("span", { class: "rz-g", lang: "grc", text: lemaCorto(li) }), h("span", { class: "rz-tl", text: tlCorta(li) }), h("em", { text: fmt(T.LN[li]) }),
+        b != null ? h("span", { class: "rz-c" }, pre.map((p) => h("span", { lang: "grc", text: p + "- + " })), h("span", { lang: "grc", text: lemaCorto(b) })) : null,
+        h("span", { class: "rz-gl", text: gl.join(" · ") })));
+    };
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
+      h("div", { class: "barra-volver" }, h("button", { class: "btn chico", type: "button", onclick: volverAtras }, svg(ICO.atras), "Volver"),
+        h("a", { class: "btn chico", href: "#/raices" }, svg(ICO.raiz), "Todas las raíces")),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Diccionario de raíces" }),
+        h("h1", { lang: "grc" }, lemaCorto(r), h("small", { text: tlCorta(r) })), lineaPron(lemaCorto(r)),
+        h("p", { class: "nota-ui", text: fam.length > 1 ? fmt(fam.length) + " palabras de la Nueva Voluntad comparten esta raíz; juntas aparecen " + fmt(total) + " veces." : "Es la única palabra de su raíz en la Nueva Voluntad: aparece " + fmt(total) + (total === 1 ? " vez." : " veces.") })),
+      h("div", { class: "columnas" },
+        h("div", { class: "tarjeta" }, h("h2", { text: "La raíz" }), bloqueRaiz(r, "raiz")),
+        h("div", { class: "tarjeta" }, h("h2", { text: "A lo largo del tiempo" }), h("p", { class: "nota-ui", text: "Toda la familia, en los libros ordenados por su fecha de escritura." }), tiraTiempo(pares, (c) => { location.hash = "#/" + c + "/1"; }))),
+      G.filter(([c]) => por.get(c).length).map(([c, t]) => h("div", { class: "tarjeta" }, h("h2", { text: t + " · " + fmt(por.get(c).length) }), h("ol", { class: "rz-lista" }, por.get(c).map(miembro)))))));
+    if (restaurando()) intentarRestaurar();
+  }
+
+  // ------------------------------------------------------------------ analizador de texto griego
+  // Cualquier pasaje en griego: cada palabra con sus análisis posibles en la Nueva Voluntad (lema, morfología, Strong, traducción)
+  async function vistaAnalizador() {
+    document.title = "Analizar texto griego · BiEx";
+    navActual("#/buscar");
+    vista().replaceChildren(cargando("Preparando el analizador…"));
+    alTope();
+    try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
+    try { await lexico(); } catch (e) { /* sin el léxico de estudio: el análisis sigue */ }
+    if (!T.idxFormas) {
+      const m = new Map();
+      T.LP.forEach((rows, li) => rows.forEach((r) => {
+        const k = T.Fk[r[0]]; if (!m.has(k)) m.set(k, []);
+        const a = m.get(k), igual = a.find((x) => x.li === li && x.mi === r[1] && x.tr === r[3]);
+        if (igual) { igual.n += r[2]; if (r[2] > igual.nf) { igual.f = r[0]; igual.nf = r[2]; } } else a.push({ li, f: r[0], mi: r[1], n: r[2], nf: r[2], tr: r[3] });
+      }));
+      T.idxFormas = m;
+    }
+    const analisisDe = (pal) => (T.idxFormas.get(claveGr(pal)) || []).slice().sort((a, b) => b.n - a.n);
+    const area = h("textarea", { class: "an-txt", lang: "grc", rows: "5", placeholder: "Ἐν ἀρχῇ ἦν ὁ λόγος, καὶ ὁ λόγος ἦν πρὸς τὸν θεόν…", "aria-label": "Texto griego para analizar", spellcheck: "false", autocapitalize: "off", autocomplete: "off" });
+    area.value = store.get("analizar", "") || "";
+    const salida = h("div", { class: "an-sal" }), ficha = h("div", { class: "an-ficha", "aria-live": "polite" }), fijas = h("div", { class: "chips an-fij" });
+    let fij = store.get("analizarFijas", []).filter((x) => typeof x === "string").slice(0, 40);
+    const pintarFij = () => { fijas.replaceChildren(...fij.map((p) => h("button", { type: "button", class: "chip", lang: "grc", text: p, onclick: () => verFicha(p, null) }))); fijasCaja.hidden = !fij.length; };
+    const fijasCaja = h("div", { class: "an-fijas" }, h("span", { class: "rotulo", text: "Palabras fijadas" }), fijas,
+      h("button", { class: "btn chico", type: "button", text: "Quitar todas", onclick: () => { fij = []; store.set("analizarFijas", fij); pintarFij(); } }));
+    const fichaDe = (pal, an) => {
+      if (!an.length) {
+        const k = claveGr(pal), lemas = []; T.Lk.forEach((x, li) => { if (x === k) lemas.push(li); });
+        return h("div", { class: "tarjeta an-card" }, h("div", { class: "lema-l" }, h("span", { class: "g", lang: "grc", text: pal })), lineaPron(pal),
+          h("p", { class: "nota-ui", text: lemas.length ? "Es la forma de diccionario de este lema:" : "Esta forma no aparece en la Nueva Voluntad. Revisa los acentos o busca su lema en la concordancia." }),
+          lemas.length ? h("div", { class: "chips" }, lemas.map((li) => h("a", { class: "chip", lang: "grc", href: "#/lema/" + li, text: T.L[li] }))) : h("a", { class: "btn chico", href: "#/lema?" + encodeURIComponent(pal) }, svg(ICO.lista), "Buscar en la concordancia"));
+      }
+      const porLema = new Map(); for (const x of an) { if (!porLema.has(x.li)) porLema.set(x.li, []); porLema.get(x.li).push(x); }
+      const tot = an.reduce((s, x) => s + x.n, 0);
+      return h("div", { class: "tarjeta an-card" },
+        h("div", { class: "an-cab" }, h("div", { class: "lema-l" }, h("span", { class: "g", lang: "grc", text: T.F[an[0].f] }), h("small", { text: T.FT[an[0].f] })),
+          h("button", { class: "btn chico", type: "button", onclick: () => { if (!fij.includes(pal)) { fij.unshift(pal); fij = fij.slice(0, 40); store.set("analizarFijas", fij); pintarFij(); avisar("Palabra fijada"); } } }, svg(ICO.marcador), "Fijar")),
+        lineaPron(T.F[an[0].f]),
+        h("p", { class: "nota-ui", text: "Esta forma aparece " + fmt(tot) + (tot === 1 ? " vez" : " veces") + " en la Nueva Voluntad" + (porLema.size > 1 ? ", de " + porLema.size + " lemas distintos" : "") + "." }),
+        [...porLema.entries()].map(([li, xs]) => h("div", { class: "bloque" },
+          h("div", { class: "lema-l" }, h("a", { class: "g", lang: "grc", href: "#/lema/" + li, text: T.L[li] }), h("small", { text: T.LT[li] }), LX && LX.S[li] ? h("span", { class: "chip lx-strong", text: strongN(LX.S[li]) }) : null),
+          h("table", { class: "paradigma" }, h("tbody", {}, xs.map((x) => h("tr", {}, h("td", { class: "m", text: T.MD[x.mi] }), h("td", { text: x.tr ? T.TR[x.tr] : "" }), h("td", { class: "n", text: fmt(x.n) }))))),
+          h("div", { class: "m-pie" }, h("a", { class: "btn chico", href: "#/lema/" + li }, svg(ICO.lista), "Concordancia"), LX ? h("a", { class: "btn chico", href: "#/raiz/" + LX.F[li] }, svg(ICO.raiz), "Su raíz") : null))));
+    };
+    const verFicha = (pal, btn) => {
+      for (const x of salida.querySelectorAll("[aria-pressed='true']")) x.setAttribute("aria-pressed", "false");
+      if (btn) btn.setAttribute("aria-pressed", "true");
+      ficha.replaceChildren(fichaDe(pal, analisisDe(pal)));
+      if (matchMedia("(max-width: 900px)").matches) requestAnimationFrame(() => ficha.scrollIntoView({ block: "nearest", behavior: ap.mov === "no" ? "auto" : "smooth" }));
+    };
+    const analizar = () => {
+      const txt = area.value; store.set("analizar", txt.slice(0, 4000));
+      salida.replaceChildren(); ficha.replaceChildren();
+      let n = 0, sin = 0;
+      for (const p of txt.split(/([^Ͱ-Ͽἀ-῿’ʼ']+)/)) {
+        if (!p) continue;
+        if (!/[Ͱ-Ͽἀ-῿]/.test(p)) { salida.append(p.replace(/\n{3,}/g, "\n\n")); continue; }
+        const an = analisisDe(p); n++; if (!an.length) sin++;
+        const cl = an.length ? T.MC[an[0].mi] : "";
+        salida.append(h("button", { type: "button", lang: "grc", class: "an-pal" + (an.length ? "" : " desconocida"), style: cl ? "--k:var(--c-" + cl + ")" : null, "aria-pressed": "false", text: p, onclick: (e) => verFicha(p, e.currentTarget) }));
+      }
+      resumen.textContent = n ? fmt(n) + (n === 1 ? " palabra" : " palabras") + (sin ? " · " + fmt(sin) + " sin análisis en la Nueva Voluntad" : " · todas con su análisis") + ". Toca una para estudiarla." : "Escribe o pega un texto en letras griegas.";
+    };
+    const resumen = h("p", { class: "nota-ui an-res" });
+    const ejemplo = async () => { try { const toks = await versoTokens("JHN", "1", 1); area.value = toks.map((t) => T.F[t[0]] + (t[4] || "")).join(" "); analizar(); } catch (e) { /* ignorar */ } };
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Analizador" }), h("h1", { text: "Analizar texto griego" }),
+        h("p", { class: "nota-ui", text: "Escribe o pega cualquier pasaje en griego. Cada palabra muestra todos sus análisis posibles en la Nueva Voluntad: su lema, su morfología, su código Strong, cómo se traduce y su raíz." })),
+      h("div", { class: "tarjeta an-entrada" }, area, h("div", { class: "m-pie" }, h("button", { class: "btn chico oro", type: "button", onclick: analizar }, svg(ICO.lupa), "Analizar"), h("button", { class: "btn chico", type: "button", onclick: ejemplo }, svg(ICO.libro), "Probar con un verso"), h("button", { class: "btn chico", type: "button", onclick: () => { area.value = ""; analizar(); area.focus(); } }, "Borrar"))),
+      h("div", { class: "columnas an-cols" }, h("div", { class: "tarjeta" }, resumen, salida), ficha),
+      fijasCaja)));
+    area.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); analizar(); } });
+    pintarFij();
+    analizar();
   }
 
   // ------------------------------------------------------------------ búsqueda
@@ -4628,6 +5029,9 @@
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }
+    if (partes[0] === "raices" || /^raices\?/.test(partes[0])) { esc.libro = null; return vistaRaices(); }
+    if (partes[0] === "raiz" && partes[1] != null) { esc.libro = null; return vistaRaiz(+partes[1]); }
+    if (partes[0] === "analizar") { esc.libro = null; return vistaAnalizador(); }
     if (partes[0] === "lema" || /^lema\?/.test(partes[0])) { esc.libro = null; return partes[1] != null && partes[0] === "lema" ? vistaLema(+partes[1]) : vistaConcordancia(); }
     if (partes[0] === "buscar") { esc.libro = null; return vistaBuscar(""); }
     if (partes[0] === "cronologia") { esc.libro = null; return vistaCronologia(partes[1] || ""); }
