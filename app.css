@@ -484,9 +484,10 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
     .modal::backdrop { transition: opacity .22s ease, overlay .22s allow-discrete, display .22s allow-discrete; }
     .modal:not([open])::backdrop { opacity: 0; }
   }
-  .hero-tit, .codice { animation: sube .9s cubic-bezier(.2, .7, .2, 1) both; }
-  .codice { animation-delay: .08s; }
-  @keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .hero-tit, .codice, .hero .acciones { animation: sube .8s cubic-bezier(.2, .7, .2, 1) both; }
+  .codice { animation-delay: .06s; }
+  .hero .acciones { animation-delay: .12s; }
+  @keyframes sube { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
@@ -866,6 +867,11 @@ ol.tl::before { content: ""; position: absolute; left: 7.4rem; top: 4px; bottom:
 /* ===================================================================== guía animada */
 .btn-guia svg { width: 21px; height: 21px; }
 .btn-juego svg { width: 21px; height: 21px; }
+.btn-libros svg { width: 21px; height: 21px; }
+/* con el botón de los libros (10-nov-2026): si el sello y los botones no caben, el historial (también en Herramientas) y luego la guía ceden su sitio (lo mide ajustarBarra) */
+.barra-sin-hist .barra .btn-hist, .barra-sin-guia .barra .btn-guia { display: none; }
+.barra-estrecha .barra .acc { gap: 3px; }
+.barra-estrecha .barra .btn-icono, .barra-estrecha .barra .btn-buscar { width: 34px; min-width: 34px; height: 34px; padding: 0; }
 .btn-juego { color: var(--oro); }
 @media (max-width: 360px) { html:not(.incrustado) .barra .btn-guia { display: none; } }
 .guia { display: grid; gap: 14px; outline: none; }
@@ -1921,3 +1927,57 @@ html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; over
 .chip-instalar button svg { width: 18px; height: 18px; }
 .chip-instalar .ci-no { background: transparent; color: var(--tinta-2); padding: 0 12px; font-size: 1.1rem; }
 @media (prefers-reduced-motion: reduce) { .chip-instalar { transition: none; } }
+
+/* ================================================================== K (10-nov-2026, noche)
+   Cristal líquido (BiEx: «algo más épico que no se vea tan simple»): cuerpo translúcido, filo de luz que refracta (borde en
+   degradado), brillo especular arriba, cáustica abajo y un destello que cruza al pasar o tocar. Sin desenfoque (no cuesta
+   al desplazar); lo que se mueve va por el compositor (transform y opacidad). Mismas medidas de caja que antes. */
+:root { --cl-c1: rgba(255, 255, 255, .055); --cl-c2: rgba(255, 255, 255, .012); --cl-f1: rgba(255, 255, 255, .36); --cl-f2: rgba(255, 255, 255, .07); --cl-br: rgba(255, 255, 255, .15); --cl-so: rgba(0, 0, 0, .6);
+  --clo-c1: color-mix(in srgb, var(--oro) 27%, transparent); --clo-c2: color-mix(in srgb, var(--oro) 8%, transparent); --clo-f1: rgba(255, 240, 196, .9); --clo-f2: color-mix(in srgb, var(--oro) 38%, transparent); --clo-tx: #f7e6b4; --clo-br: rgba(255, 246, 214, .3); }
+:root[data-theme="light"] { --cl-c1: rgba(255, 255, 255, .7); --cl-c2: rgba(255, 255, 255, .3); --cl-f1: rgba(255, 255, 255, 1); --cl-f2: rgba(120, 90, 40, .2); --cl-br: rgba(255, 255, 255, .85); --cl-so: rgba(80, 60, 20, .2);
+  --clo-c1: color-mix(in srgb, var(--oro) 30%, #fff6df); --clo-c2: color-mix(in srgb, var(--oro) 12%, #fffdf6); --clo-f1: #fff; --clo-f2: color-mix(in srgb, var(--oro) 60%, transparent); --clo-tx: #4e3810; --clo-br: rgba(255, 255, 255, .8); }
+.btn { position: relative; isolation: isolate; overflow: hidden; border-color: transparent;
+  background: radial-gradient(130% 90% at 50% -28%, var(--cl-br), transparent 58%) padding-box, linear-gradient(180deg, var(--cl-c1), var(--cl-c2)) padding-box,
+    linear-gradient(158deg, var(--cl-f1), var(--cl-f2) 36%, var(--cl-f2) 64%, color-mix(in srgb, var(--cl-f1) 60%, transparent)) border-box;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--cl-f1) 60%, transparent), inset 0 -12px 18px -16px var(--cl-f1), 0 12px 26px -18px var(--cl-so);
+  transition: transform .16s cubic-bezier(.3, 1.4, .5, 1), box-shadow .25s, color .2s; }
+.btn::before { content: ""; position: absolute; inset: 1px 1px 46% 1px; z-index: -1; pointer-events: none; border-radius: inherit; background: radial-gradient(85% 130% at 50% 0%, color-mix(in srgb, var(--cl-f1) 42%, transparent), transparent 70%); opacity: .7; }
+.btn.oro::before { background: radial-gradient(85% 130% at 50% 0%, rgba(255, 248, 225, .5), transparent 72%); opacity: .8; }
+.btn::after { content: ""; position: absolute; inset: -1px; z-index: -1; pointer-events: none; background: linear-gradient(104deg, transparent 34%, rgba(255, 255, 255, .26) 47%, rgba(255, 255, 255, .05) 53%, transparent 64%); transform: translate3d(-125%, 0, 0); opacity: 0; }
+.btn:hover::after, .btn:focus-visible::after, .btn:active::after { animation: cl-destello .95s cubic-bezier(.3, .7, .3, 1); }
+@keyframes cl-destello { 0% { transform: translate3d(-125%, 0, 0); opacity: 0; } 18% { opacity: 1; } 100% { transform: translate3d(125%, 0, 0); opacity: 0; } }
+.btn:hover { border-color: transparent; color: var(--oro-vivo); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--cl-f1) 75%, transparent), inset 0 -12px 18px -14px var(--cl-f1), 0 0 0 3px color-mix(in srgb, var(--oro) 11%, transparent), 0 14px 28px -18px var(--cl-so); }
+.btn:active { transform: scale(.97); }
+.btn.oro, .btn.oro:hover { border-color: transparent; color: var(--clo-tx);
+  background: radial-gradient(130% 95% at 50% -30%, var(--clo-br), transparent 60%) padding-box, linear-gradient(180deg, var(--clo-c1), var(--clo-c2)) padding-box,
+    linear-gradient(158deg, var(--clo-f1), var(--clo-f2) 40%, var(--clo-f2) 62%, var(--clo-f1)) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 246, 214, .55), inset 0 -14px 22px -16px rgba(255, 224, 140, .7), 0 0 0 3px color-mix(in srgb, var(--oro) 8%, transparent), 0 16px 30px -18px color-mix(in srgb, var(--oro) 85%, transparent); }
+.btn.oro:hover { box-shadow: inset 0 1px 0 rgba(255, 246, 214, .7), inset 0 -14px 22px -14px rgba(255, 224, 140, .85), 0 0 0 4px color-mix(in srgb, var(--oro) 14%, transparent), 0 18px 34px -18px color-mix(in srgb, var(--oro) 95%, transparent); }
+.btn.oro .trad { color: inherit; opacity: .78; }
+.btn:disabled, .btn[aria-disabled="true"] { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .btn::after { animation: none !important; } }
+html[data-mov="no"] .btn::after { animation: none !important; }
+@media print { .btn { background: none; box-shadow: none; border-color: currentColor; } }
+/* Portada: acciones simétricas (una principal a lo ancho y las demás en pares iguales) */
+.hero .acciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 600px); margin: 6px auto 0; }
+.hero .acciones > .btn { min-width: 0; min-height: 48px; padding: 10px 14px; white-space: normal; text-align: center; line-height: 1.3; }
+.hero .acciones > .btn:not(.seguir) { flex-direction: column; gap: 7px; min-height: 76px; border-radius: 22px; font-size: .74rem; letter-spacing: .09em; }
+.hero .acciones > .btn:not(.seguir) svg { width: 19px; height: 19px; opacity: .9; }
+.hero .acciones > .btn:first-child, .hero .acciones > .btn:nth-child(even):last-child { grid-column: 1 / -1; }
+.hero .acciones > .btn.seguir { padding: 12px 20px 13px; min-height: 64px; }
+.seguir .seg-t { display: grid; gap: 4px; justify-items: center; min-width: 0; }
+.seguir .seg-t small { display: inline-flex; align-items: center; gap: 8px; font-size: .72rem; letter-spacing: .22em; opacity: .9; }
+.seguir .seg-t small svg { width: 14px; height: 14px; }
+.seguir .seg-l { font-family: var(--f-display); font-size: 1.22rem; line-height: 1.15; letter-spacing: .01em; text-transform: none; font-weight: 500; text-wrap: balance; }
+.seguir .seg-l .trad { font-size: .78em; }
+@media (min-width: 900px) { .hero .acciones { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 980px); } .hero .acciones > .btn:nth-child(even):last-child { grid-column: auto; } }
+/* Primera carga (10-nov-2026): igual a la de la inserción del sitio oficial (centrada en la pantalla, misma letra y mismo
+   giro) y sin el pie a media pantalla, para que al abrir el lector no haya brinco */
+.cargando.inicio { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; margin: 0; pointer-events: none;
+  font: 400 15px/1.4 "Cormorant Garamond", Georgia, serif; letter-spacing: .2em; text-transform: uppercase; color: #9d968a; }
+.cargando.inicio::before { width: 32px; height: 32px; margin: 0; border-color: rgba(201, 168, 101, .26); border-top-color: #c9a865; }
+html:has(.cargando.inicio) .pie { visibility: hidden; }
+/* Fluidez de Herramientas y de toda ventana (10-nov-2026): la ventana ya no desenfoca lo de atrás por su cuenta (lo hace su
+   velo, que no cambia al desplazar por dentro): con un fondo del 95 % el desenfoque de 28 px no se veía y en el teléfono
+   se recalculaba en cada cuadro del desplazamiento interno */
+.modal { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--hoja) 95%, transparent); }

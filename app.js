@@ -54,7 +54,8 @@
     izq: '<path d="M14.5 5.5L8 12l6.5 6.5" ' + L1 + '/>',
     der: '<path d="M9.5 5.5L16 12l-6.5 6.5" ' + L1 + '/>',
     abajo: '<path d="M6.5 9.5L12 15l5.5-5.5" ' + L1 + '/>',
-    chispa: '<path d="M12 3.2l1.9 5.4 5.4 1.9-5.4 1.9L12 17.8l-1.9-5.4-5.4-1.9 5.4-1.9z" ' + L1 + '/><path d="M18.6 15.4l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" ' + L1 + '/>',
+    // gema tallada con su destello (BiEx, 10-nov-2026: nada de estrellas ni formas de cruz)
+    chispa: '<path d="M12 3.5l6.5 8.5-6.5 8.5-6.5-8.5z" ' + L1 + '/><path d="M12 7.6l3.3 4.4-3.3 4.4-3.3-4.4z" ' + L1 + '/><path d="M18.4 3.6l1.1 1.4-1.1 1.4-1.1-1.4z" fill="currentColor"/>',
     balanza: '<path d="M12 4v16M7 20h10M5 7h14M12 4.5v2.5" ' + L1 + '/><path d="M5 7l-2.6 6.2a2.8 2.8 0 0 0 5.2 0zM19 7l-2.6 6.2a2.8 2.8 0 0 0 5.2 0z" ' + L1 + '/>',
     marca: '<path d="M5.5 12.5l4.2 4.2L18.5 7.8" ' + L1 + '/>',
     cerrar: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + L1 + '/>',
@@ -92,6 +93,7 @@
     papelera: '<path d="M5 7h14M10 4.5h4M7 7l.8 12a1 1 0 0 0 1 .9h6.4a1 1 0 0 0 1-.9L17 7M10.5 10.5v6M13.5 10.5v6" ' + L1 + '/>',
     copiar: '<rect x="8.5" y="8.5" width="11" height="11" rx="1.5" ' + L1 + '/><path d="M15.5 5.5v-.5A1.5 1.5 0 0 0 14 3.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h.5" ' + L1 + '/>',
     orden: '<path d="M4 7.5h11M4 12h8M4 16.5h13" ' + L1 + '/><path d="M17.5 4.5l3 3-3 3" ' + L1 + '/>',
+    libros: '<path d="M4.6 4.6h3.3v14.8H4.6zM9.4 4.6h3.3v14.8H9.4z" ' + L1 + '/><path d="M14.3 5.9l3.1-.8 3.4 14.1-3.1.8z" ' + L1 + '/><path d="M3 19.4h18M6.25 8v2.4M11.05 8v2.4" ' + L1 + '/>',
     juego: '<path d="M7 4.5h10l3.5 4.6L12 19.5 3.5 9.1z" ' + L1 + '/><path d="M3.5 9.1h17M9.6 4.5L8.2 9.1 12 19.5l3.8-10.4-1.4-4.6" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
@@ -1111,6 +1113,8 @@
     const buscar = h("button", { class: "btn-buscar", type: "button", "aria-label": "Buscar: escenas, citas, nombres, palabras o preguntas", onclick: () => abrirBusqueda("") }, svg(ICO.buscar), h("span", { text: "Buscar" }), h("small", { class: "bb-pista", text: "escenas, citas, palabras…" }));
     const guia = h("button", { class: "btn-icono btn-guia", type: "button", "aria-label": "Guía animada del lector", title: "Guía: cómo usar el lector", onclick: () => abrirGuia(0) }, svg(ICO.guia));
     const hist = h("button", { class: "btn-icono btn-hist", type: "button", "aria-label": "Historial: las últimas 24 citas consultadas", title: "Historial", onclick: () => abrirHistorial() }, svg(ICO.historial));
+    // BiEx (10-nov-2026): los libros a un toque desde cualquier lugar de la interfaz
+    const libros = h("button", { class: "btn-icono btn-libros", type: "button", "aria-label": "Libros: ir de inmediato a cualquier libro y capítulo", title: "Libros", onclick: () => abrirLibros() }, svg(ICO.libros));
     const juego = h("button", { class: "btn-icono btn-juego", type: "button", "aria-label": "Escudriña, el juego de Biblia Exacta", title: "Escudriña · el juego", onclick: () => { location.hash = "#/escudrina"; } }, svg(ICO.juego));
     const herr = h("button", { class: "btn-icono btn-herr", type: "button", "aria-label": "Herramientas: lectura, análisis, buscador, manuscritos, línea del tiempo, concordancia y guía", title: "Herramientas", onclick: () => abrirHerramientas() }, svg(ICO.rejilla));
     const extra = EMBED ? [
@@ -1127,7 +1131,7 @@
       h("header", { class: "barra" }, h("div", { class: "in" },
         h("a", { class: "marca", href: "#/", "aria-label": "Inicio del lector" }, h("span", { class: "sello", text: "BiEx" }), h("span", { class: "nombre" }, h("b", { text: "Biblia Exacta" }), h("small", { text: "Lector y analizador" }))),
         h("nav", { class: "nav", "aria-label": "Secciones" }, h("a", { href: "#/", text: "Inicio" }), h("a", { href: "#/libros", text: "Libros" }), h("a", { href: "#/cronologia", text: "Cronología" }), h("a", { href: "#/buscar", text: "Avanzada" })),
-        h("div", { class: "acc" }, buscar, juego, hist, herr, guia, tema, extra))),
+        h("div", { class: "acc" }, buscar, libros, juego, hist, herr, guia, tema, extra))),
       h("main", { class: "pagina", id: "vista", tabindex: "-1" }),
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
@@ -1153,10 +1157,13 @@
   // la pista del buscador y después los enlaces de secciones (siguen en Herramientas y en la portada)
   function ajustarBarra() {
     const m = $(".barra .marca"), bi = $(".barra .in"), r = document.documentElement; if (!m || !bi) return;
-    r.classList.remove("barra-sin-pista", "barra-sin-nav");
-    const recorta = () => m.scrollWidth > m.clientWidth + 1 || bi.scrollWidth > bi.clientWidth + 1;
-    if (recorta()) r.classList.add("barra-sin-pista");
-    if (recorta()) r.classList.add("barra-sin-nav");
+    const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-hist", "barra-sin-guia", "barra-estrecha"];
+    r.classList.remove(...PASOS);
+    const sello = $(".barra .sello"), acc = $(".barra .acc");
+    // también cuenta como recorte que el primer botón visible se acerque al sello (los botones se encogen sin desbordar)
+    const choca = () => { if (!sello || !acc) return false; const v = Array.from(acc.children).find((x) => x.getClientRects().length); return !!v && v.getBoundingClientRect().left < sello.getBoundingClientRect().right + 6; };
+    const recorta = () => m.scrollWidth > m.clientWidth + 1 || bi.scrollWidth > bi.clientWidth + 1 || choca();
+    for (const c of PASOS) { if (!recorta()) break; r.classList.add(c); }
   }
   let tAjBarra = 0;
   window.addEventListener("resize", () => { if (!tAjBarra) tAjBarra = requestAnimationFrame(() => { tAjBarra = 0; ajustarBarra(); }); }, { passive: true });
@@ -1300,7 +1307,8 @@
           h("div", { class: "interlineal" }, botones),
           h("p", { class: "pista", text: "Toca una palabra, en griego o en español, para abrir su análisis" })),
         h("div", { class: "acciones" },
-          ub ? h("a", { class: "btn oro", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, svg(ICO.seguir), h("span", {}, "Seguir leyendo · ", etLibro(ub, ult.cap + (ult.v ? ":" + ult.v : "")))) : null,
+          // BiEx (10-nov-2026): «Seguir leyendo» en dos renglones centrados (el libro ya no se parte de forma asimétrica)
+          ub ? h("a", { class: "btn oro seguir", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, h("span", { class: "seg-t" }, h("small", {}, svg(ICO.seguir), "Seguir leyendo"), h("span", { class: "seg-l" }, etLibro(ub, ult.cap + (ult.v ? ":" + ult.v : ""))))) : null,
           h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/" + P.c + "/" + P.cap + "/l/" + P.v }, svg(ICO.libro), h("span", {}, "Leer ", etLibro(lb, String(P.cap)))),
           h("a", { class: "btn", href: "#/" + P.c + "/" + P.cap + "/a/" + P.v }, svg(ICO.lupa), "Analizar palabra por palabra"),
           h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros"),
@@ -1590,6 +1598,16 @@
         type: "button", class: "lib-chip", "aria-current": x === b ? "true" : "false", title: nombreLibro(x),
         onclick: () => { if (x !== b) empujar(vistaNavegador(x, 0, null)); } },
         h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: tradQ(x) }) : null))));
+  }
+  // Los 27 libros en una ventana (botón de la barra superior): al tocar uno se ven sus capítulos sin salir de ella
+  function abrirLibros() {
+    if (!D) return;
+    const b = esc.libro ? libroDe(esc.libro) : null;
+    abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
+      h("div", { class: "nav-libros todos" }, h("div", { class: "libs", role: "group", "aria-label": "Elegir un libro" }, librosEnOrden().map((x) => h("button", {
+        type: "button", class: "lib-chip", "aria-current": x === b ? "true" : "false", title: nombreLibro(x),
+        onclick: () => empujar(vistaNavegador(x, x === b ? esc.cap : 0, null)) },
+        h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: tradQ(x) }) : null))))));
   }
   const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
   function encabezado(b, cap, modo) {
@@ -2513,7 +2531,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "14be649151", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "fbeaf54e79", juego: "0c4dd8f140", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2537,6 +2555,8 @@
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
         irA: (hh) => { location.hash = hh; },
+        volver: (dest) => { if (pasosApp > 0) history.back(); else location.hash = dest || "#/"; },
+        restaurando: () => RP.objetivo != null,
         marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
         sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
         cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v) });
@@ -4627,7 +4647,9 @@
     return vistaLibro(c, cap, modo, v, i);
   }
   marco();
-  vista().replaceChildren(cargando("Abriendo el códice…"));
+  // BiEx (10-nov-2026): al abrir desde el sitio oficial había un brinco (la carga de la inserción, centrada, pasaba a otra
+  // arriba con el pie a media pantalla): la primera carga ocupa la pantalla, centrada y con el mismo estilo que la inserción
+  vista().replaceChildren(Object.assign(cargando("Abriendo el códice…"), { className: "cargando inicio" }));
   alPadre({ biex: "listo" });
   Promise.all([cargar("datos/avance.json"), cargar("datos/destacados.json").catch(() => []), cargar("datos/cronologia.json").catch(() => null)]).then(([d, dest, cr]) => {
     D = d; DEST = Array.isArray(dest) ? dest : [];
