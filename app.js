@@ -131,6 +131,14 @@
         store.set("leidos", d);
       },
       todo: () => d,
+      // P20 (BiEx, 12-nov-2026): las marcas desde un día (AAAAMMDD) pasan a una copia aparte (biex:leidosApartados),
+      // recuperable; devuelve cuántos versos se apartaron
+      apartar(desde) {
+        const ap = store.get("leidosApartados", null) || {}; let n = 0;
+        for (const [kk, m] of Object.entries(d)) for (const [v, dia] of Object.entries(m)) if (+dia >= desde) { (ap[kk] || (ap[kk] = {}))[v] = dia; delete m[v]; n++; if (!Object.keys(m).length) delete d[kk]; }
+        if (n) { store.set("leidos", d); store.set("leidosApartados", ap); }
+        return n;
+      },
     };
   })();
   const sinMarcas = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f\u0342\u0343\u0345\u1dc0-\u1dff]/g, "").normalize("NFC");
@@ -315,7 +323,7 @@
   // cursiva y negrita del borrador (Markdown), ampliaciones entre corchetes (y si son la primera alternativa o una de las
   // siguientes), paréntesis, < >, marcas voladas, griego aún sin traducción (⟪…⟫ en el texto base) y hebreo.
   // Según las opciones de lectura se ocultan o se colorean; los asteriscos sueltos del texto se conservan como marcas.
-  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048, SIG: 4096, SEL: 8192 };
+  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048, SIG: 4096, SEL: 8192, ALT2: 16384 };
   const VOLADA = /[ʰ-˿ᴬ-ᶿ⁰-₟]/;
   function rasgos(t, esBase, x) {
     const n = t.length, f = new Uint16Array(n);
@@ -344,19 +352,20 @@
     // corchetes: cada grupo sabe si es la primera ampliación de su palabra o una alternativa siguiente
     const pila = [];
     const saltable = (ch) => ch === " " || ch === "*" || VOLADA.test(ch);
-    let cierreUlt = -2, cierreProf = -1;
+    let cierreUlt = -2, cierreProf = -1, cierreIdx = 0;
     for (let i = 0; i < n; i++) {
       const ch = t[i];
       if (ch === "⟪") { const z = t.indexOf("⟫", i); if (z > 0) { i = z; continue; } }
       if (ch === "[") {
         let j = i - 1; while (j >= 0 && saltable(t[j])) j--;
         const alt = j >= 0 && j === cierreUlt && cierreProf === pila.length;
-        pila.push({ a: i, alt });
+        pila.push({ a: i, alt, idx: alt ? cierreIdx + 1 : 0 });
       } else if (ch === "]" && pila.length) {
         const g = pila.pop();
         let a = g.a; if (a > 0 && t[a - 1] === " ") a--;
-        for (let k = a; k <= i; k++) f[k] |= F.COR | (g.alt ? F.ALT : 0);
-        cierreUlt = i; cierreProf = pila.length;
+        // ALT2 (BiEx, 12-nov-2026: «Solo las dos primeras»): de la tercera ampliación de la palabra en adelante
+        for (let k = a; k <= i; k++) f[k] |= F.COR | (g.alt ? F.ALT : 0) | (g.idx >= 2 ? F.ALT2 : 0);
+        cierreUlt = i; cierreProf = pila.length; cierreIdx = g.idx;
       }
     }
     // paréntesis y < >
@@ -383,7 +392,7 @@
   function oculto(b) {
     if (b & F.OCU) return true;
     const cor = corAct();
-    if ((b & F.COR) && !(b & F.SIG) && (cor === "base" || (cor === "primera" && (b & F.ALT)))) return true;
+    if ((b & F.COR) && !(b & F.SIG) && (cor === "base" || (cor === "primera" && (b & F.ALT)) || (cor === "dos" && (b & F.ALT2)))) return true;
     if ((b & F.PAR) && prefs.par === false) return true;
     if ((b & F.ANG) && prefs.ang === false) return true;
     if ((b & F.SUP) && prefs.sup === false) return true;
@@ -1066,7 +1075,7 @@
           h("div", { class: "ap-pie" },
             h("button", { class: "btn chico oro", type: "button", onclick: () => empujar(vistaOpciones()) }, svg(ICO.opciones), "Opciones del texto: colores, corchetes, paréntesis"),
             h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura")),
-          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta tiene el objetivo continuo de ser accesible para todas las personas, incluidas las neurodivergentes (con TDAH, dislexia, autismo…), y busca, de forma progresiva, la máxima accesibilidad para las personas ciegas y con otras limitaciones, para que el Lόgος llegue a todos los hablantes del idioma español." })));
+          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta está pensada para todas las personas: letra para dislexia, letra clara, nueve tamaños, interlineado amplio, guía con voz y la opción sin animaciones. Y seguimos avanzando, paso a paso, hacia la máxima accesibilidad para las personas neurodivergentes (TDAH, dislexia, autismo…), ciegas o con baja visión, para que el Lόgος llegue sin barreras a todos los que hablan español." })));
     });
   }
 
@@ -1102,7 +1111,7 @@
           h("div", { class: "ap-muestra" }, h("p", { class: "eyebrow", text: "Así se ve " + ref }), muestra),
           fila("Colores de la edición BiEx", "El texto en azul; las palabras del Mashíaḥ en anaranjado; las citas de la Antigua Voluntad en mayúsculas; las expresiones del Eterno en cursiva; las ampliaciones en gris.",
             grupo("ed", [[true, "Con colores"], [false, "Sin colores"]]), ley),
-          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la vista Lectura (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones (el significado de cada nombre se ve en su primera aparición)"]])),
+          fila("Ampliaciones entre corchetes [ ]", prefs.lorg ? "En la vista Lectura (por defecto, solo la primera)." : null, grupo((prefs[kCor()] == null && (prefs[kCor()] = "primera"), kCor()), [["todas", "Todas"], ["dos", "Solo las dos primeras", "Las dos primeras ampliaciones de cada palabra"], ["primera", "Solo la primera", "La primera ampliación de cada palabra"], ["base", "Solo la palabra base", "Sin ampliaciones (el significado de cada nombre se ve en su primera aparición)"]])),
           fila("Paréntesis ( )", null, grupo("par", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Signos < >", null, grupo("ang", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Letras voladas y asteriscos (ᵐ ⁿ ᶠ *)", null, grupo("sup", [[true, "Mostrar"], [false, "Ocultar"]])),
@@ -1650,6 +1659,8 @@
     const vs = (esc.versos || []).map((x) => x.v), n = vs.filter((v) => LEI.es(b.c, cap, v)).length;
     if (!vs.length) return null;
     if (n === vs.length) return h("p", { class: "fin-leido hecho" }, svg(ICO.leido), h("span", { text: "Capítulo leído" }));
+    // con Escudriña activo (P20) el juego pone aquí su botón, que se habilita con el tiempo de lectura del capítulo
+    if (store.get("jg:t", null)) return h("div", { class: "fin-leido jg-fin" }, h("button", { class: "btn chico", type: "button", disabled: true }, svg(ICO.leido), h("span", { text: "Marcar el capítulo como leído" })));
     const btn = h("button", { class: "btn chico", type: "button", onclick: () => {
       LEI.marcar(b.c, cap, vs, true); marcarLeidoDom(b.c, cap, vs, true); avisar("Capítulo " + cap + " marcado como leído");
       btn.parentNode.replaceWith(h("p", { class: "fin-leido hecho" }, svg(ICO.leido), h("span", { text: "Capítulo leído" })));
@@ -2536,7 +2547,9 @@
           enlaceFuenteQ(b.c, cap, ctx.v)),
         h("div", { class: "m-pie" },
           (() => { const si = LEI.es(b.c, cap, ctx.v); return h("button", { class: "btn chico btn-leido" + (si ? " si" : ""), type: "button", "aria-pressed": String(si), title: si ? "Quitar la marca de leído" : "Marcar este verso como leído",
-            onclick: () => { LEI.marcar(b.c, cap, [ctx.v], !si); marcarLeidoDom(b.c, cap, [ctx.v], !si); reemplazar(vistaVerso(ctx)); avisar(si ? "Marca de leído quitada" : "Verso marcado como leído"); } }, svg(ICO.leido), si ? "Leído" : "Marcar como leído"); })(),
+            onclick: () => {
+              if (!si && window.BiExJuego && window.BiExJuego.marcarVerso && window.BiExJuego.marcarVerso(b.c, cap, ctx.v)) { reemplazar(vistaVerso(ctx)); return; }
+              LEI.marcar(b.c, cap, [ctx.v], !si); marcarLeidoDom(b.c, cap, [ctx.v], !si); reemplazar(vistaVerso(ctx)); avisar(si ? "Marca de leído quitada" : "Verso marcado como leído"); } }, svg(ICO.leido), si ? "Leído" : "Marcar como leído"); })(),
           L ? h("button", { class: "btn chico", type: "button", onclick: () => compartir(nombreLibro(b) + " " + cap + ":" + ctx.v, textoPlano(L.t), "#/" + b.c + "/" + cap + "/l/" + ctx.v) }, svg(ICO.compartir), "Compartir") : null,
           h("button", { class: "btn chico", type: "button", onclick: () => empujar(vistaManuscritos(ctx)) }, svg(ICO.manuscrito), "Manuscritos"),
           h("a", { class: "btn chico oro", href: "#/" + b.c + "/" + cap + "/a/" + ctx.v }, svg(ICO.lupa), "Analizar el capítulo")));
@@ -2545,7 +2558,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "fc638a5fdf", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "c94b3fc4b6", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2572,6 +2585,7 @@
         volver: (dest) => { if (pasosApp > 0) history.back(); else location.hash = dest || "#/"; },
         restaurando: () => RP.objetivo != null,
         marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
+        apartarLeidos: (desde) => { const n = LEI.apartar(desde); if (n) for (const el of $$(".hoja .vl.leido, .hoja .vs.leido")) if (!LEI.es(esc.libro, esc.cap, +el.id.slice(1))) el.classList.remove("leido"); return n; },
         sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
         cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v),
         // (12-nov-2026) los versos de una cita con el texto de la Lectura, para la ventana de la cita en el juego

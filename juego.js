@@ -444,8 +444,8 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-salas-l .n b{font:600 .95rem/1.25 var(--f-ui);color:var(--tinta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jg-salas-l .n small{font:400 .78rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .jg-salas-l:not(.quien) li:not(:has(svg)){grid-template-columns:1fr auto}
-.jg-luces{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:6px;margin:12px 0}
-.jg-lz{position:relative;display:grid;place-items:center;height:44px;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tenue);font:500 .7rem/1 var(--f-ui);letter-spacing:.02em;cursor:pointer;overflow:hidden;padding:0 4px;white-space:nowrap}
+.jg-luces{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:12px 0}
+.jg-lz{position:relative;display:grid;place-items:center;min-height:48px;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tenue);font:500 .74rem/1.15 var(--f-ui);letter-spacing:.01em;cursor:pointer;overflow:hidden;padding:7px 16px 7px 8px;text-align:center;overflow-wrap:anywhere}
 .jg-lz.on{color:var(--oro-vivo);border-color:color-mix(in srgb,var(--oro) calc(var(--k) * 70%),transparent);background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--oro) calc(var(--k) * 42%),transparent),var(--hoja-2) 75%);box-shadow:0 0 calc(var(--k) * 16px) -4px color-mix(in srgb,var(--oro) 80%,transparent)}
 .jg-lz.on::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 12px color-mix(in srgb,var(--oro) calc(var(--k) * 40%),transparent);animation:jg-latido 2.6s ease-in-out infinite;opacity:.8}
 .jg-lz.sel{outline:2px solid var(--oro);outline-offset:1px}
@@ -948,20 +948,65 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
 .ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
 .ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
-.jg-ld{position:absolute;left:0;top:0;z-index:4;width:0;height:0;pointer-events:none;will-change:transform}
-.jg-ld[hidden]{display:none}
-.jg-ld-b{position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:4px 12px 4px 8px;border-radius:999px;cursor:pointer;
-  font:600 .72rem/1 var(--f-ui);letter-spacing:.04em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 55%,transparent);
-  background:radial-gradient(120% 90% at 50% -20%,rgba(255,246,214,.32),transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 30%,var(--hoja)),color-mix(in srgb,var(--oro) 12%,var(--hoja)));
-  box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -8px 14px -10px rgba(255,224,140,.6),0 6px 16px -8px rgba(0,0,0,.7);transition:transform .15s cubic-bezier(.3,1.4,.5,1),opacity .2s}
-.jg-ld-b::after{content:"";position:absolute;inset:-8px}
-.jg-ld-b:active{transform:translate(-50%,-50%) scale(.95)}
-.jg-ld-i{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center}
-.jg-ld.hecho .jg-ld-i{background:currentColor}
-.jg-ld.hecho .jg-ld-i::after{content:"";width:6px;height:3px;margin-top:-1px;border:solid var(--hoja);border-width:0 0 1.6px 1.6px;transform:rotate(-45deg)}
-.jg-ld.espera .jg-ld-b{opacity:.82}
-.vn.jg-leido{color:var(--oro-vivo);text-shadow:0 0 10px color-mix(in srgb,var(--oro) 45%,transparent)}
-.vn.jg-leido::after{content:"";display:block;width:6px;height:3px;margin:3px auto 0;border:solid currentColor;border-width:0 0 1.5px 1.5px;transform:rotate(-45deg)}
+.jg-lb{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:6px 18px 6px 7px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font:600 .84rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
+  background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,224,140,.6),0 12px 28px -10px rgba(0,0,0,.78),0 0 0 1px rgba(0,0,0,.22);
+  transition:opacity .24s ease,transform .26s cubic-bezier(.3,1.3,.5,1)}
+.jg-lb::after{content:"";position:absolute;inset:-7px}
+.jg-lb.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
+.jg-lb:active{transform:translate3d(-50%,0,0) scale(.96)}
+.jg-lb-i{width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
+.jg-lb-i::after{content:"";width:10px;height:5px;margin-top:-3px;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg);opacity:.5;transition:opacity .2s}
+.jg-lb.hecho .jg-lb-i{background:var(--oro-vivo)}
+.jg-lb.hecho .jg-lb-i::after{border-color:var(--hoja);opacity:1}
+.jg-lb.espera .jg-lb-i::after{opacity:.32}
+.jg-lb-t{display:grid;gap:4px;text-align:left}
+.jg-lb-t b{font-weight:600}
+.jg-lb-t small{font:500 .62rem/1 var(--f-ui);letter-spacing:.1em;color:var(--tenue);text-transform:uppercase}
+.jg-ah{position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none;will-change:transform}
+.jg-ah[hidden]{display:none}
+.jg-ah i{position:absolute;left:-28px;top:-28px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--oro-vivo) 52%,transparent) 0,color-mix(in srgb,var(--oro) 20%,transparent) 44%,transparent 70%);animation:jg-ah 2.8s ease-in-out infinite;will-change:opacity}
+.jg-ah b{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--oro-vivo) 72%,transparent);box-shadow:0 0 12px -2px color-mix(in srgb,var(--oro-vivo) 60%,transparent)}
+@keyframes jg-ah{0%,100%{opacity:.5}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.jg-ah i{animation:none}}
+.vn.jg-leido,.vs>sup.jg-leido{color:var(--oro-vivo);text-shadow:0 0 10px color-mix(in srgb,var(--oro) 45%,transparent)}
+.vl .vn.jg-leido::before{content:"";position:absolute;left:1px;top:.9em;width:6px;height:3px;border:solid var(--oro-vivo);border-width:0 0 1.6px 1.6px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
+.vs>sup.jg-leido{background:linear-gradient(currentColor,currentColor) 50% 100%/72% 1.5px no-repeat}
+.vn.jg-quiere,.vs>sup.jg-quiere{text-decoration:underline dotted color-mix(in srgb,var(--oro-vivo) 80%,transparent);text-underline-offset:4px}
+.fin-leido.jg-fin{display:grid;justify-items:center;gap:8px}
+.fin-leido.jg-fin.hecho{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--oro-vivo)}
+.fin-leido.jg-fin.hecho svg{width:20px;height:20px}
+.jg-fin-n{max-width:34em;text-align:center;margin:0}
+.jg-conf{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;background:rgba(5,4,3,.64)}
+:root[data-theme="light"] .jg-conf{background:rgba(40,30,15,.32)}
+.jg-conf-c{width:min(420px,100%);border-radius:18px;padding:20px 20px 16px;border:1px solid var(--linea);background:linear-gradient(180deg,rgba(255,246,214,.05),transparent 70%),var(--hoja);box-shadow:var(--sombra)}
+.jg-conf-c h3{margin:0 0 8px;font:500 1.22rem/1.25 var(--f-display);color:var(--tinta)}
+.jg-conf-c p{margin:0 0 16px;font:400 .92rem/1.45 var(--f-ui);color:var(--tinta-2)}
+.jg-conf-c .jg-acciones{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin:0}
+.jg.ap:has(> .cargando:only-child){min-height:min(1180px,150vh)}
+.ap-da{display:block;font:400 .64rem/1.3 var(--f-ui);color:var(--tenue);text-align:center;margin-top:2px}
+.jg-tarjeta.jg-resalta{position:relative}
+.jg-tarjeta.jg-resalta::after{content:"";position:absolute;inset:-2px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 2px var(--oro-vivo),0 0 26px -2px color-mix(in srgb,var(--oro-vivo) 70%,transparent);animation:jg-resalta 2.6s ease-out forwards}
+@keyframes jg-resalta{0%{opacity:0}15%{opacity:1}35%{opacity:.45}55%{opacity:1}100%{opacity:0}}
+.jg-cambio b{color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.cf-raiz{display:grid;justify-items:center;gap:10px;margin:6px 0 14px}
+.cf-tit{margin:0;color:var(--oro-vivo);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.cf{position:relative;width:min(220px,62vw);aspect-ratio:160/140;display:grid;place-items:center}
+.cf-svg{position:relative;width:100%;height:100%;overflow:visible;transform-box:fill-box;transform-origin:50% 90%}
+.cf-halo{position:absolute;inset:-18% -10% -6%;border-radius:50%;background:radial-gradient(circle at 50% 52%,color-mix(in srgb,var(--cf) 46%,transparent),transparent 62%);opacity:.35;pointer-events:none}
+.cf-col{position:absolute;left:28%;right:28%;bottom:52%;height:120%;transform-origin:50% 100%;opacity:0;pointer-events:none;
+  background:linear-gradient(0deg,color-mix(in srgb,var(--cf) 70%,#fff),color-mix(in srgb,var(--cf) 28%,transparent) 55%,transparent);border-radius:50% 50% 12px 12px/30% 30% 12px 12px;filter:blur(6px)}
+.cf.n0 .cf-col{display:none}
+.cf-info{display:grid;justify-items:center;gap:4px;text-align:center}
+.cf-info p{margin:0}
+.cf-n{font:500 1.05rem/1.2 var(--f-display);letter-spacing:.06em;color:var(--oro-vivo)}
+.cf-dr{font:600 2rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums;text-shadow:0 0 18px color-mix(in srgb,var(--oro) 50%,transparent)}
+.cf-flash{position:fixed;inset:0;z-index:90;pointer-events:none;background:radial-gradient(circle at 50% 46%,#fff8dc,rgba(255,231,160,.5) 40%,transparent 75%);opacity:0}
+.cf-m,.cf-g{position:fixed;width:16px;height:16px;border-radius:50%;pointer-events:none;will-change:transform,opacity}
+.cf-m{border:2.4px solid var(--c);box-shadow:0 0 8px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 0 3px rgba(0,0,0,.12)}
+.cf-m::after{content:"";position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px;border-radius:50%;background:var(--c)}
+.cf-g{width:12px;height:10px;border-radius:40%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 45%,color-mix(in srgb,var(--c) 70%,#000));box-shadow:0 0 10px var(--c)}
 .jg-fan{position:fixed;inset:0;z-index:84;pointer-events:none;display:grid;place-items:center;align-content:center;gap:14px;perspective:600px}
 .jg-fan-v{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--c) 34%,transparent),rgba(5,4,3,.72) 58%,rgba(5,4,3,.82));opacity:0;will-change:opacity}
 .jg-fan-l{position:absolute;left:50%;top:46%;width:min(70vw,340px);aspect-ratio:1;margin:calc(min(70vw,340px) / -2) 0 0 calc(min(70vw,340px) / -2);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 70%,#fff) 0,color-mix(in srgb,var(--c) 32%,transparent) 38%,transparent 70%);opacity:0;will-change:opacity}
@@ -1155,7 +1200,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso o con Google." }),
           cfg.google || cfg.facebook ? h("div", { class: "jg-empezar-con" }, h("p", { class: "jg-mini", text: "O empieza de una vez con tu cuenta oficial: tu lugar queda asegurado desde el primer momento y no tienes que guardar ningún código." }),
             h("div", { class: "jg-entrar" },
-              cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pista) }, ico("google"), h("span", { text: "Empezar con Google" })) : null,
+              cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "crear", pista) }, ico("google"), h("span", { text: "Empezar con Google" })) : null,
               cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pista) }, ico("facebook"), h("span", { text: "Empezar con Facebook" })) : null)) : null,
           h("div", { class: "jg-aviso tenue jg-unica" }, h("b", { text: "Tu lugar es único. " }), "Solo hay 1440 Primicias y cada una pertenece a una sola persona: crea una sola cuenta, para que 1440 personas distintas tengan la suya. Guarda muy bien tu acceso o vincúlalo con Google o con una llave de acceso (huella o rostro): si se pierde, tu número de Primicia no vuelve.")),
         tarjeta("Ya juego", null, opciones)),
@@ -1368,8 +1413,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("span", { class: "jg-mini", text: fmt(m.prog) + " de " + fmt(m.meta) + (m.hecha ? " · cumplida" : " · tócala para ir a cumplirla") })),
       h("div", {}, h("div", { class: "jg-pr", text: "+" + m.xp }), h("div", { class: "jg-pr", style: "opacity:.75", text: "+" + m.dr + " dr." }),
         !m.hecha && !y.cambio && i > 0 ? h("button", { class: "jg-cambiar", type: "button", onclick: () => cambiarMision(i) }, "Cambiar") : null))));
-    return tarjeta("Misiones de hoy", ico("marca"), lista,
+    const cambio = h("p", { class: "jg-mini jg-cambio" }, "Nuevas misiones en ", h("b", { text: hastaCambio(y.tz) }));
+    const reloj = setInterval(() => { if (!cambio.isConnected) return clearInterval(reloj); cambio.lastChild.textContent = hastaCambio(y.tz); }, 1000);
+    return tarjeta("Misiones de hoy", ico("marca"), cambio, lista,
       h("p", { class: "jg-mini", text: y.completo ? "¡Cumpliste todas las misiones de hoy! Mañana habrá otras." : "Todas a tu ritmo. Al cumplirlas todas ganas 500 de experiencia y 10 dracmas más." + (y.cambio ? "" : " Puedes cambiar una misión por día.") }));
+  }
+  // tiempo que falta para la medianoche de la zona horaria de la cuenta (allí cambian las misiones)
+  function hastaCambio(tz) {
+    let seg;
+    try { const f = new Intl.DateTimeFormat("en-US", { timeZone: tz || undefined, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }).formatToParts(new Date()), g = (t) => +((f.find((x) => x.type === t) || {}).value || 0); seg = 86400 - ((g("hour") % 24) * 3600 + g("minute") * 60 + g("second")); }
+    catch (e) { const d = new Date(); seg = 86400 - (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()); }
+    const hh = Math.floor(seg / 3600), mm = Math.floor((seg % 3600) / 60), ss = seg % 60, d2 = (n) => String(n).padStart(2, "0");
+    return hh + " h " + d2(mm) + " min " + d2(ss) + " s";
   }
   async function cambiarMision(i) {
     const r = await pedir("/mision/cambiar", { metodo: "POST", cuerpo: { i } });
@@ -1517,23 +1572,41 @@ html[data-mov="no"] .ap-savia{display:none!important}
     mas: "mas", cuenta: "mas", propuestas: "mas", guia: "hoy" };
   const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
   const TIT = { hoy: ["Hoy", "Tu lectura y tus misiones"], tesoro: ["Tesoro", "Lo que has hallado leyendo"], mundo: ["Mundo", "Liga, misión mundial y clasificaciones"],
-    juntos: ["Juntos", "Tu compañía y las salas de lectura"], mas: ["Más", "Tu cuenta, tu avance y tus ideas"], arbol: ["Tu Árbol", "El centro de tu poder: raíces, corazón, copa y frutos"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
+    juntos: ["Juntos", "Tu compañía y las salas de lectura"], mas: ["Más", "Tu cuenta, tu avance y tus ideas"], arbol: ["Tu Árbol", "Un centro de poder: raíces, corazón, copa y su fruto"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
   let MU = null;
   function muelle(sec) {
     const raiz = document.documentElement;
     if (sec == null) { if (MU) { MU.remove(); MU = null; } raiz.classList.remove("jg-con-muelle"); return; }
     if (!MU) {
       MU = h("nav", { class: "jg-muelle", "aria-label": "Secciones de Escudriña" }, h("span", { class: "luz", "aria-hidden": "true" }),
-        SECC.map(([k, t, ic]) => h("a", { href: "#/escudrina" + (k === "hoy" ? "" : "/" + k), "data-s": k, onclick: () => vibrar(8) }, ico(ic), h("span", { text: t }))));
+        SECC.map(([k, t, ic]) => h("a", { href: "#/escudrina" + (k === "hoy" ? "" : "/" + k), "data-s": k, onclick: () => vibrar(8), onpointerdown: k === "arbol" ? () => { if (S.token) cargarPoder("previo").catch(() => {}); } : null }, ico(ic), h("span", { text: t }))));
       document.body.append(MU);
     }
     raiz.classList.add("jg-con-muelle");
     MU.style.setProperty("--i", String(Math.max(0, SECC.findIndex((s) => s[0] === sec))));
     for (const a of MU.querySelectorAll("a")) { const on = a.getAttribute("data-s") === sec; a.classList.toggle("act", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
-    const y = S.yo, faltan = y && Array.isArray(y.mis) ? y.mis.filter((m) => !m.hecha).length : 0, hoy = MU.querySelector('a[data-s="hoy"]');
-    if (hoy) { if (faltan) hoy.setAttribute("data-n", String(faltan)); else hoy.removeAttribute("data-n"); }
-    const mas = MU.querySelector('a[data-s="mas"]');
-    if (mas) { if (y && !y.asegurado) { mas.setAttribute("data-n", "!"); mas.title = "Asegura tu avance"; } else { mas.removeAttribute("data-n"); mas.removeAttribute("title"); } }
+    // Insignias (BiEx, 12-nov-2026): al entrar en la sección, su zona se ilumina y la insignia se apaga; vuelve solo
+    // cuando cambia lo que avisa (misiones de un día nuevo; el recordatorio de asegurar la cuenta, una vez por día)
+    const y = S.yo, dia = (y && y.hoy && y.hoy.f) || "", faltan = y && Array.isArray(y.mis) ? y.mis.filter((m) => !m.hecha).length : 0;
+    const visto = A.store.get("jg:insig", null) || {};
+    const insignia = (k, firma, val, titulo) => {
+      const a = MU.querySelector('a[data-s="' + k + '"]'); if (!a) return;
+      if (!firma) { a.removeAttribute("data-n"); a.removeAttribute("title"); return; }
+      if (sec === k) { a.removeAttribute("data-n"); if (visto[k] !== firma) { visto[k] = firma; A.store.set("jg:insig", visto); resaltarZona(k); } return; }
+      if (visto[k] === firma) { a.removeAttribute("data-n"); return; }
+      a.setAttribute("data-n", val); a.title = titulo;
+    };
+    insignia("hoy", faltan ? "m:" + dia : "", String(faltan), "Misiones por cumplir");
+    insignia("mas", y && !y.asegurado ? "a:" + dia : "", "!", "Asegura tu avance");
+  }
+  function resaltarZona(k) {
+    setTimeout(() => {
+      const zonas = [...document.querySelectorAll(".jg .jg-tarjeta")];
+      const z = k === "hoy" ? zonas.find((t) => /Misiones de hoy/.test((t.querySelector("h2") || {}).textContent || "")) : zonas.find((t) => t.classList.contains("jg-asegurar") || /Asegura/.test((t.querySelector("h2") || {}).textContent || ""));
+      if (!z) return;
+      const r = z.getBoundingClientRect(); if (r.top > innerHeight * 0.8 || r.bottom < 80) z.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" });
+      z.classList.add("jg-resalta"); setTimeout(() => z.classList.remove("jg-resalta"), 2600);
+    }, 420);
   }
   window.addEventListener("hashchange", () => { if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; terminarVista(); } });
   function cabeceraJuego(sec) {
@@ -1561,10 +1634,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function dibujarPanel(cont, y) {
     const sec = SECC_DE[S.sub[0] || ""] || "hoy";
     if (sec !== "juntos") salasAbiertas(false).catch(() => {});
-    const pend = tarjetaPorConfirmar(y, true);
+    const pend = null; // P20 (12-nov-2026): ya no se piden confirmaciones manuales
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
-    if (sec === "tesoro") partes = [tarjetaHallazgos(y), tarjetaPorConfirmar(y, false), tarjetaPotencias(y)];
+    if (sec === "tesoro") partes = [tarjetaHallazgos(y), tarjetaPotencias(y)];
     else if (sec === "mundo") partes = [tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
     else if (sec === "juntos") partes = [salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
@@ -1609,14 +1682,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Siete escenas vectoriales que se mueven solas (solo transformaciones y opacidad). Se avanza con «Siguiente», con los
   // puntos, deslizando o con las flechas del teclado; nunca avanza sola (BiEx: accesible para dislexia y TDAH).
   const GUIA = [
-    ["Lee de verdad", "Abre cualquier capítulo de la Nueva Voluntad y lee a tu ritmo. Cada verso que lees te da el 30 % de su experiencia; al terminarlo, toca «Leído» y suma el 70 % restante, con la posibilidad de hallar fragmentos de papiro y dracmas.", "versos"],
+    ["Lee de verdad", "Abre cualquier capítulo de la Nueva Voluntad y lee a tu ritmo. Cada verso que lees te da el 30 % de su experiencia; al terminarlo, toca «Leído» (abajo, al centro: brilla el número del verso que marcas) y suma el 70 % restante, con la posibilidad de hallar fragmentos de papiro y dracmas. Solo cuentan como leídos los versos que marcas, el capítulo que marcas al final cuando lo leíste con calma y las preguntas de la prueba bien respondidas.", "versos"],
     ["Misiones pequeñas cada día", "Cada día recibes de 2 a 5 misiones sencillas, como leer unos versos o completar un capítulo. Sin prisa y sin culpa: si un día no puedes, tu avance sigue ahí.", "misiones"],
     ["Hallazgos", "Muy de vez en cuando, un verso revela una de las doce piedras del fundamento o un lauro trenzado incorruptible. Solo aparecen leyendo.", "hallazgos"],
     ["Perseverancia", "Cada día que lees suma a tu perseverancia. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.", "perseverancia"],
     ["Nunca a solas", "Entra en la liga de la semana, aporta a la misión mundial, forma una compañía de 2 a 24 personas o abre una sala para leer en compañía.", "juntos"],
     ["Tu siembra", "Comparte tu enlace. Quien llega contigo empieza con 3 horas de experiencia doble, y tu árbol de la siembra crece generación tras generación.", "siembra"],
     // BiEx (10-nov-2026): el menú cambió (seis botones, con el Árbol): el paso 7 lo dice tal como es
-    ["El menú del juego", "Abajo tienes seis botones: Hoy (tu lectura y tus misiones), Tesoro (lo que hallas leyendo), Mundo (la liga, la misión mundial y las clasificaciones), Juntos (tu compañía y las salas), Árbol (tu poder: atributos, armadura y tienda) y Más (tu cuenta). Con ellos llegas a todo. Y guarda bien tu acceso: es tu llave.", "menu"]];
+    ["El menú del juego", "Abajo tienes seis botones: Hoy (tu lectura y tus misiones), Tesoro (lo que hallas leyendo), Mundo (la liga, la misión mundial y las clasificaciones), Juntos (tu compañía y las salas), Árbol (tu ser interior: atributos, armadura y tienda) y Más (tu cuenta). Con ellos llegas a todo. Y guarda bien tu acceso: es tu llave.", "menu"]];
   function escenaGuia(k) {
     const giro = (el, grados) => { el.style.transform = "rotate(" + grados + "deg) translate3d(0,-84px,0)"; return el; };
     if (k === "versos") return h("div", { class: "g-versos" }, h("i"), h("i"), h("i"), h("i"), h("b", { class: "g-xp", text: "+12" }));
@@ -1677,7 +1750,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const guardar = async () => {
       const nuevo = entrada.value.trim();
       if (!provisional && S.yo && nuevo === S.yo.apodo) { pista.textContent = "Ese ya es tu apodo."; pista.className = "jg-pista"; return; }
-      if (precio && !confirm("Cambiar tu apodo cuesta " + precio + " dracmas y el próximo cambio será dentro de 3 semanas. ¿Seguir?")) return;
+      if (precio && !(await confirmar("Cambiar tu apodo", "Cuesta " + precio + " dracmas y el próximo cambio será dentro de 3 semanas.", "Cambiar mi apodo"))) return;
       const r = await pedir("/cuenta/apodo", { metodo: "POST", cuerpo: { apodo: nuevo } });
       if (r.error) {
         pista.textContent = r.error === "apodo_espera" && r.hasta ? "Podrás cambiarlo de nuevo el " + fechaDia(r.hasta) + "." : r.error === "dracmas" && r.faltan ? "Cambiar tu apodo cuesta " + r.precio + " dracmas: te faltan " + fmt(r.faltan) + "." : mensaje(r);
@@ -1704,6 +1777,19 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const CIUDADES = [["America/Los_Angeles", "Los Angeles [Ángeles] · hora del Pacífico"], ["America/Mexico_City", "Ciudad de México · Centroamérica"], ["America/Bogota", "Bogotá · Lima · Quito"],
     ["America/New_York", "New [Nueva] York"], ["America/Caracas", "Caracas · Santo Domingo · San Juan"], ["America/Santiago", "Santiago"], ["America/Argentina/Buenos_Aires", "Buenos Aires · São Paulo · Montevideo"],
     ["Europe/London", "London [Londres]"], ["Europe/Madrid", "Madrid · Paris [París] · Roma"]];
+  // La semana del juego es la misma para todos (de domingo a sábado en la hora de Bogotá, UTC−5): se muestra cuándo
+  // cambia en la hora y la ciudad (zona horaria) de quien lee
+  function finSemanaMs() { const b = new Date(Date.now() - 5 * 3600e3), hoy0 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return hoy0 + (7 - b.getUTCDay()) * 864e5 + 5 * 3600e3; }
+  function ciudadZona() {
+    let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { tz = ""; }
+    const c = CIUDADES.find((x) => x[0] === tz);
+    if (c) return c[1].split(" · ")[0];
+    const t = tz.split("/").pop() || ""; return t ? t.replace(/_/g, " ") : "tu ciudad";
+  }
+  function textoSemana() {
+    let cuando = ""; try { cuando = new Date(finSemanaMs()).toLocaleString("es", { weekday: "long", hour: "numeric", minute: "2-digit" }); } catch (e) { cuando = "domingo, 0:00"; }
+    return "de domingo a sábado; cambia el " + cuando.replace(",", " a las") + ", hora de " + ciudadZona();
+  }
   function horaEn(ms, tz) { try { return new Date(ms).toLocaleString("es", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
   function zonasLanzamiento(ms) {
     return h("details", { class: "jg-zonas" }, h("summary", { text: "Ver la hora en otras ciudades" }),
@@ -1766,7 +1852,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const base = prev ? prev[0] : 0, pct = sig ? Math.min(100, (100 * (enV - base)) / (sig[0] - base)) : 100;
     const ab = h("b", { text: "·" }), ins = h("b", { text: fmt((y.invi && y.invi.unidos) || 0) });
     pedir("/campana/mia", { guardable: true }).then((m) => { if (!m.error) { ab.textContent = fmt(m.aperturas); ins.textContent = fmt(Math.max(m.inscritos, (y.invi && y.invi.unidos) || 0)); } });
-    const red = (k, href, t) => h("a", { class: "btn chico", href, target: "_blank", rel: "noopener" }, ico(k), h("span", { text: t }));
+    const red = (k, href, t) => h("a", { class: "btn chico", href: typeof href === "function" ? href() : href, target: "_blank", rel: "noopener", onpointerdown: typeof href === "function" ? (e) => { e.currentTarget.href = href(); } : null }, ico(k), h("span", { text: t }));
     const v = y.practica ? primiciasVivas() : null;
     return tarjeta(y.practica ? "Pre-registro · tu escalera del Sembrador" : "Invita a leer · escalera del Sembrador", ico("compartir"),
       v ? h("div", { class: "jg-campana mini" }, h("p", { class: "jg-quedan" }, "Primicias: quedan ", v.quedan, " de 1440 · ", v.ins), h("div", { class: "jg-barra oro", "aria-hidden": "true" }, v.barra),
@@ -1775,12 +1861,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-enlace" }, h("code", { text: url.replace(/^https:\/\//, "") }),
         h("button", { class: "btn oro chico", type: "button", onclick: compartirInvitacion }, ico("compartir"), h("span", { text: "Compartir" })),
         h("button", { class: "btn chico", type: "button", onclick: () => copiar(url, "Enlace copiado") }, ico("copiar"), h("span", { text: "Copiar" }))),
+      elegirMensaje(),
       h("div", { class: "jg-redes" },
-        red("chat", "https://wa.me/?text=" + encodeURIComponent(TEXTO_INV + " " + url), "WhatsApp"),
+        red("chat", () => "https://wa.me/?text=" + encodeURIComponent(textoInv() + " " + url), "WhatsApp"),
         red("facebook", "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url), "Facebook"),
-        red("avion", "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(TEXTO_INV), "Telegram"),
-        red("publicar", "https://twitter.com/intent/tweet?text=" + encodeURIComponent(TEXTO_INV) + "&url=" + encodeURIComponent(url), "X"),
-        red("correo", "mailto:?subject=" + encodeURIComponent("Te invito a Escudriña · El Códice Viviente") + "&body=" + encodeURIComponent(TEXTO_INV + "\n\n" + url), "Correo"),
+        red("avion", () => "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(textoInv()), "Telegram"),
+        red("publicar", () => "https://twitter.com/intent/tweet?text=" + encodeURIComponent(textoInv()) + "&url=" + encodeURIComponent(url), "X"),
+        red("correo", () => "mailto:?subject=" + encodeURIComponent("Te invito a Escudriña · El Códice Viviente") + "&body=" + encodeURIComponent(textoInv() + "\n\n" + url), "Correo"),
         h("button", { class: "btn chico", type: "button", "aria-label": "Imagen para compartir", onclick: () => verTarjetaImagen({ tipo: "prerregistro" }) }, ico("imagen"), h("span", { text: "Imagen" }))),
       h("div", { class: "jg-cifras" }, h("div", {}, ab, h("span", { text: "abrieron tu enlace" })), h("div", {}, ins, h("span", { text: "se inscribieron" })), h("div", {}, h("b", { text: fmt(conf) }), h("span", { text: "confirmaron" }))),
       h("div", {}, h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": pct.toFixed(0), "aria-label": "Avance hacia el peldaño siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
@@ -1863,6 +1950,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
   let PODER = null;
   async function cargarPoder(forzar) {
     if (!forzar && PODER && Date.now() - PODER.t < 15e3) return PODER;
+    if (forzar === "previo" && PODER && Date.now() - PODER.t < 60e3) return PODER;
+    if (CARGA_PODER) return CARGA_PODER;
+    CARGA_PODER = cargarPoderRed().finally(() => { CARGA_PODER = null; }); return CARGA_PODER;
+  }
+  let CARGA_PODER = null;
+  async function cargarPoderRed() {
     const r = await pedir("/poder"); if (r.error) return r;
     PODER = Object.assign(r, { t: Date.now() }); return PODER;
   }
@@ -2062,7 +2155,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     s += '<defs><filter id="' + u + 'luz" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4"/></filter></defs>' +
       Object.entries(LUZ_PZ).map(([k, d]) => '<g class="fa-luz" data-pz="' + k + '" opacity="0"><path d="' + d + '" fill="#ffe6a3" fill-opacity=".2" stroke="#ffe39a" stroke-width="5" filter="url(#' + u + 'luz)"/><path d="' + d + '" fill="none" stroke="#fff4cf" stroke-width="1.5" stroke-linejoin="round"/></g>').join("");
     const el = A.svg(s, "0 0 240 320"); el.setAttribute("class", "av-fig"); el.setAttribute("role", "img");
-    el.setAttribute("aria-label", "Tu armadura: " + piezas.map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", "));
+    el.setAttribute("aria-label", "Tu ser interior, con su armadura: " + piezas.map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", "));
     return el;
   }
   const errPoder = (r) => r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
@@ -2130,9 +2223,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     let i0 = d.piezas.findIndex(([id]) => puede(av.eq[id] | 0)); if (i0 < 0) i0 = d.piezas.findIndex(([id]) => (av.eq[id] | 0) < 5); elegir(Math.max(0, i0));
     // la cita, con una lumbrerita que invita a tocarla: abre los versos (BiEx, 12-nov-2026)
     const cita = A.nombreLibro("EPH") + " 6:13-17";
-    return tarjeta("Armadura", ico("liga"), h("div", { class: "ap-arm" }, fig, piezas), det,
-      h("p", { class: "ap-nota" }, h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + cita, onclick: () => verCita("EPH", 6, 13, 17) },
-        h("i", { class: "ap-lumbre", "aria-hidden": "true" }), cita), " · " + d.grados.slice(1).join(" › ") + " · desde la plata la forja pide cantos"));
+    // «Ser interior» (BiEx, 12-nov-2026, U3): la figura que se arma es el ser interior de quien lee (Ἐfέsιοι 3:16; 2 Κοrίndsιοι 4:16)
+    const citaSI = A.nombreLibro("EPH") + " 3:16";
+    return tarjeta("Tu ser interior", ico("liga"), h("div", { class: "ap-arm" }, fig, piezas), det,
+      h("p", { class: "ap-nota" }, "Su armadura: ", h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + cita, onclick: () => verCita("EPH", 6, 13, 17) },
+        h("i", { class: "ap-lumbre", "aria-hidden": "true" }), cita), " · el ser interior: ", h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + citaSI, onclick: () => verCita("EPH", 3, 16, 16) },
+        h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaSI), " · " + d.grados.slice(1).join(" › ") + " · desde la plata la forja pide cantos"));
   }
   function verCita(c, cap, v1, v2) {
     const ref = A.nombreLibro(c) + " " + cap + ":" + v1 + (v2 && v2 !== v1 ? "-" + v2 : ""), cuerpo = h("div", { class: "jg-cita-v" }, h("p", { class: "cargando", text: "Cargando…" }));
@@ -2181,6 +2277,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, ds, h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: pr + " dr." })))),
       fila("apodo", "Cambio de apodo", "Una vez cada 3 semanas", h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, h("span", { text: ((y.apodoCambio && y.apodoCambio.precio) || 120) + " dr." }))));
     const NOM = { aura: "Auras", manto: "Mantos", corona: "Lauros", sello: "Sellos" };
+    // Qué da cada accesorio (BiEx, 12-nov-2026): +25 de poder al tenerlo (cifra de tu ser interior), se luce en el emblema y en
+    // el Árbol, y cada uno con su enseñanza (tema en palabras de Claude, con la cita para leerla en BiEx)
+    const DA = { "aura-oro": ["La luz que desciende de lo alto", "JAS", "1:17"], "aura-zafiro": ["El zafiro, segundo fundamento", "REV", "21:19"], "aura-esmeralda": ["El arco alrededor del trono, como de esmeralda", "REV", "4:3"],
+      "aura-amatista": ["La amatista, duodécimo fundamento", "REV", "21:20"], "aura-alba": ["La senda que brilla como la luz del alba", "", "Proverbios 4:18"],
+      "manto-lino": ["El lino fino: las obras justas", "REV", "19:8"], "manto-escarlata": ["Vestidos de escarlata para el frío", "", "Proverbios 31:21"], "manto-azul": ["Los flecos con su cordón azul, para recordar", "", "Números 15:38-39"],
+      "corona-olivo": ["El lauro incorruptible", "1CO", "9:25"], "corona-laurel": ["El mirto en lugar de la ortiga", "", "Isaías 55:13"],
+      "sello-lampara": ["La lámpara sobre el candelero", "MAT", "5:15"], "sello-estrella": ["La estrella resplandeciente de la mañana", "REV", "22:16"] };
+    const daAcc = (id, cita) => { const x = DA[id], ref = x ? (x[1] ? A.nombreLibro(x[1]) + " " + x[2] : x[2]) : cita || "";
+      return "Da +25 de poder y se luce en tu emblema y en tu ser interior." + (x ? " " + x[0] + (ref ? " (" + ref + ")." : ".") : ref ? " Enseñanza: " + ref + "." : ""); };
     let ran = A.store.get("jg:tiendaRan", "aura"); if (!d.ranuras.includes(ran)) ran = d.ranuras[0];
     const vitrina = h("ul", { class: "ap-vitrina", "aria-live": "polite" });
     const pestanas = h("div", { class: "jg-seg fila", role: "group", "aria-label": "Accesorios" }, d.ranuras.map((r) => h("button", { type: "button", "aria-pressed": String(r === ran), onclick: (e) => {
@@ -2190,8 +2295,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const raros = (d.raros || RAROS_C).filter((x) => x[1] === ran).map((x) => [x[0], x[1], x[2], null, x[3]]), frag = y.frag || { c: 0, meta: 70 };
       vitrina.replaceChildren(...d.acc.filter((x) => x[1] === ran).concat(raros).map(([id, , n, pr, cita]) => { const tiene = av.inv.includes(id), puesto = av.acc[ran] === id;
         if (pr == null && !tiene) return h("li", { class: "raro cerrado" }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }),
-          h("small", { class: "ap-raro", text: "Raro · se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }));
-        return h("li", { class: puesto ? "puesto" : "" }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }),
+          h("small", { class: "ap-raro", text: "Raro · se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }), h("small", { class: "ap-da", text: daAcc(id, cita) }));
+        return h("li", { class: puesto ? "puesto" : "", title: daAcc(id, cita) }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }), h("small", { class: "ap-da", text: daAcc(id, cita) }),
           tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
             const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); else b.disabled = false; } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
             : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." }))); }));
@@ -2224,9 +2329,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: async (e) => { e.currentTarget.disabled = true; const r = await pedir("/foto/reportar", { metodo: "POST", cuerpo: { f } }); A.avisar(r.error ? mensaje(r) : "Gracias: el equipo la revisará"); A.cerrarModal(); } }, h("span", { text: "Reportar esta imagen" }))))));
   }
   async function pintarPoder(zona, y) {
-    const P = await cargarPoder(true); if (!zona.isConnected) return;
+    // (12-nov-2026, P14 y adjunto 11: sin sobresalto al entrar al Árbol) lo traído al tocar su ícono se usa en el acto
+    const habia = !!zona.querySelector(".cargando");
+    const P = await cargarPoder(PODER && Date.now() - PODER.t < 20e3 ? false : true); if (!zona.isConnected) return;
     if (P.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(P) })));
-    const rehacer = () => pintarPoder(zona, S.yo || y);
+    const rehacer = () => { PODER = null; pintarPoder(zona, S.yo || y); }; // tras una compra o un cambio: datos frescos
     const yy = S.yo || y, av = P.av, pct = yy.xpSig ? Math.max(0, Math.min(100, (100 * yy.xpNivel) / yy.xpSig)) : 0;
     const datos = h("div", { class: "ap-datos" },
       h("p", { class: "ap-ap" }, h("b", { text: yy.apodo }), h("span", { text: yy.rangoNombre + " · nivel " + yy.nivel })),
@@ -2237,7 +2344,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("li", {}, h("b", { text: yy.fundador ? "n.º " + fmt(yy.n) : "—" }), h("small", { text: yy.fundador ? "Primicia" : "sin Primicia" })),
         h("li", {}, h("b", { text: fmt(P.dr) }), h("small", { text: "dracmas" })),
         h("li", {}, h("b", { text: String(av.pts) }), h("small", { text: av.pts === 1 ? "punto libre" : "puntos libres" })),
-        h("li", {}, h("b", { text: fmt((yy.lect && yy.lect.est) || yy.vt || 0) }), h("small", { text: "versos leídos (est.)" })),
+        h("li", { title: "Solo cuentan los versos que marcas: «Leído», el capítulo marcado o la prueba bien respondida" }, h("b", { text: fmt(yy.vc || 0) }), h("small", { text: "versos leídos" })),
         h("li", {}, h("b", { text: fmt((yy.invi && yy.invi.unidos) || 0) }), h("small", { text: "frutos de tu siembra" }))),
       tarjetaColeccion(yy, true),
       h("div", { class: "jg-acciones ap-foto" }, h("button", { class: "btn", type: "button", onclick: () => elegirFoto(rehacer) }, ico("persona"), h("span", { text: yy.foto ? "Cambiar mi imagen personalizada" : "Subir mi imagen personalizada" })),
@@ -2245,6 +2352,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
     const heroe = h("section", { class: "ap-heroe" }, h("div", { class: "ap-lienzo" }, arbolPoder(yy, av, (yy.invi && yy.invi.unidos) || 0)), datos);
     zona.replaceChildren(heroe, tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
+    if (habia && !sinAnim() && zona.animate) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
     animarCifras(zona);
   }
   // Ningún dato vacío se ve como «null» (BiEx, 10-nov-2026): apodos, fechas y padre con su respaldo
@@ -2393,41 +2501,45 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const y = S.yo || {}, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const c = cv.getContext("2d"), T = "'BiEx Texto',Georgia,serif", D = "'BiEx Titular','BiEx Texto',Georgia,serif", U = "'BiEx Interfaz','Segoe UI',sans-serif";
     try { await Promise.all(["600 90px 'BiEx Titular'", "italic 400 46px 'BiEx Titular'", "400 40px 'BiEx Texto'", "italic 400 34px 'BiEx Texto'", "500 28px 'BiEx Interfaz'"].map((f) => document.fonts.load(f))); } catch (e) { /* sin fuentes: respaldo */ }
-    c.fillStyle = "#07070a"; c.fillRect(0, 0, W, H);
-    const luz = (x, y0, r, a) => { const g = c.createRadialGradient(x, y0, 10, x, y0, r); g.addColorStop(0, "rgba(201,168,101," + a + ")"); g.addColorStop(1, "rgba(201,168,101,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); };
+    // P26: diseño 2, pergamino claro (misma composición, otra paleta y el mensaje de la lectura juntos)
+    const P2 = op.d === 2, K = P2 ? { fondo: "#f4ecdc", luz: "176,132,52", letra: "110,82,27", marco: "122,92,32", oro: "#6e521b", oro2: "#8a6a2b", tinta: "#2a241b", tenue: "#6b6152", disco: "#fbf6ec", ap: "#2a241b" }
+      : { fondo: "#07070a", luz: "201,168,101", letra: "232,207,148", marco: "201,168,101", oro: "#e8cf94", oro2: "#c9a865", tinta: "#ece5d6", tenue: "#a39a88", disco: "#121216", ap: "#f3ecdc" };
+    c.fillStyle = K.fondo; c.fillRect(0, 0, W, H);
+    const luz = (x, y0, r, a) => { const g = c.createRadialGradient(x, y0, 10, x, y0, r); g.addColorStop(0, "rgba(" + K.luz + "," + a + ")"); g.addColorStop(1, "rgba(" + K.luz + ",0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); };
     luz(W / 2, 360, 720, 0.30); luz(140, 1230, 520, 0.10); luz(960, 1180, 460, 0.08);
     c.textAlign = "center"; c.textBaseline = "alphabetic";
-    for (let i = 0; i < 46; i++) { const l = LETRAS[(i * 7) % LETRAS.length]; c.font = (26 + (i * 13) % 40) + "px " + T; c.fillStyle = "rgba(232,207,148," + (0.035 + ((i * 5) % 7) / 140).toFixed(3) + ")"; c.fillText(l, (i * 233) % W, 60 + (i * 397) % (H - 80)); }
+    for (let i = 0; i < 46; i++) { const l = LETRAS[(i * 7) % LETRAS.length]; c.font = (26 + (i * 13) % 40) + "px " + T; c.fillStyle = "rgba(" + K.letra + "," + (0.035 + ((i * 5) % 7) / 140).toFixed(3) + ")"; c.fillText(l, (i * 233) % W, 60 + (i * 397) % (H - 80)); }
     const rr = (x, y0, w, hh, r) => { c.beginPath(); c.moveTo(x + r, y0); c.arcTo(x + w, y0, x + w, y0 + hh, r); c.arcTo(x + w, y0 + hh, x, y0 + hh, r); c.arcTo(x, y0 + hh, x, y0, r); c.arcTo(x, y0, x + w, y0, r); c.closePath(); };
-    c.strokeStyle = "rgba(201,168,101,.62)"; c.lineWidth = 2.5; rr(44, 44, W - 88, H - 88, 38); c.stroke();
-    c.strokeStyle = "rgba(201,168,101,.22)"; c.lineWidth = 1; rr(62, 62, W - 124, H - 124, 28); c.stroke();
+    c.strokeStyle = "rgba(" + K.marco + ",.62)"; c.lineWidth = 2.5; rr(44, 44, W - 88, H - 88, 38); c.stroke();
+    c.strokeStyle = "rgba(" + K.marco + ",.22)"; c.lineWidth = 1; rr(62, 62, W - 124, H - 124, 28); c.stroke();
     const txt = (t, y0, f, col, ls) => { c.font = f; c.fillStyle = col; try { c.letterSpacing = ls || "0px"; } catch (e) { /* ignorar */ } c.fillText(t, W / 2, y0); try { c.letterSpacing = "0px"; } catch (e) { /* ignorar */ } };
     const ajustar = (t, max, f0, tam) => { let s = tam; c.font = f0.replace("{t}", s); while (c.measureText(t).width > max && s > 20) { s -= 2; c.font = f0.replace("{t}", s); } return f0.replace("{t}", s); };
-    txt("ESCUDRIÑA", 170, "600 76px " + D, "#e8cf94", "14px");
-    txt("El Códice Viviente", 228, "italic 400 44px " + D, "#c9a865");
+    txt("ESCUDRIÑA", 170, "600 76px " + D, K.oro, "14px");
+    txt("El Códice Viviente", 228, "italic 400 44px " + D, K.oro2);
     // emblema
     const col = COLORES[(y.emb && y.emb.c) || 0] || COLORES[0], l = (y.emb && y.emb.l) || "α";
-    c.beginPath(); c.arc(W / 2, 400, 92, 0, 2 * Math.PI); c.fillStyle = "#121216"; c.fill(); c.lineWidth = 6; c.strokeStyle = col; c.stroke();
-    if (y.marco) { c.beginPath(); c.arc(W / 2, 400, 108, 0, 2 * Math.PI); c.lineWidth = 2.5; c.strokeStyle = "#e8cf94"; c.stroke(); }
+    c.beginPath(); c.arc(W / 2, 400, 92, 0, 2 * Math.PI); c.fillStyle = K.disco; c.fill(); c.lineWidth = 6; c.strokeStyle = col; c.stroke();
+    if (y.marco) { c.beginPath(); c.arc(W / 2, 400, 108, 0, 2 * Math.PI); c.lineWidth = 2.5; c.strokeStyle = K.oro; c.stroke(); }
     c.font = "500 110px " + (/[֐-׿]/.test(l) ? "'Frank Ruhl Libre'," + T : T); c.fillStyle = col; c.fillText(l, W / 2, 438);
-    txt(y.apodo || "", 560, ajustar(y.apodo || "", W - 260, "600 {t}px " + D, 62), "#f3ecdc");
+    txt(y.apodo || "", 560, ajustar(y.apodo || "", W - 260, "600 {t}px " + D, 62), K.ap);
     const x = op.x || {};
     let l1, l2, l3;
     if (op.tipo === "lauro") { l1 = "Hallé un lauro trenzado"; l2 = "incorruptible"; l3 = "1 Κοrίndsιοι 9:25"; }
     else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][3] + " [" + PIEDRAS[x.i][1] + "],"; l2 = "una de las doce piedras"; l3 = "Ἀpοκάlυpsις 21:19-20"; }
     else if (op.tipo === "rango") { l1 = "Llegué al rango de"; l2 = x.rango || y.rangoNombre || ""; l3 = "nivel " + (x.nivel || y.nivel || 1); }
+    else if (P2) { l1 = "Leeremos juntos, por primera vez en español,"; l2 = "lo que en verdad dice la Escritura"; l3 = y.practica ? "1440 Primicias · reserva la tuya" : "en el orden de los acontecimientos"; }
     else { l1 = "Ya tengo mi lugar entre"; l2 = "las 1440 Primicias"; l3 = y.fundador ? "Primicia n.º " + fmt(y.n) : "Únete antes del lanzamiento"; }
-    txt(l1, 680, ajustar(l1, W - 200, "400 {t}px " + D, 66), "#ece5d6");
-    txt(l2, 762, ajustar(l2, W - 200, "600 {t}px " + D, 78), "#e8cf94");
-    txt(l3, 834, "500 34px " + U, "#c9a865", "3px");
-    c.strokeStyle = "rgba(201,168,101,.45)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(W / 2 - 160, 888); c.lineTo(W / 2 + 160, 888); c.stroke();
-    txt("ἐρευνᾶτε τὰς γραφάς", 958, "400 46px " + T, "#e8cf94");
-    txt("«Escudriñan a las escrituras» · YÔḥānā́n 5:39", 1012, "italic 400 34px " + T, "#bdb4a3");
-    txt("Únete con mi enlace", 1118, "500 34px " + U, "#ece5d6", "2px");
+    txt(l1, 680, ajustar(l1, W - 200, "400 {t}px " + D, 66), K.tinta);
+    txt(l2, 762, ajustar(l2, W - 200, "600 {t}px " + D, 78), K.oro);
+    txt(l3, 834, "500 34px " + U, K.oro2, "3px");
+    c.strokeStyle = "rgba(" + K.marco + ",.45)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(W / 2 - 160, 888); c.lineTo(W / 2 + 160, 888); c.stroke();
+    txt("ἐρευνᾶτε τὰς γραφάς", 958, "400 46px " + T, K.oro);
+    txt("«Escudriñan a las escrituras» · YÔḥānā́n 5:39", 1012, "italic 400 34px " + T, P2 ? "#5c5245" : "#bdb4a3");
+    txt("Únete con mi enlace", 1118, "500 34px " + U, K.tinta, "2px");
     const u = enlaceInvitacion().replace(/^https:\/\//, "");
-    txt(u, 1176, ajustar(u, W - 220, "600 {t}px " + U, 44), "#e8cf94");
+    txt(u, 1176, ajustar(u, W - 220, "600 {t}px " + U, 44), K.oro);
     let lz = ""; try { lz = new Date(y.lanzamiento).toLocaleString("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZoneName: "short" }); } catch (e) { lz = ""; }
-    txt(y.practica && lz ? "Lanzamiento: " + lz : "El juego de Biblia Exacta", 1250, "400 28px " + U, "#a39a88", "1px");
+    txt(y.practica && lz ? "Lanzamiento: " + lz : "El juego de Biblia Exacta", 1250, "400 28px " + U, K.tenue, "1px");
     return new Promise((ok) => cv.toBlob((b) => ok(b), "image/png"));
   }
   async function verTarjetaImagen(op) {
@@ -2438,9 +2550,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     A.abrirModal(() => A.cajaModal(A.cabModal("Imagen para compartir", "Escudriña"), h("div", { class: "jg-cel" },
       h("img", { class: "jg-img", src: u, alt: "Tarjeta de Escudriña para compartir", width: "1080", height: "1350" }),
       h("div", { class: "jg-acciones" },
-        puede ? h("button", { class: "btn oro", type: "button", onclick: async () => { try { await navigator.share({ files: [file], title: "Escudriña · El Códice Viviente", text: TEXTO_INV + " " + enlaceInvitacion() }); } catch (e) { /* cancelado */ } } }, ico("compartir"), h("span", { text: "Compartir la imagen" })) : null,
+        puede ? h("button", { class: "btn oro", type: "button", onclick: async () => { try { await navigator.share({ files: [file], title: "Escudriña · El Códice Viviente", text: textoInv() + " " + enlaceInvitacion() }); } catch (e) { /* cancelado */ } } }, ico("compartir"), h("span", { text: "Compartir la imagen" })) : null,
         A.sinDescargas && A.sinDescargas() ? null : h("a", { class: "btn" + (puede ? "" : " oro"), href: u, download: nombre }, ico("descargar"), h("span", { text: "Descargar" })),
-        h("button", { class: "btn", type: "button", onclick: () => copiar(TEXTO_INV + " " + enlaceInvitacion(), "Texto y enlace copiados") }, ico("copiar"), h("span", { text: "Copiar el texto" }))),
+        h("button", { class: "btn", type: "button", onclick: () => copiar(textoInv() + " " + enlaceInvitacion(), "Texto y enlace copiados") }, ico("copiar"), h("span", { text: "Copiar el texto" }))),
+      op.tipo === "prerregistro" || !op.tipo ? h("div", { class: "jg-seg fila", role: "group", "aria-label": "Diseño de la imagen" }, [[1, "Imagen 1"], [2, "Imagen 2 · pergamino"]].map(([k, t]) =>
+        h("button", { type: "button", "aria-pressed": String((op.d || 1) === k), onclick: () => { A.cerrarModal(); setTimeout(() => verTarjetaImagen(Object.assign({}, op, { d: k })), 60); } }, t))) : null,
+      elegirMensaje(),
       h("p", { class: "jg-mini", text: "1080 × 1350 píxeles, el tamaño exacto de las publicaciones verticales: se ve nítida en Instagram, Facebook, WhatsApp y las demás redes." }))));
   }
 
@@ -2524,7 +2639,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const pais = q.ambito === "pais" ? lugar.pais || "" : "";
       const r = await pedir("/prestigio?" + new URLSearchParams({ periodo: q.periodo, pais }), { guardable: true });
       if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
-      const tit = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + (pais ? nombrePais(pais) : "el mundo") });
+      const tit = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + (pais ? nombrePais(pais) : "el mundo") });
       if (!r.lista.length) return zona.replaceChildren(tit, h("p", { text: "Todavía ninguna ciudad suma prestigio aquí. ¡La tuya puede ser la primera!" }));
       zona.replaceChildren(tit, h("ol", { class: "jg-lista" }, r.lista.map((x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") },
         h("span", { class: "p", text: String(x.p) }), h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>')), h("span", { class: "n" }, x.ciudad, h("small", { text: [x.region, q.ambito === "pais" ? "" : nombrePais(x.pais), plural(x.n, "lector", "lectores")].filter(Boolean).join(" · ") }),
@@ -2558,7 +2673,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (q.rango === -1) return cargarTodos();
       const r = await pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(q.rango) }));
       if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
-      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
+      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
       const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
         h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
@@ -2572,7 +2687,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (q.rango !== -1) return;
       const err = rs.find((r) => r.error); if (err && rs.every((r) => r.error)) return zona.replaceChildren(h("p", { text: mensaje(err) }));
       const r0 = rs.find((r) => !r.error) || {};
-      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (de domingo a sábado, hora de Bogotá)" : "Desde el comienzo") + " · todos los rangos · " + ((r0.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : lugarDe(q.ambito) || "")) });
+      const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · todos los rangos · " + ((r0.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : lugarDe(q.ambito) || "")) });
       const orden = RANGOS.map((_, i) => RANGOS.length - 1 - i); // del rango más alto al primero
       const secciones = [], saltos = [];
       let mia = null;
@@ -2616,7 +2731,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       return h("label", { class: "jg-check" }, c, h("span", {}, t, h("br"), h("span", { class: "jg-mini", text: d }))); };
     const zonaCodigo = h("div", {});
     const codigoNuevo = async () => {
-      if (!confirm("Se creará un código nuevo y el anterior dejará de servir. ¿Seguir?")) return;
+      if (!(await confirmar("Código nuevo", "Se creará un código nuevo y el anterior dejará de servir.", "Crear el código nuevo"))) return;
       const r = await pedir("/cuenta/codigo", { metodo: "POST" });
       if (r.error) return A.avisar(mensaje(r));
       zonaCodigo.replaceChildren(h("div", { class: "jg-codigo", text: r.codigo }), h("div", { class: "jg-acciones" },
@@ -2637,8 +2752,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
         pref("verCiudad", "Mostrar mi ciudad en las clasificaciones", "Si la ocultas, sigues apareciendo en tu región, tu país, tu continente y el mundo."),
         pref("tranquilo", "Modo tranquilo", "Sin sonidos. Para menos movimiento, usa también «Sin animaciones» en la apariencia del lector.")),
       tarjeta("Sesiones", null, h("div", { class: "jg-acciones" },
-        h("button", { class: "btn", type: "button", onclick: () => { if (confirm("¿Salir de Escudriña en este dispositivo? Para volver necesitarás tu código, tu llave o tu cuenta.")) { olvidarSesion(false); A.irA("#/escudrina"); } } }, h("span", { text: "Salir en este dispositivo" })),
-        h("button", { class: "btn", type: "button", onclick: async () => { if (!confirm("Se cerrarán todas tus sesiones, también en otros dispositivos. ¿Seguir?")) return; const r = await pedir("/cuenta/salir-todos", { metodo: "POST" }); if (r.error) return A.avisar(mensaje(r)); guardarSesion(r.token); A.avisar("Cerraste las demás sesiones"); } }, h("span", { text: "Cerrar todas las sesiones" })))),
+        h("button", { class: "btn", type: "button", onclick: async () => { if (await confirmar("¿Salir de Escudriña en este dispositivo?", "Para volver necesitarás tu código, tu llave o tu cuenta.", "Salir")) { olvidarSesion(false); A.irA("#/escudrina"); } } }, h("span", { text: "Salir en este dispositivo" })),
+        h("button", { class: "btn", type: "button", onclick: async () => { if (!(await confirmar("Cerrar todas las sesiones", "Se cerrarán todas tus sesiones, también en otros dispositivos.", "Cerrar todas"))) return; const r = await pedir("/cuenta/salir-todos", { metodo: "POST" }); if (r.error) return A.avisar(mensaje(r)); guardarSesion(r.token); A.avisar("Cerraste las demás sesiones"); } }, h("span", { text: "Cerrar todas las sesiones" })))),
       tarjeta("Tu bienvenida", null, h("p", { text: "La animación con la que llegaste a Escudriña." }), h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => cinematica(S.yo) }, h("span", { text: "Ver de nuevo mi bienvenida" })))),
       tarjeta("Borrar mi cuenta", null, h("p", { text: "Se borran tu avance, tus hallazgos y tu lugar en las clasificaciones. No se puede deshacer." }),
         h("div", { class: "jg-form" }, borrarIn, h("button", { class: "btn", type: "button", onclick: async () => {
@@ -2668,6 +2783,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const x = await pedir("/auth/resultado?e=" + encodeURIComponent(r.estado), { sin: true });
       if (x.pendiente || x.error === "red") continue;
       espera = null;
+      if (x.error === "sin_cuenta") {
+        // P29 (BiEx, 11-nov-2026): entrar con una cuenta de Google que no está registrada no crea otra: se invita a crearla
+        if (pista) { pista.textContent = ""; pista.className = "jg-pista"; }
+        if (await confirmar("Esa cuenta de " + (prov === "google" ? "Google" : "Facebook") + " aún no está en Escudriña", "¿Quieres crear tu cuenta con ella? Si ya juegas en otro dispositivo, entra allí con tu código o tu llave y vincula " + (prov === "google" ? "Google" : "Facebook") + " desde «Más › Tu cuenta»: así no tendrás dos cuentas.", "Crear mi cuenta")) conectar(prov, "crear", pista);
+        return;
+      }
       if (x.error) { if (pista) { pista.textContent = mensaje(x); pista.className = "jg-pista mal"; } return; }
       guardarSesion(x.token, x.yo);
       if (!x.nuevo) A.avisar(x.vinculada ? "Cuenta vinculada: tu avance quedó asegurado" : "¡Qué bueno verte de nuevo!");
@@ -2718,7 +2839,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Enlace propio de cada estudiante: página de la campaña con vista previa propia («Ana te invita…») que cuenta las aperturas
   const enlaceInvitacion = () => PUBLICO + "/e/" + ((S.yo && S.yo.inv) || A.store.get("jg:mio", ""));
   const TEXTO_INV = "Estoy leyendo la Nueva Voluntad traducida palabra por palabra del griego, y lo hago jugando a Escudriña · El Códice Viviente, el juego de Biblia Exacta. Solo hay 1440 Primicias: reserva la tuya con mi enlace y tus primeras 3 horas de lectura cuentan doble.";
-  function compartirInvitacion() { compartir("Escudriña · El Códice Viviente", TEXTO_INV, enlaceInvitacion()); }
+  // P26 (BiEx, 11-nov-2026): segundo mensaje para elegir, con la gramática revisada; después del lanzamiento, sin la parte del
+  // prelanzamiento ni de las Primicias (adaptación de Claude)
+  const TEXTO_INV2 = "Ahora podemos registrarnos en el prelanzamiento del juego de BiEx – Biblia Exacta ©™.\n\nEn la página leeremos juntos, por primera vez en español, lo que en verdad dice la Escritura, y en el orden de los acontecimientos; participaremos en un ranking de avance que comienza por ciudad y recibiremos diversas recompensas por acercarnos, al fin, al auténtico Mensaje de Dios y de Su Hijo.\n\nLas primeras 1440 solicitudes de participación reciben un título exclusivo de Primicias que aporta beneficios únicos. Reserva el tuyo con mi enlace y, además, tus primeras 3 horas de lectura cuentan doble:";
+  const TEXTO_INV2_L = "En Biblia Exacta leemos juntos, por primera vez en español, lo que en verdad dice la Escritura, y en el orden de los acontecimientos; participamos en un ranking de avance que comienza por ciudad y recibimos diversas recompensas por acercarnos, al fin, al auténtico Mensaje de Dios y de Su Hijo. Entra con mi enlace: tus primeras 3 horas de lectura cuentan doble:";
+  const textoInv = () => (A.store.get("jg:msgInv", 1) === 2 ? (S.yo && S.yo.practica === false ? TEXTO_INV2_L : TEXTO_INV2) : TEXTO_INV);
+  function elegirMensaje(alCambiar) {
+    const actual = A.store.get("jg:msgInv", 1);
+    return h("div", { class: "jg-seg fila jg-msgs", role: "group", "aria-label": "Mensaje para compartir" }, [[1, "Mensaje breve"], [2, "Mensaje completo"]].map(([k, t]) =>
+      h("button", { type: "button", "aria-pressed": String(actual === k), title: k === 1 ? TEXTO_INV : TEXTO_INV2, onclick: (e) => { A.store.set("jg:msgInv", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vibrar(6); if (alCambiar) alCambiar(); } }, t)));
+  }
+  function compartirInvitacion() { compartir("Escudriña · El Códice Viviente", textoInv(), enlaceInvitacion()); }
   // Una apertura por dispositivo y por enlace (lo que cuenta la campaña de quien invita)
   function abrirInvitacion(c) { const k = "jg:ab:" + c; if (A.store.get(k, false)) return false; A.store.set(k, true); return true; }
   // Franja discreta para quien abre un verso compartido con invitación (una sola vez por invitación)
@@ -2743,7 +2874,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // acto cuando va a ocurrir un suceso (hallazgo, dracmas, nivel, misión, capítulo completo o primer verso del día), para
   // que ningún beneficio se demore ni se pierda. Lo pendiente queda guardado en el dispositivo hasta que el servidor lo recibe.
   const CADA = Number(window.BIEX_JUEGO_CADA) || 5 * MIN; // BIEX_JUEGO_CADA: solo en pruebas locales
-  const R = { lib: null, cap: 0, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), quiere: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false, pred: null, prueba: false, recuperada: false, completos: new Set(), tl: {} };
+  const R = { tlc: {}, lib: null, cap: 0, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), quiere: new Set(), cola: [], vis: new Map(), els: [], io: null, reloj: 0, ultTick: 0, ultAct: 0, ultEnvio: 0, enviando: false, pred: null, prueba: false, recuperada: false, completos: new Set(), tl: {} };
   let PAL = null;
   function palabras() {
     if (!PAL) PAL = (A.cargar ? A.cargar("datos/juego/palabras.json") : Promise.reject(new Error("sin cargador")))
@@ -2831,6 +2962,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Deja el capítulo (lo leído sigue en la cola: las tandas juntan varios capítulos)
   function soltar() {
     if (R.io) { R.io.disconnect(); R.io = null; }
+    if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; }
+    ponerLB(0);
     Object.assign(R, { els: [], vis: new Map() });
     const p = document.querySelector(".jg-pres"); if (p) p.remove();
     for (const s of document.querySelectorAll(".jg-sello")) s.remove();
@@ -2863,6 +2996,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function tick() {
     const ahora = performance.now(), dt = Math.min(1000, Math.max(0, ahora - (R.ultTick || ahora)));
     R.ultTick = ahora;
+    if (LB.el && LB.modal !== document.documentElement.classList.contains("con-modal")) elegirLB();
+    if (COFRE.pend && !document.documentElement.classList.contains("con-modal")) { const cf = COFRE.pend; COFRE.pend = null; A.avisar(COFRES[Math.max(0, Math.min(4, cf.n | 0))].n + ": +" + cf.dr + " dracmas (ya están en tu cuenta)"); }
     if (SL.cod) posSala(false);
     if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
     if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || document.documentElement.classList.contains("con-modal")) return;
@@ -2939,46 +3074,93 @@ html[data-mov="no"] .ap-savia{display:none!important}
     celebrar(r);
     return r;
   }
-  // «Leído» por verso (BiEx, 10-nov-2026): ya no hay sellos «Leí hasta aquí» por perícopa (obligaban a reconocer la
-  // perícopa entera); el verso que pasa por el centro de la pantalla muestra «Leído» y quien lo toca suma el 70 % de ese
-  // verso (más un fragmento de papiro o dracmas, a veces). Va en una capa propia de la hoja (no mueve el texto), al pie del
-  // verso; con el capítulo marcado o el verso ya marcado, no aparece.
-  const LD = { el: null, v: 0, io: null, ok: new Set() };
+  // «Leído» (T3 + P20, BiEx, 11 y 12-nov-2026). Un solo botón fijo abajo al centro (no tapa la sala ni los saltos) y un
+  // resplandor en el número del verso que marcaría: el primero sin marcar en la mitad de arriba de la pantalla (o, si
+  // todos los de arriba ya están marcados, el siguiente a la vista). Solo cuenta como leído lo marcado a mano: «Leído»,
+  // el capítulo marcado con su tiempo de seguridad (0,85 s por palabra griega) o la prueba bien respondida. La
+  // experiencia sigue llegando con el tiempo de lectura (30 %) y al marcar (70 %).
+  const LB = { el: null, ah: null, v: 0, io: null, ioB: null, zona: new Set(), bajo: new Set(), ok: new Set(), t: 0 };
+  const LD = LB; // (nombre anterior)
+  const numeroDe = (el) => el && (el.querySelector(":scope > .vn") || el.querySelector(":scope > sup"));
+  const cfDe = (lc) => (A.store.get("jg:cf", null) || {})[lc] || "";
+  function guardarCf(lc, s) { if (typeof s !== "string") return; const o = A.store.get("jg:cf", null) || {}; if (s.includes("1")) o[lc] = s; else delete o[lc]; A.store.set("jg:cf", o); }
+  const yaLeido = (v) => LB.ok.has(R.lib + "." + R.cap + "." + v);
+  const marcadoAntes = (lc, v) => cfDe(lc)[v - 1] === "1";
+  const marcable = (v) => (R.pal[v - 1] || 0) > 0 && !yaLeido(v) && !R.quiere.has(v);
   function sellos() {
-    for (const s of document.querySelectorAll(".jg-sello")) s.remove();
-    if (LD.io) { LD.io.disconnect(); LD.io = null; }
-    if (LD.el) { LD.el.remove(); LD.el = null; LD.v = 0; }
-    if (!S.token || !R.lib || !R.pal.length || !R.els.length || !("IntersectionObserver" in window)) return;
+    for (const s of document.querySelectorAll(".jg-sello, .jg-ld")) s.remove();
+    if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; }
+    LB.zona = new Set(); LB.bajo = new Set();
+    if (!S.token || !R.lib || !R.pal.length || !R.els.length || !("IntersectionObserver" in window)) { ponerLB(0); return; }
     const hoja = document.querySelector(".hoja"); if (!hoja) return;
-    LD.ok = new Set([...(LD.ok || [])].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
-    const b = h("button", { type: "button", class: "jg-ld-b", onclick: (ev) => { ev.stopPropagation(); tocarLeido(LD.v, ev.currentTarget); } },
-      h("span", { class: "jg-ld-i", "aria-hidden": "true" }), h("span", { class: "jg-ld-t", text: "Leído" }));
-    LD.el = h("div", { class: "jg-ld", hidden: true }, b);
-    hoja.append(LD.el);
-    // la franja central de la pantalla (8 % del alto): el verso que la cruza es «el del centro»
-    const vis = new Map();
-    LD.io = new IntersectionObserver((ents) => {
-      for (const e of ents) vis.set(e.target, e.isIntersecting);
-      let elc = null; for (const e of R.els) if (vis.get(e)) elc = e;
-      if (elc) mostrarLeido(+elc.id.slice(1), elc); else if (LD.el) LD.el.hidden = true;
-    }, { rootMargin: "-46% 0px -46% 0px", threshold: 0 });
-    for (const e of R.els) LD.io.observe(e);
+    if (!LB.el || !LB.el.isConnected) {
+      LB.el = h("button", { type: "button", class: "jg-lb fuera", onclick: (ev) => { ev.stopPropagation(); tocarLB(); } },
+        h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Leído" }), h("small", { text: "" })));
+      document.body.append(LB.el);
+    }
+    if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i"), h("b")); hoja.append(LB.ah); }
+    LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
+    pintarMarcados();
+    const banda = (zona) => (ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) zona.add(v); else zona.delete(v); } elegirLB(); };
+    LB.io = new IntersectionObserver(banda(LB.zona), { rootMargin: "-12% 0px -50% 0px", threshold: 0 });
+    LB.ioB = new IntersectionObserver(banda(LB.bajo), { rootMargin: "-50% 0px -16% 0px", threshold: 0 });
+    for (const e of R.els) { LB.io.observe(e); LB.ioB.observe(e); }
+    finCapJuego();
   }
-  const yaLeido = (v) => LD.ok.has(R.lib + "." + R.cap + "." + v);
-  function mostrarLeido(v, el) {
-    if (!LD.el) return;
-    if (!(R.pal[v - 1] > 0) || yaLeido(v) || !el || !el.isConnected) { LD.el.hidden = true; LD.v = 0; return; }
-    const hoja = LD.el.parentElement; if (!hoja) return;
-    const rh = hoja.getBoundingClientRect(), rects = el.getClientRects(), ult = rects.length ? rects[rects.length - 1] : el.getBoundingClientRect(), r = el.getBoundingClientRect();
-    // al pie del verso (por versos) o al final de su última línea (continuo), dentro de la hoja
-    const continuo = el.classList.contains("vs");
-    // centrado en el borde entre este verso y el siguiente (un poco hacia el hueco entre ambos)
-    const y = (continuo ? ult.bottom + 2 : r.bottom + 3) - rh.top, x = continuo ? Math.min(rh.width - 58, Math.max(58, ult.right - rh.left)) : rh.width / 2;
-    if (LD.v !== v) { LD.v = v; LD.el.classList.remove("hecho"); LD.el.querySelector(".jg-ld-t").textContent = "Leído"; }
-    LD.el.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
-    LD.el.querySelector("button").setAttribute("aria-label", "Leído: marcar el verso " + v + " como leído (suma el 70 % de su experiencia)");
-    LD.el.classList.toggle("espera", !R.pend.has(v)); // aún no cumple su tiempo mínimo: se marca y cuenta al cumplirlo
-    if (LD.el.hidden) { LD.el.hidden = false; if (!sinAnim() && LD.el.animate) LD.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: "ease-out" }); }
+  // borde inferior de las barras de arriba (la superior y la del capítulo cuando está pegada): lo que queda debajo no se ve
+  function topeBarras() {
+    let t = 0;
+    for (const q of ["header.barra", ".barra-hoja.bh-pegada"]) { const el = document.querySelector(q); if (el) { const r = el.getBoundingClientRect(); if (r.top < 240 && r.bottom > t) t = r.bottom; } }
+    return t;
+  }
+  function elegirLB() {
+    if (!R.lib) return ponerLB(0);
+    let v = 0; const tope = topeBarras() + 12;
+    const aLaVista = (x) => { const el = document.getElementById("v" + x); return !!el && el.getBoundingClientRect().bottom > tope; };
+    for (const el of R.els) { const x = +el.id.slice(1); if (LB.zona.has(x) && marcable(x) && aLaVista(x)) { v = x; break; } }
+    if (!v) for (const el of R.els) { const x = +el.id.slice(1); if (LB.bajo.has(x) && marcable(x)) { v = x; break; } }
+    ponerLB(v);
+  }
+  function ponerLB(v, forzar) {
+    if (!LB.el) return;
+    LB.modal = document.documentElement.classList.contains("con-modal");
+    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; return; }
+    const el = document.getElementById("v" + v); if (!el) return;
+    if (LB.v === v && !forzar && !LB.el.classList.contains("fuera")) { LB.el.classList.toggle("espera", !R.pend.has(v)); return; }
+    const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, v);
+    if (LB.v !== v) {
+      LB.v = v; LB.el.classList.remove("hecho");
+      LB.el.querySelector("b").textContent = rep ? "Repasado" : "Leído";
+      LB.el.querySelector("small").textContent = "verso " + v;
+      LB.el.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
+    }
+    LB.el.classList.toggle("espera", !R.pend.has(v));
+    const sp = document.querySelector(".jg-sala-p");
+    LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
+    if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
+    // el resplandor, sobre las cifras del número del verso (sin el § de la perícopa)
+    const num = numeroDe(el), hoja = LB.ah && LB.ah.parentElement;
+    if (num && hoja) {
+      const tn = [...num.childNodes].reverse().find((n) => n.nodeType === 3), rg = document.createRange(); rg.selectNodeContents(tn || num);
+      const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect();
+      if (r.width) { LB.ah.style.transform = "translate3d(" + (r.left + r.width / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - rh.top).toFixed(1) + "px,0)"; LB.ah.hidden = false; }
+    }
+  }
+  function tocarLB() {
+    const v = LB.v; if (!v || !R.lib) return;
+    tocarLeido(v, LB.el);
+    LB.el.classList.add("hecho");
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
+  }
+  // los versos ya marcados (en este u otro dispositivo) llevan su número en oro
+  function pintarMarcados() {
+    if (!R.lib) return;
+    const lc = R.lib + "." + R.cap, cf = cfDe(lc);
+    for (const el of R.els) {
+      const v = +el.id.slice(1), num = numeroDe(el); if (!num) continue;
+      num.classList.toggle("jg-leido", cf[v - 1] === "1" || yaLeido(v) || !!(A.leido && A.leido(R.lib, R.cap, v)));
+      num.classList.toggle("jg-quiere", R.quiere.has(v));
+    }
   }
   // ¿A este «Leído» le toca premio? El servidor lo decidió de antemano (S.yo.frag.pf y pd: versos marcados que faltan):
   // solo entonces se envía en el acto (para mostrarlo ya); si no, viaja con la tanda (tocar «Leído» no gasta peticiones)
@@ -2986,26 +3168,106 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const f = S.yo && S.yo.frag; R.ld = (R.ld || 0) + 1;
     return !!f && ((f.pf > 0 && R.ld >= f.pf) || (f.pd > 0 && R.ld >= f.pd));
   }
-  function marcarLeidoV(v, ok) {
-    LD.ok.add(R.lib + "." + R.cap + "." + v);
-    const el = document.getElementById("v" + v), vn = el && el.querySelector(".vn");
-    if (vn) vn.classList.add("jg-leido");
+  // el verso quedó marcado: número en oro, marca de leído en el lector y copia local de lo marcado
+  function marcarLeidoV(v) {
+    const lc = R.lib + "." + R.cap;
+    LB.ok.add(lc + "." + v);
+    const num = numeroDe(document.getElementById("v" + v));
+    if (num) { num.classList.remove("jg-quiere"); num.classList.add("jg-leido"); }
+    if (A.marcarLeido) A.marcarLeido(R.lib, R.cap, [v]);
+    const cf = cfDe(lc); if (cf[v - 1] !== "1") guardarCf(lc, pon(cf, v - 1, "1"));
   }
   function tocarLeido(v, boton) {
-    if (!v || !R.lib) return;
+    if (!v || !R.lib || yaLeido(v) || R.quiere.has(v)) return;
     vibrar([12, 30, 16]); sonar("chispa");
     const p = R.pend.get(v);
-    if (p) { R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, p[0], 3, true); if (tocaPremio()) enviar(false); }
-    else R.quiere.add(v); // aún no cumple su tiempo mínimo: cuenta completo al cumplirlo
-    marcarLeidoV(v, !!p);
-    if (LD.el) { LD.el.classList.add("hecho"); LD.el.querySelector(".jg-ld-t").textContent = p ? "Leído ✓" : "Leído · al terminar"; }
-    chispas(10, boton, Math.random() < 0.5 ? ["polvo"] : ["aro"]);
-    if (!A.store.get("jg:leidoOk", 0)) { A.store.set("jg:leidoOk", 1); A.avisar("«Leído»: ese verso suma el 70 % de su experiencia. Márcalo solo si de verdad lo leíste; lo que no marques se queda en su 30 %."); }
-    setTimeout(() => { if (LD.el && LD.v === v) { LD.el.hidden = true; } }, 1400);
+    if (p) { R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, p[0], 3, true); marcarLeidoV(v); if (tocaPremio()) enviar(false); }
+    else { R.quiere.add(v); const num = numeroDe(document.getElementById("v" + v)); if (num) num.classList.add("jg-quiere"); } // cuenta completo al cumplir su tiempo
+    if (boton) chispas(10, boton, Math.random() < 0.5 ? ["polvo"] : ["aro"]);
+    if (!p && !A.store.get("jg:leidoEsp", 0)) { A.store.set("jg:leidoEsp", 1); A.avisar("Ese verso contará como leído cuando termines de leerlo con calma."); }
+    else if (!A.store.get("jg:leidoOk2", 0)) { A.store.set("jg:leidoOk2", 1); A.avisar("«Leído»: solo cuentan como leídos los versos que marcas. Márcalo cuando de verdad lo leíste."); }
+    finCapJuego();
   }
   function estadoSellos(v) {
-    // (los sellos por perícopa ya no existen) el «Leído» del centro se refresca si su verso cambió de estado
-    if (LD.el && !LD.el.hidden && LD.v && (v == null || v === LD.v)) LD.el.classList.toggle("espera", !R.pend.has(LD.v));
+    if (LB.el && LB.v && (v == null || v === LB.v)) LB.el.classList.toggle("espera", !R.pend.has(LB.v));
+    finCapJuego();
+  }
+  // Marcar el capítulo entero (P20): el botón del final del capítulo se habilita cuando lo leído con su tiempo y lo ya
+  // marcado cubren el 90 % del capítulo y el tiempo de lectura activo alcanza 0,85 s por palabra griega de lo que falta
+  let tFin = 0;
+  function estadoCap() {
+    const lc = R.lib + "." + R.cap, cf = cfDe(lc), ms = (S.cfg && S.cfg.msCap) || 850;
+    let total = 0, cub = 0, pal = 0, hechos = 0;
+    for (let i = 0; i < R.pal.length; i++) {
+      const w = R.pal[i] || 0, v = i + 1; if (!w) continue; total++;
+      const marc = cf[i] === "1" || yaLeido(v);
+      if (R.pend.has(v)) { cub++; pal += w; } else if (marc) cub++;
+      if (marc) hechos++;
+    }
+    const t = (R.tlc[lc] || 0) + (R.tl[lc] || 0), req = Math.round(pal * ms);
+    return { total, cub, falta: Math.max(0, Math.ceil(0.9 * total) - cub), pal, t, req, hechos, listo: total > 0 && pal > 0 && cub >= Math.ceil(0.9 * total) && t >= req };
+  }
+  function finCapJuego() {
+    clearTimeout(tFin); tFin = setTimeout(pintarFinCap, 120);
+  }
+  function pintarFinCap() {
+    const caja = document.querySelector(".hoja .fin-leido");
+    if (!caja || !S.token || !R.lib || !R.pal.length) return;
+    const E = estadoCap(), lc = R.lib + "." + R.cap;
+    let firma;
+    if (E.total && E.hechos >= E.total) firma = "hecho";
+    else if (E.listo) firma = "listo";
+    else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal;
+    if (caja.dataset.jg === firma) return;
+    caja.dataset.jg = firma; caja.classList.add("jg-fin"); caja.classList.toggle("hecho", firma === "hecho");
+    if (firma === "hecho") return caja.replaceChildren(A.svg(ICO_JG.marca || ICO_JG.llama, "0 0 24 24"), h("span", { text: "Capítulo leído" }));
+    const btn = h("button", { class: "btn chico" + (E.listo ? " oro" : ""), type: "button", disabled: !E.listo, onclick: () => marcarCapitulo(btn) },
+      h("span", { text: E.hechos ? "Marcar como leídos los versos que faltan" : "Marcar el capítulo como leído" }));
+    let nota;
+    if (E.listo) nota = "Cuentan los versos que leíste con su tiempo de lectura.";
+    else if (E.falta > 0) nota = "Se habilita cuando leas con calma " + (E.falta === 1 ? "1 verso más" : E.falta + " versos más") + " de este capítulo, o márcalos uno por uno con «Leído».";
+    else nota = "Se habilita con unos " + plural(Math.max(1, Math.ceil((E.req - E.t) / 60000)), "minuto", "minutos") + " más de lectura en este capítulo (0,85 s por palabra griega).";
+    caja.replaceChildren(btn, h("p", { class: "jg-mini jg-fin-n", text: nota }));
+  }
+  async function marcarCapitulo(btn) {
+    if (!R.lib) return;
+    btn.disabled = true;
+    if (R.cola.length && !R.enviando) await enviar(false);
+    const lc = R.lib + "." + R.cap;
+    const r = await pedir("/lectura/capitulo", { metodo: "POST", cuerpo: { lc } });
+    if (r.error) {
+      btn.disabled = false;
+      if (typeof r.t === "number") R.tlc[lc] = r.t;
+      A.avisar(r.error === "faltan" ? "Aún faltan " + plural(r.faltan || 1, "verso", "versos") + " por leer con calma en este capítulo."
+        : r.error === "tiempo" ? "Aún falta un poco de lectura en este capítulo (0,85 s por palabra griega)."
+        : r.error === "nada" ? "No hay versos leídos con su tiempo por marcar en este capítulo." : mensaje(r));
+      const c = document.querySelector(".hoja .fin-leido"); if (c) delete c.dataset.jg; finCapJuego();
+      return;
+    }
+    for (const v of r.cf || []) { R.pend.delete(v); R.hechos.add(v); marcarLeidoV(v); }
+    guardarPend();
+    for (const [k, x] of Object.entries(r.cfs || {})) guardarCf(k, x);
+    if (typeof r.tlc === "number") R.tlc[lc] = r.tlc; // (el servidor ya descontó el tiempo usado)
+    vibrar([14, 40, 18]); sonar("chispa");
+    actualizarYo(r.yo); R.pred = null; pintarMedidor();
+    if (r.xp > 0) { pulsoMedidor(r.xp); chispas(10 + Math.min(14, r.conf || 0), btn); }
+    if (r.subio) hitoNivel(r.subio.nivel);
+    A.avisar("Capítulo marcado: " + plural((r.cf || []).length, "verso leído", "versos leídos") + ".");
+    celebrar(r);
+    const c = document.querySelector(".hoja .fin-leido"); if (c) delete c.dataset.jg; finCapJuego(); elegirLB();
+  }
+  // El verso que se marca desde la ventana del verso (P20): si es del capítulo abierto, cuenta como «Leído»
+  function limpiarMarcasAuto() {
+    if (!S.token || A.store.get("jg:leiLimpio", 0) || !A.apartarLeidos) return;
+    A.store.set("jg:leiLimpio", 1);
+    const n = A.apartarLeidos(20261109);
+    if (n > 0) setTimeout(() => A.avisar("Desde hoy solo cuentan como leídos los versos que marcas. Las marcas que puso la lectura automática quedaron guardadas aparte (" + plural(n, "verso", "versos") + ")."), 1200);
+  }
+  function marcarVersoDesdeLector(c, cap, v) {
+    if (!S.token || R.lib !== c || R.cap !== cap || !(R.pal[v - 1] > 0)) return false;
+    if (yaLeido(v)) return true;
+    tocarLeido(v, null); elegirLB();
+    return true;
   }
   // a: 0 = leído al ritmo mínimo (30 % ahora), 3 = «Leído» (completo, o con conf solo su 70 %: no es otra lectura)
   function acreditar(lib, cap, v, ms, a, conf) {
@@ -3015,30 +3277,45 @@ html[data-mov="no"] .ap-savia{display:none!important}
     R.cola.push([lib, cap, v, ms, a == null ? 1 : a]);
     if (!R.ultEnvio) R.ultEnvio = Date.now();
     guardarCola(false);
-    const antes = R.pred ? R.pred.xp : 0, suceso = predecir(lib, cap, v, ms, nuevo, conf ? Math.max(0, cD - 1) : cD, a === 0 ? 0.3 : conf ? 0.7 : 1, conf);
+    const antes = R.pred ? R.pred.xp : 0, suceso = predecir(lib, cap, v, ms, nuevo, conf ? Math.max(0, cD - 1) : cD, a === 0 ? 0.3 : conf ? 0.7 : 1, a === 0 ? "auto" : conf ? "conf" : "completo");
     pulsoMedidor((R.pred ? R.pred.xp : 0) - antes);
     if (suceso) enviar(false);
   }
-  // ¿Va a ocurrir un suceso con este verso? (estimación local; el servidor decide)
-  function predecir(lib, cap, v, ms, nuevo, cD, parte, soloXp) {
+  // ¿Va a ocurrir un suceso con este verso? (estimación local; el servidor decide). modo: «auto» (leído con su tiempo,
+  // 30 %), «conf» (marcado después: su 70 %) o «completo» (marcado antes de cumplir su tiempo: todo al cumplirlo). Desde el
+  // 12-nov-2026 (P20) las misiones de versos avanzan solo con lo marcado, una vez por verso y por día.
+  function predecir(lib, cap, v, ms, nuevo, cD, parte, modo) {
     const y = S.yo; if (!y) return false;
     if (parte == null) parte = 1;
-    const hoy = y.hoy || {};
-    const P = R.pred || (R.pred = { xp: 0, h: y.prox ? y.prox.h : 1e9, d: y.prox ? y.prox.d : 1e9, versos: 0, nuevos: 0, repaso: 0, vida: 0, cartas: 0, ms: 0, caps: 0, libros: new Set(hoy.libros || []) });
+    const hoy = y.hoy || {}, lc = lib + "." + cap;
+    const P = R.pred || (R.pred = { xp: 0, h: y.prox ? y.prox.h : 1e9, d: y.prox ? y.prox.d : 1e9, auto: 0, versos: 0, nuevos: 0, repaso: 0, vida: 0, cartas: 0, ms: 0, caps: 0, libros: new Set(hoy.libros || []) });
     const pal = R.pal[v - 1] || 0, base = nuevo ? 2 * pal : cD < 2 ? 0.5 * pal : 0.1 * pal;
     let suceso = false;
-    if (soloXp) { if (base > 0) P.xp += base * (y.mult || 1) * parte; return !y.enTope && y.xpSig - y.xpNivel <= P.xp; }
-    P.versos++; P.ms += ms; P.libros.add(lib);
-    if (nuevo) P.nuevos++; else if (cD < 2) P.repaso++;
-    if (["MAT", "MRK", "LUK", "JHN"].includes(lib)) P.vida++; else if (lib !== "ACT" && lib !== "REV") P.cartas++;
-    if (base > 0) { P.xp += base * (y.mult || 1) * parte; P.h--; P.d--; if (P.h <= 0 || P.d <= 0) suceso = true; }
+    if (base > 0) P.xp += base * (y.mult || 1) * parte;
+    if (modo !== "conf") {
+      P.auto++; P.ms += ms;
+      if (base > 0) { P.h--; P.d--; if (P.h <= 0 || P.d <= 0) suceso = true; }
+      if (!(hoy.ms > 0) && P.auto === 1) suceso = true; // primera lectura del día: perseverancia
+      // capítulo recorrido hoy (90 % de sus versos con su tiempo): el servidor ofrece la prueba
+      const total = R.pal.filter((x) => x > 0).length; let leidos = 0;
+      for (let i = 0; i < R.pal.length; i++) if (R.pal[i] > 0 && +(R.hoy[i] || 0) > 0) leidos++;
+      if (total && leidos >= Math.ceil(0.9 * total) && !R.completos.has(lc)) { R.completos.add(lc); suceso = true; }
+    }
+    if (modo !== "auto") {
+      const e = espejo(); if (!e.c) e.c = {};
+      const mc = e.c[lc] || "";
+      if (mc[v - 1] !== "1") {
+        e.c[lc] = pon(mc, v - 1, "1"); A.store.set("jg:hoy", e);
+        P.versos++; P.libros.add(lib);
+        if (marcadoAntes(lc, v)) P.repaso++; else P.nuevos++;
+        if (["MAT", "MRK", "LUK", "JHN"].includes(lib)) P.vida++; else if (lib !== "ACT" && lib !== "REV") P.cartas++;
+        const total = R.pal.filter((x) => x > 0).length, m2 = e.c[lc]; let n = 0;
+        for (let i = 0; i < R.pal.length; i++) if (R.pal[i] > 0 && m2[i] === "1") n++;
+        if (!R.ccs) R.ccs = new Set();
+        if (total && n >= Math.ceil(0.9 * total) && !R.ccs.has(lc)) { R.ccs.add(lc); P.caps++; suceso = true; }
+      }
+    }
     if (!y.enTope && y.xpSig - y.xpNivel <= P.xp) suceso = true;
-    if ((hoy.versos || 0) === 0 && P.versos === 1) suceso = true; // primer verso del día: perseverancia
-    // capítulo completo hoy (90 % de sus versos con palabras)
-    const total = R.pal.filter((x) => x > 0).length; let leidos = 0;
-    for (let i = 0; i < R.pal.length; i++) if (R.pal[i] > 0 && +(R.hoy[i] || 0) > 0) leidos++;
-    const lc = lib + "." + cap;
-    if (total && leidos >= Math.ceil(0.9 * total) && !R.completos.has(lc)) { R.completos.add(lc); P.caps++; suceso = true; }
     const prog = { versos: P.versos, nuevos: P.nuevos, repaso: P.repaso, vida: P.vida, cartas: P.cartas, capitulo: P.caps, libros: Math.max(0, P.libros.size - (hoy.libros || []).length) };
     for (const m of y.mis || []) {
       if (m.hecha) continue;
@@ -3064,10 +3341,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const e = espejo();
     for (const [lc, x] of Object.entries(r.caps || {})) {
       e.m[lc] = x.d; guardarSie(lc, x.s);
-      const [lib, cap] = lc.split(".");
-      if (x.a && x.a.length && A.marcarLeido) A.marcarLeido(lib, +cap, x.a);
       if (R.lib + "." + R.cap === lc) R.hoy = x.d;
     }
+    // P20: el lector marca como leídos solo los versos marcados a mano (en este u otro dispositivo)
+    for (const [lc, s] of Object.entries(r.cfs || {})) guardarCf(lc, s);
+    for (const [lc, vs] of Object.entries(r.cf || {})) { const [lib, cap] = lc.split("."); if (A.marcarLeido && vs.length) A.marcarLeido(lib, +cap, vs); }
+    for (const [lc, ms] of Object.entries(r.tlc || {})) R.tlc[lc] = ms;
+    if (R.lib) pintarMarcados();
     const reintento = [];
     for (const x of r.rechazados || []) {
       if (x[3] === "adelantado") {
@@ -3381,22 +3661,126 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const listo = resp.every((x) => x != null);
       const pie = resultado
         ? h("div", { class: "jg-cel" }, h("h3", { text: resultado.aciertos + " de " + r.preguntas.length }), h("p", { text: resultado.xp ? "+" + resultado.xp + " de experiencia." : "Esta vez no hubo aciertos; la próxima saldrá mejor." }),
+          resultado.cofre ? cofreBloque(resultado.cofre) : null,
           h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Seguir leyendo" })))
         : h("button", { class: "btn oro jg-grande", type: "button", disabled: !listo, onclick: async (e) => {
           e.currentTarget.disabled = true;
           const falta = 1600 * r.preguntas.length - (Date.now() - inicio); if (falta > 0) await esperar(falta);
           const x = await pedir("/prueba/responder", { metodo: "POST", cuerpo: { id: r.id, r: resp } });
           if (x.error) { A.avisar(mensaje(x)); return; }
-          resultado = x; actualizarYo(x.yo); quitarPrueba(); { const e = espejo(); e.p = e.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e); }
+          resultado = x; actualizarYo(x.yo); quitarPrueba(); if (x.cofre) COFRE.pend = x.cofre; { const e = espejo(); e.p = e.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e); }
+          // P20: cada pregunta bien respondida marca su verso como leído
+          for (const [k, sx] of Object.entries(x.cfs || {})) guardarCf(k, sx);
+          if ((x.cf || []).length) { if (A.marcarLeido) A.marcarLeido(lib, cap, x.cf); if (R.lib === lib && R.cap === cap) { for (const v of x.cf) LB.ok.add(lib + "." + cap + "." + v); pintarMarcados(); elegirLB(); finCapJuego(); } }
           if (x.aciertos === r.preguntas.length) sonar("nivel"); else if (x.aciertos) sonar("chispa");
           for (const m of x.misiones || []) A.avisar("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
           A.reemplazarModal(vistaP);
+          setTimeout(() => { const c = document.querySelector(".modal[open] .jg-cel"); if (c) c.scrollIntoView({ block: "start", behavior: sinAnim() ? "auto" : "smooth" }); }, 140);
         } }, h("span", { text: listo ? "Ver resultado" : "Elige una opción en cada pregunta" }));
       return [h("p", { class: "jg-mini", text: "Completa cada verso con la palabra que falta, tal como está en la traducción de BiEx." }), ...preguntas, pie];
     };
     const vistaP = () => A.cajaModal(A.cabModal("Prueba del capítulo", nombreLibro(lib) + " " + cap), cuerpo());
     R.prueba = false;
     A.abrirModal(vistaP);
+  }
+  // ------------------------------------------------------------------ cofre (T8, BiEx, 12-nov-2026)
+  // Al terminar la prueba del capítulo (y, cuando llegue, al derrotar al Coloso de la Tradición). El servidor decide su
+  // nivel y sus dracmas y las abona en el acto: abrirlo es verlo (si la ventana se cierra sin abrirlo, un aviso lo dice).
+  // Cada nivel con su cita para leer en BiEx; su animación crece con el nivel (solo transformaciones y opacidad).
+  const COFRES = [
+    { n: "Cofre de barro", m: ["#d48a5a", "#7d3c20", "#5f2c16", "#f0b48c"], c: ["2CO", 4, 7], est: ["polvo"], col: "#e0a27a" },
+    { n: "Cofre de bronce", m: ["#e0a865", "#7a4a22", "#55331a", "#f6cf98"], c: ["MAT", 13, 44], est: ["polvo", "brasas"], col: "#f0b46a" },
+    { n: "Cofre de plata", m: ["#f6f8fb", "#8e98a4", "#66707c", "#ffffff"], c: ["MAT", 13, 52], est: ["aro", "filo"], col: "#e8eef6" },
+    { n: "Cofre de oro", m: ["#ffe596", "#b07a1c", "#7f540f", "#fff4cc"], c: ["1PE", 1, 7], est: ["estela", "aro", "brasas"], col: "#f5c64e" },
+    { n: "Cofre de bloques preciosos", m: ["#fff0b8", "#b8821f", "#7a520e", "#fff8e0"], c: ["REV", 21, 19, 20], est: ["gemas", "estela", "aro", "filo"], col: "#f5c64e" },
+  ];
+  const COFRE = { pend: null };
+  function cofreSVG(k) {
+    const C = COFRES[k].m, u = "cf" + Math.random().toString(36).slice(2, 7);
+    const gemas = k === 4 ? PIEDRAS.slice(0, 8).map((p, i) => '<ellipse cx="' + (34 + i * 13) + '" cy="' + (i % 2 ? 107 : 77) + '" rx="3.6" ry="2.8" fill="' + p[2] + '" stroke="#fff6d8" stroke-width=".8"/>').join("") : "";
+    const remaches = [30, 130].map((x) => '<circle cx="' + x + '" cy="77" r="1.8" fill="' + C[3] + '"/><circle cx="' + x + '" cy="107" r="1.8" fill="' + C[3] + '"/>').join("");
+    const esq = (x, y, sx, sy) => '<path d="M' + x + " " + (y + 12 * sy) + "V" + y + "H" + (x + 12 * sx) + '" fill="none" stroke="' + C[3] + '" stroke-width="3" stroke-linecap="round"/>';
+    return '<defs><linearGradient id="' + u + 'c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + C[0] + '"/><stop offset="1" stop-color="' + C[1] + '"/></linearGradient>' +
+      '<linearGradient id="' + u + 't" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + C[3] + '"/><stop offset=".55" stop-color="' + C[0] + '"/><stop offset="1" stop-color="' + C[1] + '"/></linearGradient>' +
+      '<radialGradient id="' + u + 'l" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffbe8"/><stop offset=".5" stop-color="#ffe7a0" stop-opacity=".8"/><stop offset="1" stop-color="#ffd76a" stop-opacity="0"/></radialGradient></defs>' +
+      '<ellipse cx="80" cy="126" rx="58" ry="6" fill="#000" opacity=".35"/>' +
+      '<g class="cf-cuerpo"><rect x="20" y="62" width="120" height="60" rx="8" fill="url(#' + u + 'c)" stroke="' + C[2] + '" stroke-width="1.5"/>' +
+      '<rect x="20" y="73" width="120" height="7" fill="' + C[2] + '" opacity=".8"/><rect x="20" y="103" width="120" height="7" fill="' + C[2] + '" opacity=".8"/>' + remaches + gemas +
+      esq(24, 118, 1, -1) + esq(136, 118, -1, -1) + '</g>' +
+      '<ellipse class="cf-luz" cx="80" cy="62" rx="56" ry="11" fill="url(#' + u + 'l)" opacity="0"/>' +
+      '<g class="cf-tapa"><path d="M20 64V50Q20 30 80 27Q140 30 140 50V64Z" fill="url(#' + u + 't)" stroke="' + C[2] + '" stroke-width="1.5"/>' +
+      '<path d="M22 46Q80 36 138 46" fill="none" stroke="' + C[2] + '" stroke-width="5" opacity=".75"/>' + esq(24, 54, 1, -1) + esq(136, 54, -1, -1) +
+      (k === 4 ? '<ellipse cx="80" cy="38" rx="5" ry="3.6" fill="' + PIEDRAS[9][2] + '" stroke="#fff6d8" stroke-width=".9"/>' : "") +
+      '<circle cx="80" cy="64" r="9" fill="' + C[3] + '" stroke="' + C[2] + '" stroke-width="1.5"/><circle cx="80" cy="62.6" r="2.2" fill="' + C[2] + '"/><path d="M78.8 63.6h2.4l-.6 4h-1.2z" fill="' + C[2] + '"/></g>';
+  }
+  function cofreBloque(cf) {
+    const k = Math.max(0, Math.min(4, cf.n | 0)), D = COFRES[k];
+    const fig = A.svg(cofreSVG(k), "0 0 160 140"); fig.setAttribute("class", "cf-svg"); fig.setAttribute("aria-hidden", "true");
+    const col = h("i", { class: "cf-col", "aria-hidden": "true" }), halo = h("i", { class: "cf-halo", "aria-hidden": "true" });
+    const cifra = h("b", { class: "cf-dr", text: "+0" });
+    const ref = D.c[0] ? A.nombreLibro(D.c[0]) + " " + D.c[1] + ":" + D.c[2] + (D.c[3] ? "-" + D.c[3] : "") : "";
+    const info = h("div", { class: "cf-info", hidden: true }, h("p", { class: "cf-n", text: D.n }), h("p", {}, cifra, " dracmas"),
+      ref ? h("button", { class: "ap-cita", type: "button", onclick: () => verCita(D.c[0], D.c[1], D.c[2], D.c[3] || D.c[2]) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref) : null);
+    const caja = h("div", { class: "cf n" + k, style: "--cf:" + D.col }, halo, col, fig);
+    const btn = h("button", { class: "btn oro chico cf-abrir", type: "button", onclick: () => abrir() }, h("span", { text: "Abrir el cofre" }));
+    const raiz = h("div", { class: "cf-raiz" }, h("p", { class: "jg-mini cf-tit", text: "¡Ganaste un cofre!" }), caja, btn, info);
+    if (!sinAnim() && fig.animate) fig.animate([{ transform: "translateY(0)" }, { transform: "translateY(-4px)" }, { transform: "translateY(0)" }], { duration: 2600, iterations: Infinity, easing: "ease-in-out" });
+    let abierto = false;
+    async function abrir() {
+      if (abierto) return; abierto = true; COFRE.pend = null; btn.remove();
+      vibrar([[12], [12, 30, 12], [16, 40, 16], [20, 40, 20, 40, 30], [30, 50, 30, 50, 60]][k]);
+      const tapa = fig.querySelector(".cf-tapa"), luz = fig.querySelector(".cf-luz");
+      if (!sinAnim() && fig.animate) {
+        fig.getAnimations().forEach((a) => a.cancel());
+        const g = 2 + k * 1.2;
+        for (let i = 0; i <= k; i++) await fig.animate([{ transform: "rotate(0)" }, { transform: "rotate(-" + g + "deg)" }, { transform: "rotate(" + g + "deg)" }, { transform: "rotate(-" + g * 0.6 + "deg)" }, { transform: "rotate(0)" }], { duration: 380 - k * 30, easing: "ease-in-out" }).finished.catch(() => {});
+        tapa.style.transformOrigin = "22px 62px"; tapa.style.transformBox = "view-box";
+        tapa.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: "translate(0,-14px) rotate(-26deg)" }, { transform: "translate(0,-10px) rotate(-20deg)" }], { duration: 420, easing: "cubic-bezier(.2,1.4,.4,1)", fill: "forwards" });
+        luz.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: "forwards" });
+        halo.animate([{ opacity: 0.35, transform: "scale(.8)" }, { opacity: 1, transform: "scale(1.15)" }, { opacity: 0.7, transform: "scale(1)" }], { duration: 900, fill: "forwards", easing: "ease-out" });
+        if (k >= 1) col.animate([{ opacity: 0, transform: "scaleY(.1)" }, { opacity: 1, transform: "scaleY(1)" }, { opacity: 0.55, transform: "scaleY(1)" }], { duration: 900 + k * 200, fill: "forwards", easing: "ease-out" });
+        if (k >= 3) { const fl = h("div", { class: "cf-flash", "aria-hidden": "true" }); document.body.append(fl); fl.animate([{ opacity: 0 }, { opacity: k === 4 ? 0.7 : 0.45 }, { opacity: 0 }], { duration: 650, easing: "ease-out" }).finished.then(() => fl.remove(), () => fl.remove()); }
+        chispas(8 + k * 8, caja, D.est, D.col);
+        if (k >= 2) lluviaCofre(caja, k);
+        sonar(k >= 4 ? "hallazgo" : k >= 3 ? "nivel" : "chispa");
+        await esperar(380);
+      }
+      info.hidden = false; info.scrollIntoView({ block: "nearest", behavior: sinAnim() ? "auto" : "smooth" });
+      if (!sinAnim() && info.animate) info.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 360, easing: "ease-out" });
+      contarRapido(cifra, cf.dr, 700 + k * 150, "+");
+    }
+    return raiz;
+  }
+  // Monedas (anillo y punto, como la dracma del juego) y, en el de bloques preciosos, las piedras del fundamento
+  function lluviaCofre(caja, k) {
+    const r = caja.getBoundingClientRect(); if (!r.width) return;
+    const capa = h("div", { class: "jg-chispas", "aria-hidden": "true" }); document.body.append(capa);
+    const n = k === 2 ? 6 : k === 3 ? 10 : 16, cx = r.left + r.width / 2, cy = r.top + r.height * 0.42;
+    for (let i = 0; i < n; i++) {
+      const gema = k === 4 && i % 2, c = gema ? PIEDRAS[i % 12][2] : "#f5c64e";
+      const el = h("i", { class: gema ? "cf-g" : "cf-m", style: "left:" + cx + "px;top:" + cy + "px;--c:" + c });
+      capa.append(el);
+      const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.9, d = 70 + Math.random() * 90, dx = Math.cos(a) * d, dy = Math.sin(a) * d;
+      el.animate([{ transform: "translate(-50%,-50%) scale(.3)", opacity: 0 }, { transform: "translate(calc(-50% + " + dx * 0.6 + "px),calc(-50% + " + dy * 0.6 + "px)) scale(1)", opacity: 1, offset: 0.35 },
+        { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + (dy + 60) + "px)) scale(.8) rotate(" + (Math.random() * 300 - 150) + "deg)", opacity: 0 }], { duration: 1100 + Math.random() * 500, delay: i * 30, easing: "cubic-bezier(.2,.7,.3,1)", fill: "forwards" });
+    }
+    setTimeout(() => capa.remove(), 2200);
+  }
+  // Ventanas propias en vez de las del navegador (P13, BiEx, 11-nov-2026): la misma estética del resto del sitio
+  function confirmar(titulo, texto, si, no) {
+    return new Promise((listo) => {
+      const prev = document.activeElement;
+      const fin = (v) => { document.removeEventListener("keydown", tecla, true); capa.remove(); try { if (prev && prev.focus) prev.focus(); } catch (e) { /* sin foco */ } listo(v); };
+      const tecla = (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); fin(false); } };
+      const bSi = h("button", { class: "btn oro", type: "button", onclick: () => fin(true) }, h("span", { text: si || "Seguir" }));
+      const caja = h("div", { class: "jg-conf-c", role: "alertdialog", "aria-modal": "true", "aria-labelledby": "jgConfT", "aria-describedby": "jgConfX" },
+        h("h3", { id: "jgConfT", text: titulo }), texto ? h("p", { id: "jgConfX", text: texto }) : null,
+        h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => fin(false) }, h("span", { text: no || "Cancelar" })), bSi));
+      const capa = h("div", { class: "jg-conf", onclick: (e) => { if (e.target === capa) fin(false); } }, caja);
+      document.body.append(capa); document.addEventListener("keydown", tecla, true);
+      if (!sinAnim() && caja.animate) { capa.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180 }); caja.animate([{ transform: "translateY(10px) scale(.98)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 220, easing: "cubic-bezier(.2,1,.3,1)" }); }
+      setTimeout(() => bSi.focus(), 30);
+    });
   }
   function quitarPrueba() { R.prueba = false; const el = document.querySelector(".jg-prueba"); if (el) el.remove(); }
 
@@ -3578,7 +3962,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarLiga(cont) {
     document.title = "Liga de la semana · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu liga…" }));
-    marco(cont, cabSub("Liga de la semana", "De domingo a sábado, hora de Bogotá. Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento."), zona);
+    marco(cont, cabSub("Liga de la semana", "La semana va " + textoSemana() + ". Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento."), zona);
     const r = await pedir("/liga");
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
@@ -3845,7 +4229,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const vistaS = () => {
       const anf = SL.miembros.find((x) => x.anf);
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
-        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco), h("span", { class: "n" }, x.apodo, h("small", { text: (x.anf ? "anfitrión · " : "") + (x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo") })),
+        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco), h("span", { class: "n" }, x.apodo, h("small", { text: (x.anf ? "anfitrión · " : "") + (x.pais ? nombrePais(x.pais) + " · " : "") + (x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo") })),
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = anf && anf.j === SL.yo6;
       return A.cajaModal(A.cabModal("Sala " + SL.cod, "Lectura en compañía"), h("div", { class: "jg" },
@@ -3877,7 +4261,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   // el último capítulo abierto en este dispositivo (para anunciar la sala donde se está leyendo)
   const ultimoLC = () => { const u = A.ultimo && A.ultimo(), m = u && /^#\/([1-3A-Z]{3})\/(\d{1,3})/.exec(u.h || ""); return m ? m[1] + "." + m[2] : undefined; };
-  const corto = (b) => [...String(nombreLibro(b) || b).split(" [")[0]].slice(0, 6).join("");
+  const corto = (b) => String(nombreLibro(b) || b).split(" [")[0].split(" «")[0];
   const nombreLC = (lc) => { const [lib, cap] = String(lc || "").split("."); return lib ? nombreLibro(lib) + " " + cap : "Eligiendo capítulo"; };
   // «Acompañar» (BiEx, 10-nov-2026): entra a la sala abierta de ese capítulo o abre una nueva ahí mismo
   async function acompanar(lc, boton) {
@@ -3963,7 +4347,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
   if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor };
   window.BiExJuego = {
-    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); },
-    vista, capitulo, salir, franja, guardarInvitacion,
+    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
+    vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
   };
 })();
