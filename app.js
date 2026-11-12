@@ -26,7 +26,7 @@
   const RE_NP = /[\u0100-\u024f\u02b0-\u02ff\u0300-\u036f\u1e00-\u1eff]|[A-Za-z][\u0370-\u03ff\u1f00-\u1fff]|[\u0370-\u03ff\u1f00-\u1fff][A-Za-z]/;
   const SIN_NP = /^(option|title|textarea|script|style|select|input)$/i;
   const textoNp = (t) => String(t).split(/(\S*(?:[\u0100-\u024f\u02b0-\u02ff\u0300-\u036f\u1e00-\u1eff]|[A-Za-z][\u0370-\u03ff\u1f00-\u1fff]|[\u0370-\u03ff\u1f00-\u1fff][A-Za-z])\S*)/).filter(Boolean)
-    // «cm» (10-nov-2026): las palabras con signos combinados (YēshŪ́ʿa, Hiṯgallū́ṯ) van con la letra del texto, la única que
+    // «cm» (10-nov-2026): las palabras con signos combinados (YēshŪ́aʿ, Hiṯgallū́ṯ) van con la letra del texto, la única que
     // apila bien los signos (la de la interfaz no los posiciona y se veían corridos)
     .map((x) => { if (!RE_NP.test(x)) return document.createTextNode(x); const sp = document.createElement("span"); sp.className = /[\u0300-\u036f]/.test(x) ? "np cm" : "np"; sp.textContent = x; return sp; });
   const h = (tag, attrs, ...kids) => {
@@ -436,7 +436,7 @@
   // (el texto base es su suma; en la lectura organizada, una pospositiva movida se halla buscando desde el comienzo).
   // En los textos del autor solo vale una coincidencia única (no hay alineación palabra por palabra).
   // (7-nov-2026) la lectura puede mostrar una pieza recortada: el significado de un nombre solo va en su primera aparición del
-  // capítulo (Mashíaḥ [Ungido] → Mashíaḥ), el Nombre o YēshŪ́ʿa cambian de forma… Si la pieza entera no está, se busca su
+  // capítulo (Mashíaḥ [Ungido] → Mashíaḥ), el Nombre o YēshŪ́aʿ cambian de forma… Si la pieza entera no está, se busca su
   // núcleo (sin lo que va entre [ ] ni los superíndices); y una palabra que quede sola sin hallar entre dos halladas toma el
   // hueco que dejan (antes la palabra tocada caía en la palabra griega anterior: Yôḥānā́n 1:41).
   const nucleoPieza = (s) => { let x = s, y; do { y = x; x = x.replace(/\s*\[[^\[\]]*\]/g, ""); } while (x !== y); return x.replace(/[ⁿᵐᶠ]/g, "").trim(); };
@@ -518,14 +518,14 @@
   // Orden de los libros: cronológico (por defecto), por fecha de escritura o tradicional (datos/cronologia.json)
   let CRONO = null;
   const ORDENES = [
-    ["crono", "Χrοnοlόgικο", () => "En el orden del tiempo (χrοnοlοgικός): primero los relatos de la vida de YēshŪ́ʿa, según el primer acontecimiento que narra cada uno; luego " + nombreLibro(libroDe("ACT")) + ", las cartas en el orden en que se escribieron y, al final, " + nombreLibro(libroDe("REV")) + "."],
+    ["crono", "Χrοnοlόgικο", () => "En el orden del tiempo (χrοnοlοgικός): primero los relatos de la vida de YēshŪ́aʿ, según el primer acontecimiento que narra cada uno; luego " + nombreLibro(libroDe("ACT")) + ", las cartas en el orden en que se escribieron y, al final, " + nombreLibro(libroDe("REV")) + "."],
     ["escritura", "Por escritura", "Cada libro en el orden en que se escribió, con su fecha aproximada: todos, antes del año 70."],
     ["tradicional", "Tradicional", "El orden habitual en espurias traducciones de la Biblia."]];
   const ordenActivo = () => (CRONO && CRONO.ordenes[prefs.orden] ? prefs.orden : "tradicional");
   const nombreOrden = () => ({ crono: "en orden χrοnοlόgικο", escritura: "por fecha de escritura", tradicional: "en el orden tradicional" })[ordenActivo()];
   function librosEnOrden() { const k = ordenActivo(); return k === "tradicional" ? D.libros : CRONO.ordenes[k].map(libroDe).filter(Boolean); }
   const numLibro = (b) => librosEnOrden().indexOf(b) + 1;
-  // En rótulos en mayúsculas, las palabras con signos (YēshŪ́ʿa) se dejan en su forma para no deformar los diacríticos
+  // En rótulos en mayúsculas, las palabras con signos (YēshŪ́aʿ) se dejan en su forma para no deformar los diacríticos
   const protegerMay = (t) => String(t).split(/(\S*[\u0300-\u036f\u02b0-\u02ff]\S*)/).filter(Boolean).map((x) => (/[\u0300-\u036f\u02b0-\u02ff]/.test(x) ? h("span", { class: "np", text: x }) : x));
   const fechaEscrito = (b) => (CRONO && CRONO.libros[b.c] ? CRONO.libros[b.c].e || "" : "");
   // (7-nov-2026) «c. 28 – 30» → «c. 28–30», como «Escrito c. 45–60» a su lado; el guion espaciado queda solo entre eras
@@ -1133,7 +1133,7 @@
       h("header", { class: "barra" }, h("div", { class: "in" },
         h("a", { class: "marca", href: "#/", "aria-label": "Inicio del lector" }, h("span", { class: "sello", text: "BiEx" }), h("span", { class: "nombre" }, h("b", { text: "Biblia Exacta" }), h("small", { text: "Lector y analizador" }))),
         h("nav", { class: "nav", "aria-label": "Secciones" }, h("a", { href: "#/", text: "Inicio" }), h("a", { href: "#/libros", text: "Libros" }), h("a", { href: "#/cronologia", text: "Cronología" }), h("a", { href: "#/buscar", text: "Avanzada" })),
-        h("div", { class: "acc" }, buscar, libros, juego, hist, herr, guia, tema, extra))),
+        h("div", { class: "acc" }, buscar, libros, juego, herr, guia, tema, hist, extra))), // (12-nov-2026) el historial, a la izquierda de la X
       h("main", { class: "pagina", id: "vista", tabindex: "-1" }),
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
@@ -1146,7 +1146,7 @@
           h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " [Conjuntos de Datos Lingüísticos del Griego MACULA] (Biblica) y ",
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
           "Transcripciones de los manuscritos: ", h("a", { href: "https://greekcntr.org", target: "_blank", rel: "noopener", text: "Center for New Testament Restoration" }), " [Centro para la Restauración del Nuevo Testamento] (Alan Bunning), con licencia CC BY-SA 4.0; la comparación con el texto base se publica con la misma licencia.", h("br"),
-          "Para reconocer las palabras con que se recuerda un verso, el buscador usa, sin mostrarlas, las traducciones de dominio público Reina-Valera 1909 y 1865, World English Bible [Biblia Mundial English], King James Version [Versión del Rey James] y Berean Standard Bible [Biblia Estándar Berean], y la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0).", h("br"),
+          "Para reconocer las palabras con que se recuerda un verso, el buscador usa, sin mostrarlas, las traducciones de dominio público Reina-Valera 1909 y 1865, World [Mundial] English Bible [Biblia], King [Rey] James Version [Versión] y Berean Standard Bible [Biblia Estándar], y la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0).", h("br"),
           "Códigos Strong y formación de las palabras: códigos Strong extendidos de ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT" }), " (STEPBible.org, CC BY 4.0) y Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890; datos de ", h("a", { href: "https://github.com/openscriptures/strongs", target: "_blank", rel: "noopener", text: "Open Scriptures" }), " [Escrituras Abiertas], CC BY-SA), con las familias morfológicas de BiEx; el léxico de estudio que se deriva de ellos se publica con licencia CC BY-SA 4.0.", h("br"),
           "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación del Nuevo Testamento] (1976)."))),
       modal);
@@ -1273,7 +1273,7 @@
     } }, h("span", { class: "gk", text: t }));
     const L = librosEnOrden(), ko = ordenActivo();
     const grupos = ko === "tradicional"
-      ? [["Los relatos de la vida de YēshŪ́ʿa y " + nombreLibro(libroDe("ACT")), "", ["MAT", "MRK", "LUK", "JHN", "ACT"]], ["Las cartas", "", D.libros.map((b) => b.c).filter((c) => !["MAT", "MRK", "LUK", "JHN", "ACT", "REV"].includes(c))], [nombreLibro(libroDe("REV")), "", ["REV"]]]
+      ? [["Los relatos de la vida de YēshŪ́aʿ y " + nombreLibro(libroDe("ACT")), "", ["MAT", "MRK", "LUK", "JHN", "ACT"]], ["Las cartas", "", D.libros.map((b) => b.c).filter((c) => !["MAT", "MRK", "LUK", "JHN", "ACT", "REV"].includes(c))], [nombreLibro(libroDe("REV")), "", ["REV"]]]
       : CRONO.grupos[ko];
     const tarjeta = (b) => {
       const completos = b.total - b.conteo.base;
@@ -1390,7 +1390,7 @@
           hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias"),
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
-          hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́ʿa y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
+          hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
           hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
@@ -2214,9 +2214,9 @@
   const SINAITICO = { MAT: 33, MRK: 34, LUK: 35, JHN: 36, ROM: 37, "1CO": 38, "2CO": 39, GAL: 40, EPH: 41, PHP: 42, COL: 43, "1TH": 44, "2TH": 45, HEB: 46, "1TI": 47, "2TI": 48, TIT: 49, PHM: 50, ACT: 51, JAS: 52, "1PE": 53, "2PE": 54, "1JN": 55, "2JN": 56, "3JN": 57, JUD: 58, REV: 59 };
   function enlacesImagen(id, c, cap, v) {
     const out = [];
-    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el Codex Sinaiticus [Códice Sinaiticus]", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0"]);
-    if (id === "03") out.push(["DigiVatLib · Bibliotheca Apostolica Vaticana [Biblioteca Apostólica Vaticana] (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
-    if (id === "05") out.push(["Cambridge Digital Library [Biblioteca Digital de Cambridge]", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
+    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el Codex [Códice] Sinaiticus", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0"]);
+    if (id === "03") out.push(["DigiVatLib · Bibliotheca Apostolica [Biblioteca Apostólica] Vaticana (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
+    if (id === "05") out.push(["Cambridge Digital Library [Biblioteca Digital]", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
     const doc = /^P\d+$/.test(id) ? 10000 + +id.slice(1) : /^0\d+$/.test(id) ? 20000 + +id : null;
     if (doc) out.push(["Imágenes y transcripción del Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual del Nuevo Testamento], Münster", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
     return out;
@@ -2541,7 +2541,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "fbeaf54e79", juego: "49d2404cea", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "fc638a5fdf", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2569,7 +2569,9 @@
         restaurando: () => RP.objetivo != null,
         marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
         sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
-        cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v) });
+        cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v),
+        // (12-nov-2026) los versos de una cita con el texto de la Lectura, para la ventana de la cita en el juego
+        versos: (c, cap, v1, v2) => lectura(c).then((Lc) => (Lc.caps[cap] || []).filter((x) => x.v >= v1 && x.v <= v2).map((x) => [x.v, txtVerso(x)])) });
       return J;
     }).catch((e) => { JGX = null; throw e; });
     return JGX;
@@ -2628,6 +2630,8 @@
     const out = new Map();
     for (const [, ls] of r.griego) for (const li of ls) out.set(li, 1000);
     for (const w of X.BQ.palabras(q)) { if (w.length < 4 || X.BQ.griego(w)) continue; const ls = X.ctx.griego.latin.get(w); if (ls) for (const li of ls) out.set(li, Math.max(out.get(li) || 0, 500)); }
+    // (12-nov-2026) los lemas a los que llevó la consulta (nombres por su comienzo y conceptos): el nombre exacto a la vista
+    if (r.versos && r.versos.lemas) for (const li of r.versos.lemas) if (typeof li === "number") out.set(li, Math.max(out.get(li) || 0, 600));
     const ws = X.BQ.palabras(q).filter((w) => !X.BQ.griego(w) && !X.BQ.vaciaEs(w) && w.length >= 3);
     if (!r.griego.length && ws.length && ws.length <= 2) {
       const re = new RegExp("(^|[^a-zñ])(" + ws.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")([^a-zñ]|$)");
@@ -2715,7 +2719,7 @@
     // filtro por libro y correcciones
     const avisos = [];
     if (r.filtro) avisos.push(h("span", { class: "chip" }, "Solo en " + nombreLibro(r.filtro) + " ", h("button", { class: "enlace", type: "button", onclick: () => elegir(q.replace(/\s+(?:en|de|del libro de|en el libro de)\s+[^]*$/i, "")), text: "(quitar)" })));
-    if (r.versos && r.versos.correcciones.length) avisos.push(h("span", { class: "nota-ui", text: "También se buscó: " + r.versos.correcciones.map(([a, b]) => "«" + a + "» como «" + b + "»").join(", ") + "." }));
+    if (r.versos && r.versos.correcciones.length) avisos.push(h("span", { class: "nota-ui", text: "También se buscó: " + r.versos.correcciones.map(([a, b]) => "«" + a + "» como " + (Array.isArray(b) ? b : [b]).map((x) => "«" + x + "»").join(" o ")).join(", ") + "." }));
     // escenas
     if (r.escenas.length) grupos.push(grupo("Escenas", h("div", { class: "res-escenas" }, r.escenas.map(({ it }) => {
       const rs = it._r || X.BQ.rangos(it.r);
@@ -2782,7 +2786,7 @@
       });
       setTimeout(() => { if (!st.q) inp.focus(); buscarYa(); }, 30);
       return cajaModal(cabModal("Buscar", "Escenas, nombres, citas, palabras, griego o preguntas"),
-        h("div", { class: "bq" }, h("label", { class: "bq-campo" }, svg(ICO.buscar), inp, borrar), estado, res),
+        h("div", { class: "bq" }, h("label", { class: "bq-campo" }, svg(ICO.buscar), inp, borrar, h("span", { class: "bq-linea", "aria-hidden": "true" })), estado, res),
         h("div", { class: "m-pie m-pie-bq" },
           h("button", { class: "btn chico", type: "button", onclick: cerrarModal }, svg(ICO.atras), "Volver"),
           h("a", { class: "btn chico", href: "#/buscar" }, svg(ICO.filtros), "Búsqueda morfológica")));
@@ -4513,8 +4517,10 @@
     const m1 = h("i"), m2 = h("i");
     const aro = h("span", { class: "sr-aro", "aria-hidden": "true" }, h("span", { class: "sr-m sr-m1" }, m1), h("span", { class: "sr-m sr-m2" }, m2));
     const btn = (cls, et, ico, f, extra) => h("button", { type: "button", class: "sr-btn " + cls, "aria-label": et, title: et, onclick: () => { ir(f); mostrar(); } }, extra || null, svg(ico));
+    // (BiEx, 12-nov-2026; idea de la app de junio) junto al aro, los minutos de lectura que faltan desde donde se va
+    const mins = h("span", { class: "sr-min", "aria-hidden": "true" });
     const caja = h("div", { class: "saltos-rap", role: "group", "aria-label": "Ir rápido por la página" },
-      btn("sr-ini", "Ir al inicio de la página", ICO.subir, 0), btn("sr-med", "Ir a la mitad de la página", ICO.centro, 0.5, aro), btn("sr-fin", "Ir al final de la página", ICO.bajar, 1));
+      btn("sr-ini", "Ir al inicio de la página", ICO.subir, 0), btn("sr-med", "Ir a la mitad de la página", ICO.centro, 0.5, aro), btn("sr-fin", "Ir al final de la página", ICO.bajar, 1), mins);
     document.body.append(caja);
     const ATADO = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
     if (ATADO) caja.classList.add("sr-atado");
@@ -4528,7 +4534,15 @@
     }
     const avance = () => { const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); return Math.min(1, Math.max(0, window.scrollY / max)); };
     function girar() { pendiente = false; const g = avance() * 360; m1.style.transform = "rotate(" + Math.min(180, g).toFixed(1) + "deg)"; m2.style.transform = "rotate(" + Math.max(0, g - 180).toFixed(1) + "deg)"; }
-    function medir() { const p = avance(); caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98); if (!ATADO) girar(); }
+    // palabras de la vista (sin forzar el diseño: textContent), una vez por ruta; unas 180 por minuto en un texto con ampliaciones
+    let palabras = 0, rutaPal = "";
+    const contar = () => { if (rutaPal !== location.hash || !palabras) { rutaPal = location.hash; const v = vista(); palabras = v ? (v.textContent.match(/[\p{L}\p{N}]+/gu) || []).length : 0; } return palabras; };
+    function medir() {
+      const p = avance(); caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98); if (!ATADO) girar();
+      const n = Math.round((contar() * (1 - p)) / 180), txt = n >= 1 ? "≈ " + n + " min" : "";
+      if (mins.textContent !== txt) mins.textContent = txt;
+      caja.classList.toggle("con-min", !!txt);
+    }
     let tMed = 0;
     window.addEventListener("scroll", () => { clearTimeout(tMed); tMed = setTimeout(medir, 180); mostrar(); if (!ATADO && !pendiente) { pendiente = true; requestAnimationFrame(girar); } }, { passive: true });
     window.addEventListener("hashchange", () => { caja.classList.remove("vis"); });
@@ -4634,7 +4648,7 @@
   const PLANES = [
     { id: "crono-90", t: "La Nueva Voluntad en orden χrοnοlόgικο", dias: 90, ord: "crono", d: () => "Toda la Nueva Voluntad en 90 días, en el orden en que sucedieron los hechos y se escribieron las cartas." },
     { id: "anual", t: "Un año con la Nueva Voluntad", dias: 260, ord: "crono", d: () => "Un capítulo por lectura: los 260 capítulos en orden χrοnοlόgικο, cinco por semana durante un año." },
-    { id: "relatos-40", t: "Los relatos de la vida de YēshŪ́ʿa", dias: 40, ord: "crono", sel: ["LUK", "MAT", "MRK", "JHN"], d: () => ["LUK", "MAT", "MRK", "JHN"].map((c) => nombreLibro(libroDe(c))).join(", ").replace(/, ([^,]*)$/, " y $1") + ", en 40 días, según el primer acontecimiento que narra cada uno." },
+    { id: "relatos-40", t: "Los relatos de la vida de YēshŪ́aʿ", dias: 40, ord: "crono", sel: ["LUK", "MAT", "MRK", "JHN"], d: () => ["LUK", "MAT", "MRK", "JHN"].map((c) => nombreLibro(libroDe(c))).join(", ").replace(/, ([^,]*)$/, " y $1") + ", en 40 días, según el primer acontecimiento que narra cada uno." },
     { id: "cartas-60", t: "Las cartas en el orden en que se escribieron", dias: 60, ord: "escritura", cartas: true, d: () => "Las cartas en 60 días, cada una en su momento: de la más temprana a la última, antes del año 70." },
     { id: "escritura-90", t: "La Nueva Voluntad en el orden en que se escribió", dias: 90, ord: "escritura", d: () => "Toda la Nueva Voluntad en 90 días, libro por libro en el orden en que se escribió, del más temprano al último." },
     { id: "nv-30", t: "La Nueva Voluntad en 30 días", dias: 30, ord: "crono", d: () => "Una lectura intensa, de unos nueve capítulos por día, en orden χrοnοlόgικο." },

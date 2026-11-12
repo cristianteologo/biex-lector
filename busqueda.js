@@ -94,7 +94,9 @@
   };
   // Conceptos: [[palabras], [lemas], propio?] → palabras sueltas por raíz y frases completas
   BQ.conceptos = function (lista) {
-    const pal = new Map(), frases = [];
+    const pal = new Map(), frases = [], nombres = [];
+    // (12-nov-2026) los nombres propios (tercer valor) se guardan también enteros, para hallarlos por su comienzo («Jac» → Jacobo, Jacob)
+    for (const [palabras, lemas, propio] of lista || []) if (propio) for (const p of palabras) { const ws = BQ.palabras(p); if (ws.length === 1 && ws[0].length >= 3) nombres.push([ws[0], lemas]); }
     for (const [palabras, lemas] of lista || []) for (const p of palabras) {
       const ws = BQ.palabras(p);
       if (!ws.length) continue;
@@ -103,7 +105,7 @@
         const a = pal.get(k) || []; for (const l of lemas) if (!a.includes(l)) a.push(l); pal.set(k, a);
       } else frases.push([" " + ws.join(" ") + " ", lemas]);
     }
-    return { pal, frases };
+    return { pal, frases, nombres };
   };
   BQ.postingsDe = (R, campoK, termino) => {
     const C = R.campos[campoK]; if (!C) return [];
@@ -115,33 +117,33 @@
   // ctx.libros: [{c, n, t, he?, alias: [...], caps: [{c, total}]}]
   const ORD = { primera: "1", primero: "1", primer: "1", "1a": "1", "1ra": "1", i: "1", segunda: "2", segundo: "2", "2a": "2", "2da": "2", ii: "2", tercera: "3", tercero: "3", "3a": "3", "3ra": "3", iii: "3" };
   BQ.aliasLibros = {
-    MAT: ["mt", "mat", "mateo", "matthew", "matt", "matityahu", "mattityahu", "mattay", "evangelio de mateo"],
-    MRK: ["mc", "mr", "mar", "marcos", "marco", "mark", "markos", "evangelio de marcos"],
-    LUK: ["lc", "lu", "luc", "lucas", "luke", "loukas", "evangelio de lucas"],
-    JHN: ["jn", "juan", "john", "yohanan", "evangelio de juan"],
-    ACT: ["hch", "hech", "hechos", "hechos de los apostoles", "acts", "actos", "praxeis", "hechos del espiritu santo"],
-    ROM: ["ro", "rom", "romanos", "romans", "carta a los romanos"],
-    "1CO": ["1co", "1cor", "1 corintios", "1 corinthians"],
-    "2CO": ["2co", "2cor", "2 corintios", "2 corinthians"],
+    MAT: ["mt", "mat", "mtt", "mateo", "matthew", "matt", "matityahu", "mattityahu", "mattay", "evangelio de mateo"],
+    MRK: ["mc", "mr", "mar", "mrc", "mk", "mrk", "marcos", "marco", "mark", "markos", "evangelio de marcos"],
+    LUK: ["lc", "lu", "luc", "lk", "luk", "lucas", "luke", "loukas", "evangelio de lucas"],
+    JHN: ["jn", "jua", "joh", "jhn", "yoh", "juan", "john", "yohanan", "evangelio de juan"],
+    ACT: ["hch", "hech", "hec", "hc", "act", "hechos", "hechos de los apostoles", "acts", "actos", "praxeis", "hechos del espiritu santo"],
+    ROM: ["ro", "rom", "rm", "rms", "romanos", "romans", "carta a los romanos"],
+    "1CO": ["1co", "1cor", "1c", "1 corintios", "1 corinthians"],
+    "2CO": ["2co", "2cor", "2c", "2 corintios", "2 corinthians"],
     GAL: ["ga", "gal", "galatas", "galatians"],
-    EPH: ["ef", "efe", "efesios", "ephesians"],
-    PHP: ["flp", "fil", "filip", "filipenses", "philippians"],
-    COL: ["col", "colosenses", "colossians"],
-    "1TH": ["1ts", "1tes", "1 tesalonicenses", "1 thessalonians"],
-    "2TH": ["2ts", "2tes", "2 tesalonicenses", "2 thessalonians"],
-    "1TI": ["1ti", "1tim", "1 timoteo", "1 timothy"],
-    "2TI": ["2ti", "2tim", "2 timoteo", "2 timothy"],
-    TIT: ["tit", "tito", "titus"],
-    PHM: ["flm", "filem", "filemon", "philemon"],
-    HEB: ["heb", "hebreos", "hebrews", "ivrim"],
-    JAS: ["stg", "sant", "santiago", "jacobo", "james", "yaaqov"],
-    "1PE": ["1p", "1pe", "1ped", "1 pedro", "1 peter"],
-    "2PE": ["2p", "2pe", "2ped", "2 pedro", "2 peter"],
-    "1JN": ["1jn", "1 juan", "1 john"],
-    "2JN": ["2jn", "2 juan", "2 john"],
-    "3JN": ["3jn", "3 juan", "3 john"],
-    JUD: ["jud", "judas", "jude", "yehudah"],
-    REV: ["ap", "apoc", "apocalipsis", "rev", "revelacion", "revelation", "hazon", "hitgalut"],
+    EPH: ["ef", "efe", "efs", "eph", "efesios", "ephesians"],
+    PHP: ["flp", "fil", "filip", "fp", "php", "phil", "filipenses", "philippians"],
+    COL: ["col", "cl", "cls", "colosenses", "colossians"],
+    "1TH": ["1ts", "1tes", "1th", "1tess", "1 tesalonicenses", "1 thessalonians"],
+    "2TH": ["2ts", "2tes", "2th", "2tess", "2 tesalonicenses", "2 thessalonians"],
+    "1TI": ["1ti", "1tim", "1tm", "1 timoteo", "1 timothy"],
+    "2TI": ["2ti", "2tim", "2tm", "2 timoteo", "2 timothy"],
+    TIT: ["tit", "tt", "tito", "titus"],
+    PHM: ["flm", "fm", "phm", "filem", "filemon", "philemon"],
+    HEB: ["heb", "hb", "hebreos", "hebrews", "ivrim"],
+    JAS: ["stg", "st", "sgo", "stgo", "sant", "jc", "jac", "jas", "jm", "jms", "santiago", "jacobo", "james", "yaaqov"],
+    "1PE": ["1p", "1pe", "1ped", "1pd", "1pt", "1pet", "1 pedro", "1 peter"],
+    "2PE": ["2p", "2pe", "2ped", "2pd", "2pt", "2pet", "2 pedro", "2 peter"],
+    "1JN": ["1jn", "1jua", "1jo", "1j", "1 juan", "1 john"],
+    "2JN": ["2jn", "2jua", "2jo", "2j", "2 juan", "2 john"],
+    "3JN": ["3jn", "3jua", "3jo", "3j", "3 juan", "3 john"],
+    JUD: ["jud", "jd", "jds", "judas", "jude", "yehudah"],
+    REV: ["ap", "apoc", "apc", "rv", "apocalipsis", "rev", "revelacion", "revelation", "hazon", "hitgalut"],
   };
   function claveLibro(s) {
     let k = BQ.norm(s).replace(/[.,;:]/g, " ").replace(/\s+/g, " ").trim();
@@ -240,6 +242,16 @@
       const enEs = tE && (R.campos.b.mapa.has(tE) || R.campos.e.mapa.has(tE));
       const enEn = tI && R.campos.i.mapa.has(tI);
       const latin = ctx.latin && w.length >= 4 ? ctx.latin.get(w) : null; // palabra griega escrita con letras latinas («agape», «logos»)
+      // (12-nov-2026) el comienzo de un nombre lleva al nombre exacto: «jac» → Jacobo y Jacob (Yaʿăqṓḇ), «sant» → Santiago
+      const nombres = ctx.conceptos && ctx.conceptos.nombres;
+      if (nombres && w.length >= 3 && !enEs && !enEn && !latin && !(tE && (ctx.conceptos.pal.get(tE) || []).length)) {
+        const pref = nombres.filter(([k]) => k.length > w.length && k.startsWith(w)).slice(0, 8);
+        if (pref.length) {
+          correcciones.push([w, pref.map(([k]) => k)]);
+          for (const [, ls] of pref) for (const li of ls) if (!lemas.has(li)) lemas.set(li, [0.85, i]);
+          return;
+        }
+      }
       if (tE && !enEs && !enEn) {
         if (latin) tE = null;
         else if (!(ctx.vocab && ctx.vocab.has(tE))) { const c = BQ.corregir(R, "e", tE) || BQ.corregir(R, "b", tE); if (c) { correcciones.push([w, c]); tE = c; } }
@@ -283,7 +295,7 @@
       res.push({ d, s: s * Math.pow(0.35 + cubre, 2), cubre, campos: porCampo.get(d) });
     }
     res.sort((a, b) => b.s - a.s);
-    return { res, correcciones, terminos: [...terminosB.keys()], ingles: [...terminosI.keys()], ideas };
+    return { res, correcciones, terminos: [...terminosB.keys()], ingles: [...terminosI.keys()], ideas, lemas: [...lemas.keys()] };
   };
 
   // ---------------------------------------------------------------- escenas, ayuda y nombres (coincidencia por palabras)

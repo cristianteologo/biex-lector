@@ -1,7 +1,7 @@
 /* BiEx · Lector y Analizador — negro, marfil y oro, en armonía con el sitio oficial de Biblia Exacta */
 /* Fuentes de los modos de lectura (licencia OFL; ver fuentes/LEEME.txt). Solo se descargan si se eligen. */
 /* Letras de la casa servidas desde el propio sitio: un solo archivo por estilo con todas las letras que usa BiEx (latinas,
-   griegas y signos combinables). Así las tildes sobre letras con macrón (YēshŪ́ʿa, YÔḥānā́n) quedan unidas a su letra:
+   griegas y signos combinables). Así las tildes sobre letras con macrón (YēshŪ́aʿ, YÔḥānā́n) quedan unidas a su letra:
    con los subconjuntos de Google Fonts la tilde combinable venía de otro archivo y se dibujaba suelta, a un lado.
    Subconjuntos renombrados de Gentium Book Plus, Cormorant Garamond y Jost (SIL Open Font License; ver fuentes/OFL-*.txt). */
 @font-face { font-family: "BiEx Texto"; src: url("fuentes/biex-texto.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
@@ -2062,3 +2062,15 @@ html:has(.cargando.inicio) .pie { visibility: hidden; }
 .an-card .lema-l a.g { text-decoration: none; }
 .an-card .lema-l a.g:hover, .an-card .lema-l a.g:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 @media (min-width: 900px) { .an-cols .an-ficha { position: sticky; top: 84px; align-self: start; } }
+
+/* (12-nov-2026) minutos de lectura que faltan, junto al aro de avance */
+.sr-min { position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 5px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--oro) 35%, transparent); background: color-mix(in srgb, var(--hoja) 82%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--tinta-2); font: 500 .74rem/1 var(--f-ui); letter-spacing: .02em; font-variant-numeric: tabular-nums; pointer-events: none; }
+.saltos-rap:not(.con-min) .sr-min { display: none; }
+/* (12-nov-2026; idea de la app de junio) la línea del buscador, con colores que se desplazan despacio (solo transformación) */
+.bq-campo:has(.bq-linea) { border-bottom-color: transparent; }
+.bq-linea { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; border-radius: 2px; pointer-events: none; opacity: .8; transition: opacity .3s; }
+.bq-linea::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; background: linear-gradient(90deg, var(--oro) 0%, #6aa7d8 16.66%, #b08bd9 33.33%, var(--oro-vivo, #e8cf94) 50%, #6aa7d8 66.66%, #b08bd9 83.33%, var(--oro) 100%); animation: bq-linea 14s linear infinite; }
+.bq-campo:focus-within .bq-linea { opacity: 1; }
+@keyframes bq-linea { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .bq-linea::before { animation: none; } }
+html[data-mov="no"] .bq-linea::before { animation: none; }

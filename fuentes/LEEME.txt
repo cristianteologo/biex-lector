@@ -11,4 +11,4 @@ BiEx Signos (incrustada en app.css): solo dos signos, 𝔓 (U+1D513) y ℵ (U+21
 (Copyright 2022 Google LLC), con licencia SIL Open Font License 1.1 (https://openfontlicense.org). Subconjunto
 renombrado; se distribuye con la misma licencia.
 
-biex-texto*.woff2, biex-titular*.woff2 y biex-interfaz.woff2 (9-nov-2026): subconjuntos renombrados («BiEx Texto», «BiEx Titular», «BiEx Interfaz») de Gentium Book Plus (SIL), Cormorant Garamond y Jost, con licencia SIL Open Font License 1.1 (OFL-Gentium.txt, OFL-CormorantGaramond.txt, OFL-Jost.txt). Un solo archivo por estilo con todas las letras que usa BiEx, para que las tildes combinables queden sobre su letra (YēshŪ́ʿa, YÔḥānā́n).
+biex-texto*.woff2, biex-titular*.woff2 y biex-interfaz.woff2 (9-nov-2026): subconjuntos renombrados («BiEx Texto», «BiEx Titular», «BiEx Interfaz») de Gentium Book Plus (SIL), Cormorant Garamond y Jost, con licencia SIL Open Font License 1.1 (OFL-Gentium.txt, OFL-CormorantGaramond.txt, OFL-Jost.txt). Un solo archivo por estilo con todas las letras que usa BiEx, para que las tildes combinables queden sobre su letra (YēshŪ́aʿ, YÔḥānā́n).
