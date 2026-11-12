@@ -723,10 +723,14 @@
   }
   // velo de la vuelta: la vista aparece cuando ya está exactamente donde se dejó (como mucho 900 ms)
   let tVelo = 0;
+  // (R10, BiEx 12-nov-2026: parpadeo al volver a la app instalada) al levantarse, la vista entra con un fundido breve
+  // (solo opacidad) en vez de aparecer de golpe
   function velar(si) {
     clearTimeout(tVelo);
-    document.documentElement.classList.toggle("volviendo", !!si);
-    if (si) tVelo = setTimeout(() => document.documentElement.classList.remove("volviendo"), 900);
+    const r = document.documentElement, antes = r.classList.contains("volviendo");
+    r.classList.toggle("volviendo", !!si);
+    if (si) tVelo = setTimeout(() => velar(false), 900);
+    else if (antes) { r.classList.add("aparece"); setTimeout(() => r.classList.remove("aparece"), 280); }
   }
   const restaurando = () => RP.objetivo != null;
   // arriba del todo, salvo que se esté volviendo a una posición guardada
@@ -4964,12 +4968,16 @@
         cx.fillStyle = g; cx.fillRect(0, 0, W, H);
       });
     }
+    // (R10, 12-nov-2026) reloj propio que se detiene mientras la página está oculta: al volver, las luces siguen donde estaban
+    let pausa = 0, ocultaDesde = 0;
+    const reloj = () => performance.now() - pausa;
+    document.addEventListener("visibilitychange", () => { if (document.hidden) ocultaDesde = performance.now(); else if (ocultaDesde) { pausa += performance.now() - ocultaDesde; ocultaDesde = 0; } });
     medir(); pintar(0);
     let tr = 0;
-    window.addEventListener("resize", () => { clearTimeout(tr); tr = setTimeout(() => { medir(); pintar(performance.now()); }, 200); });
+    window.addEventListener("resize", () => { clearTimeout(tr); tr = setTimeout(() => { medir(); pintar(reloj()); }, 200); });
     // derivan a menos de 4 px por segundo: con unos 7 dibujos por segundo el movimiento se ve continuo
-    setInterval(() => { if (document.hidden || ap.mov === "no" || red.matches || document.documentElement.classList.contains("con-modal")) return; pintar(performance.now()); }, 140);
-    try { new MutationObserver(() => pintar(performance.now())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { /* sin observador */ }
+    setInterval(() => { if (document.hidden || ap.mov === "no" || red.matches || document.documentElement.classList.contains("con-modal")) return; pintar(reloj()); }, 140);
+    try { new MutationObserver(() => pintar(reloj())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { /* sin observador */ }
   }
   function meteoros(capa) {
     if (!capa || !capa.animate) return null;
