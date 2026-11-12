@@ -518,11 +518,11 @@
   // Orden de los libros: cronológico (por defecto), por fecha de escritura o tradicional (datos/cronologia.json)
   let CRONO = null;
   const ORDENES = [
-    ["crono", "Cronológico", () => "Primero los relatos de la vida de YēshŪ́ʿa, según el primer acontecimiento que narra cada uno; luego " + nombreLibro(libroDe("ACT")) + ", las cartas en el orden en que se escribieron y, al final, " + nombreLibro(libroDe("REV")) + "."],
+    ["crono", "Χrοnοlόgικο", () => "En el orden del tiempo (χrοnοlοgικός): primero los relatos de la vida de YēshŪ́ʿa, según el primer acontecimiento que narra cada uno; luego " + nombreLibro(libroDe("ACT")) + ", las cartas en el orden en que se escribieron y, al final, " + nombreLibro(libroDe("REV")) + "."],
     ["escritura", "Por escritura", "Cada libro en el orden en que se escribió, con su fecha aproximada: todos, antes del año 70."],
     ["tradicional", "Tradicional", "El orden habitual en espurias traducciones de la Biblia."]];
   const ordenActivo = () => (CRONO && CRONO.ordenes[prefs.orden] ? prefs.orden : "tradicional");
-  const nombreOrden = () => ({ crono: "en orden cronológico", escritura: "por fecha de escritura", tradicional: "en el orden tradicional" })[ordenActivo()];
+  const nombreOrden = () => ({ crono: "en orden χrοnοlόgικο", escritura: "por fecha de escritura", tradicional: "en el orden tradicional" })[ordenActivo()];
   function librosEnOrden() { const k = ordenActivo(); return k === "tradicional" ? D.libros : CRONO.ordenes[k].map(libroDe).filter(Boolean); }
   const numLibro = (b) => librosEnOrden().indexOf(b) + 1;
   // En rótulos en mayúsculas, las palabras con signos (YēshŪ́ʿa) se dejan en su forma para no deformar los diacríticos
@@ -1390,7 +1390,7 @@
           hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias"),
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
-          hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden cronológico en 30, 90 días o un año, los relatos de la vida de YēshŪ́ʿa y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
+          hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́ʿa y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
           hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
@@ -3804,7 +3804,7 @@
       };
     },
     orden(el) {
-      const ords = [["crono", "Cronológico"], ["escritura", "Por escritura"], ["tradicional", "Tradicional"]].filter(([k]) => k === "tradicional" || (CRONO && CRONO.ordenes[k]));
+      const ords = [["crono", "Χrοnοlόgικο"], ["escritura", "Por escritura"], ["tradicional", "Tradicional"]].filter(([k]) => k === "tradicional" || (CRONO && CRONO.ordenes[k]));
       const chips = h("div", { class: "go-chips" }, ords.map(([, t]) => h("span", { text: t })));
       const lista = h("div", { class: "go-lista" });
       el.append(h("div", { class: "go" }, chips, lista));
@@ -4632,12 +4632,12 @@
   // (biex:planes) y la siguiente lectura aparece en la portada y al terminar su último capítulo.
   const NO_CARTAS = ["MAT", "MRK", "LUK", "JHN", "ACT", "REV"];
   const PLANES = [
-    { id: "crono-90", t: "La Nueva Voluntad en orden cronológico", dias: 90, ord: "crono", d: () => "Toda la Nueva Voluntad en 90 días, en el orden en que sucedieron los hechos y se escribieron las cartas." },
-    { id: "anual", t: "Un año con la Nueva Voluntad", dias: 260, ord: "crono", d: () => "Un capítulo por lectura: los 260 capítulos en orden cronológico, cinco por semana durante un año." },
+    { id: "crono-90", t: "La Nueva Voluntad en orden χrοnοlόgικο", dias: 90, ord: "crono", d: () => "Toda la Nueva Voluntad en 90 días, en el orden en que sucedieron los hechos y se escribieron las cartas." },
+    { id: "anual", t: "Un año con la Nueva Voluntad", dias: 260, ord: "crono", d: () => "Un capítulo por lectura: los 260 capítulos en orden χrοnοlόgικο, cinco por semana durante un año." },
     { id: "relatos-40", t: "Los relatos de la vida de YēshŪ́ʿa", dias: 40, ord: "crono", sel: ["LUK", "MAT", "MRK", "JHN"], d: () => ["LUK", "MAT", "MRK", "JHN"].map((c) => nombreLibro(libroDe(c))).join(", ").replace(/, ([^,]*)$/, " y $1") + ", en 40 días, según el primer acontecimiento que narra cada uno." },
     { id: "cartas-60", t: "Las cartas en el orden en que se escribieron", dias: 60, ord: "escritura", cartas: true, d: () => "Las cartas en 60 días, cada una en su momento: de la más temprana a la última, antes del año 70." },
     { id: "escritura-90", t: "La Nueva Voluntad en el orden en que se escribió", dias: 90, ord: "escritura", d: () => "Toda la Nueva Voluntad en 90 días, libro por libro en el orden en que se escribió, del más temprano al último." },
-    { id: "nv-30", t: "La Nueva Voluntad en 30 días", dias: 30, ord: "crono", d: () => "Una lectura intensa, de unos nueve capítulos por día, en orden cronológico." },
+    { id: "nv-30", t: "La Nueva Voluntad en 30 días", dias: 30, ord: "crono", d: () => "Una lectura intensa, de unos nueve capítulos por día, en orden χrοnοlόgικο." },
   ];
   const planDe = (id) => PLANES.find((x) => x.id === id) || null;
   const estPlanes = () => { const e = store.get("planes", null); return e && typeof e === "object" ? Object.assign({ act: null, hechos: {}, ini: {}, fechas: {} }, e) : { act: null, hechos: {}, ini: {}, fechas: {} }; };
