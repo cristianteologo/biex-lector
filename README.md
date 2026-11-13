@@ -25,6 +25,10 @@ Transcripciones de los manuscritos: Center for New Testament Restoration [Centro
 
 Códigos Strong y formación de las palabras (`datos/lexico.json`): códigos Strong extendidos de TAGNT (STEPBible.org, Tyndale House, CC BY 4.0) y Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890), en los datos de Open Scriptures [Escrituras Abiertas] (CC BY-SA), con las familias morfológicas de BiEx. El léxico de estudio derivado se publica con licencia CC BY-SA 4.0.
 
+Referencias cruzadas (`datos/refs/`): OpenBible.info, «Cross References» (CC BY), a partir del Treasury of Scripture Knowledge [Tesoro del Conocimiento de la Escritura] y ordenadas con los votos de su comunidad; organizadas por nivel y categoría por BiEx.
+
+Ciudades del juego (`datos/lugares.json`): GeoNames (CC BY 4.0).
+
 Buscador: para reconocer el vocabulario con que se recuerda un verso, el índice guarda raíces de palabras de Reina-Valera 1909 y 1865, World English Bible, King James Version y Berean Standard Bible (dominio público) y de la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0). Ninguno de esos textos se muestra.
 
 Fechas de escritura de la línea del tiempo: John Arthur Thomas Robinson [J. A. T. Robinson], *Redating the New Testament* [Nueva datación de la Nueva Voluntad] (1976).

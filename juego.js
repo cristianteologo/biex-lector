@@ -813,6 +813,7 @@ html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);borde
 .jg-arbol-lista li>span:first-child{min-width:0;overflow-wrap:anywhere}
 .jg-arbol-lista li b{font-weight:500;color:var(--tinta)}
 .jg-arbol-lista li small{font:400 .72rem var(--f-ui);color:var(--tenue)}
+.jg-arbol-lista li small.jg-gen-dat{display:block;margin-top:2px;font-size:.7rem;letter-spacing:.01em;color:color-mix(in srgb,var(--oro) 55%,var(--tenue))}
 .jg-arbol-lista li>.jg-mini{flex:none;font-size:.72rem;white-space:nowrap}
 .jg-arbol-lista.plegada li:nth-child(n+7){display:none}
 .jg-arbol-mas{margin-top:6px}
@@ -1076,17 +1077,36 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
 .ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
 .ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
-.jg-lb{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:6px 18px 6px 7px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+.jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:6px 18px 6px 7px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .84rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
   box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,224,140,.6),0 12px 28px -10px rgba(0,0,0,.78),0 0 0 1px rgba(0,0,0,.22);
   transition:opacity .24s ease,transform .26s cubic-bezier(.3,1.3,.5,1)}
-.jg-lb::after{content:"";position:absolute;inset:-7px}
-.jg-lb.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
-.jg-lb:active{transform:translate3d(-50%,0,0) scale(.96)}
+.jg-lb::after,.jg-lbp::after{content:"";position:absolute;inset:-7px}
+.jg-lb.fuera,.jg-lbp.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
+.jg-lb:active,.jg-lbp:active{transform:translate3d(-50%,0,0) scale(.96)}
+/* X16: la perícopa entera, encima del botón del verso (vista continua) */
+.jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 58px);min-height:40px;padding:5px 16px 5px 6px;color:var(--tinta)}
+.jg-lbp .jg-lb-i{width:26px;height:26px}
+/* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
+.jg-pie{position:absolute;left:0;top:0;z-index:3;display:inline-flex;gap:6px;align-items:center;will-change:transform}
+.jg-pie[hidden],.jg-pie [hidden]{display:none}
+.jg-pie-b{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px 0 5px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font:600 .66rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 46%,transparent);
+  background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.24),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 8%,var(--hoja)));
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.38),0 8px 18px -10px rgba(0,0,0,.75);transition:transform .2s cubic-bezier(.3,1.3,.5,1),opacity .2s}
+.jg-pie-b::after{content:"";position:absolute;inset:-9px -4px}
+.jg-pie-b:active{transform:scale(.95)}
+.jg-pie-b:focus-visible{outline:2px solid var(--oro);outline-offset:2px}
+.jg-pie-p{color:var(--tinta);border-color:color-mix(in srgb,var(--oro) 32%,transparent)}
+.jg-pie-i{width:18px;height:18px;border-radius:50%;border:1.3px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
+.jg-pie-i::after{content:"";width:7px;height:3.5px;margin-top:-2px;border:solid currentColor;border-width:0 0 1.6px 1.6px;transform:rotate(-45deg);opacity:.6;transition:opacity .2s}
+.jg-pie.espera .jg-pie-v .jg-pie-i::after{opacity:.28}
+.jg-pie.hecho .jg-pie-i{background:var(--oro-vivo)}
+.jg-pie.hecho .jg-pie-i::after{border-color:var(--hoja);opacity:1}
 .jg-lb-i{width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
 .jg-lb-i::after{content:"";width:10px;height:5px;margin-top:-3px;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg);opacity:.5;transition:opacity .2s}
-.jg-lb.hecho .jg-lb-i{background:var(--oro-vivo)}
+.jg-lb.hecho .jg-lb-i,.jg-lbp.hecho .jg-lb-i{background:var(--oro-vivo)}
 .jg-lb.hecho .jg-lb-i::after{border-color:var(--hoja);opacity:1}
 .jg-lb.espera .jg-lb-i::after{opacity:.32}
 .jg-lb-t{display:grid;gap:4px;text-align:left}
@@ -1755,7 +1775,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // «Que la distribución tenga sus propios botones, como los menús de los juegos»: cinco secciones fijas, siempre a la mano.
   // El menú vive fuera de la vista (no parpadea al repintar) y se retira al salir de Escudriña.
   // El Árbol de la siembra con su propio botón en el menú (BiEx, 10-nov-2026)
-  const SECC = [["hoy", "Hoy", "hoy"], ["tesoro", "Tesoro", "liga"], ["mundo", "Mundo", "mundo"], ["juntos", "Juntos", "compania"], ["arbol", "Árbol", "arbol"], ["mas", "Más", "mas"]];
+  const SECC = [["hoy", "Hoy", "hoy"], ["mundo", "Mundo", "mundo"], ["tesoro", "Tesoro", "liga"], ["juntos", "Juntos", "compania"], ["arbol", "Árbol", "arbol"], ["mas", "Más", "mas"]];
   const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "arbol",
     mas: "mas", cuenta: "mas", propuestas: "mas", guia: "hoy" };
   const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
@@ -1877,7 +1897,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     ["Nunca a solas", "Entra en la liga de la semana, aporta a la misión mundial, forma una compañía de 2 a 24 personas o abre una sala para leer en compañía.", "juntos"],
     ["Tu siembra", "Comparte tu enlace. Quien llega contigo empieza con 3 horas de experiencia doble, y tu árbol de la siembra crece generación tras generación.", "siembra"],
     // BiEx (10-nov-2026): el menú cambió (seis botones, con el Árbol): el paso 7 lo dice tal como es
-    ["El menú del juego", "Abajo tienes seis botones: Hoy (tu lectura y tus misiones), Tesoro (lo que hallas leyendo), Mundo (la liga, la misión mundial y las clasificaciones), Juntos (tu compañía y las salas), Árbol (tu ser interior: atributos, armadura y tienda) y Más (tu cuenta). Con ellos llegas a todo. Y guarda bien tu acceso: es tu llave.", "menu"]];
+    ["El menú del juego", "Abajo tienes seis botones: Hoy (tu lectura y tus misiones), Mundo (la liga, la misión mundial y las clasificaciones), Tesoro (lo que hallas leyendo), Juntos (tu compañía y las salas), Árbol (tu ser interior: atributos, armadura y tienda) y Más (tu cuenta). Con ellos llegas a todo. Y guarda bien tu acceso: es tu llave.", "menu"]];
   function escenaGuia(k) {
     const giro = (el, grados) => { el.style.transform = "rotate(" + grados + "deg) translate3d(0,-84px,0)"; return el; };
     if (k === "versos") return h("div", { class: "g-versos" }, h("i"), h("i"), h("i"), h("i"), h("b", { class: "g-xp", text: "+12" }));
@@ -2069,6 +2089,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // --- árbol de la siembra (BiEx, 9-nov-2026): quién llegó con tu enlace, quién llegó por esas personas… hasta dónde llegó
   // lo que sembraste al compartir. El servidor lo calcula al pedirlo (una sola consulta) y el navegador lo guarda un minuto.
   const ORD = ["", "1.ª", "2.ª", "3.ª", "4.ª", "5.ª", "6.ª", "7.ª", "8.ª", "9.ª", "10.ª"];
+  // «Por generación» (BiEx, 13-nov-2026): región (departamento o estado), país, nivel y, si es Primicia, su número
+  const datosGen = (n) => [n.re, n.pa ? nombrePais(n.pa) : "", n.nv ? "nivel " + n.nv : "", n.pr ? "Primicia" + (n.pn ? " n.º " + fmt(n.pn) : "") : ""].filter(Boolean).join(" · ");
   const ordGen = (k) => ORD[k] || k + ".ª";
   const diaCorto = (f) => { try { return new Date(f + "T12:00:00Z").toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); } catch (e) { return f; } };
   // Dibujo radial y vectorial: tú en el centro, cada generación en su anillo; cada rama ocupa el ángulo de las hojas que sostiene
@@ -2187,9 +2209,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const claves = ["v", "c", "j", "p", "r", "b"], nombres = { v: "Veracidad", c: "Confiabilidad", j: "Justicia", p: "Placidez", r: "Dicho", b: "Salvífico" }; // K2 (12-nov-2026)
     claves.forEach((k, i) => {
       const val = ef[k] || 0, x = 105 + i * 158, yy = 1000 + (i % 2 ? 28 : 0), w = 5 + Math.min(20, val * 0.6), op = (0.35 + Math.min(0.65, val / 40)).toFixed(2), col = ATR_COL[k];
-      const d = "M" + (488 + i * 5) + " 800C" + f1(470 + (x - 500) * 0.25) + " " + (880 + rnd() * 30).toFixed(0) + " " + f1(x + (500 - x) * 0.25) + " " + (900 + rnd() * 30).toFixed(0) + " " + x + " " + (yy - 46);
+      // (BiEx, 13-nov-2026) la raíz termina DENTRO de su medallón (opaco, se dibuja encima): así su comienzo nunca asoma por un
+      // lado del círculo, llegue con el ángulo que llegue; la savia sigue la misma curva y nace en el borde del medallón.
+      const ini = "M" + (488 + i * 5) + " 800C" + f1(470 + (x - 500) * 0.25) + " " + (880 + rnd() * 30).toFixed(0) + " " + f1(x + (500 - x) * 0.25) + " " + (900 + rnd() * 30).toFixed(0) + " ";
+      const d = ini + x + " " + (yy - 12), dS = ini + x + " " + (yy - 46);
       raices += '<path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w + 10) + '" opacity=".14" fill="none" stroke-linecap="round"/><path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w) + '" opacity="' + op + '" fill="none" stroke-linecap="round"/>';
-      raizD.push([d, col, val]);
+      raizD.push([dS, col, val]);
       med += '<g class="ap-med" style="color:' + col + '"><circle cx="' + x + '" cy="' + yy + '" r="44" fill="#0d0b08" stroke="' + col + '" stroke-width="3" stroke-opacity="' + op + '"/><circle cx="' + x + '" cy="' + yy + '" r="38" fill="' + col + '" opacity=".1"/>' +
         '<g transform="translate(' + (x - 15) + " " + (yy - 30) + ') scale(1.25)">' + ATR_ICO[k] + '</g><text x="' + x + '" y="' + (yy + 25) + '" text-anchor="middle" font-size="25" font-weight="600" fill="currentColor" style="font-family:var(--f-ui)">' + val + '</text>' +
         '<text x="' + x + '" y="' + (yy + 76) + '" text-anchor="middle" font-size="' + (k === "r" ? 19 : 22) + '" fill="var(--tinta-2)" style="font-family:var(--f-ui);letter-spacing:.04em">' + nombres[k] + "</text></g>";
@@ -2607,15 +2632,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
       for (const x of dib.querySelectorAll(".rama.linaje")) x.classList.remove("linaje");
       for (let k = n, i = 0; k && i < 12; k = k.p ? porC.get(k.p) : null, i++) { const ruta = [...dib.querySelectorAll(".rama")].find((x) => x.getAttribute("data-c") === k.c); if (ruta) ruta.classList.add("linaje"); }
       const padre = n.p ? porC.get(n.p) : null;
-      ficha.replaceChildren(h("p", { class: "jg-nombre" }, n.a, n.pa ? h("small", { class: "jg-pais", text: " · " + nombrePais(n.pa) }) : null),
-        h("p", { class: "jg-mini", text: ordGen(n.k) + " generación" + (padre ? " · llegó por " + padre.a : "") + (n.f ? " · " + diaCorto(n.f) : "") + (n.pr ? " · Primicia" : "") }),
+      ficha.replaceChildren(h("p", { class: "jg-nombre" }, n.a, n.pa || n.re ? h("small", { class: "jg-pais", text: " · " + [n.re, n.pa ? nombrePais(n.pa) : ""].filter(Boolean).join(", ") }) : null),
+        h("p", { class: "jg-mini", text: ordGen(n.k) + " generación" + (padre ? " · llegó por " + padre.a : "") + (n.f ? " · " + diaCorto(n.f) : "") + (n.nv ? " · nivel " + n.nv : "") + (n.pr ? " · Primicia" + (n.pn ? " n.º " + fmt(n.pn) : "") : "") }),
         h("p", { text: (n.ok ? "Confirmó su lugar." : "Todavía no confirma su lugar (lo hace al leer sus primeros 20 versos o al asegurar su cuenta).") + (n.h ? " Trajo a " + plural(n.h, "persona", "personas") + (n.d > n.h ? " y su rama ya suma " + fmt(n.d) : "") + "." : "") }),
         n.h ? h("a", { class: "btn chico", href: "#/escudrina/arbol/" + n.c }, ico("arbol"), h("span", { text: "Ver su rama" })) : null);
     };
     dib.addEventListener("click", (e) => { const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) elegir(g.getAttribute("data-c")); });
     dib.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) { e.preventDefault(); elegir(g.getAttribute("data-c")); } });
     const lista = h("ol", { class: "jg-arbol-lista" }, r.nodos.map((n) => { const padre = n.p ? porC.get(n.p) : null; return h("li", { class: n.ok ? "ok" : "" },
-      h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") }), h("span", { class: "jg-act", "data-c": n.c, "aria-live": "off" })),
+      h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") }), h("span", { class: "jg-act", "data-c": n.c, "aria-live": "off" }), datosGen(n) ? h("small", { class: "jg-gen-dat", text: datosGen(n) }) : null),
       h("span", { class: "jg-mini", text: n.d ? fmt(n.d) + " en sus ramas" : "" })); }));
     const cuentaAct = h("p", { class: "jg-mini jg-act-t", "aria-live": "polite" });
     // compacta: las primeras 6 personas y el resto al tocar «Ver a todas»
@@ -3151,7 +3176,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     estilos(); escuchar(); recuperarCola(); medidor(true);
     if (R.lib !== lib || R.cap !== cap) {
       soltar();
-      Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), quiere: new Set(), prueba: false });
+      Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), quiere: new Set(), prueba: false, dw: cargarDw(lib + "." + cap) });
       prepararCapitulo(lib, cap);
     } else if (R.prueba) setTimeout(tarjetaPrueba, 50);
     observar();
@@ -3184,7 +3209,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     guardarCola(true);
     soltar(); medidor(false);
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
-    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false });
+    guardarDw(true);
+    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false, dw: new Map() });
     // fuera de los capítulos, lo pendiente sale a su hora (o al volver a leer)
     if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && Date.now() - R.ultEnvio > CADA) enviar(false); }, 1000);
   }
@@ -3221,8 +3247,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
       hay = true;
       if (!R.pend.has(v)) { el = e; break; }
     }
-    // tiempo de lectura activo (página a la vista, con presencia y versos por leer): minutos reales y ritmo de la fórmula
-    if (el || hay) { const lc = R.lib + "." + R.cap; R.tl[lc] = (R.tl[lc] || 0) + dt; }
+    // tiempo de lectura activo (P20; salvaguarda X17, BiEx 13-nov-2026): solo suma el verso que está en la línea de lectura,
+    // y cada verso tiene un tope (1,6 veces el tiempo que pide el capítulo para sus palabras). Así, dejar la vista abierta
+    // sobre unos mismos versos no acumula tiempo para el resto del capítulo: el capítulo solo se habilita leyendo cada parte.
+    if (el || hay) acumularLinea(dt);
     if (el) {
       const v = +el.id.slice(1), t = (R.acc.get(v) || 0) + dt;
       R.acc.set(v, t);
@@ -3234,6 +3262,39 @@ html[data-mov="no"] .ap-savia{display:none!important}
         estadoSellos(v);
       }
     }
+  }
+  const msCap = () => (S.cfg && S.cfg.msCap) || 850;
+  const topeDw = (v) => 1.6 * msCap() * (R.pal[v - 1] || 0);
+  function acumularLinea(dt) {
+    if (!R.dw) R.dw = new Map();
+    const T = topeBarras() + 6, B = pieLB() - 6, H = Math.max(1, B - T), linea = T + H * 0.34;
+    const se = document.scrollingElement || document.documentElement, alFinal = se.scrollHeight - (scrollY + innerHeight) < 8;
+    let destino = 0;
+    for (const e of R.els) {
+      if (!R.vis.get(e)) continue;
+      const v = +e.id.slice(1), r = e.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
+      const libre = !R.hechos.has(v) && !yaLeido(v) && valeLeer(v) && (R.dw.get(v) || 0) < topeDw(v);
+      if (alFinal) { if (libre) { destino = v; break; } continue; } // al final ya no se puede bajar: el primero que falte
+      if (r.bottom > linea) { if (libre) destino = v; break; }
+    }
+    if (!destino) return;
+    const ya = R.dw.get(destino) || 0, add = Math.min(dt, topeDw(destino) - ya); if (add <= 0) return;
+    R.dw.set(destino, ya + add);
+    const lc = R.lib + "." + R.cap; R.tl[lc] = (R.tl[lc] || 0) + add;
+    guardarDw();
+  }
+  function cargarDw(lc) {
+    const o = A.store.get("jg:dw", null) || {}, x = o[lc];
+    if (!x || !x.d || Date.now() - (x.t || 0) > 7 * 864e5) return new Map();
+    return new Map(Object.entries(x.d).map(([v, ms]) => [+v, +ms || 0]));
+  }
+  function guardarDw(ya) {
+    if (!R.lib || !R.dw) return;
+    const ahora = Date.now(); if (!ya && ahora - (R.dwT || 0) < 5000) return; R.dwT = ahora;
+    const o = A.store.get("jg:dw", null) || {}, lc = R.lib + "." + R.cap;
+    for (const k of Object.keys(o)) if (ahora - (o[k].t || 0) > 7 * 864e5) delete o[k];
+    if (R.dw.size) o[lc] = { t: ahora, d: Object.fromEntries([...R.dw].map(([v, ms]) => [v, Math.round(ms)])) }; else delete o[lc];
+    A.store.set("jg:dw", o);
   }
   // --- sellos «Leí hasta aquí ✓» (al final de cada perícopa: marca § de BiEx o párrafo ¶; sin marcas, cada 8 versos)
   const PEND_DIAS = 7;
@@ -3311,6 +3372,22 @@ html[data-mov="no"] .ap-savia{display:none!important}
       document.body.append(LB.el);
     }
     if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i", { class: "f" }), h("i", { class: "n" })); hoja.append(LB.ah); }
+    // X15 y X16 (BiEx, 13-nov-2026): en la vista por versos, «Leído» va discreto al pie del verso; al terminar una perícopa
+    // cuyos versos ya tienen su tiempo, se ofrece también marcarla entera. En la vista continua, el botón fijo de abajo y,
+    // encima, el de la perícopa cuando su final está a la vista.
+    if (!LB.pie || LB.pie.parentElement !== hoja) {
+      if (LB.pie) LB.pie.remove();
+      LB.pie = h("div", { class: "jg-pie", hidden: true },
+        h("button", { type: "button", class: "jg-pie-b jg-pie-p", hidden: true, onclick: (ev) => { ev.stopPropagation(); tocarPeri(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t" })),
+        h("button", { type: "button", class: "jg-pie-b jg-pie-v", onclick: (ev) => { ev.stopPropagation(); tocarLB(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t", text: "Leído" })));
+      for (const ev of ["pointerdown", "click", "keydown"]) LB.pie.addEventListener(ev, (e) => e.stopPropagation());
+      hoja.append(LB.pie);
+    }
+    if (!LB.pb || !LB.pb.isConnected) {
+      LB.pb = h("button", { type: "button", class: "jg-lbp fuera", onclick: (ev) => { ev.stopPropagation(); tocarPeri(LB.pb); } },
+        h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Perícopa leída" }), h("small", { text: "" })));
+      document.body.append(LB.pb);
+    }
     LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
     pintarMarcados();
     // los versos a la vista (sin franjas fijas: la zona útil se mide con las barras reales, ver elegirLB)
@@ -3333,21 +3410,55 @@ html[data-mov="no"] .ap-savia{display:none!important}
     for (const q of ["header.barra", ".barra-hoja.bh-pegada"]) { const el = document.querySelector(q); if (el) { const r = el.getBoundingClientRect(); if (r.top < 240 && r.bottom > t) t = r.bottom; } }
     return t;
   }
+  const enFilaVista = () => !!(R.els && R.els.length && R.els[0].classList.contains("vl"));
   // borde superior de lo que flota abajo (el botón «Leído», que ya sube sobre la sala)
   function pieLB() {
+    // vista por versos: no hay botón fijo; el límite es el borde de abajo (o los saltos rápidos, que flotan a la derecha)
+    if (enFilaVista()) return innerHeight - 12;
     const r = LB.el && LB.el.getBoundingClientRect();
-    return r && r.height ? r.top - (LB.el.classList.contains("fuera") ? 14 : 0) : innerHeight - 90;
+    let y = r && r.height ? r.top - (LB.el.classList.contains("fuera") ? 14 : 0) : innerHeight - 90;
+    if (LB.pb && !LB.pb.classList.contains("fuera")) { const q = LB.pb.getBoundingClientRect(); if (q.height) y = Math.min(y, q.top); }
+    return y;
   }
-  // El verso que marcaría «Leído» (13-nov-2026, afinado a las 13:04 con dos capturas de BiEx): el primero sin marcar cuyo
-  // número se ve entero en la zona útil (debajo de las barras y encima de lo que flota abajo), en la parte de arriba si lo
-  // hay; un verso que empezó bajo las barras ya no se elige aunque se vean varios renglones suyos. Solo si en la zona no
-  // se ve el comienzo de ningún verso (un verso muy largo que llena la pantalla), se elige el que la ocupa.
+  // la perícopa de un verso: en la vista por versos, de una fila con § a la siguiente; en la continua, su párrafo
+  function periDe(v) {
+    const el = document.getElementById("v" + v); if (!el) return null;
+    let grupo;
+    if (el.classList.contains("vl")) {
+      const i = R.els.indexOf(el); if (i < 0) return null;
+      let a = i; while (a > 0 && !R.els[a].classList.contains("p")) a--;
+      let b = i; while (b + 1 < R.els.length && !R.els[b + 1].classList.contains("p")) b++;
+      grupo = R.els.slice(a, b + 1);
+    } else { const par = el.closest(".peri"); if (!par) return null; grupo = [...par.querySelectorAll(":scope > .vs")]; }
+    const vs = grupo.map((e) => +e.id.slice(1)), marc = vs.filter((x) => marcable(x));
+    return { a: vs[0], b: vs[vs.length - 1], vs, marc, fin: grupo[grupo.length - 1], ok: vs.length >= 2 && marc.length >= 2 && marc.every((x) => R.pend.has(x)) };
+  }
+  // El verso que marcaría «Leído» (13-nov-2026; afinado a las 13:04 y a las 15:13 con capturas de BiEx): el resplandor empieza
+  // MÁS ABAJO de las barras, en la franja donde de verdad se lee (de ~16 % a 62 % de la zona útil), no en el primer renglón
+  // que asoma bajo ellas. Se elige el primer verso sin marcar cuyo número se ve entero en esa franja; si ninguno empieza ahí
+  // (versos largos), el que cruza la línea de lectura con su número a la vista; luego el primero que asoma más abajo, y solo
+  // al final uno cuyo número quedó en la franja de arriba. Arriba del capítulo (sin poder subir más) la franja empieza bajo
+  // las barras, para que el verso 1 también se pueda marcar; lo mismo con los últimos versos al llegar al final.
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
     const T = topeBarras() + 6, B = pieLB() - 6, H = B - T;
     if (H < 90) { clearTimeout(LB.st3); LB.st3 = setTimeout(pedirLB, 450); return; } // las barras se están moviendo: se vuelve a mirar enseguida
-    const arriba = T + H * 0.6;
-    let v = 0, sig = 0, largo = 0, algunNumero = false;
+    // X15 · vista por versos: el primer verso sin marcar que sigue a la vista bajo las barras; su «Leído» aparece en su pie
+    // cuando ese pie ya se ve (un verso largo se termina de leer antes de que aparezca)
+    if (enFilaVista()) {
+      const ini = T + H * 0.1; let v = 0;
+      for (const el of R.els) {
+        const x = +el.id.slice(1); if (!LB.vis.has(x)) continue;
+        const r = el.getBoundingClientRect(); if (r.bottom <= ini) continue; if (r.top >= B) break;
+        if (!marcable(x)) continue;
+        if (r.bottom <= B - 4) v = x;
+        break;
+      }
+      return ponerLB(v);
+    }
+    const se = document.scrollingElement || document.documentElement, alFinal = se.scrollHeight - (scrollY + innerHeight) < 8;
+    const m = Math.min(H * 0.16, Math.max(0, scrollY - 40)), ini = T + m, arriba = T + H * 0.62, linea = T + H * 0.34;
+    let v = 0, cruza = 0, sig = 0, alto = 0, largo = 0, algunNumero = false;
     for (const el of R.els) {
       const x = +el.id.slice(1); if (!LB.vis.has(x)) continue;
       const r = el.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
@@ -3355,10 +3466,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (numVe) algunNumero = true;
       if (!marcable(x)) continue;
       if (!numVe) { if (!largo && r.top < T && r.bottom > T + H * 0.85) largo = x; continue; }
+      if (nr.top < ini) { if (!cruza && r.bottom > linea) cruza = x; if (!alto) alto = x; continue; }
       if (nr.top <= arriba) { v = x; break; }
       if (!sig) sig = x;
     }
-    ponerLB(v || sig || (!algunNumero ? largo : 0));
+    // al final del capítulo ya no se puede bajar más: vale cualquier número a la vista, empezando por arriba
+    if (alFinal && !v && alto) v = alto;
+    ponerLB(v || cruza || sig || alto || (!algunNumero ? largo : 0));
   }
   function numeroVisible(v, T, B) { const el = document.getElementById("v" + v); if (!el) return false; const nr = rectNum(el); return nr.height > 0 && nr.top >= T && nr.bottom <= B; }
   // la caja de las cifras del número (la celda del número ocupa todo el alto del verso en la vista por fila)
@@ -3370,11 +3484,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function ponerLB(v, forzar) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; quitarMeta(); return; }
+    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
     const el = document.getElementById("v" + v); if (!el) return;
     const nuevo = LB.v !== v;
-    if (!nuevo && !forzar && !LB.el.classList.contains("fuera")) { LB.el.classList.toggle("espera", !R.pend.has(v)); halo(el); return; }
+    if (!nuevo && !forzar && (!LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !R.pend.has(v)); if (LB.pie) LB.pie.classList.toggle("espera", !R.pend.has(v)); halo(el); return; }
     const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, v);
+    const fila = el.classList.contains("vl"), pe = periDe(v);
+    if (fila) { ponerPie(el, v, pe, rep); }
+    else if (LB.pie) LB.pie.hidden = true;
+    if (LB.pb) {
+      // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
+      let ver = false;
+      if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeBarras(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
+      LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver ? 0 : -1;
+      if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", LB.el.style.getPropertyValue("--jg-lb-alza") || "0px"); }
+    }
     if (nuevo) {
       LB.v = v; LB.el.classList.remove("hecho");
       LB.el.querySelector("b").textContent = rep ? "Repasado" : "Leído";
@@ -3384,7 +3508,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     LB.el.classList.toggle("espera", !R.pend.has(v));
     const sp = document.querySelector(".jg-sala-p");
     LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
-    if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
+    if (fila) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
+    else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
     const hoja = LB.ah && LB.ah.parentElement; if (!hoja) return;
     const rh = hoja.getBoundingClientRect(), r = el.getBoundingClientRect();
     // el hilo: verso por fila, sobre la rayita del estado que sigue al número (la prolonga a lo largo de todo el verso);
@@ -3407,6 +3532,33 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if ((antes || nuevo) && LB.ah.animate && document.documentElement.getAttribute("data-mov") !== "no") LB.ah.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-out" });
   }
   function quitarMeta() { if (LB.meta) { LB.meta.classList.remove("jg-meta"); LB.meta = null; } }
+  // al pie del verso, a la derecha de su texto, sobre el borde inferior de la fila (sin mover el texto)
+  function ponerPie(el, v, pe, rep) {
+    const P = LB.pie, hoja = P && P.parentElement; if (!hoja) return;
+    const conPeri = !!(pe && pe.ok && v === pe.b);
+    const bp = P.querySelector(".jg-pie-p"); bp.hidden = !conPeri;
+    if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
+    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
+    P.classList.toggle("espera", !R.pend.has(v)); P.classList.remove("hecho");
+    const antes = P.hidden; P.hidden = false;
+    const vt = el.querySelector(":scope > .vt") || el, rv = vt.getBoundingClientRect(), r = el.getBoundingClientRect(), rh = hoja.getBoundingClientRect();
+    const w = P.offsetWidth, hh = P.offsetHeight, y = r.bottom - hh / 2;
+    let x = Math.max(rv.left, Math.min(rv.right, rh.right - 6) - w);
+    // si los saltos rápidos flotan a esa altura, el pie se corre a su izquierda (nunca queda debajo de ellos)
+    const sr = document.querySelector(".saltos-rap");
+    if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && y + hh > q.top - 6 && y < q.bottom + 6 && x + w > q.left - 8) x = Math.max(rv.left, q.left - 8 - w); }
+    P.style.transform = "translate3d(" + (x - rh.left).toFixed(1) + "px," + (y - rh.top).toFixed(1) + "px,0)";
+    if ((antes || LB.v !== v) && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0, filter: "blur(2px)" }, { opacity: 1, filter: "blur(0)" }], { duration: 260, easing: "ease-out" });
+  }
+  function tocarPeri(desde) {
+    const pe = LB.v && periDe(LB.v); if (!pe || !pe.ok || !R.lib) return;
+    vibrar([12, 30, 16, 30, 20]); sonar("chispa");
+    for (const x of pe.marc) tocarLeido(x, null, true);
+    if (desde) chispas(16, desde, ["aro", "polvo"]);
+    A.avisar("Perícopa " + pe.a + "–" + pe.b + ": " + plural(pe.marc.length, "verso marcado", "versos marcados") + " como leídos.");
+    if (LB.pie) LB.pie.classList.add("hecho");
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
+  }
   // el halo detrás de las cifras del número (sin el § de la perícopa); solo si el número se ve (nunca medio tapado por las barras)
   function halo(el) {
     const n = LB.ah && LB.ah.lastChild, hoja = LB.ah && LB.ah.parentElement, num = numeroDe(el); if (!n || !hoja) return;
@@ -3419,11 +3571,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     n.style.transform = "translate3d(" + (r.left + r.width / 2 - w / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - hh / 2 - rh.top).toFixed(1) + "px,0)";
     n.hidden = false;
   }
-  function tocarLB() {
+  function tocarLB(desde) {
     const v = LB.v; if (!v || !R.lib) return;
-    tocarLeido(v, LB.el);
-    LB.el.classList.add("hecho");
-    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
+    const b = desde || LB.el;
+    tocarLeido(v, b);
+    LB.el.classList.add("hecho"); if (LB.pie) LB.pie.classList.add("hecho");
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
   }
   // los versos ya marcados (en este u otro dispositivo) llevan su número en oro
   function pintarMarcados() {
@@ -3450,19 +3603,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (A.marcarLeido) A.marcarLeido(R.lib, R.cap, [v]);
     const cf = cfDe(lc); if (cf[v - 1] !== "1") guardarCf(lc, pon(cf, v - 1, "1"));
   }
-  function tocarLeido(v, boton) {
+  function tocarLeido(v, boton, quieto) {
     if (!v || !R.lib || yaLeido(v) || R.quiere.has(v)) return;
-    vibrar([12, 30, 16]); sonar("chispa");
+    if (!quieto) { vibrar([12, 30, 16]); sonar("chispa"); }
     const p = R.pend.get(v);
     if (p) { R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, p[0], 3, true); marcarLeidoV(v); if (tocaPremio()) enviar(false); }
     else { R.quiere.add(v); const num = numeroDe(document.getElementById("v" + v)); if (num) num.classList.add("jg-quiere"); } // cuenta completo al cumplir su tiempo
     if (boton) chispas(10, boton, Math.random() < 0.5 ? ["polvo"] : ["aro"]);
-    if (!p && !A.store.get("jg:leidoEsp", 0)) { A.store.set("jg:leidoEsp", 1); A.avisar("Ese verso contará como leído cuando termines de leerlo con calma."); }
+    if (quieto) { /* la perícopa avisa una sola vez */ }
+    else if (!p && !A.store.get("jg:leidoEsp", 0)) { A.store.set("jg:leidoEsp", 1); A.avisar("Ese verso contará como leído cuando termines de leerlo con calma."); }
     else if (!A.store.get("jg:leidoOk2", 0)) { A.store.set("jg:leidoOk2", 1); A.avisar("«Leído»: solo cuentan como leídos los versos que marcas. Márcalo cuando de verdad lo leíste."); }
     finCapJuego();
   }
   function estadoSellos(v) {
-    if (LB.el && LB.v && (v == null || v === LB.v)) LB.el.classList.toggle("espera", !R.pend.has(LB.v));
+    if (LB.el && LB.v && (v == null || v === LB.v)) { LB.el.classList.toggle("espera", !R.pend.has(LB.v)); if (LB.pie && !LB.pie.hidden) { LB.pie.classList.toggle("espera", !R.pend.has(LB.v)); ponerLB(LB.v, true); } }
     finCapJuego();
   }
   // Marcar el capítulo entero (P20): el botón del final del capítulo se habilita cuando lo leído con su tiempo y lo ya
@@ -3470,15 +3624,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
   let tFin = 0;
   function estadoCap() {
     const lc = R.lib + "." + R.cap, cf = cfDe(lc), ms = (S.cfg && S.cfg.msCap) || 850;
-    let total = 0, cub = 0, pal = 0, hechos = 0;
+    let total = 0, cub = 0, pal = 0, hechos = 0, pend = 0, repart = 0;
     for (let i = 0; i < R.pal.length; i++) {
       const w = R.pal[i] || 0, v = i + 1; if (!w) continue; total++;
       const marc = cf[i] === "1" || yaLeido(v);
-      if (R.pend.has(v)) { cub++; pal += w; } else if (marc) cub++;
+      if (R.pend.has(v)) { cub++; pal += w; pend++; if (((R.dw && R.dw.get(v)) || 0) >= 0.35 * ms * w) repart++; } else if (marc) cub++;
       if (marc) hechos++;
     }
+    // X17: el tiempo debe estar repartido por el capítulo (no concentrado en unos pocos versos)
+    const faltaRep = Math.max(0, Math.ceil(0.85 * pend) - repart);
     const t = (R.tlc[lc] || 0) + (R.tl[lc] || 0), req = Math.round(pal * ms);
-    return { total, cub, falta: Math.max(0, Math.ceil(0.9 * total) - cub), pal, t, req, hechos, listo: total > 0 && pal > 0 && cub >= Math.ceil(0.9 * total) && t >= req };
+    return { total, cub, falta: Math.max(0, Math.ceil(0.9 * total) - cub), pal, t, req, hechos, faltaRep, listo: total > 0 && pal > 0 && cub >= Math.ceil(0.9 * total) && t >= req && !faltaRep };
   }
   function finCapJuego() {
     clearTimeout(tFin); tFin = setTimeout(pintarFinCap, 120);
@@ -3490,7 +3646,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     let firma;
     if (E.total && E.hechos >= E.total) firma = "hecho";
     else if (E.listo) firma = "listo";
-    else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal;
+    else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal + ":" + E.faltaRep;
     if (caja.dataset.jg === firma) return;
     caja.dataset.jg = firma; caja.classList.add("jg-fin"); caja.classList.toggle("hecho", firma === "hecho");
     if (firma === "hecho") return caja.replaceChildren(A.svg(ICO_JG.marca || ICO_JG.llama, "0 0 24 24"), h("span", { text: "Capítulo leído" }));
@@ -3499,6 +3655,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     let nota;
     if (E.listo) nota = "Cuentan los versos que leíste con su tiempo de lectura.";
     else if (E.falta > 0) nota = "Se habilita cuando leas con calma " + (E.falta === 1 ? "1 verso más" : E.falta + " versos más") + " de este capítulo, o márcalos uno por uno con «Leído».";
+    else if (E.faltaRep > 0) nota = "Se habilita cuando cada parte del capítulo tenga su tiempo de lectura: " + (E.faltaRep === 1 ? "falta 1 verso" : "faltan " + E.faltaRep + " versos") + " por leer con calma.";
     else nota = "Se habilita con unos " + plural(Math.max(1, Math.ceil((E.req - E.t) / 60000)), "minuto", "minutos") + " más de lectura en este capítulo (0,85 s por palabra griega).";
     caja.replaceChildren(btn, h("p", { class: "jg-mini jg-fin-n", text: nota }));
   }
