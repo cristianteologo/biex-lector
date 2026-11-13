@@ -519,6 +519,19 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-vivo{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 .82rem/1.4 var(--f-ui);color:var(--tenue)}
 .jg-vivo b{color:var(--oro-vivo);font-weight:500}
 .jg-vivo i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7bc98f;margin-right:6px;vertical-align:1px}
+.jg-act{display:none}
+.jg-act.on{position:relative;display:flex;align-items:center;gap:7px;margin-top:3px;font:500 .74rem/1.3 var(--f-ui);letter-spacing:.02em;color:var(--tenue)}
+.jg-act.on::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--tenue)}
+.jg-act.ya{color:var(--oro-vivo)}
+.jg-act.ya::before{background:#7bc98f}
+.jg-act.ya::after{content:"";position:absolute;left:0;top:50%;width:7px;height:7px;margin-top:-3.5px;box-sizing:border-box;border-radius:50%;border:1.5px solid #7bc98f;will-change:transform,opacity;animation:jg-act 2s ease-out infinite}
+html[data-dal] .jg-act.ya::before{background:#5aa9e6}
+html[data-dal] .jg-act.ya::after{border-color:#5aa9e6}
+@keyframes jg-act{0%{transform:scale(1);opacity:.85}100%{transform:scale(2.8);opacity:0}}
+html[data-mov="no"] .jg-act.ya::after{animation:none;opacity:0}
+.jg-arbol .jg-nodo.activo .pt{stroke:#7bc98f;stroke-width:5}
+html[data-dal] .jg-arbol .jg-nodo.activo .pt{stroke:#5aa9e6}
+.jg-act-t:empty{display:none}
 .jg-novedades{list-style:none;margin:0;padding:0;display:grid;gap:12px;font:400 .88rem/1.45 var(--f-ui);color:var(--tinta-2)}
 .jg-novedades li{position:relative;display:grid;gap:3px;padding-left:16px}
 .jg-novedades li::before{content:"";position:absolute;left:1px;top:.42em;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--oro-vivo),var(--oro) 70%);box-shadow:0 0 8px color-mix(in srgb,var(--oro) 55%,transparent)}
@@ -1231,14 +1244,44 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (que === "cuenta") return pintarCuenta(cont);
     return pintarPanel(cont);
   }
+  // P21 (BiEx, 11-nov-2026): lo que hacen las demás personas, en vivo y con el mínimo gasto. Una sección se refresca sola
+  // solo mientras está en pantalla, la pestaña está visible y alguien usó la página en los últimos 3 minutos; se detiene
+  // al salir de ella. El servidor guarda cada respuesta pública unos segundos, así que muchos mirando no cuestan más.
+  let ULT_USO = Date.now();
+  for (const ev of ["pointerdown", "keydown", "wheel", "touchstart", "scroll"]) addEventListener(ev, () => { ULT_USO = Date.now(); }, { passive: true, capture: true });
+  function enVivo(el, cada, fn) {
+    let vis = !("IntersectionObserver" in window);
+    const io = vis ? null : new IntersectionObserver((e) => { vis = e.some((x) => x.isIntersecting); });
+    if (io) io.observe(el);
+    const paso = async () => {
+      if (!el.isConnected) { if (io) io.disconnect(); return; }
+      if (vis && document.visibilityState === "visible" && Date.now() - ULT_USO < 180e3) { try { await fn(); } catch (e) { /* la próxima vez */ } }
+      setTimeout(paso, cada);
+    };
+    setTimeout(paso, cada);
+  }
+  // una cifra que cambia sube (o baja) hasta su valor nuevo con un destello breve
+  function cifraViva(el, n) {
+    if (!el) return;
+    const de = Number(el.dataset.v || 0) || 0; n = Math.max(0, Math.round(Number(n) || 0)); el.dataset.v = String(n);
+    if (de === n) return;
+    if (sinAnim() || document.hidden || !el.animate) { el.textContent = fmt(n); return; }
+    const t0 = performance.now(), ms = 700, paso = (t) => { const k = Math.min(1, (t - t0) / ms); el.textContent = fmt(Math.round(de + (n - de) * (1 - Math.pow(1 - k, 2.4)))); if (k < 1) requestAnimationFrame(paso); };
+    requestAnimationFrame(paso);
+    el.animate([{ color: "var(--oro-vivo)", textShadow: "0 0 14px color-mix(in srgb,var(--oro) 70%,transparent)" }, { color: "", textShadow: "none" }], { duration: 1200, easing: "ease-out" });
+  }
   function vivoLinea() {
-    const el = h("p", { class: "jg-vivo", "aria-live": "polite" });
-    pedir("/vivo", { sin: true }).then((v) => {
+    const el = h("p", { class: "jg-vivo", "aria-live": "off" });
+    const B = {};
+    const pintar = (v) => {
       if (v.error) return;
-      el.replaceChildren(...[v.leyendo > 0 ? h("span", {}, h("i"), h("b", { text: fmt(v.leyendo) }), v.leyendo === 1 ? " persona leyendo ahora" : " personas leyendo ahora") : null,
-        v.versosHoy > 0 ? h("span", {}, h("b", { text: fmt(v.versosHoy) }), v.versosHoy === 1 ? " verso leído hoy" : " versos leídos hoy") : null,
-        v.jugadores > 0 ? h("span", {}, h("b", { text: fmt(v.jugadores) }), v.jugadores === 1 ? " estudiante" : " estudiantes") : null].filter(Boolean));
-    });
+      const filas = [["leyendo", "", " persona leyendo ahora", " personas leyendo ahora", true], ["versosHoy", "", " verso leído hoy", " versos leídos hoy"], ["jugadores", "", " estudiante", " estudiantes"]];
+      if (filas.every(([k]) => B[k] && (v[k] > 0) === !!B[k].isConnected)) { for (const [k, , s1, s2] of filas) if (v[k] > 0) { cifraViva(B[k], v[k]); B[k].nextSibling.textContent = v[k] === 1 ? s1 : s2; } return; }
+      el.replaceChildren(...filas.filter(([k]) => v[k] > 0).map(([k, , s1, s2, punto]) => { B[k] = h("b", { "data-v": String(v[k]), text: fmt(v[k]) }); return h("span", {}, punto ? h("i") : null, B[k], v[k] === 1 ? s1 : s2); }));
+      for (const [k] of filas) if (!(v[k] > 0)) B[k] = null;
+    };
+    pedir("/vivo", { sin: true }).then(pintar);
+    enVivo(el, 25e3, () => pedir("/vivo", { sin: true }).then(pintar));
     return el;
   }
 
@@ -2561,12 +2604,28 @@ html[data-mov="no"] .ap-savia{display:none!important}
     dib.addEventListener("click", (e) => { const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) elegir(g.getAttribute("data-c")); });
     dib.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) { e.preventDefault(); elegir(g.getAttribute("data-c")); } });
     const lista = h("ol", { class: "jg-arbol-lista" }, r.nodos.map((n) => { const padre = n.p ? porC.get(n.p) : null; return h("li", { class: n.ok ? "ok" : "" },
-      h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") })),
+      h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") }), h("span", { class: "jg-act", "data-c": n.c, "aria-live": "off" })),
       h("span", { class: "jg-mini", text: [n.d ? fmt(n.d) + " en sus ramas" : "", n.ok ? "✓" : ""].filter(Boolean).join(" · ") })); }));
+    const cuentaAct = h("p", { class: "jg-mini jg-act-t", "aria-live": "polite" });
+    const tarjGen = tarjeta("Por generación", null, cuentaAct, lista, r.nodos.length < R0.d ? h("p", { class: "jg-mini", text: "Se muestran " + fmt(r.nodos.length) + " de " + fmt(R0.d) + " personas (hasta la " + ordGen(r.prof) + " generación). Toca una persona y abre su rama para ver más." }) : null);
     zona.replaceChildren(resumen,
       tarjeta("Las ramas", null, arbolVivo(dib, r), h("p", { class: "jg-mini", text: "● confirmó su lugar · ○ todavía no · +N: personas que se ven al abrir su rama · pellizca o usa + y − para acercarte" }), ficha),
-      tarjeta("Por generación", null, lista, r.nodos.length < R0.d ? h("p", { class: "jg-mini", text: "Se muestran " + fmt(r.nodos.length) + " de " + fmt(R0.d) + " personas (hasta la " + ordGen(r.prof) + " generación). Toca una persona y abre su rama para ver más." }) : null));
+      tarjGen);
     animarCifras(zona);
+    // P21: qué hace ahora cada persona de tu árbol, en vivo mientras la sección está a la vista (sin filas leídas ni escritas)
+    async function actividad() {
+      const q = await pedir("/arbol/vivo?" + new URLSearchParams(raiz ? { raiz, prof: "3" } : { prof: "3" }));
+      if (q.error || !lista.isConnected) return;
+      const E = q.estados || {}; let ahora = 0;
+      for (const el of lista.querySelectorAll(".jg-act")) {
+        const x = E[el.getAttribute("data-c")], ya = !!x && x[1] < 150; if (ya) ahora++;
+        el.classList.toggle("on", !!x); el.classList.toggle("ya", ya);
+        el.textContent = !x ? "" : ya ? (x[0] ? "Leyendo " + nombreLC(x[0]) + " · ahora" : "Leyendo ahora") : "Hace " + Math.max(1, Math.round(x[1] / 60)) + " min" + (x[0] ? " · " + nombreLC(x[0]) : "");
+      }
+      for (const g of dib.querySelectorAll(".jg-nodo")) { const x = E[g.getAttribute("data-c")]; g.classList.toggle("activo", !!x && x[1] < 150); }
+      cuentaAct.textContent = ahora ? plural(ahora, "persona de tu árbol lee", "personas de tu árbol leen") + " ahora mismo." : "Nadie de tu árbol lee en este momento; aquí lo verás en cuanto alguien empiece.";
+    }
+    actividad(); enVivo(tarjGen, 25e3, actividad);
   }
 
   // Árbol vivo (BiEx, 9-nov-2026: «más espectacular e interactivo»): crece generación tras generación desde el centro, un
@@ -4315,8 +4374,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function tarjetaMision(y) {
     const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando la misión…" }));
-    pedir("/vivo", { sin: true, guardable: true }).then((v) => {
+    let firma = "";
+    const pintarM = (v) => {
       if (!zona.isConnected || v.error) return;
+      const f = JSON.stringify([v.mision && [v.mision.k, v.mision.e, v.mision.total, v.mision.part, v.mision.ok], v.proxMision]); if (f === firma) return; firma = f;
       const m = v.mision;
       if (!m) return zona.replaceChildren(h("p", { text: v.proxMision ? "La primera misión mundial empieza el " + fechaLarga(v.proxMision) + "." : "Pronto empieza una misión mundial." }));
       const pct = Math.max(0, Math.min(100, (100 * m.total) / Math.max(1, m.meta))), mio = y.mision && y.mision.k === m.k && (y.mision.e | 0) === (m.e | 0) ? y.misAporte || 0 : 0, min = (S.cfg && S.cfg.misMin) || 10;
@@ -4331,7 +4392,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble en cuanto se logra, y 15 min si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
         v.proxMision ? h("p", { class: "jg-mini" }, relojCiudades(v.proxMision, "La siguiente empieza el")) : "");
       animarCifras(zona);
-    });
+    };
+    pedir("/vivo", { sin: true, guardable: true }).then(pintarM);
+    enVivo(zona, 25e3, () => pedir("/vivo", { sin: true }).then(pintarM));
     return tarjeta("Misión mundial", ico("mundo"), zona);
   }
 
@@ -4516,13 +4579,17 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
             : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; entrarSala(x.c); A.avisar("Entraste a la sala " + x.c); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: "Entrar" }))); })));
     };
     salasAbiertas(true).then(pintar);
-    return tarjeta("Salas abiertas", ico("sala"), h("p", { class: "jg-mini", text: "Salas de lectura que cualquiera puede ver y en las que puedes entrar sin enlace. Se actualiza cada 30 s." }), zona);
+    enVivo(zona, 30e3, () => salasAbiertas(true).then(pintar));
+    return tarjeta("Salas abiertas", ico("sala"), h("p", { class: "jg-mini", text: "Salas de lectura que cualquiera puede ver y en las que puedes entrar sin enlace. Se actualiza en vivo mientras la miras." }), zona);
   }
   // Mundo: las luces de los 27 libros (quién lee ahora) y los lectores con «Acompañar»
   function tarjetaQuienLee() {
     const zona = h("div", { class: "jg-quien" }, h("p", { class: "jg-mini", text: "Mirando quién lee ahora…" }));
-    const ver = async (lib) => {
-      const r = await presentes(lib || ""); if (r.error) return zona.replaceChildren(h("p", { class: "jg-mini", text: mensaje(r) }));
+    let libSel = "", detAb = false, firma = "";
+    const ver = async (lib, vivo) => {
+      libSel = lib || "";
+      const r = await presentes(lib || ""); if (r.error) { if (!vivo) zona.replaceChildren(h("p", { class: "jg-mini", text: mensaje(r) })); return; }
+      const f = JSON.stringify([lib, r.libros, r.caps, (r.lectores || []).map((x) => [x.a, x.l]), r.salas]); if (vivo && f === firma) return; firma = f;
       const libros = (S.cfg && S.cfg.orden) || Object.keys(r.libros || {}), max = Math.max(1, ...Object.values(r.libros || { x: 1 }));
       const mapa = h("div", { class: "jg-luces", role: "list" }, (libros.length ? libros : Object.keys(r.libros)).map((b) => { const n = (r.libros || {})[b] || 0;
         return h("button", { class: "jg-lz" + (n ? " on" : "") + (b === lib ? " sel" : ""), type: "button", role: "listitem", style: "--k:" + (n ? (0.35 + 0.65 * n / max).toFixed(2) : 0), "aria-label": nombreLibro(b) + ": " + plural(n, "persona", "personas"), title: nombreLibro(b), onclick: () => ver(b === lib ? "" : b) },
@@ -4534,10 +4601,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("button", { class: "btn chico", type: "button", onclick: (e) => acompanar(x.l, e.currentTarget) }, h("span", { text: "Acompañar" }))); });
       zona.replaceChildren(h("p", { class: "jg-total" }, cifra(r.total || 0), " " + (r.total === 1 ? "persona lee" : "personas leen") + " ahora" + (lib ? " · " + nombreLibro(lib) : "")), mapa,
         filas.length ? h("ul", { class: "jg-salas-l" }, filas) : h("p", { class: "jg-mini", text: lib ? "Nadie lee " + nombreLibro(lib) + " en este momento." : "Cuando alguien lea, su libro se encenderá aquí." }),
-        quien.length ? h("details", { class: "jg-pc" }, h("summary", {}, h("span", { text: "Quiénes leen" }), h("small", { text: plural(quien.length, "lector", "lectores") })), h("ul", { class: "jg-salas-l quien" }, quien)) : null);
-      animarCifras(zona);
+        quien.length ? h("details", { class: "jg-pc", open: detAb || null, ontoggle: (e) => { detAb = e.currentTarget.open; } }, h("summary", {}, h("span", { text: "Quiénes leen" }), h("small", { text: plural(quien.length, "lector", "lectores") })), h("ul", { class: "jg-salas-l quien" }, quien)) : null);
+      if (!vivo) animarCifras(zona);
     };
     ver("");
+    enVivo(zona, 30e3, () => { VIVO.pres.delete(libSel); return ver(libSel, true); });
     return tarjeta("Quién está leyendo", ico("mundo"), h("p", { class: "jg-mini", text: "Cada libro brilla según cuántas personas lo leen ahora. Toca uno para ver sus capítulos, y «Acompañar» para leer con quien está ahí (entras a su sala o abres una nueva)." }), zona);
   }
   function tarjetaSala() {

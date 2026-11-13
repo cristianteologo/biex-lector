@@ -2099,6 +2099,7 @@ html[data-mov="no"].aparece #vista { animation: none; }
 /* Nada se mueve de lado en el teléfono y no aparecen barras de desplazamiento en ningún momento (ni a la derecha ni abajo):
    lo que no cabe se ajusta (cada vista se probó de 280 a 1280 px con los nueve tamaños); el recorte es solo la red de seguridad */
 html, body { overflow-x: clip; }
+html.lupa, html.lupa body { overflow-x: visible; } /* la lupa del escritorio (Ctrl + rueda o el panel) sí recorre la página a lo ancho */
 html, body, * { scrollbar-width: none !important; }
 ::-webkit-scrollbar { display: none; width: 0 !important; height: 0 !important; }
 /* Las cajas de los textos añadidos, idénticas en las dos vistas (verso por fila y perícopa): mismo ancho, márgenes y letra */
