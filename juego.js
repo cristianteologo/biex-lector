@@ -519,8 +519,12 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-vivo{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 .82rem/1.4 var(--f-ui);color:var(--tenue)}
 .jg-vivo b{color:var(--oro-vivo);font-weight:500}
 .jg-vivo i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7bc98f;margin-right:6px;vertical-align:1px}
-.jg-novedades{list-style:none;margin:0;padding:0;display:grid;gap:6px;font:400 .88rem/1.45 var(--f-ui);color:var(--tinta-2)}
-.jg-novedades li::before{content:"·";color:var(--oro);margin-right:8px}
+.jg-novedades{list-style:none;margin:0;padding:0;display:grid;gap:12px;font:400 .88rem/1.45 var(--f-ui);color:var(--tinta-2)}
+.jg-novedades li{position:relative;display:grid;gap:3px;padding-left:16px}
+.jg-novedades li::before{content:"";position:absolute;left:1px;top:.42em;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--oro-vivo),var(--oro) 70%);box-shadow:0 0 8px color-mix(in srgb,var(--oro) 55%,transparent)}
+.jg-novedades li:has(.jg-nov-t)::before{top:.3em}
+.jg-nov-t{font:500 .7rem/1.25 var(--f-ui);letter-spacing:.07em;color:var(--oro);font-variant-numeric:lining-nums tabular-nums}
+.jg-nov-x{min-width:0;overflow-wrap:anywhere}
 .jg-letras{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
 .jg-letras button{font:400 1.25rem/1 "BiEx Texto","Gentium Book Plus",Georgia,serif;height:40px;border-radius:10px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer}
 .jg-letras button[aria-pressed=true]{border-color:var(--oro);color:var(--oro-vivo);background:var(--oro-suave)}
@@ -540,6 +544,107 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-prueba p{margin:0;font:400 .92rem/1.45 var(--f-ui);color:var(--tinta)}
 .jg-prueba .btn{grid-column:1/-1;justify-self:start}
 .jg-preg{display:grid;gap:10px;padding:14px 0;border-bottom:1px solid var(--linea-2)}
+/* V24 (BiEx, 12-nov-2026): la prueba y los cofres en vidrio. La ventana no lleva backdrop-filter (K15): el vidrio se hace
+   con capas translúcidas, un filo de luz en el borde (más vivo arriba a la izquierda), brillo especular y un fondo vivo
+   detrás (tres luces que se desplazan despacio; solo transform). */
+.jg-qz{--vd-f1:rgba(255,250,235,.105);--vd-f2:rgba(255,250,235,.03);--vd-br:rgba(255,244,214,.13);--vd-in:rgba(255,250,235,.24);--vd-so:rgba(0,0,0,.8);--vd-filo:rgba(255,238,196,.62);--vd-esp:rgba(255,255,255,.075);
+  position:relative;isolation:isolate;display:grid;gap:14px;padding:2px 0 8px}
+html[data-theme="light"] .jg-qz{--vd-f1:rgba(255,255,255,.86);--vd-f2:rgba(255,255,255,.52);--vd-br:rgba(124,94,34,.2);--vd-in:#fff;--vd-so:rgba(80,60,20,.22);--vd-filo:rgba(255,255,255,1);--vd-esp:rgba(255,255,255,.5)}
+.jg-qz-fondo{position:absolute;inset:-18px -14px;z-index:-1;overflow:hidden;border-radius:24px;pointer-events:none}
+.jg-qz-fondo i{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;will-change:transform;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 30%,transparent),transparent)}
+.jg-qz-fondo i:nth-child(1){left:-22%;top:-4%;animation:jg-qz-a 27s ease-in-out infinite alternate}
+.jg-qz-fondo i:nth-child(2){right:-26%;top:36%;width:82%;background:radial-gradient(closest-side,rgba(126,156,232,.15),transparent);animation:jg-qz-b 33s ease-in-out infinite alternate}
+.jg-qz-fondo i:nth-child(3){left:6%;bottom:-14%;width:78%;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro-vivo) 20%,transparent),transparent);animation:jg-qz-c 24s ease-in-out infinite alternate}
+html[data-theme="light"] .jg-qz-fondo i{opacity:.75}
+@keyframes jg-qz-a{to{transform:translate3d(26%,20%,0) scale(1.14)}}
+@keyframes jg-qz-b{to{transform:translate3d(-20%,-16%,0) scale(.9)}}
+@keyframes jg-qz-c{to{transform:translate3d(16%,-24%,0) scale(1.1)}}
+html[data-mov="no"] .jg-qz-fondo i,html[data-mov="no"] .jg-qz .jg-preg{animation:none}
+@media (prefers-reduced-motion:reduce){.jg-qz-fondo i,.jg-qz .jg-preg{animation:none}}
+.jg-vid{position:relative;border-radius:18px;background:linear-gradient(155deg,var(--vd-f1),var(--vd-f2) 46%,var(--vd-f1));border:1px solid var(--vd-br);
+  box-shadow:inset 0 1px 0 var(--vd-in),inset 0 -1px 0 rgba(0,0,0,.22),0 16px 36px -22px var(--vd-so)}
+.jg-vid::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(135deg,var(--vd-filo),transparent 30%,transparent 64%,color-mix(in srgb,var(--oro) 34%,transparent));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.jg-vid::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(118deg,var(--vd-esp),transparent 26%)}
+.jg-qz-intro{margin:0;font:400 .9rem/1.5 var(--f-ui);color:var(--tinta-2)}
+.jg-qz .jg-preg{gap:12px;padding:14px 14px 16px;border-bottom:0;animation:jg-qz-entra .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 90ms)}
+.jg-qz.res .jg-preg{animation:none}
+@keyframes jg-qz-entra{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+.jg-preg-cab{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.jg-qz .jg-preg .ref{display:inline-block;padding:6px 11px;border-radius:999px;letter-spacing:.1em;font-size:.7rem;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,transparent),color-mix(in srgb,var(--oro) 8%,transparent));border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);box-shadow:inset 0 1px 0 rgba(255,246,214,.3)}
+.jg-preg-cab .num{font:500 .7rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
+.jg-preg.bien .jg-preg-cab .num{color:var(--oro-vivo)}
+.jg-qz .jg-preg .t{position:relative;z-index:1;font:400 1.08rem/1.7 var(--f-texto)}
+.jg-qz .jg-preg .t u{min-width:5em;padding:0 .35em;border-bottom:2px solid color-mix(in srgb,var(--oro) 80%,transparent);border-radius:6px 6px 0 0;
+  background:linear-gradient(0deg,color-mix(in srgb,var(--oro) 20%,transparent),transparent 72%);box-shadow:0 6px 12px -8px color-mix(in srgb,var(--oro) 70%,transparent)}
+.jg-qz .jg-preg .t u.lleno{animation:jg-qz-hueco .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes jg-qz-hueco{from{transform:scale(.86);opacity:.4}to{transform:none;opacity:1}}
+.jg-qz .jg-ops{position:relative;z-index:1;gap:9px}
+.jg-qz .jg-op{position:relative;overflow:hidden;isolation:isolate;padding:13px 26px;min-height:48px;font:500 1rem/1.25 var(--f-texto);color:var(--tinta);border-radius:14px;
+  background:linear-gradient(160deg,var(--vd-f1),var(--vd-f2));border:1px solid var(--vd-br);box-shadow:inset 0 1px 0 var(--vd-in),0 10px 22px -16px var(--vd-so);
+  transition:transform .2s cubic-bezier(.3,1.4,.5,1),border-color .2s,box-shadow .25s,color .2s;-webkit-tap-highlight-color:transparent}
+.jg-qz .jg-op>span{position:relative;z-index:1}
+.jg-qz .jg-op::after{content:"";position:absolute;z-index:0;top:-50%;bottom:-50%;left:-45%;width:38%;transform:translate3d(0,0,0) rotate(18deg);background:linear-gradient(90deg,transparent,rgba(255,246,214,.32),transparent);opacity:0;pointer-events:none}
+.jg-qz .jg-op:active{transform:scale(.965)}
+.jg-qz .jg-op[aria-pressed=true]{color:var(--oro-vivo);border-color:color-mix(in srgb,var(--oro-vivo) 72%,transparent);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--oro) 30%,transparent),color-mix(in srgb,var(--oro) 9%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.45),0 0 0 1px color-mix(in srgb,var(--oro) 26%,transparent),0 0 24px -8px color-mix(in srgb,var(--oro) 70%,transparent)}
+.jg-qz .jg-op[aria-pressed=true]::after{animation:jg-qz-barre .75s ease-out 1}
+html[data-mov="no"] .jg-qz .jg-op[aria-pressed=true]::after,html[data-mov="no"] .jg-qz .jg-preg .t u.lleno{animation:none}
+@keyframes jg-qz-barre{0%{opacity:1;transform:translate3d(0,0,0) rotate(18deg)}100%{opacity:0;transform:translate3d(430%,0,0) rotate(18deg)}}
+.jg-qz .jg-op:disabled{cursor:default}
+.jg-qz .jg-op.ok{color:var(--tinta);border-color:rgba(111,191,143,.85);background:linear-gradient(160deg,rgba(111,191,143,.3),rgba(111,191,143,.08));box-shadow:inset 0 1px 0 rgba(220,255,232,.35),0 0 22px -8px rgba(111,191,143,.75)}
+.jg-qz .jg-op.mal{color:var(--tinta);border-color:rgba(217,120,95,.82);background:linear-gradient(160deg,rgba(217,120,95,.26),rgba(217,120,95,.07))}
+.jg-qz .jg-op.ok::before,.jg-qz .jg-op.mal::before{content:"";position:absolute;z-index:1;right:10px;top:50%;pointer-events:none}
+.jg-qz .jg-op.ok::before{width:11px;height:5.5px;margin-top:-5px;border:solid #8fe0ae;border-width:0 0 2.2px 2.2px;transform:rotate(-45deg)}
+.jg-qz .jg-op.mal::before{width:12px;height:12px;margin-top:-6px;border-radius:50%;border:1.8px solid #f0a08a;background:linear-gradient(135deg,transparent 44%,#f0a08a 44% 58%,transparent 58%)}
+html[data-theme="light"] .jg-qz .jg-op.ok::before{border-color:#1f7a45}
+html[data-theme="light"] .jg-qz .jg-op.mal::before{border-color:#b0452c;background:linear-gradient(135deg,transparent 44%,#b0452c 44% 58%,transparent 58%)}
+/* daltonismo: aciertos en azul y fallos en naranja (con sus marcas, que no dependen del color) */
+html[data-dal] .jg-qz .jg-op.ok{border-color:#5aa9e6;background:linear-gradient(160deg,rgba(90,169,230,.3),rgba(90,169,230,.08));box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 22px -8px rgba(90,169,230,.7)}
+html[data-dal] .jg-qz .jg-op.ok::before{border-color:#9fd0ff}
+html[data-dal] .jg-qz .jg-op.mal{border-color:#e69f00;background:linear-gradient(160deg,rgba(230,159,0,.26),rgba(230,159,0,.07))}
+html[data-dal] .jg-qz .jg-op.mal::before{border-color:#ffc75e;background:linear-gradient(135deg,transparent 44%,#ffc75e 44% 58%,transparent 58%)}
+html[data-dal="mono"] .jg-qz .jg-op.ok{border-color:var(--tinta);background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.06));box-shadow:none}
+html[data-dal="mono"] .jg-qz .jg-op.mal{border-color:var(--tenue);border-style:dashed;background:transparent}
+html[data-dal="mono"] .jg-qz .jg-op.ok::before{border-color:var(--tinta)}
+html[data-dal="mono"] .jg-qz .jg-op.mal::before{border-color:var(--tenue);background:linear-gradient(135deg,transparent 44%,var(--tenue) 44% 58%,transparent 58%)}
+/* el verso completo (Textual de BiEx) bajo cada pregunta, en un vidrio cálido como de pergamino iluminado */
+.jg-vc{position:relative;z-index:1;display:grid;gap:6px;margin-top:2px;padding:12px 14px 13px;border-radius:14px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 11%,transparent),color-mix(in srgb,var(--oro) 3%,transparent));border:1px solid color-mix(in srgb,var(--oro) 30%,transparent);box-shadow:inset 0 1px 0 rgba(255,246,214,.18)}
+.jg-vc-et{font:500 .66rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--oro)}
+.jg-vc-t{margin:0;font:400 1rem/1.65 var(--f-texto);color:var(--tinta)}
+/* resultado: medalla con anillo de luz */
+.jg-qz-res{display:grid;justify-items:center;gap:10px;padding:20px 16px 18px;text-align:center}
+.jg-qz-res>*{position:relative;z-index:1}
+.jg-qz-med{position:relative;width:118px;height:118px;display:grid;place-items:center;align-content:center;gap:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--oro) 26%,transparent),transparent 66%);filter:drop-shadow(0 0 18px color-mix(in srgb,var(--oro) 40%,transparent))}
+.jg-qz-med svg{position:absolute;inset:0;width:100%;height:100%}
+.jg-qz-med b{font:600 2.7rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums;text-shadow:0 0 22px color-mix(in srgb,var(--oro) 55%,transparent)}
+.jg-qz-med small{font:500 .74rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--tenue);margin-top:3px}
+.jg-qz-med.plena::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:1px solid color-mix(in srgb,var(--oro-vivo) 55%,transparent);animation:jg-qz-onda 2.4s ease-out infinite}
+@keyframes jg-qz-onda{0%{opacity:.9;transform:scale(.9)}100%{opacity:0;transform:scale(1.25)}}
+html[data-mov="no"] .jg-qz-med.plena::after{animation:none;opacity:.5}
+.jg-qz-xp{margin:0;font:500 1.1rem/1.3 var(--f-display);letter-spacing:.04em;color:var(--oro-vivo)}
+.jg-qz-res .jg-mini{max-width:28em}
+.jg-qz-ver.listo{box-shadow:0 0 0 1px color-mix(in srgb,var(--oro-vivo) 40%,transparent),0 0 30px -6px color-mix(in srgb,var(--oro) 70%,transparent)}
+.jg-qz-ver.enviando span{opacity:.6}
+/* el cofre, sobre un pedestal de vidrio con luz desde lo alto */
+.cf-raiz{position:relative;isolation:isolate;width:100%;box-sizing:border-box;padding:16px 14px 18px;border-radius:20px;margin:4px 0 12px;
+  background:radial-gradient(70% 55% at 50% 0%,color-mix(in srgb,var(--cf-c,var(--oro)) 22%,transparent),transparent 70%),linear-gradient(170deg,rgba(255,250,235,.08),rgba(255,250,235,.02));
+  border:1px solid rgba(255,244,214,.14);box-shadow:inset 0 1px 0 rgba(255,250,235,.22),0 18px 40px -26px rgba(0,0,0,.9)}
+html[data-theme="light"] .cf-raiz{background:radial-gradient(70% 55% at 50% 0%,color-mix(in srgb,var(--oro) 18%,transparent),transparent 70%),linear-gradient(170deg,rgba(255,255,255,.85),rgba(255,255,255,.5));border-color:rgba(124,94,34,.2);box-shadow:inset 0 1px 0 #fff,0 18px 40px -26px rgba(80,60,20,.3)}
+.cf-raiz::before{content:"";position:absolute;z-index:-1;left:0;right:0;top:0;height:78%;pointer-events:none;border-radius:20px 20px 0 0;
+  background:radial-gradient(38% 100% at 50% 0%,color-mix(in srgb,var(--oro-vivo) 24%,transparent),color-mix(in srgb,var(--oro) 7%,transparent) 55%,transparent 80%)}
+.cf::after{content:"";position:absolute;z-index:-1;left:6%;right:6%;bottom:0;height:16%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--cf,var(--oro)) 40%,transparent),transparent)}
+.cf-raiz .cf-info{padding:10px 18px 12px;border-radius:16px;background:linear-gradient(160deg,rgba(255,250,235,.09),rgba(255,250,235,.025));border:1px solid rgba(255,244,214,.14);box-shadow:inset 0 1px 0 rgba(255,250,235,.22)}
+html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);border-color:rgba(124,94,34,.2)}
+.cf-abrir{box-shadow:0 0 0 1px color-mix(in srgb,var(--oro-vivo) 40%,transparent),0 0 28px -6px color-mix(in srgb,var(--oro) 75%,transparent)}
+/* la invitación a la prueba en el capítulo, también en vidrio */
+.jg-prueba{position:relative;background:linear-gradient(155deg,color-mix(in srgb,var(--oro) 16%,transparent),color-mix(in srgb,var(--oro) 4%,transparent) 50%,color-mix(in srgb,var(--oro) 10%,transparent));border-color:color-mix(in srgb,var(--oro) 40%,transparent);box-shadow:inset 0 1px 0 rgba(255,246,214,.25),0 16px 34px -24px rgba(0,0,0,.85)}
+
 .jg-preg:last-of-type{border-bottom:0}
 .jg-preg .ref{font:500 .74rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--oro)}
 .jg-preg .t{font:400 1.06rem/1.6 var(--f-texto);color:var(--tinta);margin:0}
@@ -787,6 +892,7 @@ html.con-modal .jg-muelle{opacity:0;pointer-events:none}
 html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+html.jg-con-muelle:has(.jg-sala-p) body{padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:7px 12px;font-size:.84rem}
 html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
@@ -964,12 +1070,18 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-lb-t{display:grid;gap:4px;text-align:left}
 .jg-lb-t b{font-weight:600}
 .jg-lb-t small{font:500 .62rem/1 var(--f-ui);letter-spacing:.1em;color:var(--tenue);text-transform:uppercase}
-.jg-ah{position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none;will-change:transform}
-.jg-ah[hidden]{display:none}
-.jg-ah i{position:absolute;left:-28px;top:-28px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--oro-vivo) 52%,transparent) 0,color-mix(in srgb,var(--oro) 20%,transparent) 44%,transparent 70%);animation:jg-ah 2.8s ease-in-out infinite;will-change:opacity}
-.jg-ah b{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--oro-vivo) 72%,transparent);box-shadow:0 0 12px -2px color-mix(in srgb,var(--oro-vivo) 60%,transparent)}
-@keyframes jg-ah{0%,100%{opacity:.5}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.jg-ah i{animation:none}}
+.jg-ah{position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
+.jg-ah[hidden],.jg-ah [hidden]{display:none}
+/* «Leído» (13-nov-2026): un hilo de luz en el margen a lo largo del verso que se marcaría y un halo suave detrás de su número;
+   el verso se elige solo si se ve de verdad (su número o al menos dos renglones bajo las barras), así nada queda tapado */
+.jg-ah .f{position:absolute;left:-1px;top:0;width:2px;border-radius:2px;will-change:opacity;background:linear-gradient(180deg,transparent,var(--oro-vivo) 14%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 86%,transparent)}
+.jg-ah .f::before{content:"";position:absolute;left:-10px;right:-10px;top:-4px;bottom:-4px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 30%,transparent),transparent)}
+.jg-ah .n{position:absolute;left:0;top:0;border-radius:50%;will-change:opacity;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro-vivo) 48%,transparent),color-mix(in srgb,var(--oro) 16%,transparent) 64%,transparent)}
+.jg-ah .f,.jg-ah .n{animation:jg-ah 3.4s ease-in-out infinite}
+@keyframes jg-ah{0%,100%{opacity:.66}50%{opacity:1}}
+html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
+@media (prefers-reduced-motion:reduce){.jg-ah .f,.jg-ah .n{animation:none}}
+.vn.jg-meta,.vs>sup.jg-meta{color:var(--oro-vivo)}
 .vn.jg-leido,.vs>sup.jg-leido{color:var(--oro-vivo);text-shadow:0 0 10px color-mix(in srgb,var(--oro) 45%,transparent)}
 .vl .vn.jg-leido::before{content:"";position:absolute;left:1px;top:.9em;width:6px;height:3px;border:solid var(--oro-vivo);border-width:0 0 1.6px 1.6px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
 .vs>sup.jg-leido{background:linear-gradient(currentColor,currentColor) 50% 100%/72% 1.5px no-repeat}
@@ -1407,7 +1519,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     return seguir;
   }
   function tarjetaMisiones(y) {
-    const lista = h("ul", { class: "jg-misiones" }, (y.mis || []).map((m, i) => h("li", { class: "jg-mision" + (m.hecha ? " hecha" : "") },
+    // una misión cumplida muestra siempre su meta completa (13-nov-2026: «0 de 1 · cumplida» tras el cambio de conteo de P20)
+    const lista = h("ul", { class: "jg-misiones" }, (y.mis || []).map((m) => (m.hecha && !(m.prog >= m.meta) ? Object.assign({}, m, { prog: m.meta }) : m)).map((m, i) => h("li", { class: "jg-mision" + (m.hecha ? " hecha" : "") },
       h("span", { class: "jg-ok", "aria-hidden": "true" }, ico("marca")),
       h(m.hecha ? "div" : "a", m.hecha ? {} : { class: "jg-mis-ir", href: destinoMision(m), title: "Ir a cumplirla" }, h("div", { class: "jg-mt", text: textoMision(m) }), h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * m.prog) / m.meta).toFixed(0) + "%" })),
         h("span", { class: "jg-mini", text: fmt(m.prog) + " de " + fmt(m.meta) + (m.hecha ? " · cumplida" : " · tócala para ir a cumplirla") })),
@@ -1544,10 +1657,33 @@ html[data-mov="no"] .ap-savia{display:none!important}
     liga: (a) => "Semana de liga cerrada: puesto " + a.pos + " de " + a.n + (a.nvNuevo > a.nv ? "; ¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
     compania: (a) => "¡«" + a.nombre + "» logró su meta común de la semana! +" + a.h + " h de experiencia doble.",
     mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble." };
+  // Hora de cada novedad, en la zona horaria de quien lee (BiEx, 13-nov-2026): «Hace 5 min · 6:35 a. m.», «Hoy · 6:40 a. m.»,
+  // «Ayer · 9:12 p. m.» o «12 nov. · 9:12 p. m.»; lo reciente se actualiza solo cada minuto mientras la tarjeta está a la vista
+  const LOC_ES = /^es\b/i.test(navigator.language || "") ? navigator.language : "es"; // «5:09 p. m.» o «17:09», según el país de quien lee
+  const F_HORA = new Intl.DateTimeFormat(LOC_ES, { hour: "numeric", minute: "2-digit" }), F_DIA = new Intl.DateTimeFormat(LOC_ES, { day: "numeric", month: "short" });
+  function cuandoFue(t) {
+    if (!t) return "";
+    const d = new Date(t), hoy = new Date(), hr = F_HORA.format(d), min = Math.floor((Date.now() - t) / 60000);
+    const igual = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    if (min < 1) return "Ahora · " + hr;
+    if (min < 60) return "Hace " + min + " min · " + hr;
+    if (igual(d, hoy)) return "Hoy · " + hr;
+    const ayer = new Date(hoy); ayer.setDate(hoy.getDate() - 1);
+    return (igual(d, ayer) ? "Ayer" : F_DIA.format(d) + (d.getFullYear() !== hoy.getFullYear() ? " de " + d.getFullYear() : "")) + " · " + hr;
+  }
   function tarjetaNovedades(y) {
     const l = (y.avisos || []).filter((a) => NOVEDAD[a.k]).slice(0, 6);
     if (!l.length) return null;
-    return tarjeta("Novedades", null, h("ul", { class: "jg-novedades" }, l.map((a) => h("li", { text: NOVEDAD[a.k](a) }))));
+    const horas = [];
+    const ul = h("ul", { class: "jg-novedades" }, l.map((a) => {
+      const t = a.t ? h("time", { class: "jg-nov-t", datetime: new Date(a.t).toISOString(), text: cuandoFue(a.t) }) : null;
+      if (t) horas.push([t, a.t]);
+      return h("li", {}, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }));
+    }));
+    if (horas.some(([, t]) => Date.now() - t < 3600e3)) {
+      const reloj = setInterval(() => { if (!ul.isConnected) return clearInterval(reloj); for (const [el, t] of horas) el.textContent = cuandoFue(t); }, 60000);
+    }
+    return tarjeta("Novedades", null, ul);
   }
   const nombreLibro = (c) => (A.nombreLibro && A.nombreLibro(c)) || c;
   async function pintarPanel(cont) {
@@ -3089,8 +3225,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const marcable = (v) => (R.pal[v - 1] || 0) > 0 && !yaLeido(v) && !R.quiere.has(v);
   function sellos() {
     for (const s of document.querySelectorAll(".jg-sello, .jg-ld")) s.remove();
-    if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; }
-    LB.zona = new Set(); LB.bajo = new Set();
+    if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; } if (LB.ro) { LB.ro.disconnect(); LB.ro = null; }
+    LB.vis = new Set();
     if (!S.token || !R.lib || !R.pal.length || !R.els.length || !("IntersectionObserver" in window)) { ponerLB(0); return; }
     const hoja = document.querySelector(".hoja"); if (!hoja) return;
     if (!LB.el || !LB.el.isConnected) {
@@ -3098,37 +3234,63 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Leído" }), h("small", { text: "" })));
       document.body.append(LB.el);
     }
-    if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i"), h("b")); hoja.append(LB.ah); }
+    if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i", { class: "f" }), h("i", { class: "n" })); hoja.append(LB.ah); }
     LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
     pintarMarcados();
-    const banda = (zona) => (ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) zona.add(v); else zona.delete(v); } elegirLB(); };
-    LB.io = new IntersectionObserver(banda(LB.zona), { rootMargin: "-12% 0px -50% 0px", threshold: 0 });
-    LB.ioB = new IntersectionObserver(banda(LB.bajo), { rootMargin: "-50% 0px -16% 0px", threshold: 0 });
-    for (const e of R.els) { LB.io.observe(e); LB.ioB.observe(e); }
+    // los versos a la vista (sin franjas fijas: la zona útil se mide con las barras reales, ver elegirLB)
+    LB.io = new IntersectionObserver((ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) LB.vis.add(v); else LB.vis.delete(v); } pedirLB(); }, { threshold: 0 });
+    for (const e of R.els) LB.io.observe(e);
+    // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
+    if ("ResizeObserver" in window) { LB.ro = new ResizeObserver(() => { if (LB.v) ponerLB(LB.v, true); }); LB.ro.observe(hoja); }
+    // al detenerse el desplazamiento, y otra vez cuando las barras terminan de esconderse o volver (.42 s)
+    if (!LB.scroll) {
+      LB.scroll = true;
+      addEventListener("scroll", () => { clearTimeout(LB.st); LB.st = setTimeout(pedirLB, 110); }, { passive: true });
+      document.addEventListener("transitionend", (e) => { if (e.propertyName === "transform" && e.target instanceof Element && e.target.matches("header.barra, .barra-hoja")) pedirLB(); }, true);
+    }
     finCapJuego();
   }
+  function pedirLB() { if (LB.raf) return; LB.raf = requestAnimationFrame(() => { LB.raf = 0; elegirLB(); }); }
   // borde inferior de las barras de arriba (la superior y la del capítulo cuando está pegada): lo que queda debajo no se ve
   function topeBarras() {
     let t = 0;
     for (const q of ["header.barra", ".barra-hoja.bh-pegada"]) { const el = document.querySelector(q); if (el) { const r = el.getBoundingClientRect(); if (r.top < 240 && r.bottom > t) t = r.bottom; } }
     return t;
   }
+  // borde superior de lo que flota abajo (el botón «Leído», que ya sube sobre la sala)
+  function pieLB() {
+    const r = LB.el && LB.el.getBoundingClientRect();
+    return r && r.height ? r.top - (LB.el.classList.contains("fuera") ? 14 : 0) : innerHeight - 90;
+  }
+  // El verso que marcaría «Leído» (13-nov-2026): el primero sin marcar en la parte de arriba de la zona útil (debajo de las
+  // barras y encima de lo que flota abajo) que de verdad se vea: su número a la vista o, si su número ya subió bajo las
+  // barras, al menos dos renglones de su texto. Si no hay ninguno arriba, el siguiente a la vista.
   function elegirLB() {
-    if (!R.lib) return ponerLB(0);
-    let v = 0; const tope = topeBarras() + 12;
-    const aLaVista = (x) => { const el = document.getElementById("v" + x); return !!el && el.getBoundingClientRect().bottom > tope; };
-    for (const el of R.els) { const x = +el.id.slice(1); if (LB.zona.has(x) && marcable(x) && aLaVista(x)) { v = x; break; } }
-    if (!v) for (const el of R.els) { const x = +el.id.slice(1); if (LB.bajo.has(x) && marcable(x)) { v = x; break; } }
-    ponerLB(v);
+    if (!R.lib || !LB.vis) return ponerLB(0);
+    const T = topeBarras() + 4, B = pieLB() - 4, H = B - T;
+    if (H < 90) return ponerLB(LB.v && LB.vis.has(LB.v) && marcable(LB.v) ? LB.v : 0);
+    const arriba = T + H * 0.55;
+    let v = 0, sig = 0;
+    for (const el of R.els) {
+      const x = +el.id.slice(1); if (!LB.vis.has(x) || !marcable(x)) continue;
+      const r = el.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
+      const num = numeroDe(el), nr = num && num.getBoundingClientRect(), numVe = !!nr && nr.height > 0 && nr.top >= T - 2 && nr.bottom <= B;
+      const ve = Math.min(r.bottom, B) - Math.max(r.top, T), renglon = (parseFloat(getComputedStyle(el).fontSize) || 18) * 1.75;
+      if (!numVe && ve < renglon * 2.1) continue;
+      if (Math.max(r.top, T) <= arriba) { v = x; break; }
+      if (!sig) sig = x;
+    }
+    ponerLB(v || sig);
   }
   function ponerLB(v, forzar) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; return; }
+    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; quitarMeta(); return; }
     const el = document.getElementById("v" + v); if (!el) return;
-    if (LB.v === v && !forzar && !LB.el.classList.contains("fuera")) { LB.el.classList.toggle("espera", !R.pend.has(v)); return; }
+    const nuevo = LB.v !== v;
+    if (!nuevo && !forzar && !LB.el.classList.contains("fuera")) { LB.el.classList.toggle("espera", !R.pend.has(v)); halo(el); return; }
     const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, v);
-    if (LB.v !== v) {
+    if (nuevo) {
       LB.v = v; LB.el.classList.remove("hecho");
       LB.el.querySelector("b").textContent = rep ? "Repasado" : "Leído";
       LB.el.querySelector("small").textContent = "verso " + v;
@@ -3138,13 +3300,39 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const sp = document.querySelector(".jg-sala-p");
     LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
     if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
-    // el resplandor, sobre las cifras del número del verso (sin el § de la perícopa)
-    const num = numeroDe(el), hoja = LB.ah && LB.ah.parentElement;
-    if (num && hoja) {
-      const tn = [...num.childNodes].reverse().find((n) => n.nodeType === 3), rg = document.createRange(); rg.selectNodeContents(tn || num);
-      const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect();
-      if (r.width) { LB.ah.style.transform = "translate3d(" + (r.left + r.width / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - rh.top).toFixed(1) + "px,0)"; LB.ah.hidden = false; }
+    const hoja = LB.ah && LB.ah.parentElement; if (!hoja) return;
+    const rh = hoja.getBoundingClientRect(), r = el.getBoundingClientRect();
+    // el hilo: verso por fila, sobre la rayita del estado que sigue al número (la prolonga a lo largo de todo el verso);
+    // en la perícopa, en el centro del margen izquierdo, a lo largo de los renglones del verso
+    const num = numeroDe(el), enFila = el.classList.contains("vl");
+    let fx, y0, y1;
+    if (enFila && num) {
+      const nr = num.getBoundingClientRect(), cs = getComputedStyle(num), ra = parseFloat(getComputedStyle(num, "::after").right), fs = parseFloat(cs.fontSize) || 18;
+      fx = nr.right - (isNaN(ra) ? -8 : ra) - 1.5; y0 = nr.top + 0.55 * fs; y1 = r.bottom - 8;
+    } else {
+      const cont = el.closest(".lectura, .continuo") || el.parentElement, rc = cont.getBoundingClientRect(), pl = parseFloat(getComputedStyle(cont).paddingLeft) || 12;
+      fx = rc.left + Math.max(4, Math.min(pl / 2, 22)); y0 = r.top + 3; y1 = r.bottom - 3;
     }
+    const f = LB.ah.firstChild;
+    f.style.transform = "translate3d(" + (fx - rh.left).toFixed(1) + "px," + (y0 - rh.top).toFixed(1) + "px,0)";
+    f.style.height = Math.max(18, y1 - y0).toFixed(1) + "px";
+    quitarMeta(); if (num) { num.classList.add("jg-meta"); LB.meta = num; }
+    halo(el);
+    const antes = LB.ah.hidden; LB.ah.hidden = false;
+    if ((antes || nuevo) && LB.ah.animate && document.documentElement.getAttribute("data-mov") !== "no") LB.ah.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-out" });
+  }
+  function quitarMeta() { if (LB.meta) { LB.meta.classList.remove("jg-meta"); LB.meta = null; } }
+  // el halo detrás de las cifras del número (sin el § de la perícopa); solo si el número se ve (nunca medio tapado por las barras)
+  function halo(el) {
+    const n = LB.ah && LB.ah.lastChild, hoja = LB.ah && LB.ah.parentElement, num = numeroDe(el); if (!n || !hoja) return;
+    if (!num) { n.hidden = true; return; }
+    const tn = [...num.childNodes].reverse().find((x) => x.nodeType === 3), rg = document.createRange(); rg.selectNodeContents(tn || num);
+    const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect(), T = topeBarras();
+    if (!r.width || r.top < T + 2) { n.hidden = true; return; }
+    const w = Math.max(30, r.width + 24), hh = Math.max(28, r.height + 16);
+    n.style.width = w.toFixed(1) + "px"; n.style.height = hh.toFixed(1) + "px";
+    n.style.transform = "translate3d(" + (r.left + r.width / 2 - w / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - hh / 2 - rh.top).toFixed(1) + "px,0)";
+    n.hidden = false;
   }
   function tocarLB() {
     const v = LB.v; if (!v || !R.lib) return;
@@ -3647,37 +3835,77 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (r.error === "sin_capitulo" && R.cola.length) enviar(false);
       return;
     }
-    const inicio = Date.now(), resp = r.preguntas.map(() => null);
-    let resultado = null;
-    const cuerpo = () => {
-      const preguntas = r.preguntas.map((p, i) => {
-        const partes = p.t.split("_____");
-        return h("div", { class: "jg-preg" }, h("span", { class: "ref", text: nombreLibro(lib) + " " + cap + ":" + p.v }),
-          h("p", { class: "t" }, partes[0], h("u", { text: resultado ? p.o[resultado.correctas[i]] : resp[i] != null ? p.o[resp[i]] : " " }), partes.slice(1).join("_____")),
-          h("div", { class: "jg-ops", role: "group", "aria-label": "Opciones" }, p.o.map((o, k) => h("button", {
-            type: "button", class: "jg-op" + (resultado ? (k === resultado.correctas[i] ? " ok" : resp[i] === k ? " mal" : "") : ""), "aria-pressed": String(resp[i] === k), disabled: !!resultado,
-            onclick: () => { resp[i] = k; A.reemplazarModal(vistaP); } }, o))));
-      });
+    const inicio = Date.now(), resp = r.preguntas.map(() => null), n = r.preguntas.length;
+    let resultado = null, completos = [], btnVer = null;
+    // V24 (BiEx, 12-nov-2026): la prueba en vidrio, sin backdrop-filter en la ventana (K15): capas translúcidas con filos de
+    // luz sobre un fondo vivo (luces que se desplazan despacio, solo por el compositor). Tocar una opción solo cambia esa
+    // pregunta (no se vuelve a dibujar la ventana). V23: al terminar, cada pregunta muestra su verso completo (Textual de BiEx).
+    const pintarListo = () => {
+      if (!btnVer) return;
       const listo = resp.every((x) => x != null);
-      const pie = resultado
-        ? h("div", { class: "jg-cel" }, h("h3", { text: resultado.aciertos + " de " + r.preguntas.length }), h("p", { text: resultado.xp ? "+" + resultado.xp + " de experiencia." : "Esta vez no hubo aciertos; la próxima saldrá mejor." }),
+      btnVer.disabled = !listo; btnVer.classList.toggle("listo", listo);
+      btnVer.querySelector("span").textContent = listo ? "Ver resultado" : "Elige una opción en cada pregunta";
+    };
+    const tarjetaP = (p, i) => {
+      const partes = p.t.split("_____");
+      const hueco = h("u", { class: resultado || resp[i] != null ? "lleno" : null, text: resultado ? p.o[resultado.correctas[i]] : resp[i] != null ? p.o[resp[i]] : "\u00a0" });
+      const ops = p.o.map((o, k) => h("button", {
+        type: "button", class: "jg-op" + (resultado ? (k === resultado.correctas[i] ? " ok" : resp[i] === k ? " mal" : "") : ""), "aria-pressed": String(resp[i] === k), disabled: !!resultado,
+        onclick: () => {
+          if (resultado) return;
+          resp[i] = k; vibrar(8);
+          ops.forEach((bt, j) => bt.setAttribute("aria-pressed", String(j === k)));
+          hueco.textContent = o; hueco.classList.remove("lleno"); void hueco.offsetWidth; hueco.classList.add("lleno");
+          pintarListo();
+        } }, h("span", { text: o })));
+      const bien = resultado && resp[i] === resultado.correctas[i];
+      const vc = resultado && completos[i] ? h("div", { class: "jg-vc" }, h("span", { class: "jg-vc-et", text: "Verso completo · Textual de BiEx" }), h("p", { class: "jg-vc-t vt" }, completos[i]())) : null;
+      return h("section", { class: "jg-preg jg-vid" + (resultado ? (bien ? " bien" : " fallo") : ""), style: "--i:" + i },
+        h("div", { class: "jg-preg-cab" }, h("span", { class: "ref", text: nombreLibro(lib) + " " + cap + ":" + p.v }), h("span", { class: "num", text: resultado ? (bien ? "Acertaste" : "La palabra era otra") : (i + 1) + " de " + n })),
+        h("p", { class: "t" }, partes[0], hueco, partes.slice(1).join("_____")),
+        h("div", { class: "jg-ops", role: "group", "aria-label": "Opciones" }, ops), vc);
+    };
+    const medalla = () => {
+      const a = resultado.aciertos, C = 2 * Math.PI * 34, u = "qz" + Math.random().toString(36).slice(2, 7);
+      const anillo = A.svg('<defs><linearGradient id="' + u + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3cc"/><stop offset=".5" stop-color="#e8cf94"/><stop offset="1" stop-color="#b8892f"/></linearGradient></defs>' +
+        '<circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,240,200,.13)" stroke-width="4.5"/>' +
+        '<circle class="arco" cx="40" cy="40" r="34" fill="none" stroke="url(#' + u + ')" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - a / n)).toFixed(2) + '" transform="rotate(-90 40 40)"/>', "0 0 80 80");
+      anillo.setAttribute("aria-hidden", "true");
+      const arco = anillo.querySelector(".arco");
+      if (!sinAnim() && arco.animate && a > 0) arco.animate([{ strokeDashoffset: C.toFixed(2) }, { strokeDashoffset: (C * (1 - a / n)).toFixed(2) }], { duration: 1100, easing: "cubic-bezier(.2,.8,.2,1)" });
+      return h("div", { class: "jg-qz-med" + (a === n ? " plena" : "") }, anillo, h("b", { text: String(a) }), h("small", { text: "de " + n }));
+    };
+    const cuerpo = () => {
+      const preguntas = r.preguntas.map(tarjetaP);
+      let pie;
+      if (resultado) {
+        pie = h("div", { class: "jg-qz-res jg-vid" }, medalla(),
+          h("p", { class: "jg-qz-xp", text: resultado.xp ? "+" + fmt(resultado.xp) + " de experiencia" : "Esta vez no hubo aciertos; la próxima saldrá mejor." }),
+          h("p", { class: "jg-mini", text: resultado.aciertos === n ? "¡Todas! Cada verso que respondiste bien quedó marcado como leído." : resultado.aciertos ? "Los versos que respondiste bien quedaron marcados como leídos." : "Vuelve a leer el capítulo con calma: los versos completos están arriba." }),
           resultado.cofre ? cofreBloque(resultado.cofre) : null,
-          h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Seguir leyendo" })))
-        : h("button", { class: "btn oro jg-grande", type: "button", disabled: !listo, onclick: async (e) => {
-          e.currentTarget.disabled = true;
-          const falta = 1600 * r.preguntas.length - (Date.now() - inicio); if (falta > 0) await esperar(falta);
+          h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Seguir leyendo" })));
+      } else {
+        btnVer = h("button", { class: "btn oro jg-grande jg-qz-ver", type: "button", disabled: true, onclick: async (e) => {
+          const bt = e.currentTarget; bt.disabled = true; bt.classList.add("enviando");
+          const falta = 1600 * n - (Date.now() - inicio); if (falta > 0) await esperar(falta);
           const x = await pedir("/prueba/responder", { metodo: "POST", cuerpo: { id: r.id, r: resp } });
-          if (x.error) { A.avisar(mensaje(x)); return; }
-          resultado = x; actualizarYo(x.yo); quitarPrueba(); if (x.cofre) COFRE.pend = x.cofre; { const e = espejo(); e.p = e.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e); }
+          if (x.error) { A.avisar(mensaje(x)); bt.classList.remove("enviando"); pintarListo(); return; }
+          resultado = x; actualizarYo(x.yo); quitarPrueba(); if (x.cofre) COFRE.pend = x.cofre; { const e2 = espejo(); e2.p = e2.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e2); }
           // P20: cada pregunta bien respondida marca su verso como leído
           for (const [k, sx] of Object.entries(x.cfs || {})) guardarCf(k, sx);
           if ((x.cf || []).length) { if (A.marcarLeido) A.marcarLeido(lib, cap, x.cf); if (R.lib === lib && R.cap === cap) { for (const v of x.cf) LB.ok.add(lib + "." + cap + "." + v); pintarMarcados(); elegirLB(); finCapJuego(); } }
-          if (x.aciertos === r.preguntas.length) sonar("nivel"); else if (x.aciertos) sonar("chispa");
+          if (x.aciertos === n) sonar("nivel"); else if (x.aciertos) sonar("chispa");
           for (const m of x.misiones || []) A.avisar("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
+          // V23: el verso completo de cada pregunta, en la Textual de BiEx
+          completos = await Promise.all(r.preguntas.map((p) => (A.versoTextual ? A.versoTextual(lib, cap, p.v).catch(() => null) : null)));
           A.reemplazarModal(vistaP);
-          setTimeout(() => { const c = document.querySelector(".modal[open] .jg-cel"); if (c) c.scrollIntoView({ block: "start", behavior: sinAnim() ? "auto" : "smooth" }); }, 140);
-        } }, h("span", { text: listo ? "Ver resultado" : "Elige una opción en cada pregunta" }));
-      return [h("p", { class: "jg-mini", text: "Completa cada verso con la palabra que falta, tal como está en la traducción de BiEx." }), ...preguntas, pie];
+          setTimeout(() => { const c = document.querySelector(".modal[open] .jg-qz-res"); if (c) c.scrollIntoView({ block: "start", behavior: sinAnim() ? "auto" : "smooth" }); }, 140);
+          if (x.aciertos === n) setTimeout(() => { const m = document.querySelector(".modal[open] .jg-qz-med"); if (m) chispas(16, m, ["aro", "polvo"]); }, 700);
+        } }, h("span", { text: "Elige una opción en cada pregunta" }));
+        pie = btnVer; setTimeout(pintarListo, 0);
+      }
+      return h("div", { class: "jg-qz" + (resultado ? " res" : "") }, h("div", { class: "jg-qz-fondo", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+        h("p", { class: "jg-qz-intro", text: resultado ? "Así quedó tu prueba. Debajo de cada pregunta está su verso completo." : "Completa cada verso con la palabra que falta, tal como está en la Textual de BiEx." }), ...preguntas, pie);
     };
     const vistaP = () => A.cajaModal(A.cabModal("Prueba del capítulo", nombreLibro(lib) + " " + cap), cuerpo());
     R.prueba = false;

@@ -283,7 +283,7 @@
   const guardarPrefs = () => store.set("prefs", prefs);
   const aplicarEd = () => document.documentElement.classList.toggle("ed", !!prefs.ed);
   aplicarEd();
-  const AP0 = { tam: 3, letra: "clasica", inter: "normal", mov: "si", v: 9 };
+  const AP0 = { tam: 3, letra: "clasica", inter: "normal", mov: "si", dal: "", v: 9 };
   // nueve tamaños (antes cinco: 1–5 pasan a 1, 3, 5, 7, 9)
   const K_TAM = [.9, .95, 1, 1.06, 1.12, 1.19, 1.26, 1.34, 1.42];
   let ap = Object.assign({}, AP0, store.get("ap", {}));
@@ -296,6 +296,8 @@
     r.setAttribute("data-letra", ap.letra);
     r.setAttribute("data-inter", ap.inter);
     r.setAttribute("data-mov", ap.mov);
+    // visión del color (BiEx, 13-nov-2026): rv = protanopía y deuteranopía, az = tritanopía, mono = acromatopsia
+    if (ap.dal) r.setAttribute("data-dal", ap.dal); else r.removeAttribute("data-dal");
     if (typeof MET !== "undefined" && MET) MET.despertar();
   }
   aplicarAp();
@@ -1041,7 +1043,7 @@
   function abrirApariencia() {
     abrirModal(() => {
       const ws = D && D.portada ? D.portada.p.slice(0, 5) : [];
-      const valor = { tam: () => ap.tam, letra: () => ap.letra, inter: () => ap.inter, mov: () => ap.mov, tema: temaActual, caja: () => prefs.caja };
+      const valor = { tam: () => ap.tam, letra: () => ap.letra, inter: () => ap.inter, mov: () => ap.mov, dal: () => ap.dal || "", tema: temaActual, caja: () => prefs.caja };
       const muestraGs = ws.map((w) => h("span", { class: "g", lang: "grc", "data-gk": w.g }, gk(w.g)));
       const cambiar = {
         tema: (v) => ponerTema(v),
@@ -1072,10 +1074,15 @@
           fila("Tema", grupo("tema", [["dark", op("Oscuro", "Negro, marfil y oro")], ["light", op("Pergamino", "Fondo claro, tinta oscura")]])),
           fila("Griego", grupo("caja", [["min", op("αβγ", "Minúsculas con acentos y espíritus", "grc")], ["may", op("ΑΒΓ", "Mayúsculas sin marcas, como los códices unciales", "grc")]])),
           fila("Movimiento", grupo("mov", [["si", op("Con animaciones")], ["no", op("Sin animaciones", "Todo aparece al instante")]])),
+          fila("Visión del color", grupo("dal", [
+            ["", op("Colores habituales", "El oro, el azul y el naranja de la edición BiEx")],
+            ["rv", op("Rojo y verde", "Protanopía y deuteranopía: tonos que no dependen del rojo ni del verde")],
+            ["az", op("Azul y amarillo", "Tritanopía: tonos que no dependen del azul ni del amarillo")],
+            ["mono", op("Sin color", "Acromatopsia: todo se distingue por la forma y el brillo")]], "ap-ops ap-dal")),
           h("div", { class: "ap-pie" },
             h("button", { class: "btn chico oro", type: "button", onclick: () => empujar(vistaOpciones()) }, svg(ICO.opciones), "Opciones del texto: colores, corchetes, paréntesis"),
             h("button", { class: "btn chico", type: "button", onclick: () => { ap = Object.assign({}, AP0); store.set("ap", ap); aplicarAp(); pintarModal(); } }, "Restablecer lectura")),
-          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta está pensada para todas las personas: letra para dislexia, letra clara, nueve tamaños, interlineado amplio, guía con voz y la opción sin animaciones. Y seguimos avanzando, paso a paso, hacia la máxima accesibilidad para las personas neurodivergentes (TDAH, dislexia, autismo…), ciegas o con baja visión, para que el Lόgος llegue sin barreras a todos los que hablan español." })));
+          h("p", { class: "nota-ui ap-acc", text: "Biblia Exacta está pensada para todas las personas: letra para dislexia, letra clara, nueve tamaños, interlineado amplio, modos para daltonismo, guía con voz y la opción sin animaciones. Y seguimos avanzando, paso a paso, hacia la máxima accesibilidad para las personas neurodivergentes (TDAH, dislexia, autismo…), ciegas o con baja visión, para que el Lόgος llegue sin barreras a todos los que hablan español." })));
     });
   }
 
@@ -1340,7 +1347,7 @@
         h("div", { class: "orden-libros" }, h("span", { class: "rotulo", text: "Orden" }), selOrden, textoOrden),
         panorama,
         h("div", { class: "panorama-pie" }, h("span", { text: fmt(totalPal) + " palabras griegas" }), h("span", { text: (L[0].t || L[0].n) + " → " + (L[L.length - 1].t || L[L.length - 1].n) })),
-        grupos.map(([t, sub, cs]) => h("div", { class: "grupo-libros" }, h("h3", {}, h("span", {}, protegerMay(t)), sub ? h("small", { text: sub }) : null), h("div", { class: "tarjetas" }, cs.map((c) => tarjeta(libroDe(c)))))),
+        grupos.map(([t, sub, cs]) => h("div", { class: "grupo-libros" }, h("h3", {}, h("span", {}, protegerMay(t)), sub ? h("small", { text: sub.replace(/(\d+)\s+([ad]\.H\.D\.)/g, "$1\u00a0$2").replace(/\bc\.\s+(\d)/g, "c.\u00a0$1") }) : null), h("div", { class: "tarjetas" }, cs.map((c) => tarjeta(libroDe(c)))))),
         CRONO ? h("a", { class: "tira-tiempo", href: "#/cronologia" },
           h("span", { class: "tt-ico" }, svg(ICO.tiempo)),
           h("span", { class: "tt-tx" }, h("b", { text: "Línea del tiempo" }), h("span", { text: "Qué sucedió y cuándo se escribió cada libro: de los anuncios del nacimiento a la destrucción del templo en el año 70 " + ERA_D })),
@@ -2558,7 +2565,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "c94b3fc4b6", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "2df30fa961", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2589,7 +2596,10 @@
         sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
         cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v),
         // (12-nov-2026) los versos de una cita con el texto de la Lectura, para la ventana de la cita en el juego
-        versos: (c, cap, v1, v2) => lectura(c).then((Lc) => (Lc.caps[cap] || []).filter((x) => x.v >= v1 && x.v <= v2).map((x) => [x.v, txtVerso(x)])) });
+        versos: (c, cap, v1, v2) => lectura(c).then((Lc) => (Lc.caps[cap] || []).filter((x) => x.v >= v1 && x.v <= v2).map((x) => [x.v, txtVerso(x)])),
+        // (13-nov-2026, V23) el verso completo en la Textual de BiEx (el orden del griego, el mismo texto de las preguntas de la
+        // prueba), con los colores de la edición: devuelve una función que lo dibuja cada vez que haga falta
+        versoTextual: (c, cap, v) => lectura(c).then((Lc) => { const x = (Lc.caps[cap] || []).find((y) => y.v === v); return x && x.t ? () => textoLectura(x.t, !!x.g, x) : null; }) });
       return J;
     }).catch((e) => { JGX = null; throw e; });
     return JGX;

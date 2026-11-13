@@ -610,7 +610,12 @@ html:not(.ed) .ley-ed { opacity: .45; }
 .orden-libros .rotulo { margin: 0; }
 .orden-nota { flex: 1 1 260px; margin: 0; }
 .seg-orden button:disabled { opacity: .4; cursor: default; }
-.grupo-libros > h3 small { font-family: var(--f-ui); letter-spacing: .08em; text-transform: none; color: var(--tenue); font-size: .78rem; font-weight: 400; white-space: nowrap; flex: none; margin-left: auto; } /* la fecha no se parte en dos renglones (10-nov-2026) */
+.grupo-libros > h3 small { font-family: var(--f-ui); letter-spacing: .08em; text-transform: none; color: var(--tenue); font-size: .78rem; font-weight: 400; white-space: normal; flex: 0 1 auto; min-width: 0; margin-left: auto; text-align: right; line-height: 1.35; } /* la fecha no se parte (espacio duro en app.js, 10 y 13-nov-2026); el resto baja de renglón si no cabe */
+/* si no cabe en un renglón, la fecha baja entera al siguiente, alineada a la derecha (13-nov-2026) */
+.grupo-libros > h3 { flex-wrap: wrap; row-gap: 6px; }
+.grupo-libros > h3 > span { flex: 0 1 auto; min-width: 0; }
+.grupo-libros > h3::after { flex: 1 1 18px; min-width: 18px; order: 1; }
+.grupo-libros > h3 small { order: 2; max-width: 100%; }
 .tlibro .fecha { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font-family: var(--f-ui); font-size: .74rem; color: var(--tinta-2); margin-top: 6px; letter-spacing: .02em; }
 .tlibro .fecha svg { width: 15px; height: 15px; color: var(--oro); flex: none; }
 .tira-tiempo { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 18px 20px; margin: 4px 0 34px; border: 1px solid var(--linea); border-radius: var(--radio); background: linear-gradient(90deg, var(--oro-suave), transparent 70%), var(--hoja); text-decoration: none; color: var(--tinta); }
@@ -2089,3 +2094,40 @@ html[data-mov="no"].aparece #vista { animation: none; }
   --linea: rgba(124, 94, 34, .34); --linea-2: rgba(20, 17, 13, .12); --ed-azul: #142e66; --ed-naranja: #a64a08; --ed-gris: #5a5a5a; }
 .hoja { background: color-mix(in srgb, var(--hoja) 90%, transparent); --fondo-c: color-mix(in srgb, var(--hoja) 90%, transparent); }
 :root[data-theme="light"] .hoja { background: color-mix(in srgb, var(--hoja) 93%, transparent); --fondo-c: color-mix(in srgb, var(--hoja) 93%, transparent); }
+
+/* ===== 13-nov-2026 (BiEx) ===== */
+/* Nada se mueve de lado en el teléfono y no aparecen barras de desplazamiento en ningún momento (ni a la derecha ni abajo):
+   lo que no cabe se ajusta (cada vista se probó de 280 a 1280 px con los nueve tamaños); el recorte es solo la red de seguridad */
+html, body { overflow-x: clip; }
+html, body, * { scrollbar-width: none !important; }
+::-webkit-scrollbar { display: none; width: 0 !important; height: 0 !important; }
+/* Las cajas de los textos añadidos, idénticas en las dos vistas (verso por fila y perícopa): mismo ancho, márgenes y letra */
+.lectura .aviso-anadido, .continuo .aviso-anadido { max-width: 768px; margin: 16px auto 12px; }
+.continuo .aviso-anadido p { font-size: inherit; line-height: inherit; text-align: start; hyphens: manual; -webkit-hyphens: manual; }
+@media (max-width: 600px) { .lectura .aviso-anadido { margin-left: 8px; margin-right: 2px; } }
+/* Visión del color (BiEx, 13-nov-2026): paletas pensadas para cada tipo de daltonismo, con la misma jerarquía de la edición
+   BiEx (texto, palabras del Mashíaḥ, ampliaciones y textos añadidos) y del análisis por categoría (esquemas de Paul Tol,
+   distinguibles con protanopía, deuteranopía y tritanopía). Lo que antes solo se decía con color lleva también forma:
+   palabras del Mashíaḥ con más peso, textos añadidos en cursiva y entre ⟦ ⟧, aciertos y fallos con su marca. */
+html[data-dal="rv"]:not([data-theme="light"]) { --ed-azul: #a9c8f2; --ed-naranja: #f3b04c; --ed-gris: #a8a8a8;
+  --anadido: #eaa7d0; --anadido-gr: #f4cbe3; --anadido-fondo: rgba(234, 167, 208, .075); --anadido-filo: rgba(234, 167, 208, .4); }
+html[data-dal="rv"][data-theme="light"] { --ed-azul: #1c4f8c; --ed-naranja: #9e5600; --ed-gris: #5f5f5f;
+  --anadido: #96397a; --anadido-gr: #ad5591; --anadido-fondo: rgba(150, 57, 122, .07); --anadido-filo: rgba(150, 57, 122, .34); }
+html[data-dal="az"]:not([data-theme="light"]) { --ed-azul: #ebe4d6; --ed-naranja: #ff9d9d; --ed-gris: #9c9c9c;
+  --anadido: #7fdbe2; --anadido-gr: #b7eef2; --anadido-fondo: rgba(127, 219, 226, .07); --anadido-filo: rgba(127, 219, 226, .38); }
+html[data-dal="az"][data-theme="light"] { --ed-azul: #24211c; --ed-naranja: #b3261e; --ed-gris: #656565;
+  --anadido: #00707a; --anadido-gr: #1b8c94; --anadido-fondo: rgba(0, 112, 122, .07); --anadido-filo: rgba(0, 112, 122, .32); }
+html[data-dal="mono"]:not([data-theme="light"]) { --ed-azul: #ece5d6; --ed-naranja: #ffffff; --ed-gris: #9d968a;
+  --anadido: #cfc9bd; --anadido-gr: #e2ddd2; --anadido-fondo: rgba(236, 229, 214, .06); --anadido-filo: rgba(236, 229, 214, .34); }
+html[data-dal="mono"][data-theme="light"] { --ed-azul: #1d1a15; --ed-naranja: #000000; --ed-gris: #6f665a;
+  --anadido: #4a453c; --anadido-gr: #5c564c; --anadido-fondo: rgba(29, 26, 21, .05); --anadido-filo: rgba(29, 26, 21, .3); }
+/* análisis por categoría, caso o tiempo */
+html:is([data-dal="rv"], [data-dal="az"]):not([data-theme="light"]) { --c-V: #eedd88; --c-N: #77aadd; --c-A: #44bb99; --c-T: #dddddd; --c-PR: #ee8866; --c-PREP: #bbcc33;
+  --c-CONJ: #99ddff; --c-PRT: #ffaabb; --c-ADV: #aaaa00; --c-INJ: #ffaabb; --c-HEB: #eedd88; --c-X: #8f8a84; }
+html:is([data-dal="rv"], [data-dal="az"])[data-theme="light"] { --c-V: #882255; --c-N: #332288; --c-A: #117733; --c-T: #6d6473; --c-PR: #cc6677; --c-PREP: #7a7a1f;
+  --c-CONJ: #2f8f82; --c-PRT: #aa4499; --c-ADV: #8a7a2a; --c-INJ: #aa4499; --c-HEB: #882255; --c-X: #6d6473; }
+html[data-dal="mono"] { --c-V: var(--tinta); --c-N: var(--tinta); --c-A: var(--tinta-2); --c-T: var(--tenue); --c-PR: var(--tinta-2); --c-PREP: var(--tenue);
+  --c-CONJ: var(--tenue); --c-PRT: var(--tenue); --c-ADV: var(--tinta-2); --c-INJ: var(--tinta-2); --c-HEB: var(--tinta-2); --c-X: var(--tenue); }
+/* forma además del color */
+html[data-dal="mono"].ed .tm { font-weight: 600; }
+html[data-dal] .ta { font-style: italic; }
