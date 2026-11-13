@@ -804,11 +804,20 @@ html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);borde
 .jg-siembra{display:flex;gap:14px;align-items:center}
 .jg-siembra-svg{flex:none;width:104px;height:104px;display:block}
 .jg-siembra-svg svg{width:100%;height:100%}
-.jg-arbol-lista{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.jg-arbol-lista li{display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:8px 10px;border-radius:10px;border:1px solid var(--linea-2);min-width:0}
+/* «Por generación» compacta (BiEx, 13-nov-2026): filas finas separadas por un filo, sin cajas; las primeras 6 y el resto al tocar */
+.jg-arbol-lista{list-style:none;margin:0;padding:0;display:grid;gap:0;font:400 .84rem/1.3 var(--f-ui)}
+.jg-arbol-lista li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:7px 2px 7px 12px;min-width:0;position:relative;border-top:1px solid var(--linea-2)}
+.jg-arbol-lista li:first-child{border-top:0}
+.jg-arbol-lista li::before{content:"";position:absolute;left:0;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;border:1px solid var(--tenue)}
+.jg-arbol-lista li.ok::before{background:var(--oro);border-color:var(--oro)}
 .jg-arbol-lista li>span:first-child{min-width:0;overflow-wrap:anywhere}
-.jg-arbol-lista li small{font:400 .78rem var(--f-ui);color:var(--tenue)}
-.jg-arbol-lista li.ok{border-color:color-mix(in srgb,var(--oro) 50%,transparent)}
+.jg-arbol-lista li b{font-weight:500;color:var(--tinta)}
+.jg-arbol-lista li small{font:400 .72rem var(--f-ui);color:var(--tenue)}
+.jg-arbol-lista li>.jg-mini{flex:none;font-size:.72rem;white-space:nowrap}
+.jg-arbol-lista.plegada li:nth-child(n+7){display:none}
+.jg-arbol-mas{margin-top:6px}
+.jg-qz .jg-ops>.jg-op:last-child:nth-child(odd){grid-column:1/-1}
+.ap-uso-t{margin:16px 0 6px;font:500 .7rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--tenue)}
 /* ===== Interfaz de juego (9-nov-2026): menú de secciones, tarjetas con profundidad, llave de acceso y guía.
    Todo lo que se mueve usa solo transformaciones y opacidad; el cristal (desenfoque) queda solo en el menú fijo. */
 .jg-tarjeta{background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 58%,transparent),color-mix(in srgb,var(--hoja) 90%,transparent));border-color:color-mix(in srgb,var(--oro) 20%,var(--linea-2));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 7%,transparent),0 22px 44px -34px rgba(0,0,0,.8)}
@@ -2482,7 +2491,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     pintarV();
     return tarjeta("Tienda de dracmas", ico("dracma"), h("div", { class: "ap-tienda-cab" }, h("p", { class: "jg-mini", text: "Se ganan leyendo: misiones, hallazgos y versos marcados «Leído». Nada se compra con dinero." }),
-      h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.")), uso, pestanas, vitrina);
+      h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.")), pestanas, vitrina,
+      // los objetos de uso (pergamino, descanso, cambio de apodo) van debajo de la vitrina: Auras, Mantos, Lauros y Sellos primero (BiEx, 13-nov-2026)
+      h("h4", { class: "ap-uso-t", text: "Para usar" }), uso);
   }
   // Foto de perfil: se recorta al centro, 256 × 256 a la densidad exacta, WebP (o JPEG) de menos de 90 KB
   async function elegirFoto(rehacer) {
@@ -2605,12 +2616,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
     dib.addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const g = e.target.closest && e.target.closest(".jg-nodo"); if (g) { e.preventDefault(); elegir(g.getAttribute("data-c")); } });
     const lista = h("ol", { class: "jg-arbol-lista" }, r.nodos.map((n) => { const padre = n.p ? porC.get(n.p) : null; return h("li", { class: n.ok ? "ok" : "" },
       h("span", {}, h("b", { text: n.a }), h("small", { text: " · " + ordGen(n.k) + (padre ? " · por " + padre.a : "") }), h("span", { class: "jg-act", "data-c": n.c, "aria-live": "off" })),
-      h("span", { class: "jg-mini", text: [n.d ? fmt(n.d) + " en sus ramas" : "", n.ok ? "✓" : ""].filter(Boolean).join(" · ") })); }));
+      h("span", { class: "jg-mini", text: n.d ? fmt(n.d) + " en sus ramas" : "" })); }));
     const cuentaAct = h("p", { class: "jg-mini jg-act-t", "aria-live": "polite" });
-    const tarjGen = tarjeta("Por generación", null, cuentaAct, lista, r.nodos.length < R0.d ? h("p", { class: "jg-mini", text: "Se muestran " + fmt(r.nodos.length) + " de " + fmt(R0.d) + " personas (hasta la " + ordGen(r.prof) + " generación). Toca una persona y abre su rama para ver más." }) : null);
-    zona.replaceChildren(resumen,
-      tarjeta("Las ramas", null, arbolVivo(dib, r), h("p", { class: "jg-mini", text: "● confirmó su lugar · ○ todavía no · +N: personas que se ven al abrir su rama · pellizca o usa + y − para acercarte" }), ficha),
-      tarjGen);
+    // compacta: las primeras 6 personas y el resto al tocar «Ver a todas»
+    let verMas = null;
+    if (r.nodos.length > 6) {
+      lista.classList.add("plegada");
+      verMas = h("button", { class: "btn chico jg-arbol-mas", type: "button", "aria-expanded": "false", onclick: () => { const ab = lista.classList.toggle("plegada"); verMas.setAttribute("aria-expanded", String(!ab)); verMas.querySelector("span").textContent = ab ? "Ver a todas (" + fmt(r.nodos.length) + ")" : "Ver menos"; } }, h("span", { text: "Ver a todas (" + fmt(r.nodos.length) + ")" }));
+    }
+    const tarjGen = tarjeta("Por generación", null, cuentaAct, lista, verMas, r.nodos.length < R0.d ? h("p", { class: "jg-mini", text: "Se muestran " + fmt(r.nodos.length) + " de " + fmt(R0.d) + " personas (hasta la " + ordGen(r.prof) + " generación). Toca una persona y abre su rama para ver más." }) : null);
+    // «Las ramas» va primero y «Tu siembra» después (BiEx, 13-nov-2026)
+    zona.replaceChildren(tarjeta("Las ramas", null, arbolVivo(dib, r), h("p", { class: "jg-mini", text: "● confirmó su lugar · ○ todavía no · +N: personas que se ven al abrir su rama · pellizca o usa + y − para acercarte" }), ficha),
+      resumen, tarjGen);
     animarCifras(zona);
     // P21: qué hace ahora cada persona de tu árbol, en vivo mientras la sección está a la vista (sin filas leídas ni escritas)
     async function actividad() {
@@ -3304,7 +3321,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // al detenerse el desplazamiento, y otra vez cuando las barras terminan de esconderse o volver (.42 s)
     if (!LB.scroll) {
       LB.scroll = true;
-      addEventListener("scroll", () => { clearTimeout(LB.st); LB.st = setTimeout(pedirLB, 110); }, { passive: true });
+      addEventListener("scroll", () => { clearTimeout(LB.st); clearTimeout(LB.st2); LB.st = setTimeout(pedirLB, 110); LB.st2 = setTimeout(pedirLB, 650); }, { passive: true });
       document.addEventListener("transitionend", (e) => { if (e.propertyName === "transform" && e.target instanceof Element && e.target.matches("header.barra, .barra-hoja")) pedirLB(); }, true);
     }
     finCapJuego();
@@ -3321,25 +3338,34 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const r = LB.el && LB.el.getBoundingClientRect();
     return r && r.height ? r.top - (LB.el.classList.contains("fuera") ? 14 : 0) : innerHeight - 90;
   }
-  // El verso que marcaría «Leído» (13-nov-2026): el primero sin marcar en la parte de arriba de la zona útil (debajo de las
-  // barras y encima de lo que flota abajo) que de verdad se vea: su número a la vista o, si su número ya subió bajo las
-  // barras, al menos dos renglones de su texto. Si no hay ninguno arriba, el siguiente a la vista.
+  // El verso que marcaría «Leído» (13-nov-2026, afinado a las 13:04 con dos capturas de BiEx): el primero sin marcar cuyo
+  // número se ve entero en la zona útil (debajo de las barras y encima de lo que flota abajo), en la parte de arriba si lo
+  // hay; un verso que empezó bajo las barras ya no se elige aunque se vean varios renglones suyos. Solo si en la zona no
+  // se ve el comienzo de ningún verso (un verso muy largo que llena la pantalla), se elige el que la ocupa.
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
-    const T = topeBarras() + 4, B = pieLB() - 4, H = B - T;
-    if (H < 90) return ponerLB(LB.v && LB.vis.has(LB.v) && marcable(LB.v) ? LB.v : 0);
-    const arriba = T + H * 0.55;
-    let v = 0, sig = 0;
+    const T = topeBarras() + 6, B = pieLB() - 6, H = B - T;
+    if (H < 90) { clearTimeout(LB.st3); LB.st3 = setTimeout(pedirLB, 450); return; } // las barras se están moviendo: se vuelve a mirar enseguida
+    const arriba = T + H * 0.6;
+    let v = 0, sig = 0, largo = 0, algunNumero = false;
     for (const el of R.els) {
-      const x = +el.id.slice(1); if (!LB.vis.has(x) || !marcable(x)) continue;
+      const x = +el.id.slice(1); if (!LB.vis.has(x)) continue;
       const r = el.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
-      const num = numeroDe(el), nr = num && num.getBoundingClientRect(), numVe = !!nr && nr.height > 0 && nr.top >= T - 2 && nr.bottom <= B;
-      const ve = Math.min(r.bottom, B) - Math.max(r.top, T), renglon = (parseFloat(getComputedStyle(el).fontSize) || 18) * 1.75;
-      if (!numVe && ve < renglon * 2.1) continue;
-      if (Math.max(r.top, T) <= arriba) { v = x; break; }
+      const nr = rectNum(el), numVe = nr.height > 0 && nr.top >= T && nr.bottom <= B;
+      if (numVe) algunNumero = true;
+      if (!marcable(x)) continue;
+      if (!numVe) { if (!largo && r.top < T && r.bottom > T + H * 0.85) largo = x; continue; }
+      if (nr.top <= arriba) { v = x; break; }
       if (!sig) sig = x;
     }
-    ponerLB(v || sig);
+    ponerLB(v || sig || (!algunNumero ? largo : 0));
+  }
+  function numeroVisible(v, T, B) { const el = document.getElementById("v" + v); if (!el) return false; const nr = rectNum(el); return nr.height > 0 && nr.top >= T && nr.bottom <= B; }
+  // la caja de las cifras del número (la celda del número ocupa todo el alto del verso en la vista por fila)
+  function rectNum(el) {
+    const num = numeroDe(el); if (!num) return el.getBoundingClientRect();
+    const tn = [...num.childNodes].reverse().find((x) => x.nodeType === 3); if (!tn) return num.getBoundingClientRect();
+    const rg = document.createRange(); rg.selectNodeContents(tn); return rg.getBoundingClientRect();
   }
   function ponerLB(v, forzar) {
     if (!LB.el) return;
@@ -4641,7 +4667,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, vis: [...(LB.vis || [])], T: topeBarras(), B: pieLB(), marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,

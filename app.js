@@ -2234,13 +2234,14 @@
   const ordenarTestigos = (Tg, ids) => [...new Set(ids)].sort((a, b) => ((Tg.porId.get(idBase(a)) || {}).i ?? 999) - ((Tg.porId.get(idBase(b)) || {}).i ?? 999));
   const sigmaFinal = (s) => String(s || "").replace(/σ(?=\s|$)/g, "ς");
   const SINAITICO = { MAT: 33, MRK: 34, LUK: 35, JHN: 36, ROM: 37, "1CO": 38, "2CO": 39, GAL: 40, EPH: 41, PHP: 42, COL: 43, "1TH": 44, "2TH": 45, HEB: 46, "1TI": 47, "2TI": 48, TIT: 49, PHM: 50, ACT: 51, JAS: 52, "1PE": 53, "2PE": 54, "1JN": 55, "2JN": 56, "3JN": 57, JUD: 58, REV: 59 };
+  // enlaces a las imágenes de cada manuscrito: [qué se abre, dirección, dónde] (13-nov-2026: compactos, en dos renglones)
   function enlacesImagen(id, c, cap, v) {
     const out = [];
-    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el Codex [Códice] Sinaiticus", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0"]);
-    if (id === "03") out.push(["DigiVatLib · Bibliotheca Apostolica [Biblioteca Apostólica] Vaticana (Vat. gr. 1209)", "https://digi.vatlib.it/view/MSS_Vat.gr.1209"]);
-    if (id === "05") out.push(["Cambridge Digital Library [Biblioteca Digital]", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1"]);
+    if (id === "01" && SINAITICO[c]) out.push(["Ver este verso en el manuscrito", "https://codexsinaiticus.org/en/manuscript.aspx?book=" + SINAITICO[c] + "&chapter=" + cap + "&lid=en&side=r&verse=" + v + "&zoomSlider=0", "Codex [Códice] Sinaiticus"]);
+    if (id === "03") out.push(["Ver el manuscrito completo", "https://digi.vatlib.it/view/MSS_Vat.gr.1209", "DigiVatLib · Bibliotheca Apostolica [Biblioteca Apostólica] Vaticana (Vat. gr. 1209)"]);
+    if (id === "05") out.push(["Ver el manuscrito completo", "https://cudl.lib.cam.ac.uk/view/MS-NN-00002-00041/1", "Cambridge Digital Library [Biblioteca Digital]"]);
     const doc = /^P\d+$/.test(id) ? 10000 + +id.slice(1) : /^0\d+$/.test(id) ? 20000 + +id : null;
-    if (doc) out.push(["Imágenes y transcripción del Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual del Nuevo Testamento], Münster", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc]);
+    if (doc) out.push(["Imágenes y transcripción", "https://ntvmr.uni-muenster.de/manuscript-workspace?docID=" + doc, "Institut für Neutestamentliche Textforschung [Instituto para la Investigación Textual del Nuevo Testamento], Münster"]);
     return out;
   }
   const palBase = (toks, k) => (toks && toks[k] ? T.F[toks[k][0]] : "");
@@ -2467,7 +2468,7 @@
           h("p", { class: "nota-ui", text: x.t.co ? "Contiene: " + conNombres(x.t.co) + "." : "" }),
           diplomatica(x.txt, sep),
           h("p", { class: "nota-ui mt-ley", text: "Transcripción letra por letra, con los cambios de línea del manuscrito. Raya: abreviatura (nombre sagrado o número). Punto debajo: letra dañada. ◌: letra que está pero no se puede identificar. [ ]: letras perdidas. ᶜ: corrección de otra mano." }),
-          im.length ? h("div", { class: "mt-img" }, im.map(([t, u]) => h("a", { class: "btn chico", href: u, target: "_blank", rel: "noopener" }, svg(ICO.externo), t))) : null));
+          im.length ? h("div", { class: "mt-img" }, im.map(([t, u, d]) => h("a", { class: "mt-enl", href: u, target: "_blank", rel: "noopener" }, svg(ICO.externo), h("span", {}, h("b", { text: t }), d ? h("small", { text: d }) : null)))) : null));
       });
       return det;
     }));
@@ -2565,7 +2566,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "ddde3c2315", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "ecb18ff876", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3024,18 +3025,52 @@
   }
   // Apariciones por libro en el orden en que se escribieron los libros (datación temprana)
   const fechaCorta = (b) => { const f = fechaEscrito(b); return f ? "c. " + f.replace(/^c\. /, "") + (/H\.D\./.test(f) ? "" : " " + ERA_D) : ""; };
+  // «A lo largo del tiempo» (BiEx, 13-nov-2026): como la franja de la biblioteca, al pasar el dedo o el puntero se resalta cada
+  // libro con un visor (nombre, fecha de escritura y veces); al soltar se eligen sus apariciones. Fuera de la tira, cancela.
   function tiraTiempo(pares, alTocar) {
     const orden = CRONO && CRONO.ordenes && CRONO.ordenes.escritura ? CRONO.ordenes.escritura.map(libroDe).filter(Boolean) : D.libros;
     const m = new Map(pares.map(([bi, n]) => [D.libros[bi].c, n]));
     const max = Math.max(1, ...pares.map((p) => p[1]));
     const primero = orden.find((b) => m.get(b.c));
-    return h("div", { class: "tt" },
-      h("div", { class: "tt-tira" }, orden.map((b) => {
-        const n = m.get(b.c) || 0, et = (b.t || b.n) + (fechaCorta(b) ? " · " + fechaCorta(b) : "") + " · " + (n ? fmt(n) + (n === 1 ? " vez" : " veces") : "no aparece");
-        return h("button", { type: "button", class: "tt-c" + (n ? "" : " cero"), title: et, "aria-label": et, disabled: n ? null : true, style: "--a:" + (n ? (0.2 + 0.8 * Math.sqrt(n / max)).toFixed(3) : "0"), onclick: () => alTocar && alTocar(b.c) }, h("i"));
-      })),
+    const vecesDe = (n) => n ? fmt(n) + (n === 1 ? " vez" : " veces") : "no aparece";
+    const barras = orden.map((b) => {
+      const n = m.get(b.c) || 0, et = (b.t || b.n) + (fechaCorta(b) ? " · " + fechaCorta(b) : "") + " · " + vecesDe(n);
+      return h("button", { type: "button", class: "tt-c" + (n ? "" : " cero"), title: et, "aria-label": et, disabled: n ? null : true, style: "--a:" + (n ? (0.2 + 0.8 * Math.sqrt(n / max)).toFixed(3) : "0"), onclick: (e) => { if (e.detail === 0 && alTocar) alTocar(b.c); } }, h("i"));
+    });
+    const tira = h("div", { class: "tt-tira" }, barras);
+    const visor = h("div", { class: "tt-visor", "aria-hidden": "true" });
+    const caja = h("div", { class: "tt-caja" }, visor, tira);
+    let activo = -1, arr = null;
+    const pintar = (i) => {
+      const b = orden[i], n = m.get(b.c) || 0;
+      visor.replaceChildren(h("b", { text: b.t || b.n }), h("small", { text: [tradQ(b), fechaCorta(b), vecesDe(n)].filter(Boolean).join(" · ") }));
+      const r = tira.getBoundingClientRect(), t = barras[i].getBoundingClientRect(), ancho = visor.offsetWidth || 200, centro = t.left + t.width / 2 - r.left;
+      const izq = Math.max(0, Math.min(r.width - ancho, centro - ancho / 2));
+      visor.style.left = izq + "px"; visor.style.setProperty("--flecha", Math.max(12, Math.min(ancho - 12, centro - izq)) + "px");
+    };
+    const mostrar = (i) => {
+      if (i < 0 || i === activo) return;
+      if (activo >= 0) barras[activo].classList.remove("activo");
+      activo = i; barras[i].classList.add("activo"); caja.classList.add("con-visor"); pintar(i);
+      if (arr && arr.movido && navigator.vibrate) { try { navigator.vibrate(3); } catch (e) { /* sin vibración */ } }
+    };
+    const ocultar = () => { if (activo >= 0) barras[activo].classList.remove("activo"); activo = -1; caja.classList.remove("con-visor", "cancelar"); };
+    const indice = (x) => { for (let i = 0; i < barras.length; i++) { const r = barras[i].getBoundingClientRect(); if (x >= r.left - 1.5 && x < r.right + 1.5) return i; } const r = tira.getBoundingClientRect(); return x < r.left ? 0 : x >= r.right ? barras.length - 1 : -1; };
+    tira.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse" && e.button !== 0) return; arr = { x: e.clientX, y: e.clientY, movido: false }; try { tira.setPointerCapture(e.pointerId); } catch (er) { /* sin captura */ } mostrar(indice(e.clientX)); });
+    tira.addEventListener("pointermove", (e) => {
+      if (arr) { if (Math.abs(e.clientX - arr.x) > 6) arr.movido = true; const fuera = Math.abs(e.clientY - arr.y) > 70; caja.classList.toggle("cancelar", fuera); if (!fuera) mostrar(indice(e.clientX)); }
+      else if (e.pointerType === "mouse") mostrar(indice(e.clientX));
+    });
+    tira.addEventListener("pointerup", (e) => {
+      if (!arr) return;
+      const fuera = Math.abs(e.clientY - arr.y) > 70, i = activo; arr = null;
+      if (!fuera && i >= 0 && (m.get(orden[i].c) || 0) && alTocar) { const c = orden[i].c; setTimeout(ocultar, 160); alTocar(c); } else ocultar();
+    });
+    tira.addEventListener("pointercancel", () => { arr = null; ocultar(); });
+    tira.addEventListener("pointerleave", (e) => { if (!arr && e.pointerType === "mouse") ocultar(); });
+    return h("div", { class: "tt" }, caja,
       h("div", { class: "tt-ejes" }, h("span", { text: orden[0] ? fechaCorta(orden[0]) : "" }), h("span", { text: orden.length ? fechaCorta(orden[orden.length - 1]) : "" })),
-      primero ? h("p", { class: "nota-ui", text: "Por fecha de escritura, aparece primero en " + (primero.t || primero.n) + (fechaCorta(primero) ? " (" + fechaCorta(primero) + ")" : "") + "." }) : null);
+      primero ? h("p", { class: "nota-ui", text: "Por fecha de escritura, aparece primero en " + (primero.t || primero.n) + (fechaCorta(primero) ? " (" + fechaCorta(primero) + ")" : "") + ". Pasa el dedo por la tira para ver cada libro; al soltar, se muestran sus apariciones." }) : null);
   }
   // Tabla de formas: el paradigma con las formas que de verdad aparecen (tiempo, modo y voz; persona y número; caso, número y género)
   const VOZ_L = { A: "activa", M: "media", D: "media", P: "pasiva", O: "pasiva", E: "media o pasiva", N: "media o pasiva" };

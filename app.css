@@ -2132,3 +2132,25 @@ html[data-dal="mono"] { --c-V: var(--tinta); --c-N: var(--tinta); --c-A: var(--t
 /* forma además del color */
 html[data-dal="mono"].ed .tm { font-weight: 600; }
 html[data-dal] .ta { font-style: italic; }
+/* Enlaces a las imágenes de los manuscritos (13-nov-2026): compactos y del tamaño de la interfaz, no botones gigantes */
+.mt-img { display: grid; gap: 8px; margin-top: 12px; }
+.mt-enl { display: flex; align-items: flex-start; gap: 11px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: var(--tinta);
+  border: 1px solid var(--linea); background: linear-gradient(160deg, color-mix(in srgb, var(--oro) 7%, transparent), transparent); transition: border-color .2s, background .2s; }
+.mt-enl:hover, .mt-enl:focus-visible { border-color: color-mix(in srgb, var(--oro) 55%, transparent); background: linear-gradient(160deg, color-mix(in srgb, var(--oro) 13%, transparent), transparent); }
+.mt-enl > svg { flex: none; width: 15px; height: 15px; margin-top: 2px; color: var(--oro); }
+.mt-enl > span { display: grid; gap: 2px; min-width: 0; }
+.mt-enl b { font: 500 .86rem/1.3 var(--f-ui); letter-spacing: .01em; color: var(--oro-vivo); }
+.mt-enl small { font: 400 .76rem/1.35 var(--f-ui); color: var(--tenue); overflow-wrap: anywhere; }
+/* «A lo largo del tiempo»: visor al pasar el dedo (como la franja de la biblioteca) */
+.tt-caja { position: relative; padding-top: 0; touch-action: pan-y; }
+.tt-caja .tt-tira { touch-action: none; user-select: none; -webkit-user-select: none; }
+.tt-visor { position: absolute; left: 0; bottom: calc(100% + 10px); z-index: 5; display: grid; gap: 2px; width: max-content; max-width: min(300px, 100%); padding: 8px 13px;
+  border: 1px solid var(--oro); border-radius: 12px; background: var(--hoja); box-shadow: 0 12px 28px -14px rgba(0, 0, 0, .8); pointer-events: none; opacity: 0; transform: translateY(6px); transition: opacity .16s, transform .16s; }
+.tt-visor::after { content: ""; position: absolute; left: var(--flecha, 50%); bottom: -7px; width: 12px; height: 12px; margin-left: -6px; background: var(--hoja); border-right: 1px solid var(--oro); border-bottom: 1px solid var(--oro); transform: rotate(45deg); }
+.tt-visor b { font: 500 .9rem/1.25 var(--f-texto); color: var(--oro-vivo); }
+.tt-visor small { font: 400 .74rem/1.3 var(--f-ui); color: var(--tenue); }
+.tt-caja.con-visor .tt-visor { opacity: 1; transform: none; }
+.tt-caja.cancelar .tt-visor { opacity: .35; }
+.tt-c.activo i { opacity: 1; box-shadow: 0 0 12px color-mix(in srgb, var(--oro) 70%, transparent); }
+.tt-c.activo { transform: scaleY(1.12); transition: transform .12s; }
+.tt-c.cero.activo i { opacity: .25; }
