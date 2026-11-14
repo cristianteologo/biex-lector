@@ -57,6 +57,7 @@
     abajo: '<path d="M6.5 9.5L12 15l5.5-5.5" ' + L1 + '/>',
     // gema tallada con su destello (BiEx, 10-nov-2026: nada de estrellas ni formas de cruz)
     chispa: '<path d="M12 3.5l6.5 8.5-6.5 8.5-6.5-8.5z" ' + L1 + '/><path d="M12 7.6l3.3 4.4-3.3 4.4-3.3-4.4z" ' + L1 + '/><path d="M18.4 3.6l1.1 1.4-1.1 1.4-1.1-1.4z" fill="currentColor"/>',
+    podio: '<path d="M3.5 20.5h17" ' + L1 + '/><path d="M9 20.5V9.2h6v11.3M3.8 20.5v-6.6H9M15 20.5v-8.6h5.2v8.6" ' + L1 + '/><path d="M12 3.4l1.7 2.1-1.7 2.1-1.7-2.1z" fill="currentColor"/>',
     balanza: '<path d="M12 10.4L9.6 19.6h4.8z" ' + L1 + '/><path d="M8 20.4h8" ' + L1 + '/><path d="M4.4 9.4L19.6 6.6" ' + L1 + '/><circle cx="12" cy="8" r="1.15" fill="currentColor"/><path d="M4.4 9.4l-2.2 4.6a2.4 2.4 0 0 0 4.4 0zM19.6 6.6l-2.2 4.6a2.4 2.4 0 0 0 4.4 0z" ' + L1 + '/>',
     marca: '<path d="M5.5 12.5l4.2 4.2L18.5 7.8" ' + L1 + '/>',
     cerrar: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + L1 + '/>',
@@ -1216,7 +1217,9 @@
         // Créditos de los datos (BiEx, 13-nov-2026, 18:26): desplegados en el pie de la pantalla principal; en las ventanas
         // (Manuscritos, la ficha de la palabra, las referencias) van plegados (credPleg)
         // (BiEx, 13-nov-2026, 20:32): en el pie, siempre a la vista, sin pliegue (también al pie de «Más» en Escudriña)
-        h("div", { class: "creditos-det" }, h("p", { class: "creditos-tit", text: "Créditos de los datos" }),
+        // (BiEx, 14-nov-2026: «los veo desplegados por doquier») desplegados y sin pliegue SOLO en la pantalla principal y al pie
+        // de «Más» de Escudriña; en las demás vistas, plegados en una línea discreta (créditosPie, al cambiar de ruta)
+        h("details", { class: "creditos-det", id: "creditos-pie" }, h("summary", { class: "creditos-tit", text: "Créditos de los datos" }),
         h("p", { class: "creditos" }, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
           h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " [Conjuntos de Datos Lingüísticos del Griego MACULA] (Biblica) y ",
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
@@ -1225,13 +1228,18 @@
           "Códigos Strong y formación de las palabras: códigos Strong extendidos de ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT" }), " (STEPBible.org, CC BY 4.0) y Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890; datos de ", h("a", { href: "https://github.com/openscriptures/strongs", target: "_blank", rel: "noopener", text: "Open Scriptures" }), " [Escrituras Abiertas], CC BY-SA), con las familias morfológicas de BiEx; el léxico de estudio que se deriva de ellos se publica con licencia CC BY-SA 4.0.", h("br"),
           "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación del Nuevo Testamento] (1976).", h("br"),
           "Referencias cruzadas: ", h("a", { href: "https://www.openbible.info/labs/cross-references/", target: "_blank", rel: "noopener", text: "OpenBible.info" }), " (CC BY), a partir del Treasury of Scripture Knowledge [Tesoro del Conocimiento de la Escritura]; nivel y categorías de BiEx.", h("br"),
-          "Ciudades de Escudriña: ", h("a", { href: "https://www.geonames.org", target: "_blank", rel: "noopener", text: "GeoNames" }), " (CC BY 4.0). Citas de la Antigua Voluntad, mientras BiEx la traduce: Septuaginta en español de Guillermo Jünemann Beckschäfer (dominio público), del ", h("a", { href: "https://github.com/GIL-UNAM/SpanishParaphraseCorpora", target: "_blank", rel: "noopener", text: "corpus paralelo GIL-UNAM" }), " (CC0).")))),
+          "Ciudades de Escudriña: ", h("a", { href: "https://www.geonames.org", target: "_blank", rel: "noopener", text: "GeoNames" }), " (CC BY 4.0). Citas de la Antigua Voluntad, mientras BiEx la traduce: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (dominio público), del ", h("a", { href: "https://github.com/GIL-UNAM/SpanishParaphraseCorpora", target: "_blank", rel: "noopener", text: "corpus paralelo GIL-UNAM" }), " (CC0).")))),
       modal);
     const tg = store.get("tema", null);
     if (tg === "light" || tg === "dark") document.documentElement.setAttribute("data-theme", tg);
     else if (EMBED) document.documentElement.setAttribute("data-theme", "dark");
     ajustarBarra();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarBarra).catch(() => {});
+  }
+  // créditos del pie: abiertos (sin pliegue) en la pantalla principal y al pie de «Más»; plegados en las demás vistas
+  function creditosPie(abiertos) {
+    const d = document.getElementById("creditos-pie"); if (!d) return;
+    d.open = !!abiertos; d.classList.toggle("fijos", !!abiertos);
   }
   // La marca «Biblia Exacta» nunca se recorta (con cualquier zoom del navegador o anchura): si no cabe, primero se oculta
   // la pista del buscador y después los enlaces de secciones (siguen en Herramientas y en la portada)
@@ -1466,6 +1474,7 @@
           hr(ICO.chispa, "Lo que pocos saben", "Datos de la historia del texto y de las traducciones que cambian la manera de leer, con sus pasajes y sus fuentes.", "Descubrir", "#/datos"),
           hr(ICO.tiempo, "Por qué estas fechas", "Las razones de la datación temprana que sigue BiEx: el año 70, el final de Prάc̅ṣεις y el templo en presente.", "Leer", "#/fechas"),
           hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias"),
+          hr(ICO.podio, "Ranking de traducciones", "Las 16 ediciones bíblicas menos mal traducidas al español, según la comparación de BiEx con los textos más antiguos.", "Ver el ranking", "#/ranking"),
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
           (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
           hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
@@ -1713,8 +1722,9 @@
       oninput: (e) => { const q = llano(e.target.value).trim(); let n = 0; for (const c of chips) { const si = !q || q.split(/\s+/).every((w) => c._k.includes(w)); c.hidden = !si; if (si) n++; } nada.hidden = n > 0; },
       onkeydown: (e) => { if (e.key === "Enter") { const c = chips.find((x) => !x.hidden); if (c) c.click(); } } });
     abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
-      h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
-      h("div", { class: "nav-libros todos" }, h("div", { class: "libs", role: "group", "aria-label": "Elegir un libro" }, chips), nada)));
+      // (14-nov-2026) la lupa y la lista van juntas en el cuerpo de la ventana: la lista no es el pie (se montaba sobre la lupa)
+      [h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
+        h("div", { class: "nav-libros todos" }, h("div", { class: "libs", role: "group", "aria-label": "Elegir un libro" }, chips), nada)]));
   }
   const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
   // O99/U2 (BiEx, 12-nov-2026): dos cifras por capítulo, en vez de un «10 % de avance» que no dice nada: las palabras griegas
@@ -2728,7 +2738,7 @@
       for (let v = a; v <= b && v <= vs.length; v++) if (vs[v - 1]) piezas.push(h("sup", { text: (c !== c1 ? c + ":" : "") + v }), vs[v - 1] + " ");
     }
     return [h("p", { class: "rx-av-t" }, ...(piezas.length ? piezas : ["Este verso no está en esta traducción."])),
-      h("p", { class: "nota-ui rx-av-f", text: "Cita de otra traducción: Septuaginta en español de Guillermo Jünemann Beckschäfer (dominio público), mientras BiEx traduce la Antigua Voluntad." })];
+      h("p", { class: "nota-ui rx-av-f", text: "Cita de otra traducción: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (1928, dominio público), mientras BiEx traduce la Antigua Voluntad." })];
   }
   function etRef(r) {
     const [li, c1, v1, fin] = r, cola = c1 + ":" + v1 + (fin > 0 ? "-" + fin : fin < 0 ? "–" + Math.floor(-fin / 1000) + ":" + (-fin % 1000) : "");
@@ -2752,6 +2762,8 @@
       const pintar = () => {
         const tope = +nivel, sel = lista.filter((r) => r.nv <= tope);
         for (const bt of seg.children) bt.setAttribute("aria-pressed", String(bt.dataset.k === nivel));
+        // el aviso del ranking va una sola vez, en la primera categoría con pasajes de la Antigua Voluntad (AA16)
+        const catAV = ORDEN_CAT_REF.find((c) => sel.some((r) => r[5] === c && r[0] < 39));
         cuerpo.replaceChildren(...ORDEN_CAT_REF.map((cat) => {
           const it = sel.filter((r) => r[5] === cat); if (!it.length) return null;
           const ul = h("ul", { class: "rx-lista" });
@@ -2759,7 +2771,7 @@
             const fuerza = h("span", { class: "rx-f n" + r.nv, title: r.nv === 1 ? "Referencia principal" : r.nv === 2 ? "Referencia relacionada" : "Referencia ampliada", "aria-hidden": "true" }, h("i"), h("i"), h("i"));
             if (r[0] < 39) {
               // (BiEx, 13-nov-2026) la Antigua Voluntad se lee dentro de BiEx, sin salir del sitio: mientras BiEx la traduce, la
-              // Septuaginta en español de Guillermo Jünemann (dominio público), marcada como cita de otra traducción
+              // Septuaginta en español de Wilhelm [Guillermo] Jünemann (dominio público), marcada como cita de otra traducción
               const panel = h("div", { class: "rx-txt rx-av", hidden: true });
               const bt = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: async () => {
                 const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); if (!ab || panel.dataset.listo) return;
@@ -2791,7 +2803,7 @@
           let k = mostrar(0, 6);
           const mas = it.length > k ? h("button", { class: "btn chico rx-mas", type: "button", onclick: () => { k = mostrar(k, 12); if (k >= it.length) mas.remove(); else mas.lastChild.textContent = "Ver más (" + fmt(it.length - k) + ")"; } }, svg(ICO.abajo), h("span", { text: "Ver más (" + fmt(it.length - k) + ")" })) : null;
           return h("section", { class: "rx-cat c" + cat }, h("h5", {}, h("span", { text: CAT_REF[cat] }), h("em", { text: fmt(it.length) })),
-            cat === 1 ? h("p", { class: "rx-av-nota", text: "La Antigua Voluntad aún no tiene texto de BiEx: va su referencia, con el nombre original del libro. Tócala para leerla en traducciones de otros." }) : null, ul, mas);
+            cat === catAV ? avisoAV() : null, ul, mas);
         }).filter(Boolean));
       };
       seg.append(...NIVELES_REF.map(([k, et]) => { const n = k === "1" ? n1 : k === "2" ? n2 : lista.length; return h("button", { type: "button", "data-k": k, disabled: n ? null : "", onclick: () => { nivel = k; store.set("refsNivel", k); pintar(); } }, et + " · " + fmt(n)); }));
@@ -2849,7 +2861,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "6ff9f60ef7", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "92872b03eb", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -2881,6 +2893,10 @@
         cargar: (r) => cargar(r), leido: (c, cap, v) => LEI.es(c, cap, v),
         // (12-nov-2026) los versos de una cita con el texto de la Lectura, para la ventana de la cita en el juego
         versos: (c, cap, v1, v2) => lectura(c).then((Lc) => (Lc.caps[cap] || []).filter((x) => x.v >= v1 && x.v <= v2).map((x) => [x.v, txtVerso(x)])),
+        // (14-nov-2026) pasajes de la Antigua Voluntad (Septuaginta de Jünemann, con su nota de cita de otra traducción) y el
+        // nombre de sus libros como en las referencias cruzadas: hebreo masorético y el tradicional entre [ ]
+        versosAV: (cod, cap, v1, v2) => { const li = LIBROS_REF.indexOf(cod); return li < 0 || li > 38 ? Promise.reject(new Error("libro")) : cargarAV(cod).then((d) => textoAV(d, [li, cap, v1, v2 && v2 !== v1 ? v2 : 0])); },
+        nombreAV: (cod) => { const li = LIBROS_REF.indexOf(cod); return li >= 0 && li < 39 ? AV_NOMBRES[li][0] + " [" + AV_NOMBRES[li][1] + "]" : cod; },
         // (13-nov-2026, V23) el verso completo en la Textual de BiEx (el orden del griego, el mismo texto de las preguntas de la
         // prueba), con los colores de la edición: devuelve una función que lo dibuja cada vez que haga falta
         versoTextual: (c, cap, v) => lectura(c).then((Lc) => { const x = (Lc.caps[cap] || []).find((y) => y.v === v); return x && x.t ? () => textoLectura(x.t, !!x.g, x) : null; }) });
@@ -3940,6 +3956,47 @@
         h("a", { class: "q-ref", href: "#/" + c + "/" + cap + "/l/" + v, "aria-label": Q_LIB[c] + " " + cap + ":" + v, text: cap + ":" + v }),
         h("p", { class: "q-g", lang: "grc" }, ws.map(([g, k, p], i) => [i ? " " : null, h("span", { class: "q" + k, "data-gk": g }, gk(g)), punt(p) || null])),
         bx && L ? h("p", { class: "q-bx" }, txtVerso(L)) : null)));
+  }
+  // ------------------------------------------------------------------ ranking de BiEx (AA16, 14-nov-2026)
+  // Las 16 ediciones bíblicas menos mal traducidas al español, en el orden del ranking de BiEx (página «info» del sitio
+  // oficial). [n, título, sigla, años, personas]; los nombres, el original primero y el tradicional entre [ ].
+  const RANKING = [
+    [1, "La Biblia, Edición Popular / Nueva Biblia Española", "NBE", "1986 · 1977", "Luis Alonso Schökel y Juan Mateos"],
+    [2, "Traducción del Nuevo Mundo de las Santas Escrituras con Referencias", "TNM", "1987", ""],
+    [3, "Biblia Latinoamericana, Edición «Pastoral» y Formadores", "", "1995 · 2005", ""],
+    [4, "Biblia Versión Septuaginta en Español", "", "2008 – 2013", "Natalio Fernández Marcos y María Victoria Spottorno Díaz-Caro"],
+    [5, "La Biblia de Nuestro Pueblo", "BNP", "2006", ""],
+    [6, "Biblia Castilian", "CAB", "2003", ""],
+    [7, "El Libro del Pueblo de Dios", "LPD", "1981", ""],
+    [8, "Nueva Biblia de Jerusalén con Deuterocanónicos", "NBJ", "1998", ""],
+    [9, "La Biblia", "BSA", "1975", "Serafín de Ausejo"],
+    [10, "Versión Israelita Nazarena", "VIN", "2011", ""],
+    [11, "Biblia La Palabra Versión Hispano-Americana", "BLPH · BHTI", "2009 – 2011 · 2013 con Deuterocanónicos (Interconfesional)", ""],
+    [12, "Biblia del Peregrino", "PER", "1993", ""],
+    [13, "Biblia de Wilhelm [Guillermo] Jünemann Beckschäfer", "JÜNEMANN", "1928", "Septuaginta en español: la que BiEx usa hoy para las citas de la Antigua Voluntad"],
+    [14, "Traducción en Lenguaje Actual con Deuterocanónicos", "TLA-D", "2004", ""],
+    [15, "Santa Biblia Versión de la Universidad de Jerusalén", "SBVUJ", "", ""],
+    [16, "«La Palabra» de Dios para Todos", "PDT", "2008", ""]];
+  // aviso de las referencias de la Antigua Voluntad: el texto viene de una edición del ranking (enlazado)
+  const avisoAV = () => h("p", { class: "rx-av-nota" }, "Texto extraído de una de las ediciones bíblicas menos mal traducidas, según el ",
+    h("a", { href: "#/ranking", text: "ranking" }), " de BiEx: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (1928).");
+  function vistaRanking() {
+    navActual("#/ranking");
+    document.title = "Ranking de traducciones · BiEx";
+    const item = ([n, t, sg, a, p]) => h("li", { class: "rk-it" + (n === 13 ? " usa" : ""), id: "r" + n },
+      h("span", { class: "rk-n", "aria-label": "Puesto " + n, text: String(n) }),
+      h("div", { class: "rk-c" }, h("h2", { text: t }),
+        (sg || a) ? h("p", { class: "rk-d" }, sg ? h("b", { text: sg }) : null, sg && a ? " · " : null, a || null) : null,
+        p ? h("p", { class: "rk-p", text: p }) : null));
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel estudio rk" },
+      barraVolver(),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Ranking de BiEx" }),
+        h("h1", { class: "texto", text: "Las 16 ediciones bíblicas menos mal traducidas al español" }),
+        h("p", { class: "est-sub", text: "En el orden del ranking: ninguna es exacta, pero estas son las que mejor resisten la comparación con los textos más antiguos." })),
+      h("ol", { class: "rk-lista" }, RANKING.map(item)),
+      h("p", { class: "rk-nota" }, "BiEx consulta y compara una media de 79 traducciones frente a unas 180 ediciones en español. Ninguna de las demás supera hoy la prueba, por eso no se recomiendan para decisiones de doctrina ni para el estudio serio del texto sagrado. La lista no está completa y se revisa. ",
+        h("a", { href: "https://bibliaexacta.wixsite.com/biex/info", target: "_blank", rel: "noopener", text: "Ver la página de información del sitio oficial" }), "."))));
+    if (restaurando()) intentarRestaurar(); else alTope();
   }
   // Estudios: «Lo que pocos saben», «Por qué estas fechas» y «Falacias lógicas» (datos/estudios.json, con los nombres ya
   // en su forma de BiEx); los pasajes son enlaces y cada dato lleva sus fuentes
@@ -5501,6 +5558,7 @@
     }
     if (partes[0] !== "escudrina" && !(D && libroDe(String(partes[0] || "").toUpperCase())) && window.BiExJuego) window.BiExJuego.salir();
     rutaVista = ruta;
+    creditosPie(!partes.length || (partes[0] === "escudrina" && partes[1] === "mas"));
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }
@@ -5512,6 +5570,7 @@
     if (partes[0] === "cronologia") { esc.libro = null; return vistaCronologia(partes[1] || ""); }
     if (partes[0] === "fuente-q") { esc.libro = null; return vistaFuenteQ(partes[1] || ""); }
     if (partes[0] === "datos" || partes[0] === "fechas" || partes[0] === "falacias") { esc.libro = null; return vistaEstudio(partes[0], partes[1] || ""); }
+    if (partes[0] === "ranking") { esc.libro = null; return vistaRanking(); }
     if (partes[0] === "marcadores") { esc.libro = null; return vistaMarcadores(); }
     if (partes[0] === "planes") { esc.libro = null; return vistaPlanes(partes[1] || ""); }
     if (partes[0] === "app") { esc.libro = null; return vistaApp(); }

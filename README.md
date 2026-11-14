@@ -29,7 +29,7 @@ Referencias cruzadas (`datos/refs/`): OpenBible.info, «Cross References» (CC B
 
 Ciudades del juego (`datos/lugares.json`): GeoNames (CC BY 4.0), con su departamento o estado (admin1).
 
-Citas de la Antigua Voluntad (`datos/av/jnm/`), mientras BiEx la traduce: Septuaginta en español de Guillermo Jünemann Beckschäfer (traducida antes de 1938, año de su fallecimiento; dominio público), tomada del corpus paralelo GIL-UNAM (github.com/GIL-UNAM/SpanishParaphraseCorpora, CC0), alineada verso a verso a la numeración habitual. Se muestra como cita de otra traducción.
+Citas de la Antigua Voluntad (`datos/av/jnm/`), mientras BiEx la traduce: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (traducida antes de 1938, año de su fallecimiento; dominio público), tomada del corpus paralelo GIL-UNAM (github.com/GIL-UNAM/SpanishParaphraseCorpora, CC0), alineada verso a verso a la numeración habitual. Se muestra como cita de otra traducción.
 
 Buscador: para reconocer el vocabulario con que se recuerda un verso, el índice guarda raíces de palabras de Reina-Valera 1909 y 1865, World English Bible, King James Version y Berean Standard Bible (dominio público) y de la Biblia en Español Sencillo (© 2018 AudioBiblia.org, CC BY 4.0). Ninguno de esos textos se muestra.
 

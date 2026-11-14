@@ -422,7 +422,7 @@ html[data-mov="no"] .av-pozo i{animation:none}
 .ap-nom{display:grid;place-items:center;min-height:2.3em;font:600 .74rem/1.15 var(--f-ui);letter-spacing:.01em;color:var(--tinta)}
 .ap-v{display:flex;align-items:baseline;justify-content:center;gap:3px;min-height:1.4rem}
 .ap-val{font:600 1.3rem/1 var(--f-ui);color:var(--ac);font-variant-numeric:tabular-nums;transition:text-shadow .2s}
-.ap-plan{font:600 .7rem/1 var(--f-ui);color:var(--oro-vivo)}
+.ap-plan{font:600 .74rem/1 var(--f-ui);color:var(--oro-vivo);white-space:nowrap;letter-spacing:.01em}
 .ap-bs{display:flex;gap:8px}
 .ap-b{width:30px;height:30px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 9%,transparent),color-mix(in srgb,var(--tinta) 2%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.1);color:var(--tinta);font:500 1.05rem/1 var(--f-ui);cursor:pointer;display:grid;place-items:center;padding:0}
 .ap-b:active{transform:scale(.9)}
@@ -1201,6 +1201,12 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .ap-vitrina li .btn{grid-area:bt;justify-self:end}
 .ap-vitrina li.raro::before{left:auto;right:12px;top:8px}
 .ap-vitrina li.raro.cerrado{grid-template-areas:"mu mn mn" "mu da da"}
+.ap-vitrina li .ap-da .ap-cita{font:inherit;font-weight:600;color:var(--oro-vivo);display:inline-flex;align-items:center;gap:.28em;padding:0;vertical-align:baseline}
+.ap-cita-fl{font-size:.8em;opacity:.8;transition:transform .2s}.ap-cita[aria-expanded="true"] .ap-cita-fl{transform:rotate(180deg)}
+.ap-versos{margin:.45rem 0 .1rem;padding:.55rem .7rem;border-left:2px solid color-mix(in srgb,var(--oro) 55%,transparent);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--oro) 7%,transparent)}
+.ap-versos p{margin:0 0 .3rem;font:400 .86rem/1.5 var(--f-texto);color:var(--tinta)}.ap-versos p:last-child{margin-bottom:0}
+.ap-versos sup{font:600 .62rem/1 var(--f-ui);color:var(--oro);margin-right:.15em}
+.ap-versos .rx-av-f{font:400 .68rem/1.4 var(--f-ui);color:var(--tenue);margin-top:.35rem}
 @media (min-width:900px){.ap-vitrina{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-uso{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
 .jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:.42rem;min-height:1.62rem;padding:.2rem .82rem .2rem .22rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
@@ -1865,9 +1871,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
       y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se decide aleatoriamente en el servidor" },
-        h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + String(Math.round(y.lauroP * 1000) / 10).replace(".", ",") + "\u00a0%" })),
-        h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(1) + "%" })),
-        h("p", { class: "jg-mini", text: "Estimación: sube con cada piedra que hallas y vuelve a empezar al conseguir un lauro." })) : null,
+        // (BiEx, 14-nov-2026: «no parece variar») con dos decimales; no es una falla: la probabilidad cambia con cada hallazgo
+        // (no con cada verso), y se dice cuánto sube y cuántos hallazgos van sin lauro
+        h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + (y.lauroP * 100).toFixed(2).replace(".", ",") + "\u00a0%" })),
+        h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(2) + "%" })),
+        h("p", { class: "jg-mini", text: (() => { const k = Math.max(0, Math.round((y.lauroP - 0.03) / 0.015)); return "Sube un 1,50 % con cada piedra que hallas" + (k ? " (llevas " + plural(k, "hallazgo", "hallazgos") + " sin lauro)" : "") + " y vuelve a empezar al conseguir un lauro. Cambia con cada hallazgo, no con cada verso."; })() })) : null,
       h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
   }
   function verPiedra(i, veces) {
@@ -1992,7 +2000,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("p", { class: "jg-mini", text: extra.join(" ") }));
   }
   function tarjetaClasificacion(y) {
-    return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu " + nombreRegion((y.lugar || {}).pais).toLowerCase() + ", tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
+    return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu departamento o estado, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
         tarjetaColeccion(y),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
           h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea());
@@ -2603,7 +2611,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const ver = (n, efecto, li) => { desc.replaceChildren(h("b", { text: n + ": " }), efecto + "."); for (const x of lista.children) x.classList.toggle("sel", x === li); };
     for (const [k, n, efecto] of defs) {
       const val = h("b", { class: "ap-val", text: String(av.ef[k]) }), mas = h("span", { class: "ap-plan" }), li = h("li", { style: "--ac:" + ATR_COL[k] });
-      const pint = () => { mas.textContent = plan[k] ? "+" + plan[k] : ""; val.textContent = String(av.ef[k] + (plan[k] || 0)); li.classList.toggle("sube", !!plan[k]); };
+      // (BiEx, 14-nov-2026) se leía «1+1» como una suma: ahora el valor de hoy y, si se reparte, a cuánto llega («0 → 2»)
+      const pint = () => { mas.textContent = plan[k] ? "→ " + (av.ef[k] + plan[k]) : ""; val.textContent = String(av.ef[k]); li.classList.toggle("sube", !!plan[k]); };
       const btn = (dd, t, lbl) => h("button", { class: "ap-b", type: "button", "aria-label": lbl + " " + n, onclick: () => {
         ver(n, efecto, li);
         if (dd > 0 && libres <= 0) return A.avisar(av.pts ? "Ya repartiste todos tus puntos" : "Sube de nivel o compra un punto en la tienda");
@@ -2614,16 +2623,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("span", { class: "ap-bs" }, btn(-1, "−", "Quitar un punto de"), btn(1, "+", "Sumar un punto a")));
       lista.append(li);
     }
-    const quedan = h("span", { class: "ap-pts" }), confirmar = h("button", { class: "btn oro", type: "button", disabled: true, onclick: async (e) => {
+    const quedan = h("span", { class: "ap-pts" }), btnRep = h("button", { class: "btn oro", type: "button", disabled: true, onclick: async (e) => {
       e.currentTarget.disabled = true; const r = await accionPoder("/poder/repartir", { at: plan }, "Puntos repartidos"); if (r) { chispas(16); rehacer(); } else e.currentTarget.disabled = false; } }, h("span", { text: "Repartir" }));
-    function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); confirmar.disabled = !n; }
+    function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); btnRep.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
     return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => { desc.replaceChildren(h("b", { text: "Poder " + fmt(av.poder) + ": " }), "suma tus atributos (×10), tus accesorios (×25), tu nivel (×15) y los niveles del fruto del espíritu (×6). Crece leyendo, forjando y con todo lo que hace crecer el fruto."); for (const x of lista.children) x.classList.remove("sel"); })),
       lista, desc,
-      h("div", { class: "jg-acciones ap-acc-b" }, confirmar,
+      h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
         h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo"); if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
-        av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
+        // (un lector, 14-nov-2026: «se me borraron todos los puntos») antes de reasignar se explica qué pasa y se confirma
+        av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => {
+          const rep = av.tot - av.pts;
+          if (!(await confirmar("¿Reasignar tus atributos?", "Tus " + plural(rep, "punto ya repartido vuelve", "puntos ya repartidos vuelven") + " a quedar libres y tus atributos bajan a lo que da la armadura hasta que los repartas otra vez. " + (gratis ? "Es gratis una vez por semana." : "Esta semana ya lo hiciste: cuesta 60 dracmas."), gratis ? "Reasignar" : "Reasignar · 60 dr."))) return;
+          const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
   }
   // V22 · Granada de nueve cámaras (BiEx, 13-nov-2026; Gálatas 5:22-23, καρπός en singular): el corte de la fruta con sus
   // nueve cámaras de arilos; cada cámara se llena de luz rubí con el nivel de su aspecto. Vectorial y quieta (se pinta una
@@ -2703,36 +2716,85 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // 0,50 % y se detiene en la parte que tocó (el fruto del espíritu sube la probabilidad de lo alto).
   let CO_N = 0;
   function cestaSVG(f) {
-    // vista desde arriba en perspectiva: por la boca de la cesta se ve el grano subir; llena, el montón asoma sobre el borde
+    // (BiEx, 14-nov-2026: «más fotorrealismo, que no parezca de dibujo animado») cesta de mimbre vista desde arriba en
+    // perspectiva: cada hebra del tejido con su volumen (pasa sobre y bajo las varas) y su tono propio, fibras con textura,
+    // borde enrollado con sus ataduras, sombra de contacto y luz desde lo alto a la izquierda. Dentro, el grano (trigo con su
+    // surco y algunos arilos de granada) sube con lo sembrado y, llena, asoma en montón sobre el borde. Todo vectorial.
     f = Math.max(0, Math.min(1, f));
-    const id = "co" + (++CO_N), r = azar(77), f1 = (v) => v.toFixed(1), CX = 100, CY = 60, RX = 74, RY = 24;
-    const ys = CY + 2 + (1 - f) * 62, rxs = 50 + 22 * f, rys = (RY * rxs) / RX, hd = 24 * Math.max(0, (f - 0.82) / 0.18);
-    let gr = "";
-    const grano = (x, y) => { const rojo = r() < 0.09, a = Math.round(r() * 180);
-      gr += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + (rojo ? 2.9 : 4.1) + '" ry="' + (rojo ? 2.5 : 2.6) + '" transform="rotate(' + a + " " + f1(x) + " " + f1(y) + ')" fill="url(#' + id + (rojo ? "r" : "g") + ')"/>'; };
-    if (f > 0.02) {
-      for (let y = ys + rys; y >= ys - rys; y -= 3.6) { const hw = rxs * Math.sqrt(Math.max(0, 1 - Math.pow((y - ys) / rys, 2))); for (let x = -hw + 2 + r() * 3; x < hw - 2; x += 6 + r() * 1.6) grano(CX + x, y + r() * 1.5); }
-      for (let y = CY; hd > 0 && y >= CY - hd; y -= 3.8) { const hw = (RX - 2) * Math.sqrt(Math.max(0, 1 - Math.pow((CY - y) / hd, 2))); for (let x = -hw + 2 + r() * 3; x < hw - 2; x += 6 + r() * 1.6) grano(CX + x, y + r() * 1.5); }
+    const id = "co" + (++CO_N), r = azar(77), f1 = (v) => v.toFixed(1), PI = Math.PI;
+    const CX = 100, CY = 54, RX = 78, RY = 27, BY = 142, BRX = 56, BRY = 15;
+    const el = (t) => ({ y: CY + (BY - CY) * t, rx: RX + (BRX - RX) * t, ry: RY + (BRY - RY) * t });
+    const pt = (t, a) => { const e = el(t); return [CX + e.rx * Math.cos(a), e.y + e.ry * Math.sin(a)]; };
+    const P = (q) => f1(q[0]) + " " + f1(q[1]);
+    // el frente de la cesta (entre la mitad delantera del borde y la de la base)
+    const cuerpo = "M" + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + "L" + P(pt(1, 0)) + "A" + BRX + " " + BRY + " 0 0 1 " + P(pt(1, PI)) + "Z";
+    // tejido: filas de hebras escalonadas, cada tramo con volumen (más claro al centro, se hunde en sus extremos)
+    const FILAS = 9, SEG = 13; let tej = "", varas = "", luces = "";
+    for (let k = 0; k < FILAS; k++) {
+      const t0 = k / FILAS + 0.007, t1 = (k + 1) / FILAS - 0.007, off = (k % 2) * 0.5, e0 = el(t0), e1 = el(t1);
+      for (let i = -1; i < SEG; i++) {
+        const a0 = Math.max(0, ((i + off) / SEG) * PI) + 0.013, a1 = Math.min(PI, ((i + 1 + off) / SEG) * PI) - 0.013; if (a1 - a0 < 0.03) continue;
+        tej += '<path d="M' + P(pt(t0, a0)) + "A" + f1(e0.rx) + " " + f1(e0.ry) + " 0 0 1 " + P(pt(t0, a1)) + "L" + P(pt(t1, a1)) + "A" + f1(e1.rx) + " " + f1(e1.ry) + " 0 0 0 " + P(pt(t1, a0)) + 'Z" fill="url(#' + id + "h" + Math.floor(r() * 4) + ')"/>';
+      }
+      // la vara queda a la vista donde la hebra de esta fila pasa por detrás
+      for (let i = 0; i <= SEG; i++) { const a = ((i + off) / SEG) * PI; if (a <= 0.02 || a >= PI - 0.02) continue; const q0 = pt(t0 - 0.004, a), q1 = pt(t1 + 0.004, a);
+        varas += '<path d="M' + P(q0) + "L" + P(q1) + '"/>'; luces += '<path d="M' + f1(q0[0] - 0.55) + " " + f1(q0[1] + 0.6) + "L" + f1(q1[0] - 0.55) + " " + f1(q1[1] - 0.6) + '"/>'; }
     }
-    const boca = '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (RX - 2) + '" ry="' + (RY - 2) + '"/>' + (hd > 0 ? '<path d="M' + (CX - RX + 2) + " " + CY + "A" + (RX - 2) + " " + f1(hd) + " 0 0 1 " + (CX + RX - 2) + " " + CY + 'Z"/>' : "");
-    const frente = "M" + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 0 " + (CX + RX) + " " + CY + "L152 138Q100 156 48 138Z";
-    let bandas = ""; for (const dy of [16, 33, 50, 66]) { const hw = RX - ((RX - 50) * dy) / 78, ry = RY * (hw / RX) * 0.92; bandas += '<path d="M' + f1(CX - hw - 4) + " " + (CY + dy) + "A" + f1(hw + 4) + " " + f1(ry) + " 0 0 0 " + f1(CX + hw + 4) + " " + (CY + dy) + '"/>'; }
-    let ribs = ""; for (let i = -5; i <= 5; i++) { const a = i / 5.6, x0 = CX + RX * Math.sin(a), y0 = CY + RY * Math.cos(a), x1 = CX + 50 * Math.sin(a), y1 = 139 + 9 * Math.cos(a); ribs += '<path d="M' + f1(x0) + " " + f1(y0) + "L" + f1(x1) + " " + f1(y1) + '"/>'; }
-    return '<defs><radialGradient id="' + id + 'g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff0b8"/><stop offset=".55" stop-color="#f0c45a"/><stop offset="1" stop-color="#a8701a"/></radialGradient>' +
-      '<radialGradient id="' + id + 'r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff8aa0"/><stop offset="1" stop-color="#a5132d"/></radialGradient>' +
-      '<linearGradient id="' + id + 'b" x1="0" x2="1"><stop offset="0" stop-color="#5a3a12"/><stop offset=".35" stop-color="#b9843a"/><stop offset=".55" stop-color="#d9a855"/><stop offset="1" stop-color="#4a3010"/></linearGradient>' +
-      '<linearGradient id="' + id + 'w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2f0e"/><stop offset="1" stop-color="#1c1105"/></linearGradient>' +
-      '<radialGradient id="' + id + 'l" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#ffd77a" stop-opacity="' + (0.15 + 0.5 * f).toFixed(2) + '"/><stop offset="1" stop-color="#ffd77a" stop-opacity="0"/></radialGradient>' +
-      '<clipPath id="' + id + 'c">' + boca + '</clipPath><clipPath id="' + id + 'f"><path d="' + frente + '"/></clipPath></defs>' +
-      '<ellipse cx="100" cy="148" rx="72" ry="7" fill="#000" opacity=".35"/>' +
-      '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + RX + '" ry="' + RY + '" fill="url(#' + id + 'w)"/>' +
-      '<ellipse cx="' + CX + '" cy="' + (CY + 6) + '" rx="' + (RX - 6) + '" ry="' + (RY - 4) + '" fill="url(#' + id + 'l)"/>' +
-      '<path d="M' + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 1 " + (CX + RX) + " " + CY + '" fill="none" stroke="url(#' + id + 'b)" stroke-width="6"/>' +
-      '<g clip-path="url(#' + id + 'c)">' + gr + "</g>" +
-      '<path d="' + frente + '" fill="url(#' + id + 'b)"/>' +
-      '<g clip-path="url(#' + id + 'f)"><g fill="none" stroke="#3a2408" stroke-opacity=".55" stroke-width="1.6">' + bandas + '</g><g fill="none" stroke="#f3d08a" stroke-opacity=".2" stroke-width="2.2">' + ribs + "</g></g>" +
-      '<path d="M' + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 0 " + (CX + RX) + " " + CY + '" fill="none" stroke="url(#' + id + 'b)" stroke-width="6.5" stroke-linecap="round"/>' +
-      '<path d="M' + (CX - RX + 3) + " " + (CY + 2) + "A" + (RX - 3) + " " + (RY - 2) + " 0 0 0 " + (CX + RX - 3) + " " + (CY + 2) + '" fill="none" stroke="#ffe7a6" stroke-opacity=".32" stroke-width="1.2"/>';
+    // grano: cada uno como elipse girada por su arco (el degradado no gira: la luz viene siempre de arriba a la izquierda)
+    let gr = "";
+    const grano = (x, y) => {
+      const a = (-20 + r() * 220) * PI / 180, c = Math.cos(a), sn = Math.sin(a), rojo = r() < 0.07, rx = rojo ? 2.3 : 2.9 + r() * 0.5, ry = rojo ? 2 : 1.65 + r() * 0.25, gd = (a * 180 / PI).toFixed(0);
+      const el2 = (dx, dy) => "M" + f1(x + dx + rx * c) + " " + f1(y + dy + rx * sn) + "A" + rx + " " + ry + " " + gd + " 1 1 " + f1(x + dx - rx * c) + " " + f1(y + dy - rx * sn) + "A" + rx + " " + ry + " " + gd + " 1 1 " + f1(x + dx + rx * c) + " " + f1(y + dy + rx * sn) + "Z";
+      gr += '<path d="' + el2(0.55, 0.85) + '" fill="#1a0f04" opacity=".42"/><path d="' + el2(0, 0) + '" fill="url(#' + id + (rojo ? "r" : "g" + Math.floor(r() * 3)) + ')"/>';
+      if (!rojo) { const k = 0.72 * rx, nx = -sn * 0.42, ny = c * 0.42; gr += '<path d="M' + f1(x - k * c) + " " + f1(y - k * sn) + "Q" + f1(x + nx) + " " + f1(y + ny) + " " + f1(x + k * c) + " " + f1(y + k * sn) + '" fill="none" stroke="#6a3e0c" stroke-opacity=".5" stroke-width=".42" stroke-linecap="round"/>'; }
+      else gr += '<circle cx="' + f1(x - 0.7) + '" cy="' + f1(y - 0.7) + '" r=".62" fill="#fff" opacity=".6"/>';
+    };
+    const ys = CY + 4 + (1 - f) * 40, rxs = 52 + 23 * f, rys = (RY * rxs) / RX, hd = 26 * Math.max(0, (f - 0.82) / 0.18);
+    if (f > 0.02) {
+      for (let y = ys - rys; y <= ys + rys; y += 3.3) { const hw = rxs * Math.sqrt(Math.max(0, 1 - Math.pow((y - ys) / rys, 2))); for (let x = -hw + 1 + r() * 3; x < hw - 1; x += 5.4 + r() * 1.4) grano(CX + x, y + r() * 1.4); }
+      for (let y = CY - hd; hd > 0 && y <= CY; y += 3.4) { const hw = (RX - 3) * Math.sqrt(Math.max(0, 1 - Math.pow((CY - y) / hd, 2))); for (let x = -hw + 1 + r() * 3; x < hw - 1; x += 5.6 + r() * 1.4) grano(CX + x, y + r() * 1.4); }
+    }
+    const boca = '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (RX - 4) + '" ry="' + (RY - 3.6) + '"/>' + (hd > 0 ? '<path d="M' + (CX - RX + 4) + " " + CY + "A" + (RX - 4) + " " + f1(hd) + " 0 0 1 " + (CX + RX - 4) + " " + CY + 'Z"/>' : "");
+    // ataduras del borde delantero
+    const torsion = (a0, a1, paso, lado) => { let o = "";
+      for (let a = a0; a < a1; a += paso) { const q = pt(0, a), g = (Math.atan2(RY * Math.cos(a), -RX * Math.sin(a)) * 180 / PI - 38 * lado).toFixed(0);
+        o += '<ellipse cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" rx="5.3" ry="3.3" transform="rotate(' + g + " " + f1(q[0]) + " " + f1(q[1]) + ')" fill="url(#' + id + "h" + (Math.floor(a * 7) % 4) + ')"/>'; }
+      return o; };
+    const at = torsion(-0.09, PI + 0.1, 0.105, 1);
+    // paredes interiores (al fondo, sobre el grano): hebras tenues
+    let fondo = ""; for (let k = 1; k <= 4; k++) { const e = el(k * 0.09); fondo += '<path d="M' + P(pt(k * 0.09, PI)) + "A" + f1(e.rx) + " " + f1(e.ry) + " 0 0 1 " + P(pt(k * 0.09, 0)) + '" fill="none" stroke="#c99a55" stroke-opacity="' + (0.11 - k * 0.018).toFixed(3) + '" stroke-width="3.2" stroke-dasharray="7 2.2"/>'; }
+    const trasero = '<path d="M' + P(pt(0, 0)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, PI)) + '" fill="none" stroke="#2a1806" stroke-width="8.5" stroke-linecap="round"/>' +
+      '<g filter="url(#' + id + 't)" opacity=".86">' + torsion(PI - 0.05, 2 * PI + 0.05, 0.11, -1) + "</g>";
+    const hebra = (k, c0, c1, c2) => '<radialGradient id="' + id + "h" + k + '" cx=".5" cy=".36" r=".62"><stop offset="0" stop-color="' + c0 + '"/><stop offset=".58" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></radialGradient>';
+    const trigo = (k, c0, c1, c2) => '<radialGradient id="' + id + "g" + k + '" cx=".36" cy=".3" r=".78"><stop offset="0" stop-color="' + c0 + '"/><stop offset=".55" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></radialGradient>';
+    return '<defs>' + hebra(0, "#f2d29a", "#d2a462", "#7a4c1c") + hebra(1, "#e8c486", "#c7975a", "#704419") + hebra(2, "#ddb878", "#bb8b4e", "#653d15") + hebra(3, "#f6dcaa", "#d9ad6c", "#82531f") +
+      trigo(0, "#fff1c4", "#e7b85c", "#93601c") + trigo(1, "#fbe6b0", "#dcaa50", "#865616") + trigo(2, "#fff6d6", "#efc56d", "#a06a22") +
+      '<radialGradient id="' + id + 'r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb3c0"/><stop offset=".45" stop-color="#d42a48"/><stop offset="1" stop-color="#6e0a1c"/></radialGradient>' +
+      '<linearGradient id="' + id + 'b" gradientUnits="userSpaceOnUse" x1="20" x2="180"><stop offset="0" stop-color="#4a2e0e"/><stop offset=".3" stop-color="#c8954a"/><stop offset=".42" stop-color="#f0cf8e"/><stop offset=".7" stop-color="#b07c38"/><stop offset="1" stop-color="#3e270c"/></linearGradient>' +
+      '<linearGradient id="' + id + 'o" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".62"/><stop offset=".2" stop-color="#000" stop-opacity=".14"/><stop offset=".38" stop-color="#fff4dc" stop-opacity=".1"/><stop offset=".64" stop-color="#000" stop-opacity=".06"/><stop offset=".86" stop-color="#000" stop-opacity=".38"/><stop offset="1" stop-color="#000" stop-opacity=".66"/></linearGradient>' +
+      '<linearGradient id="' + id + 'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".3"/><stop offset=".22" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>' +
+      '<radialGradient id="' + id + 'i" cx=".5" cy=".62" r=".62"><stop offset="0" stop-color="#3a2408"/><stop offset=".7" stop-color="#1f1204"/><stop offset="1" stop-color="#0d0702"/></radialGradient>' +
+      '<radialGradient id="' + id + 'a" cx=".42" cy=".38" r=".66"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>' +
+      '<radialGradient id="' + id + 's" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
+      '<filter id="' + id + 't" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency=".22 1.5" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .1  0 0 0 0 .06  0 0 0 0 .02  0 0 0 -1.25 1.05" result="a"/><feComposite in="a" in2="SourceGraphic" operator="in" result="t"/><feBlend in="t" in2="SourceGraphic" mode="multiply"/></filter>' +
+      '<clipPath id="' + id + 'c">' + boca + '</clipPath><clipPath id="' + id + 'f"><path d="' + cuerpo + '"/></clipPath></defs>' +
+      '<ellipse cx="100" cy="147" rx="84" ry="11" fill="url(#' + id + 's)"/>' +
+      // boca: interior oscuro, paredes del fondo, grano y su sombra junto a las paredes
+      '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + RX + '" ry="' + RY + '" fill="url(#' + id + 'i)"/>' + fondo + (hd > 0 ? trasero : "") +
+      '<g clip-path="url(#' + id + 'c)">' + gr + (f > 0.02 ? '<ellipse cx="' + CX + '" cy="' + f1(ys) + '" rx="' + f1(rxs + 3) + '" ry="' + f1(rys + 2) + '" fill="url(#' + id + 'a)"/>' : "") + "</g>" +
+      // borde trasero (enrollado): delante del grano; llena, detrás del montón que asoma
+      (hd > 0 ? "" : trasero) +
+      // frente tejido con textura de fibra, volumen y sombra del borde
+      '<path d="' + cuerpo + '" fill="#2a1806"/>' +
+      '<g filter="url(#' + id + 't)">' + tej + '<g fill="none" stroke-linecap="round" stroke="url(#' + id + 'h1)" stroke-width="2.6">' + varas + '</g></g><g fill="none" stroke="#ffe9bb" stroke-opacity=".22" stroke-width=".7">' + luces + "</g>" +
+      '<path d="' + cuerpo + '" fill="url(#' + id + 'o)"/><path d="' + cuerpo + '" fill="url(#' + id + 'v)"/>' +
+      '<path d="M' + P(pt(1, PI)) + "A" + BRX + " " + BRY + " 0 0 0 " + P(pt(1, 0)) + '" fill="none" stroke="#140b03" stroke-width="3"/>' +
+      // borde delantero enrollado con sus ataduras y su brillo
+      '<path d="M' + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + '" fill="none" stroke="#1a0f04" stroke-opacity=".55" stroke-width="12" stroke-linecap="round" transform="translate(0 3)"/>' +
+      '<path d="M' + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + '" fill="none" stroke="#2a1806" stroke-width="9.5" stroke-linecap="round"/>' +
+      '<g filter="url(#' + id + 't)">' + at + "</g>" +
+      '<path d="M' + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + '" fill="none" stroke="url(#' + id + 'o)" stroke-width="10" stroke-linecap="round" opacity=".55"/>' +
+      '<path d="M' + P(pt(0, PI - 0.06)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0.9)) + '" fill="none" stroke="#fff1cc" stroke-opacity=".38" stroke-width="1.3" transform="translate(-1 -2.6)"/>';
   }
   function medidorSVG() {
     let t = "";
@@ -2936,13 +2998,33 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const NOM = { aura: "Auras", manto: "Mantos", corona: "Lauros", sello: "Sellos" };
     // Qué da cada accesorio (BiEx, 12-nov-2026): +25 de poder al tenerlo (cifra de tu ser interior), se luce en el emblema y en
     // el Árbol, y cada uno con su enseñanza (tema en palabras de Claude, con la cita para leerla en BiEx)
+    // [enseñanza, libro, capítulo:versos]; los raros llevan su cita propia (RAROS_C)
     const DA = { "aura-oro": ["La luz que desciende de lo alto", "JAS", "1:17"], "aura-zafiro": ["El zafiro, segundo fundamento", "REV", "21:19"], "aura-esmeralda": ["El arco alrededor del trono, como de esmeralda", "REV", "4:3"],
-      "aura-amatista": ["La amatista, duodécimo fundamento", "REV", "21:20"], "aura-alba": ["La senda que brilla como la luz del alba", "", "Proverbios 4:18"],
-      "manto-lino": ["El lino fino: las obras justas", "REV", "19:8"], "manto-escarlata": ["Vestidos de escarlata para el frío", "", "Proverbios 31:21"], "manto-azul": ["Los flecos con su cordón azul, para recordar", "", "Números 15:38-39"],
-      "corona-olivo": ["El lauro incorruptible", "1CO", "9:25"], "corona-laurel": ["El mirto en lugar de la ortiga", "", "Isaías 55:13"],
-      "sello-lampara": ["La lámpara sobre el candelero", "MAT", "5:15"], "sello-estrella": ["La estrella resplandeciente de la mañana", "REV", "22:16"] };
-    const daAcc = (id, cita) => { const x = DA[id], ref = x ? (x[1] ? A.nombreLibro(x[1]) + " " + x[2] : x[2]) : cita || "";
-      return "Da +25 de poder y se luce en tu emblema y en tu ser interior." + (x ? " " + x[0] + (ref ? " (" + ref + ")." : ".") : ref ? " Enseñanza: " + ref + "." : ""); };
+      "aura-amatista": ["La amatista, duodécimo fundamento", "REV", "21:20"], "aura-alba": ["La senda que brilla como la luz del alba", "PRO", "4:18"],
+      "manto-lino": ["El lino fino: las obras justas", "REV", "19:8"], "manto-escarlata": ["Vestidos de escarlata para el frío", "PRO", "31:21"], "manto-azul": ["Los flecos con su cordón azul, para recordar", "NUM", "15:38-39"],
+      "corona-olivo": ["El lauro incorruptible", "1CO", "9:25"], "corona-laurel": ["El mirto en lugar de la ortiga", "ISA", "55:13"],
+      "sello-lampara": ["La lámpara sobre el candelero", "MAT", "5:15"], "sello-estrella": ["La estrella resplandeciente de la mañana", "REV", "22:16"],
+      "aura-columna": ["", "EXO", "13:21"], "aura-nube": ["", "EXO", "13:21"], "corona-palmas": ["", "REV", "7:9"], "manto-purpura": ["", "ACT", "16:14"], "sello-rollo": ["", "REV", "5:1"], "sello-candelero": ["", "REV", "1:12"] };
+    const AV_COD = new Set(["GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL"]);
+    const refAcc = (x) => (AV_COD.has(x[1]) && A.nombreAV ? A.nombreAV(x[1]) : A.nombreLibro(x[1])) + " " + x[2];
+    // (BiEx, 14-nov-2026) el verso de cada accesorio se despliega ahí mismo al tocarlo (sin salir de la tienda)
+    const daAcc = (id, cita) => {
+      const x = DA[id], base = "Da +25 de poder y se luce en tu emblema y en tu ser interior.";
+      if (!x || !x[1]) return [base + (cita ? " Enseñanza: " + cita + "." : "")];
+      const panel = h("div", { class: "ap-versos", hidden: true }), ref = refAcc(x);
+      const bt = h("button", { class: "ap-cita", type: "button", "aria-expanded": "false", title: "Ver lo que dice", onclick: async (ev) => {
+        ev.stopPropagation(); const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); if (!ab || panel.dataset.listo) return;
+        const [cap, vv] = x[2].split(":"), [v1, v2] = vv.split("-").map(Number); panel.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
+        try {
+          if (AV_COD.has(x[1])) panel.replaceChildren(...(await A.versosAV(x[1], +cap, v1, v2 || v1)));
+          else { const l = await A.versos(x[1], +cap, v1, v2 || v1); panel.replaceChildren(...l.map(([v, nodo]) => h("p", {}, l.length > 1 ? h("sup", { text: String(v) }) : null, l.length > 1 ? " " : null, nodo))); }
+          panel.dataset.listo = "1";
+          if (panel.animate && !sinAnim()) panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+        } catch (e) { panel.replaceChildren(h("p", { class: "jg-mini", text: "No se pudo cargar el texto. Revisa tu conexión." })); }
+      } }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref, h("span", { class: "ap-cita-fl", "aria-hidden": "true", text: "▾" }));
+      return [base + (x[0] ? " " + x[0] + ": " : " Enseñanza: "), bt, panel];
+    };
+    const tituloAcc = (id, cita) => { const x = DA[id]; return x && x[1] ? "Da +25 de poder. " + (x[0] ? x[0] + " (" + refAcc(x) + ")." : refAcc(x)) : "Da +25 de poder." + (cita ? " " + cita : ""); };
     let ran = A.store.get("jg:tiendaRan", "aura"); if (!d.ranuras.includes(ran)) ran = d.ranuras[0];
     const vitrina = h("ul", { class: "ap-vitrina", "aria-live": "polite" });
     const pestanas = h("div", { class: "jg-seg fila", role: "group", "aria-label": "Accesorios" }, d.ranuras.map((r) => h("button", { type: "button", "aria-pressed": String(r === ran), onclick: (e) => {
@@ -2952,8 +3034,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const raros = (d.raros || RAROS_C).filter((x) => x[1] === ran).map((x) => [x[0], x[1], x[2], null, x[3]]), frag = y.frag || { c: 0, meta: 70 };
       vitrina.replaceChildren(...d.acc.filter((x) => x[1] === ran).concat(raros).map(([id, , n, pr, cita]) => { const tiene = av.inv.includes(id), puesto = av.acc[ran] === id;
         if (pr == null && !tiene) return h("li", { class: "raro cerrado" }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }),
-          h("small", { class: "ap-raro", text: "Raro · se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }), h("small", { class: "ap-da", text: daAcc(id, cita) }));
-        return h("li", { class: puesto ? "puesto" : "", title: daAcc(id, cita) }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }), h("small", { class: "ap-da", text: daAcc(id, cita) }),
+          h("small", { class: "ap-raro", text: "Raro · se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }), h("div", { class: "ap-da" }, ...daAcc(id, cita)));
+        return h("li", { class: puesto ? "puesto" : "", title: tituloAcc(id, cita) }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }), h("div", { class: "ap-da" }, ...daAcc(id, cita)),
           tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
             const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); else b.disabled = false; } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
             : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." }))); }));
@@ -3803,10 +3885,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
     if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || document.documentElement.classList.contains("con-modal")) return;
     if (R.els.length && !R.els[0].isConnected) observar();
-    let el = null, hay = false;
+    let el = null, hay = false; const Tv = topeBarras() + 20;
     for (const e of R.els) {
       const v = +e.id.slice(1);
       if (!R.vis.get(e) || R.hechos.has(v) || !valeLeer(v)) continue;
+      // (14-nov-2026) un verso que solo asoma bajo las barras no se está leyendo: su tiempo no corre
+      if (e.getBoundingClientRect().bottom < Tv) continue;
       hay = true;
       if (!R.pend.has(v)) { el = e; break; }
     }
@@ -4035,21 +4119,30 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // (BiEx, 14-nov-2026: versos cortos como YÔḥānā́n 11:35 o Yaʿăqṓḇ 1:8) el primero, de arriba hacia abajo, que ya cumplió su
   // tiempo y falta marcar, desde las barras hasta el final de la franja: recibe el «Leído» aunque otro verso más largo ocupe más
   // la franja. Así ningún verso corto se queda sin su «Leído», y se marca en el orden en que se lee.
-  function primeroListo() {
-    const [, b] = zonaLectura(), T = topeFijo() + 6, vis = LB.vis && LB.vis.size ? LB.vis : null;
+  // (BiEx, 14-nov-2026, 05:25, con capturas: «queda casi siempre detrás de la franja superior») Dos papeles separados:
+  //  · el RESPLANDOR (hilo y halo) va SIEMPRE en el verso de la franja fija de lectura (versoFranja): nunca salta a un verso
+  //    tapado por las barras;
+  //  · el «Leído» va en ese mismo verso cuando ya cumplió su tiempo; si no, en el primer verso de ARRIBA que ya lo cumplió y
+  //    falta marcar, solo si se ve ENTERO bajo las barras tal como están en ese instante (versos cortos, AA5).
+  function listoArriba(H) {
+    const T = topeBarras() + 4, vis = LB.vis && LB.vis.size ? LB.vis : null;
     for (const el of R.els) {
-      const v = +el.id.slice(1); if (vis && !vis.has(v)) continue;
-      const r = el.getBoundingClientRect(); if (!r.height || r.bottom <= T + 18) continue; if (r.top >= b) break;
-      if (marcable(v) && R.pend.has(v)) return v;
+      const v = +el.id.slice(1); if (H && v >= H) break; if (vis && !vis.has(v)) continue;
+      if (!marcable(v) || !R.pend.has(v)) continue;
+      const r = el.getBoundingClientRect(); if (!r.height || r.top < T || r.bottom > innerHeight - 6) continue;
+      return v;
     }
     return 0;
   }
+  const primeroListo = () => listoArriba(0); // (nombre anterior)
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
     let v = versoFranja();
-    const w = primeroListo(); if (w && (!v || !R.pend.has(v) || w < v)) v = w;
     if (alFinalPag() && (!v || !marcable(v))) v = debajoFranja(marcable);
-    ponerLB(v && marcable(v) ? v : 0);
+    const H = v && marcable(v) ? v : 0;
+    const m = H && R.pend.has(H) ? H : (listoArriba(H || v) || H);
+    const f = !!LB.forzar; LB.forzar = false;
+    ponerLB(H || m, f, m);
   }
   function numeroVisible(v, T, B) { const el = document.getElementById("v" + v); if (!el) return false; const nr = rectNum(el); return nr.height > 0 && nr.top >= T && nr.bottom <= B; }
   // la caja de las cifras del número (la celda del número ocupa todo el alto del verso en la vista por fila)
@@ -4058,16 +4151,19 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const tn = [...num.childNodes].reverse().find((x) => x.nodeType === 3); if (!tn) return num.getBoundingClientRect();
     const rg = document.createRange(); rg.selectNodeContents(tn); return rg.getBoundingClientRect();
   }
-  function ponerLB(v, forzar) {
+  // v: el verso que se está leyendo (resplandor); m: el verso al que va el «Leído» (el mismo, o uno corto de arriba ya listo)
+  function ponerLB(v, forzar, m) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
+    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
     const el = document.getElementById("v" + v); if (!el) return;
-    const nuevo = LB.v !== v;
-    if (!nuevo && !forzar && (!LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !R.pend.has(v)); if (LB.pie) LB.pie.classList.toggle("espera", !R.pend.has(v)); halo(el); return; }
-    const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, v);
+    if (!m) m = LB.m && LB.v === v ? LB.m : v;
+    const elm = document.getElementById("v" + m) || el;
+    const nuevo = LB.v !== v || LB.m !== m;
+    if (!nuevo && !forzar && (!LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !R.pend.has(m)); if (LB.pie) LB.pie.classList.toggle("espera", !R.pend.has(m)); halo(el); return; }
+    const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, m);
     const fila = el.classList.contains("vl"), pe = periDe(v);
-    if (fila) { ponerPie(el, v, pe, rep); }
+    if (fila) { ponerPie(elm, m, pe, rep); }
     else if (LB.pie) LB.pie.hidden = true;
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
@@ -4077,12 +4173,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", LB.el.style.getPropertyValue("--jg-lb-alza") || "0px"); }
     }
     if (nuevo) {
-      LB.v = v; LB.el.classList.remove("hecho");
+      LB.v = v; LB.m = m; LB.el.classList.remove("hecho");
       LB.el.querySelector("b").textContent = rep ? "Repasado" : "Leído";
-      LB.el.querySelector("small").textContent = "verso " + v;
-      LB.el.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
+      LB.el.querySelector("small").textContent = "verso " + m;
+      LB.el.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + m + " como leído");
     }
-    LB.el.classList.toggle("espera", !R.pend.has(v));
+    LB.el.classList.toggle("espera", !R.pend.has(m));
     const sp = document.querySelector(".jg-sala-p");
     LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
     if (fila) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
@@ -4169,11 +4265,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
     n.hidden = false;
   }
   function tocarLB(desde) {
-    const v = LB.v; if (!v || !R.lib) return;
+    const v = LB.m || LB.v; if (!v || !R.lib) return;
     const b = desde || LB.el;
     tocarLeido(v, b);
     LB.el.classList.add("hecho"); if (LB.pie) LB.pie.classList.add("hecho");
-    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; LB.m = 0; elegirLB(); }, 480);
   }
   // los versos ya marcados (en este u otro dispositivo) llevan su número en oro
   function pintarMarcados() {
@@ -4213,7 +4309,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     finCapJuego();
   }
   function estadoSellos(v) {
-    if (LB.el && LB.v && (v == null || v === LB.v)) { LB.el.classList.toggle("espera", !R.pend.has(LB.v)); if (LB.pie && !LB.pie.hidden) { LB.pie.classList.toggle("espera", !R.pend.has(LB.v)); ponerLB(LB.v, true); } }
+    // un verso que acaba de cumplir su tiempo puede ser el del «Leído» (el que se lee o uno corto de arriba): se vuelve a elegir
+    if (LB.el && LB.v) { LB.forzar = true; pedirLB(); }
     finCapJuego();
   }
   // Marcar el capítulo entero (P20): el botón del final del capítulo se habilita cuando lo leído con su tiempo y lo ya
@@ -5424,7 +5521,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,

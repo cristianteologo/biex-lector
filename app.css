@@ -263,7 +263,7 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .cap[aria-current="true"] i { background: var(--sobre-oro); opacity: .5; }
 .teselas { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; }
 .tesela { height: 32px; border: 0; border-radius: 6px; padding: 0; background: var(--e); color: var(--et); font-family: var(--f-ui); font-size: .76rem; font-weight: 500; font-variant-numeric: tabular-nums; display: grid; place-items: center; transition: transform .12s, box-shadow .12s; }
-.tesela:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--oro-vivo); }
+/* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .tesela:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--oro-vivo); } }
 .tesela[aria-current="true"] { box-shadow: 0 0 0 2px var(--tinta); }
 
 .hoja { min-width: 0; background: var(--hoja); border: 1px solid var(--linea-2); border-radius: var(--radio); }
@@ -310,7 +310,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 /* lectura */
 .lectura { padding: 14px clamp(14px, 3.4vw, 46px) 40px; max-width: 900px; margin: 0 auto; }
 .vl { display: grid; grid-template-columns: 2.8rem minmax(0, 1fr); gap: 0 14px; padding: 9px 10px 9px 0; border-radius: 10px; cursor: pointer; scroll-margin-top: 140px; transition: background-color .15s; }
-.vl:hover { background: var(--oro-suave); }
+/* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .vl:hover { background: var(--oro-suave); } }
 .vl .vn { font-family: var(--f-display); font-size: 1.25rem; line-height: 1.55; text-align: right; color: var(--oro); font-variant-numeric: lining-nums; position: relative; }
 .vl .vn::after { content: ""; position: absolute; right: -9px; top: .55em; width: 3px; height: 1.05em; border-radius: 2px; background: var(--e); }
 .vl .vt { font-size: 1.14rem; line-height: calc(1.75 * var(--lh)); overflow-wrap: anywhere; }
@@ -325,7 +325,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .continuo p + p { margin-top: 1.5em; }
 .continuo p { margin: 0 0 1.1em; font-size: 1.16rem; line-height: calc(1.9 * var(--lh)); text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
 .vs { cursor: pointer; border-radius: 6px; transition: background-color .15s; scroll-margin-top: 140px; }
-.vs:hover { background: var(--oro-suave); }
+/* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .vs:hover { background: var(--oro-suave); } }
 .vs sup { font-family: var(--f-display); font-size: .78em; font-weight: 600; color: var(--oro); margin: 0 .25em 0 .1em; font-variant-numeric: lining-nums; }
 /* BiEx (13-nov-2026): el número del verso, igual en las dos vistas: el mismo tamaño (el de la vista por perícopa: .78 de la
    letra del texto) y la misma altura sobre el renglón (sobre la línea base del primer renglón, subido .42 de su propio
@@ -361,7 +361,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 @media (max-width: 600px) { .palabras { padding-left: 0; } .av-cab { grid-template-columns: 2rem minmax(0, 1fr); } }
 .pal { border: 1px solid var(--linea-2); background: var(--hoja-2); border-radius: 12px; padding: 8px 11px 9px; display: grid; gap: 2px; justify-items: start; text-align: left; min-width: 3.4rem; max-width: 16rem; position: relative; color: inherit; transition: border-color .15s, background-color .15s, transform .15s; }
 .pal::before { content: ""; position: absolute; left: 11px; right: 11px; top: -1px; height: 2px; border-radius: 2px; background: var(--k, transparent); }
-.pal:hover { border-color: var(--linea); transform: translateY(-1px); }
+/* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .pal:hover { border-color: var(--linea); transform: translateY(-1px); } }
 .pal[aria-pressed="true"] { border-color: var(--oro); background: var(--hoja-3); }
 .pal .g { font-size: 1.38rem; line-height: 1.2; }
 .pal.may .g { letter-spacing: .06em; font-size: 1.24rem; }
@@ -498,6 +498,9 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .creditos-det[open] > summary::after { content: " −"; }
 .creditos-det .creditos { margin-top: 6px; }
 .creditos-det > .creditos-tit { margin: 0; font: 400 .62rem var(--f-ui); letter-spacing: .08em; color: var(--tenue); opacity: .8; padding: 6px 0 0; }
+/* (14-nov-2026) en la pantalla principal y al pie de «Más», a la vista y sin pliegue; en las demás, una línea que se despliega */
+.creditos-det.fijos > summary { pointer-events: none; cursor: default; }
+.creditos-det.fijos > summary::after { content: none; }
 
 /* ---------- movimiento */
 @media (prefers-reduced-motion: no-preference) {
@@ -1448,10 +1451,10 @@ html.restaurando .barra, html.restaurando .barra-hoja { transition: none !import
 .mk-tema-ed input { flex: 1; border: 1px solid var(--linea); border-radius: 10px; background: var(--bg); color: var(--tinta); padding: 9px 12px; font: 1rem/1.3 var(--f-ui); }
 
 /* ---------------------------------------------------------------- saltos rápidos (inicio, mitad, final) */
-.saltos-rap { position: fixed; z-index: 60; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+.saltos-rap { position: fixed; z-index: 60; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 7px; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
 .saltos-rap.vis, .saltos-rap:focus-within { opacity: 1; pointer-events: auto; }
-.sr-btn { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--oro) 45%, transparent); background: color-mix(in srgb, var(--hoja) 78%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4); color: var(--oro-vivo); display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 22px rgba(0, 0, 0, .35); transition: border-color .2s, background-color .2s, transform .15s, opacity .25s; -webkit-tap-highlight-color: transparent; }
-.sr-btn svg { width: 19px; height: 19px; }
+.sr-btn { position: relative; width: 34px; height: 34px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--oro) 45%, transparent); background: color-mix(in srgb, var(--hoja) 78%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4); color: var(--oro-vivo); display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 22px rgba(0, 0, 0, .35); transition: border-color .2s, background-color .2s, transform .15s, opacity .25s; -webkit-tap-highlight-color: transparent; }
+.sr-btn svg { width: 15px; height: 15px; }
 .sr-btn:hover { border-color: var(--oro); background: color-mix(in srgb, var(--oro) 16%, var(--hoja)); }
 .sr-btn:active { transform: scale(.94); }
 .sr-btn:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
@@ -2120,13 +2123,13 @@ html:has(.cargando.inicio) .pie { visibility: hidden; }
 @media (min-width: 900px) { .an-cols .an-ficha { position: sticky; top: 84px; align-self: start; } }
 
 /* (12-nov-2026) minutos de lectura que faltan, junto al aro de avance */
-.sr-min { position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 5px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--oro) 35%, transparent); background: color-mix(in srgb, var(--hoja) 82%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--tinta-2); font: 500 .74rem/1 var(--f-ui); letter-spacing: .02em; font-variant-numeric: tabular-nums; pointer-events: none; }
+.sr-min { position: absolute; right: calc(100% + 7px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 4px 8px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--oro) 35%, transparent); background: color-mix(in srgb, var(--hoja) 82%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--tinta-2); font: 500 .62rem/1 var(--f-ui); letter-spacing: .02em; font-variant-numeric: tabular-nums; pointer-events: none; }
 .saltos-rap:not(.con-min) .sr-min { display: none; }
 /* (12-nov-2026; idea de la app de junio) la línea del buscador, con colores que se desplazan despacio (solo transformación) */
 .bq-campo:has(.bq-linea) { border-bottom-color: transparent; }
 /* (BiEx, 14-nov-2026: «no se muestra animada») más visible y igual de liviana: los colores corren en 9 s y un destello
    recorre la línea cada 5 s; las dos capas solo se trasladan (compositor) y existen solo mientras el buscador está abierto */
-.bq-linea { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; overflow: hidden; border-radius: 3px; pointer-events: none; opacity: .9; transition: opacity .3s; contain: strict; }
+.bq-linea { position: absolute; left: 0; right: 0; bottom: -1px; height: 2.55px; overflow: hidden; border-radius: 2.55px; pointer-events: none; opacity: .9; transition: opacity .3s; contain: strict; }
 .bq-linea::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; background: linear-gradient(90deg, var(--oro) 0%, #6aa7d8 16.66%, #b08bd9 33.33%, var(--oro-vivo, #e8cf94) 50%, #6aa7d8 66.66%, #b08bd9 83.33%, var(--oro) 100%); animation: bq-linea 9s linear infinite; will-change: transform; }
 .bq-linea::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 26%; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 250, 230, .95), rgba(255, 255, 255, 0)); transform: translate3d(-110%, 0, 0); animation: bq-brillo 5s cubic-bezier(.45, 0, .2, 1) 1s infinite; will-change: transform; }
 .bq-campo:focus-within .bq-linea { opacity: 1; }
@@ -2323,7 +2326,7 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 .btn-cap .cap-de { opacity: .62; font-size: .86em; margin-left: .06em; font-variant-numeric: tabular-nums; }
 .nav-ir { display: flex; justify-content: center; }
 /* P11 (14-nov-2026): lupa de la ventana de los libros */
-.libs-lupa-c { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 8px 14px; border: 1px solid var(--linea); border-radius: 999px; background: color-mix(in srgb, var(--hoja) 70%, transparent); }
+.libs-lupa-c { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 9px 16px; border: 1px solid var(--linea); border-radius: 999px; background: color-mix(in srgb, var(--hoja) 96%, transparent); box-shadow: 0 6px 18px -10px rgba(0, 0, 0, .55); }
 .libs-lupa-c svg { width: 18px; height: 18px; color: var(--oro); flex: none; }
 .libs-lupa { flex: 1; min-width: 0; border: 0; background: none; outline: none; font: inherit; font-size: 1rem; color: inherit; padding: 2px 0; }
 .libs-lupa::-webkit-search-cancel-button { filter: grayscale(1); opacity: .6; }
@@ -2336,3 +2339,17 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 /* (14-nov-2026) versos de un libro que aún no está abierto: teselas neutras, del mismo tamaño que las de siempre */
 .tesela.n-x { background: color-mix(in srgb, var(--oro) 9%, transparent); color: var(--tinta); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 26%, transparent); }
 .tesela.n-x:hover, .tesela.n-x:focus-visible { background: color-mix(in srgb, var(--oro) 22%, transparent); }
+
+/* ------------------------------------------------------------------ ranking de BiEx (AA16, 14-nov-2026) */
+.rk-lista { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 10px; }
+.rk-it { position: relative; display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 2px 14px; align-items: start; padding: 14px 16px 14px 14px; border: 1px solid var(--linea-2); border-radius: 16px; background: linear-gradient(180deg, var(--vidrio-luz, transparent), transparent 46%), var(--hoja-2); overflow: hidden; }
+.rk-it::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--oro-vivo), color-mix(in srgb, var(--oro) 18%, transparent)); opacity: .75; }
+.rk-n { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--oro) 55%, transparent); background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--oro) 22%, transparent), transparent 70%); font: 500 1.22rem/1 var(--f-display); color: var(--oro-vivo); font-variant-numeric: lining-nums tabular-nums; }
+.rk-c h2 { margin: .1rem 0 .3rem; font: 500 1.12rem/1.25 var(--f-display); color: var(--tinta); text-wrap: balance; }
+.rk-d { margin: 0; font: 400 .8rem/1.45 var(--f-ui); color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.rk-d b { font-weight: 600; letter-spacing: .06em; color: var(--oro-vivo); }
+.rk-p { margin: .25rem 0 0; font: 400 .78rem/1.45 var(--f-ui); color: var(--tenue); }
+.rk-it.usa { border-color: color-mix(in srgb, var(--oro) 45%, var(--linea-2)); }
+.rk-it.usa .rk-p { color: var(--tinta-2); }
+.rk-nota { margin: 18px 2px 0; font: 400 .8rem/1.55 var(--f-ui); color: var(--tenue); max-width: 62ch; }
+.rx-av-nota a { color: var(--oro-vivo); text-decoration: underline; text-underline-offset: 2px; }
