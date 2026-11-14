@@ -106,7 +106,7 @@
     llaves_max: "Ya tienes 10 llaves de acceso.", ya_vinculada: "Esa cuenta ya está vinculada a otro perfil.", sin_google: "La entrada con Google todavía no está activa.", sin_facebook: "La entrada con Facebook todavía no está activa.",
     ya_en_compania: "Ya estás en una compañía: para unirte a otra, primero sal de la tuya.", nombre_usado: "Ese nombre ya lo tiene otra compañía.", compania: "Ese código de compañía no existe.",
     compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.",
-    apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
+    apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", lugar_espera: "Tu ciudad se puede cambiar una vez cada 2 meses.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
   const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien. Vuelve a intentarlo.";
 
   function guardarSesion(token, yo) {
@@ -127,6 +127,7 @@
   function actualizarYo(yo) {
     if (!yo) return;
     S.yo = yo; A.store.set("jg:yo", yo); R.ld = 0;
+    try { document.dispatchEvent(new Event("jg:yo")); } catch (e) {}
     const ult = Number(A.store.get("jg:avT", 0)) || 0, l = yo.avisos || [];
     if (l.length) {
       A.store.set("jg:avT", Math.max(ult, ...l.map((a) => a.t || 0)));
@@ -411,6 +412,21 @@ html[data-mov="no"] .ap-vida{display:none}
 .jg-nivel{flex-wrap:wrap}
 .jg-yo .jg-nombre{overflow-wrap:anywhere}
 .jg-form{display:grid;grid-template-columns:minmax(0,1fr) 9.2em;gap:8px;align-items:stretch}
+.jg-lugar .lg-actual{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin:2px 0 6px}
+.jg-lugar .lg-n{display:grid;min-width:0}.jg-lugar .lg-n b{font-weight:600;overflow-wrap:anywhere}.jg-lugar .lg-n small{color:var(--tenue);font-size:.84em;overflow-wrap:anywhere}
+.jg-lugar .lg-hora{font-variant-numeric:tabular-nums;color:var(--oro);font-weight:600;font-size:.92em;white-space:nowrap}
+.jg-lugar .lg-panel{display:grid;gap:8px;margin-top:10px}
+.jg-lugar .lg-q,.jg-lugar .lg-otra input,.jg-lugar .lg-otra select{width:100%;box-sizing:border-box;font:inherit;padding:.62em .8em;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tinta)}
+.jg-lugar .lg-q:focus,.jg-lugar .lg-otra input:focus,.jg-lugar .lg-otra select:focus{outline:2px solid var(--oro);outline-offset:1px}
+.jg-lugar .lg-res{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.jg-lugar .lg-op{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:.58em .8em;border-radius:12px;background:color-mix(in srgb,var(--oro) 6%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 18%,transparent);transition:background .18s ease}
+.jg-lugar .lg-op:hover,.jg-lugar .lg-op:focus-visible{background:color-mix(in srgb,var(--oro) 14%,transparent)}
+.jg-lugar .lg-z{font-variant-numeric:tabular-nums;font-size:.84em;color:var(--tenue);white-space:nowrap}
+.jg-lugar .lg-link{all:unset;cursor:pointer;justify-self:start;color:var(--oro);font-size:.9em;text-decoration:underline dotted;text-underline-offset:3px}
+.jg-lugar .lg-otra{display:grid;gap:8px}
+.jg-lugar .lg-otra .mm-btn{width:100%;box-sizing:border-box;min-height:2.9em;font:400 1rem/1.3 var(--f-ui);padding:.62em .9em;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tinta)}
+@media (min-width:700px){.jg-lugar .jg-acciones .btn{flex:0 1 auto;min-width:15rem}.jg-lugar .lg-panel{max-width:40rem}}
+@media (max-width:360px){.jg-lugar .lg-actual{grid-template-columns:auto minmax(0,1fr)}.jg-lugar .lg-hora{grid-column:2}.jg-lugar .lg-op{grid-template-columns:1fr}}
 .jg-form>.btn{justify-content:center;min-width:0}
 .jg-form textarea{grid-column:1/-1}
 .jg-form:has(textarea)>.btn,.jg-form:has(textarea)>*{grid-column:1/-1}
@@ -1076,7 +1092,23 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-premio{bottom:calc(132px + var(--i) * 46px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,#2b2214,#17120b)!important;color:var(--oro-vivo)!important;border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);opacity:0}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
 .ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
-.ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
+.ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}
+/* X3 (BiEx, 13-nov-2026): simetría en PC. Escudriña en una columna central (el Árbol ya no queda en 760 px por la clase .ap
+   del lector); la armadura y la tienda una debajo de otra; la vitrina en filas (muestra, nombre, precio y lo que da),
+   en dos columnas en pantallas anchas: sin columnas largas ni huecos */
+@media (min-width:1100px){.panel.jg{max-width:1080px;margin-inline:auto;width:100%}}
+.panel.jg > .ap{max-width:none;width:100%}
+.jg-dos.ap-dos{grid-template-columns:minmax(0,1fr)!important}
+.ap-vitrina{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px}
+.ap-vitrina li{display:grid;grid-template-columns:48px minmax(0,1fr) auto;grid-template-areas:"mu mn bt" "mu da da";justify-items:start;align-items:center;column-gap:12px;row-gap:3px;padding:10px 12px;text-align:left}
+.ap-vitrina li .ap-mu{grid-area:mu;width:48px;height:48px;align-self:center}
+.ap-vitrina li .ap-mn{grid-area:mn;place-items:start;font:600 .86rem/1.25 var(--f-ui)}
+.ap-vitrina li .ap-da,.ap-vitrina li .ap-raro{font:400 .78rem/1.42 var(--f-ui);color:var(--tinta-2);text-align:left;justify-self:start}
+.ap-vitrina li .ap-da,.ap-vitrina li .ap-raro{grid-column:2/-1}
+.ap-vitrina li .btn{grid-area:bt;justify-self:end}
+.ap-vitrina li.raro::before{left:auto;right:12px;top:8px}
+.ap-vitrina li.raro.cerrado{grid-template-areas:"mu mn mn" "mu da da"}
+@media (min-width:900px){.ap-vitrina{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-uso{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
 .jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:.42rem;min-height:1.62rem;padding:.2rem .82rem .2rem .22rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
@@ -1089,7 +1121,8 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .74rem .18rem .2rem;color:var(--tinta)}
 .jg-lbp .jg-lb-i{width:1rem;height:1rem}
 /* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
-.jg-pie{position:absolute;left:0;top:0;z-index:3;display:inline-flex;gap:.32rem;align-items:center;will-change:transform}
+.jg-pie{position:absolute;left:auto;top:auto;right:10px;bottom:0;z-index:3;display:inline-flex;gap:.32rem;align-items:center;transform:translate3d(0,50%,0)}
+.vl.con-pie{position:relative}
 .jg-pie[hidden],.jg-pie [hidden]{display:none}
 .jg-pie-b{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:.3rem;height:1.14rem;padding:0 .56rem 0 .16rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .58rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 46%,transparent);
@@ -1193,7 +1226,19 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   const tarjeta = (titulo, icoSvg, ...hijos) => h("section", { class: "jg-tarjeta" }, titulo ? h("h2", {}, icoSvg || null, h("span", { text: titulo })) : null, ...hijos);
   function marco(cont, ...hijos) {
-    cont.replaceChildren(h("div", { class: "in" }, h("section", { class: "panel jg" }, ...hijos)));
+    // P14 (BiEx, 11-nov-2026): al pasar de una sección a otra la página no brinca: la nueva conserva por un momento la altura
+    // de la anterior (el pie no sube mientras llegan sus datos) y entra con un fundido breve, solo opacidad
+    const kSec = claveVista(), cambia = S.marcoK !== kSec; S.marcoK = kSec;
+    const ant = cont.firstElementChild, alto = cambia && ant ? Math.round(ant.getBoundingClientRect().height) : 0;
+    const nueva = h("div", { class: "in" }, h("section", { class: "panel jg" }, ...hijos));
+    cont.replaceChildren(nueva);
+    if (alto > 240 && !MV.pend) {
+      nueva.style.minHeight = alto + "px";
+      let ro = null; const sec = nueva.firstElementChild, soltar = () => { if (ro) ro.disconnect(); nueva.style.minHeight = ""; };
+      ro = window.ResizeObserver ? new ResizeObserver(() => { if (sec.getBoundingClientRect().height >= alto - 24) soltar(); }) : null;
+      if (ro) ro.observe(sec); setTimeout(soltar, 1600);
+    }
+    if (cambia && ant && !sinAnim() && nueva.animate) nueva.animate([{ opacity: 0.001 }, { opacity: 1 }], { duration: 200, easing: "cubic-bezier(.2,.7,.2,1)" });
     if (MV.pend) requestAnimationFrame(restituirVista);
     const k = (S.sub || []).join("/") + "|" + (S.token ? 1 : 0);
     if (S.vistaAnim !== k) { S.vistaAnim = k; requestAnimationFrame(() => animarCifras(cont)); }
@@ -1986,18 +2031,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const CIUDADES = [["America/Los_Angeles", "Los Angeles [Ángeles] · hora del Pacífico"], ["America/Mexico_City", "Ciudad de México · Centroamérica"], ["America/Bogota", "Bogotá · Lima · Quito"],
     ["America/New_York", "New [Nueva] York"], ["America/Caracas", "Caracas · Santo Domingo · San Juan"], ["America/Santiago", "Santiago"], ["America/Argentina/Buenos_Aires", "Buenos Aires · São Paulo · Montevideo"],
     ["Europe/London", "London [Londres]"], ["Europe/Madrid", "Madrid · Paris [París] · Roma"]];
-  // La semana del juego es la misma para todos (de domingo a sábado en la hora de Bogotá, UTC−5): se muestra cuándo
-  // cambia en la hora y la ciudad (zona horaria) de quien lee
-  function finSemanaMs() { const b = new Date(Date.now() - 5 * 3600e3), hoy0 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return hoy0 + (7 - b.getUTCDay()) * 864e5 + 5 * 3600e3; }
-  function ciudadZona() {
-    let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { tz = ""; }
-    const c = CIUDADES.find((x) => x[0] === tz);
-    if (c) return c[1].split(" · ")[0];
-    const t = tz.split("/").pop() || ""; return t ? t.replace(/_/g, " ") : "tu ciudad";
-  }
+  // La semana del juego es la misma para todos: de domingo a sábado en UTC, la hora científica, que no cambia con los horarios
+  // de verano e invierno (BiEx, 13-nov-2026; antes, hora de Bogotá). Se muestra también cuándo cambia en la hora de quien lee.
+  function finSemanaMs() { const b = new Date(), hoy0 = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()); return hoy0 + (7 - b.getUTCDay()) * 864e5; }
   function textoSemana() {
-    let cuando = ""; try { cuando = new Date(finSemanaMs()).toLocaleString("es", { weekday: "long", hour: "numeric", minute: "2-digit" }); } catch (e) { cuando = "domingo, 0:00"; }
-    return "de domingo a sábado; cambia el " + cuando.replace(",", " a las") + ", hora de " + ciudadZona();
+    let tuya = ""; try { tuya = new Date(finSemanaMs()).toLocaleString("es", { timeZone: (S.yo && S.yo.tz) || undefined, weekday: "long", hour: "numeric", minute: "2-digit" }).replace(",", " a las"); } catch (e) { tuya = ""; }
+    return "de domingo a sábado; cambia el domingo a las 0:00 UTC" + (tuya && !/^domingo a las 0:00$/.test(tuya) ? " (en tu hora, el " + tuya + ")" : "");
   }
   function horaEn(ms, tz) { try { return new Date(ms).toLocaleString("es", { timeZone: tz, weekday: "short", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } }
   function zonasLanzamiento(ms) {
@@ -2567,7 +2606,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu imagen personalizada"); if (r) rehacer(); } }, h("span", { text: "Quitar mi imagen personalizada" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
     const heroe = h("section", { class: "ap-heroe" }, h("div", { class: "ap-lienzo" }, arbolPoder(yy, av, (yy.invi && yy.invi.unidos) || 0)), datos);
-    zona.replaceChildren(heroe, tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
+    zona.replaceChildren(heroe, tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
     if (habia && !sinAnim() && zona.animate) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
     animarCifras(zona);
   }
@@ -2863,6 +2902,113 @@ html[data-mov="no"] .ap-savia{display:none!important}
     abrirB();
   }
 
+  // --- «Tu ciudad y tu hora» (P31, P28, X1; BiEx, 11 y 13-nov-2026): la ciudad la elige cada quien (la conexión puede ubicar
+  // en otra: a BiEx lo ponía en Cali); se busca en cualquier idioma sobre datos/lugares.json (GeoNames, 30 480 ciudades con su
+  // zona y su departamento o estado); la elegida se cambia una vez cada 2 meses; si nadie elige, se sigue asignando sola.
+  let LUG = null;
+  const normL = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  function lugares() {
+    if (!LUG) LUG = (A.cargar ? A.cargar("datos/lugares.json") : fetch(PUBLICO + "/datos/lugares.json", { credentials: "omit" }).then((r) => r.json())).then((d) => {
+      const paises = {}; for (const e of d.c) if (!paises[e[1]]) paises[e[1]] = normL(nombrePais(e[1]));
+      d.ix = d.c.map((e) => [normL(e[0]), ...e.slice(4).map(normL)]); d.paises = paises; d.rnN = d.rn.map(normL); return d;
+    }).catch((e) => { LUG = null; throw e; });
+    return LUG;
+  }
+  // abreviatura de la zona, con el cambio de horario: EST/EDT, PST/PDT, CST, CET/CEST, GMT/BST; si no tiene, UTC−5
+  function zonaCorta(tz, ms) {
+    const parte = (loc) => { try { const x = new Intl.DateTimeFormat(loc, { timeZone: tz, timeZoneName: "short" }).formatToParts(ms || Date.now()).find((y) => y.type === "timeZoneName"); return x ? x.value : ""; } catch (e) { return ""; } };
+    let z = /^(America|Pacific\/Honolulu)/.test(tz) ? parte("en-US") : /^(Europe|Atlantic\/(Canary|Madeira|Faroe))/.test(tz) ? parte("en-GB") : "";
+    if (!z || /^GMT[+-]|^UTC/.test(z)) { const g = parte("en-GB"); z = g === "GMT" ? "UTC" : g.replace(/^GMT/, "UTC").replace("-", "−"); }
+    return z;
+  }
+  const horaZona = (tz, ms) => { try { return new Date(ms || Date.now()).toLocaleTimeString("es", { timeZone: tz, hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } };
+  function buscarLugares(d, q, max) {
+    let [qc, qp] = q.split(","); qc = normL(qc); qp = normL(qp || "");
+    if (qc.length < 2) return [];
+    const res = [];
+    for (let i = 0; i < d.c.length; i++) {
+      const e = d.c[i], ns = d.ix[i]; let sc = 0;
+      for (let k = 0; k < ns.length; k++) { const n = ns[k]; if (n === qc) { sc = Math.max(sc, k ? 3.4 : 4); break; } if (n.startsWith(qc)) sc = Math.max(sc, k ? 2.4 : 3); else if (sc < 1.4 && n.includes(" " + qc)) sc = 1.4; }
+      const rN = d.r[i] >= 0 ? d.rnN[d.r[i]] : "", pN = d.paises[e[1]] || "";
+      if (!sc && (rN.startsWith(qc) || pN.startsWith(qc))) sc = rN.startsWith(qc) ? 1.2 : 1;
+      if (!sc) continue;
+      if (qp && !(pN.startsWith(qp) || rN.startsWith(qp) || normL(e[1]) === qp)) continue;
+      res.push([sc + Math.log10(1 + e[3]) / 10, i]);
+    }
+    return res.sort((a, b) => b[0] - a[0]).slice(0, max || 8).map((x) => x[1]);
+  }
+  function tarjetaLugar(compacta) {
+    const caja = h("section", { class: "jg-tarjeta jg-lugar" });
+    const pintar = () => {
+      const y = S.yo || {}, l = y.lugar || {}, tz = y.tz || "America/Bogota", ahora = Date.now(), espera = (y.lugHasta || 0) > ahora;
+      const reloj = h("b", { class: "lg-hora", text: horaZona(tz) + " · " + zonaCorta(tz) });
+      const t = setInterval(() => { if (!reloj.isConnected) return clearInterval(t); reloj.textContent = horaZona(tz) + " · " + zonaCorta(tz); }, 30000);
+      const panel = h("div", { class: "lg-panel", hidden: true });
+      const boton = h("button", { class: "btn" + (l.manual ? "" : " oro"), type: "button", disabled: espera, onclick: () => { panel.hidden = !panel.hidden; boton.setAttribute("aria-expanded", String(!panel.hidden)); if (!panel.hidden) abrirBuscador(panel); } },
+        A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'),
+        h("span", { text: l.manual ? "Cambiar mi ciudad" : "Elegir mi ciudad" }));
+      boton.setAttribute("aria-expanded", "false");
+      caja.replaceChildren(h("h2", {}, ico("mundo"), h("span", { text: "Tu ciudad y tu hora" })),
+        h("div", { class: "lg-actual" }, h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>')),
+          h("span", { class: "lg-n" }, h("b", { text: l.ciudad || "Sin ciudad todavía" }), h("small", { text: [l.region, l.pais ? nombrePais(l.pais) : ""].filter(Boolean).join(" · ") })), reloj),
+        h("p", { class: "jg-mini", text: (l.manual ? "La elegiste tú." : "La asignó tu conexión: si no es la tuya, elígela.") + " Tus misiones y tu día cambian a medianoche de tu hora." + (compacta ? "" : " La ciudad se puede cambiar una vez cada 2 meses.") }),
+        h("div", { class: "jg-acciones" }, boton), espera ? h("p", { class: "jg-mini", text: "Podrás cambiarla de nuevo el " + fechaDia(y.lugHasta) + "." }) : null, panel);
+    };
+    async function guardar(lugar) {
+      const r = await pedir("/cuenta/preferencias", { metodo: "POST", cuerpo: { lugar } });
+      if (r.error) { A.avisar(r.error === "lugar_espera" && r.hasta ? "Podrás cambiarla de nuevo el " + fechaDia(r.hasta) + "." : mensaje(r)); return; }
+      actualizarYo(r.yo); A.avisar("Tu ciudad: " + lugar.ciudad); pintar();
+    }
+    async function elegir(lugar) {
+      if (!(await confirmar("¿Guardar " + lugar.ciudad + " como tu ciudad?", (lugar.region ? lugar.region + " · " : "") + nombrePais(lugar.pais) + " · " + horaZona(lugar.tz) + " (" + zonaCorta(lugar.tz) + ")." + " Solo se puede cambiar una vez cada 2 meses.", "Guardar mi ciudad"))) return;
+      guardar(lugar);
+    }
+    async function abrirBuscador(panel) {
+      const entrada = h("input", { type: "search", class: "lg-q", placeholder: "Tu ciudad, región o país, en cualquier idioma", "aria-label": "Buscar tu ciudad", autocomplete: "off", enterkeyhint: "search" });
+      const lista = h("ul", { class: "lg-res", role: "list" }), otra = h("div", { class: "lg-otra", hidden: true });
+      const enlaceOtra = h("button", { class: "lg-link", type: "button", text: "¿No está tu ciudad?", onclick: () => { otra.hidden = !otra.hidden; if (!otra.hidden) formOtra(otra); } });
+      panel.replaceChildren(entrada, lista, enlaceOtra, otra); entrada.focus({ preventScroll: true });
+      let d; try { d = await lugares(); } catch (e) { lista.replaceChildren(h("li", { class: "jg-mini", text: "No se pudo cargar la lista de ciudades. Vuelve a intentarlo." })); return; }
+      let tm = 0;
+      const correr = () => {
+        const ids = buscarLugares(d, entrada.value, 8), ms = Date.now();
+        lista.replaceChildren(...(ids.length ? ids.map((i) => { const e = d.c[i], tz = d.z[e[2]], reg = d.r[i] >= 0 ? d.rn[d.r[i]] : "";
+          return h("li", {}, h("button", { type: "button", class: "lg-op", onclick: () => elegir({ ciudad: e[0], pais: e[1], region: reg, tz }) },
+            h("span", { class: "lg-n" }, h("b", { text: e[0] }), h("small", { text: [reg, nombrePais(e[1])].filter(Boolean).join(" · ") })),
+            h("span", { class: "lg-z", text: horaZona(tz, ms) + " · " + zonaCorta(tz, ms) }))); })
+          : normL(entrada.value).length >= 2 ? [h("li", { class: "jg-mini", text: "Sin resultados: prueba con otro nombre o usa «¿No está tu ciudad?»." })] : []));
+      };
+      entrada.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(correr, 140); });
+    }
+    async function formOtra(otra) {
+      const d = await lugares().catch(() => null); if (!d) return;
+      const paises = Object.keys(d.paises).sort((a, b) => nombrePais(a).localeCompare(nombrePais(b), "es"));
+      const nom = h("input", { type: "text", placeholder: "Nombre de tu ciudad", "aria-label": "Nombre de tu ciudad", maxlength: 60, autocomplete: "address-level2" });
+      const selP = h("select", { "aria-label": "País" }, h("option", { value: "", text: "País…" }), paises.map((p) => h("option", { value: p, text: nombrePais(p) })));
+      const selR = h("select", { "aria-label": "Departamento o estado" }), selZ = h("select", { "aria-label": "Zona horaria" });
+      const alPais = () => {
+        const p = selP.value, regs = new Set(), zs = new Map();
+        d.c.forEach((e, i) => { if (e[1] !== p) return; if (d.r[i] >= 0) regs.add(d.rn[d.r[i]]); zs.set(d.z[e[2]], (zs.get(d.z[e[2]]) || 0) + e[3]); });
+        selR.replaceChildren(h("option", { value: "", text: p ? nombreRegion(p) + " (opcional)" : "Departamento o estado" }), ...[...regs].sort((a, b) => a.localeCompare(b, "es")).map((r) => h("option", { value: r, text: r })));
+        selZ.replaceChildren(...[...zs].sort((a, b) => b[1] - a[1]).map(([z]) => h("option", { value: z, text: z.split("/").pop().replace(/_/g, " ") + " · " + horaZona(z) + " · " + zonaCorta(z) })));
+      };
+      selP.addEventListener("change", alPais);
+      const y = S.yo || {}; if (y.lugar && y.lugar.pais) { selP.value = y.lugar.pais; alPais(); }
+      otra.replaceChildren(h("p", { class: "jg-mini", text: "Escribe tu ciudad y elige su país y su zona horaria." }), nom, selP, selR, selZ,
+        h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => {
+          const ciudad = nom.value.replace(/\s+/g, " ").trim();
+          if (ciudad.length < 2 || !selP.value || !selZ.value) { A.avisar("Escribe la ciudad y elige el país y la zona"); return; }
+          elegir({ ciudad, pais: selP.value, region: selR.value, tz: selZ.value });
+        } }, h("span", { text: "Usar esta ciudad" }))));
+    }
+    // si los datos de la cuenta llegan después (o cambian en otra pestaña), la tarjeta se pone al día, salvo mientras se busca
+    const alYo = () => { if (!caja.isConnected) return document.removeEventListener("jg:yo", alYo); if (!caja.querySelector(".lg-panel:not([hidden])")) pintar(); };
+    document.addEventListener("jg:yo", alYo);
+    if (!S.yo || !S.yo.lugar) pedir("/yo").then((r) => { if (r && !r.error) actualizarYo(r.yo); });
+    pintar();
+    return caja;
+  }
+
   // --- prestigio local: cada ciudad suma la experiencia de sus 12 mejores lectores
   async function pintarPrestigio(cont) {
     document.title = "Prestigio local · Escudriña · BiEx";
@@ -2886,8 +3032,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     marco(cont, cabSub("Prestigio local", "Cada ciudad suma la experiencia de sus 12 mejores lectores: así una ciudad pequeña puede brillar tanto como una grande. Lee e invita a los tuyos para llevar a tu ciudad a lo más alto."),
       tarjeta(null, null, seg([["pais", lugar.pais ? nombrePais(lugar.pais) : "Mi país"], ["mundo", "El mundo"]], "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"),
-        lugar.ciudad ? h("p", { class: "jg-mini", text: "Tu ciudad: " + lugar.ciudad + (y.verCiudad === false ? " (la ocultaste en tu perfil: tu lectura no suma a su prestigio)" : "") }) : null),
-      tarjeta(null, null, zona));
+        y.verCiudad === false ? h("p", { class: "jg-mini", text: "Ocultaste tu ciudad en tu perfil: tu lectura no suma a su prestigio." }) : null),
+      tarjetaLugar(true), tarjeta(null, null, zona));
     cargarP();
   }
 
@@ -2981,7 +3127,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const estado = [v.llave ? plural(v.llave, "llave de acceso", "llaves de acceso") : null, v.google ? "Google" : null, v.facebook ? "Facebook" : null].filter(Boolean);
     const borrarIn = h("input", { type: "text", placeholder: "Escribe BORRAR", "aria-label": "Escribe BORRAR para confirmar", autocomplete: "off" });
     marco(cont, h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: "Cuenta" })),
-      tarjetaApodo(false),
+      tarjetaApodo(false), tarjetaLugar(false),
       tarjeta("Emblema", null, h("div", { class: "jg-perfil" }, vista, h("p", { class: "jg-mini", text: "Elige una letra hebrea o griega y un color. Así te verán en las clasificaciones." })), letras, colores),
       tarjeta("Formas de entrar", ico("llave"), h("p", { text: estado.length ? "Tu avance está asegurado con: " + estado.join(", ") + "." : "Tu avance todavía depende solo de tu código." })),
       tarjetaAsegurar(true),
@@ -3369,7 +3515,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // X15 y X16 (BiEx, 13-nov-2026): en la vista por versos, «Leído» va discreto al pie del verso; al terminar una perícopa
     // cuyos versos ya tienen su tiempo, se ofrece también marcarla entera. En la vista continua, el botón fijo de abajo y,
     // encima, el de la perícopa cuando su final está a la vista.
-    if (!LB.pie || LB.pie.parentElement !== hoja) {
+    if (!LB.pie || !hoja.contains(LB.pie)) {
       if (LB.pie) LB.pie.remove();
       LB.pie = h("div", { class: "jg-pie", hidden: true },
         h("button", { type: "button", class: "jg-pie-b jg-pie-p", hidden: true, onclick: (ev) => { ev.stopPropagation(); tocarPeri(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t" })),
@@ -3426,8 +3572,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // franja no llega a ningún verso, vale el primero a la vista; al final, cuando ya no se puede bajar, el primero sin marcar
   // que quedó debajo de la franja.
   const FRANJA = [0.32, 0.56];
+  // BiEx (13-nov-2026, 1 Τιmόdsεος 1): la franja no se mueve cuando las barras se pliegan o se despliegan: se mide con su
+  // alto desplegado (offsetHeight no cambia con la transformación que las esconde), no con lo que se ve en ese instante
+  function topeFijo() {
+    let t = 0; const b = document.querySelector("header.barra"); if (b) t = b.offsetHeight;
+    const bh = document.querySelector(".barra-hoja.bh-pegada"); if (bh) t += bh.offsetHeight;
+    return t;
+  }
   function zonaLectura() {
-    const vh = innerHeight, T = topeBarras() + 8;
+    const vh = innerHeight, T = topeFijo() + 8;
     let a = vh * FRANJA[0], b = vh * FRANJA[1];
     if (a < T) { b = Math.min(vh - 24, b + (T - a)); a = T; }
     return [a, b];
@@ -3490,7 +3643,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
       let ver = false;
-      if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeBarras(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
+      if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
       LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver ? 0 : -1;
       if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", LB.el.style.getPropertyValue("--jg-lb-alza") || "0px"); }
     }
@@ -3535,17 +3688,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
     const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
     P.classList.toggle("espera", !R.pend.has(v)); P.classList.remove("hecho");
+    // BiEx (13-nov-2026): sin relampagueo ni corrimientos. El pie vive dentro de la fila de su verso (se mueve con ella, también
+    // cuando el texto de arriba termina de dibujarse) y solo se funde, sin desenfoque, cuando cambia de verso.
+    if (P.parentElement !== el) { if (LB.pieEn) LB.pieEn.classList.remove("con-pie"); el.classList.add("con-pie"); el.append(P); LB.pieEn = el; }
     // el verso largo se sigue leyendo: su «Leído» aparece cuando su pie ya está a la vista
-    const rb = el.getBoundingClientRect(); if (rb.bottom > innerHeight - 8 || rb.bottom < topeBarras() + 18) { P.hidden = true; return; }
-    const antes = P.hidden; P.hidden = false;
-    const vt = el.querySelector(":scope > .vt") || el, rv = vt.getBoundingClientRect(), r = el.getBoundingClientRect(), rh = hoja.getBoundingClientRect();
-    const w = P.offsetWidth, hh = P.offsetHeight, y = r.bottom - hh / 2;
-    let x = Math.max(rv.left, Math.min(rv.right, rh.right - 6) - w);
-    // si los saltos rápidos flotan a esa altura, el pie se corre a su izquierda (nunca queda debajo de ellos)
-    const sr = document.querySelector(".saltos-rap");
-    if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && y + hh > q.top - 6 && y < q.bottom + 6 && x + w > q.left - 8) x = Math.max(rv.left, q.left - 8 - w); }
-    P.style.transform = "translate3d(" + (x - rh.left).toFixed(1) + "px," + (y - rh.top).toFixed(1) + "px,0)";
-    if ((antes || LB.v !== v) && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0, filter: "blur(2px)" }, { opacity: 1, filter: "blur(0)" }], { duration: 260, easing: "ease-out" });
+    const rb = el.getBoundingClientRect(); if (rb.bottom > innerHeight - 8 || rb.bottom < topeFijo() + 18) { P.hidden = true; return; }
+    P.hidden = false;
+    // a la derecha del texto; si los saltos rápidos flotan sobre ese borde, a su izquierda (se calcula al ponerlo, no al desplazar)
+    let der = 10; const sr = document.querySelector(".saltos-rap");
+    if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && q.left < rb.right - 10) der = Math.max(10, Math.round(rb.right - q.left + 8)); }
+    P.style.right = der + "px";
+    if (LB.pieV !== v && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+    LB.pieV = v;
   }
   function tocarPeri(desde) {
     const pe = LB.v && periDe(LB.v); if (!pe || !pe.ok || !R.lib) return;
@@ -3561,7 +3715,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const n = LB.ah && LB.ah.lastChild, hoja = LB.ah && LB.ah.parentElement, num = numeroDe(el); if (!n || !hoja) return;
     if (!num) { n.hidden = true; return; }
     const tn = [...num.childNodes].reverse().find((x) => x.nodeType === 3), rg = document.createRange(); rg.selectNodeContents(tn || num);
-    const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect(), T = topeBarras();
+    const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect(), T = topeFijo();
     if (!r.width || r.top < T + 2) { n.hidden = true; return; }
     const w = Math.max(30, r.width + 24), hh = Math.max(28, r.height + 16);
     n.style.width = w.toFixed(1) + "px"; n.style.height = hh.toFixed(1) + "px";
@@ -4542,8 +4696,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   // La misma hora del suceso vista desde distintas ciudades, una tras otra (BiEx, 10-nov-2026: que no salga siempre la
   // misma ciudad). Empieza por una ciudad aleatoria y cambia cada pocos segundos con un fundido.
   function relojCiudades(ms, prefijo) {
-    const el = h("span", { class: "jg-rota" }); let i = Math.floor(Math.random() * CIUDADES.length);
-    const pinta = () => { const c = CIUDADES[i % CIUDADES.length]; el.textContent = prefijo + " " + horaEn(ms, c[0]).replace(",", "") + " · hora de " + c[1].split(" · ")[0]; i++; };
+    // P28 (BiEx, 11-nov-2026): primero la hora de quien lee (su zona elegida o asignada) y luego, como información, las demás
+    const y = S.yo || {}, propia = y.tz ? [y.tz, "tu hora" + (y.lugar && y.lugar.ciudad ? " (" + y.lugar.ciudad + ")" : "")] : null;
+    const lista = propia ? [propia, ...CIUDADES.filter((c) => c[0] !== propia[0])] : CIUDADES;
+    const el = h("span", { class: "jg-rota" }); let i = propia ? 0 : Math.floor(Math.random() * lista.length);
+    const pinta = () => { const c = lista[i % lista.length]; el.textContent = prefijo + " " + horaEn(ms, c[0]).replace(",", "") + (c === propia ? " · " + c[1] : " · hora de " + c[1].split(" · ")[0]); i++; };
     pinta();
     const t = setInterval(() => {
       if (!el.isConnected) { clearInterval(t); return; }

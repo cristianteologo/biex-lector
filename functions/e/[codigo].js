@@ -3,7 +3,7 @@
 // navegador; los robots que arman la vista previa no cuentan) y lleva al lector con la invitación guardada.
 const BOTS = /facebookexternalhit|facebot|whatsapp|twitterbot|telegrambot|slackbot|discordbot|linkedinbot|pinterest|googlebot|bingbot|applebot|embedly|skypeuripreview|vkshare|redditbot|preview|crawler|spider|\bbot\b/i;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const LANZA = Date.UTC(2026, 10, 15, 1, 0); // sábado 14-nov-2026, 20:00 de Bogotá (el servidor manda la fecha vigente)
+const LANZA = Date.UTC(2026, 10, 15, 0, 0); // domingo 15-nov-2026, 00:00 UTC, primer día de la semana (el servidor manda la fecha vigente)
 // La hora del lanzamiento en las principales ciudades (no solo Bogotá) y, en el navegador, en la hora local de quien abre
 const CIUDADES = [["America/Los_Angeles", "Los Angeles [Los Ángeles]"], ["America/Mexico_City", "Ciudad de México"], ["America/Bogota", "Bogotá · Lima · Quito"],
   ["America/New_York", "New York [Nueva York]"], ["America/Caracas", "Caracas · Santo Domingo"], ["America/Argentina/Buenos_Aires", "Buenos Aires · Santiago · São Paulo"], ["Europe/Madrid", "Madrid"]];

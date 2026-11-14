@@ -1029,6 +1029,18 @@
       return Array.from(b.slice(0, 10), (x) => AB[x % AB.length]).join("");
     } catch (e) { return null; }
   }
+  // La página que se ve, con la invitación de quien comparte: un verso o un capítulo van con su cita; lo demás, con el enlace
+  // propio (/e/<código>, con su vista previa); sin cuenta, con la semilla del dispositivo
+  async function compartirPagina() {
+    const hh = location.hash || "#/";
+    if (/^#\/[A-Z0-9]{3}\//.test(hh)) return compartir(String(document.title || "").split(" · ")[0] + " · Biblia Exacta", "léelo palabra por palabra del griego", hh);
+    const inv = (store.get("jg:t", null) && store.get("jg:mio", null)) || (await semilla());
+    const url = "https://bibliaexacta.pages.dev" + (inv && /^[a-z0-9]{4,12}$/.test(inv) ? "/e/" + inv : "/");
+    const texto = "La Nueva Voluntad traducida palabra por palabra del griego, en el orden de los acontecimientos, y Escudriña, su juego para leerla juntos.";
+    try { if (navigator.share) { await navigator.share({ title: "Biblia Exacta", text: texto, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText("Biblia Exacta — " + texto + "\n" + url); avisar("Enlace con tu invitación copiado"); }
+    catch (e) { avisar("No se pudo copiar; el enlace es " + url); }
+  }
   async function compartir(titulo, texto, hh) {
     const inv = (store.get("jg:t", null) && store.get("jg:mio", null)) || (await semilla());
     if (inv && /^[a-z0-9]{4,12}$/.test(inv) && /^#\/[A-Z0-9]{3}\//.test(hh || "")) hh = "#/escudrina/i/" + inv + "/" + hh.slice(2);
@@ -1139,6 +1151,8 @@
     // BiEx (10-nov-2026): los libros a un toque desde cualquier lugar de la interfaz
     const libros = h("button", { class: "btn-icono btn-libros", type: "button", "aria-label": "Libros: ir de inmediato a cualquier libro y capítulo", title: "Libros", onclick: () => abrirLibros() }, svg(ICO.libros));
     const juego = h("button", { class: "btn-icono btn-juego", type: "button", "aria-label": "Escudriña, el juego de Biblia Exacta", title: "Escudriña · el juego", onclick: () => { location.hash = "#/escudrina"; } }, svg(ICO.juego));
+    // P32 (BiEx, 11-nov-2026): compartir siempre a la mano (también en la app instalada), con el código de quien comparte
+    const comp = h("button", { class: "btn-icono btn-comp", type: "button", "aria-label": "Compartir Biblia Exacta con tu enlace de invitación", title: "Compartir", onclick: () => compartirPagina() }, svg(ICO.compartir));
     const herr = h("button", { class: "btn-icono btn-herr", type: "button", "aria-label": "Herramientas: lectura, análisis, buscador, manuscritos, línea del tiempo, concordancia y guía", title: "Herramientas", onclick: () => abrirHerramientas() }, svg(ICO.rejilla));
     const extra = EMBED ? [
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
@@ -1154,7 +1168,7 @@
       h("header", { class: "barra" }, h("div", { class: "in" },
         h("a", { class: "marca", href: "#/", "aria-label": "Inicio del lector" }, h("span", { class: "sello", text: "BiEx" }), h("span", { class: "nombre" }, h("b", { text: "Biblia Exacta" }), h("small", { text: "Lector y analizador" }))),
         h("nav", { class: "nav", "aria-label": "Secciones" }, h("a", { href: "#/", text: "Inicio" }), h("a", { href: "#/libros", text: "Libros" }), h("a", { href: "#/cronologia", text: "Cronología" }), h("a", { href: "#/buscar", text: "Avanzada" })),
-        h("div", { class: "acc" }, buscar, libros, juego, herr, guia, tema, hist, extra))), // (12-nov-2026) el historial, a la izquierda de la X
+        h("div", { class: "acc" }, buscar, libros, juego, comp, herr, guia, tema, hist, extra))), // (12-nov-2026) el historial, a la izquierda de la X
       h("main", { class: "pagina", id: "vista", tabindex: "-1" }),
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
@@ -1165,7 +1179,8 @@
           h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" }))),
         // Créditos de los datos (BiEx, 13-nov-2026, 18:26): desplegados en el pie de la pantalla principal; en las ventanas
         // (Manuscritos, la ficha de la palabra, las referencias) van plegados (credPleg)
-        h("details", { class: "creditos-det", open: true }, h("summary", { text: "Créditos de los datos" }),
+        // (BiEx, 13-nov-2026, 20:32): en el pie, siempre a la vista, sin pliegue (también al pie de «Más» en Escudriña)
+        h("div", { class: "creditos-det" }, h("p", { class: "creditos-tit", text: "Créditos de los datos" }),
         h("p", { class: "creditos" }, "Texto griego y datos morfológicos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge), ",
           h("a", { href: "https://github.com/Clear-Bible/macula-greek", target: "_blank", rel: "noopener", text: "MACULA Greek Linguistic Datasets" }), " [Conjuntos de Datos Lingüísticos del Griego MACULA] (Biblica) y ",
           h("a", { href: "https://github.com/LogosBible/SBLGNT", target: "_blank", rel: "noopener", text: "SBLGNT" }), " (Society of Biblical Literature [Sociedad de Literatura Bíblica] y Logos Bible Software), con licencia CC BY 4.0.", h("br"),
@@ -1174,7 +1189,7 @@
           "Códigos Strong y formación de las palabras: códigos Strong extendidos de ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT" }), " (STEPBible.org, CC BY 4.0) y Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890; datos de ", h("a", { href: "https://github.com/openscriptures/strongs", target: "_blank", rel: "noopener", text: "Open Scriptures" }), " [Escrituras Abiertas], CC BY-SA), con las familias morfológicas de BiEx; el léxico de estudio que se deriva de ellos se publica con licencia CC BY-SA 4.0.", h("br"),
           "Fechas de escritura: John Arthur Thomas Robinson [J. A. T. Robinson], Redating the New Testament [Nueva datación del Nuevo Testamento] (1976).", h("br"),
           "Referencias cruzadas: ", h("a", { href: "https://www.openbible.info/labs/cross-references/", target: "_blank", rel: "noopener", text: "OpenBible.info" }), " (CC BY), a partir del Treasury of Scripture Knowledge [Tesoro del Conocimiento de la Escritura]; nivel y categorías de BiEx.", h("br"),
-          "Ciudades de Escudriña: ", h("a", { href: "https://www.geonames.org", target: "_blank", rel: "noopener", text: "GeoNames" }), " (CC BY 4.0).")))),
+          "Ciudades de Escudriña: ", h("a", { href: "https://www.geonames.org", target: "_blank", rel: "noopener", text: "GeoNames" }), " (CC BY 4.0). Citas de la Antigua Voluntad, mientras BiEx la traduce: Septuaginta en español de Guillermo Jünemann Beckschäfer (dominio público), del ", h("a", { href: "https://github.com/GIL-UNAM/SpanishParaphraseCorpora", target: "_blank", rel: "noopener", text: "corpus paralelo GIL-UNAM" }), " (CC0).")))),
       modal);
     const tg = store.get("tema", null);
     if (tg === "light" || tg === "dark") document.documentElement.setAttribute("data-theme", tg);
@@ -1186,7 +1201,7 @@
   // la pista del buscador y después los enlaces de secciones (siguen en Herramientas y en la portada)
   function ajustarBarra() {
     const m = $(".barra .marca"), bi = $(".barra .in"), r = document.documentElement; if (!m || !bi) return;
-    const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-hist", "barra-sin-guia", "barra-estrecha"];
+    const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-guia", "barra-sin-hist", "barra-estrecha"];
     r.classList.remove(...PASOS);
     const sello = $(".barra .sello"), acc = $(".barra .acc");
     // también cuenta como recorte que el primer botón visible se acerque al sello (los botones se encogen sin desbordar)
@@ -2147,11 +2162,25 @@
   }
   // La palabra buscada se centra en la pantalla y se ilumina un momento con pequeñas estrellas doradas
   let destelloSig = null;
+  // Halo de estrellitas sobre una palabra. Si la palabra se parte en dos o más renglones, cada renglón lleva su propio grupo
+  // de estrellitas (antes se dibujaba un marco angosto y alto entre los dos renglones: el bloque que contiene a un elemento en
+  // línea partido no está definido). Arreglo del 13-nov-2026, en todo lugar que use el destello.
   function destello(el) {
-    const ch = h("span", { class: "chispas", "aria-hidden": "true" }, Array.from({ length: 7 }, (_, k) => h("i", { style: "--k:" + k })));
-    el.querySelector(".chispas") && el.querySelector(".chispas").remove();
-    el.classList.remove("destello"); el.append(ch); void el.offsetWidth; el.classList.add("destello");
-    setTimeout(() => { el.classList.remove("destello"); ch.remove(); }, 2600);
+    const grupo = (n) => h("span", { class: "chispas", "aria-hidden": "true" }, Array.from({ length: n }, (_, k) => h("i", { style: "--k:" + k })));
+    for (const x of el.querySelectorAll(":scope > .chispas")) x.remove();
+    const rs = [...el.getClientRects()].filter((r) => r.width > 2 && r.height > 2), capas = [];
+    el.classList.remove("destello"); void el.offsetWidth; el.classList.add("destello");
+    if (rs.length <= 1) { const ch = grupo(7); el.append(ch); capas.push(ch); }
+    else {
+      const cb = el.offsetParent || document.body, libre = cb === document.body && getComputedStyle(cb).position === "static";
+      const rc = libre ? { left: -scrollX, top: -scrollY } : cb.getBoundingClientRect(), sx = libre ? 0 : cb.scrollLeft - cb.clientLeft, sy = libre ? 0 : cb.scrollTop - cb.clientTop;
+      rs.forEach((r, k) => {
+        const ch = grupo(k ? 4 : 6); ch.classList.add("suelta");
+        Object.assign(ch.style, { left: Math.round(r.left - rc.left + sx - 10) + "px", top: Math.round(r.top - rc.top + sy - 10) + "px", width: Math.round(r.width + 20) + "px", height: Math.round(r.height + 20) + "px" });
+        cb.append(ch); capas.push(ch);
+      });
+    }
+    setTimeout(() => { el.classList.remove("destello"); for (const c of capas) c.remove(); }, 2600);
   }
   // centra un elemento dentro de su contenedor desplazable (la ventana) o de la página, sin animación
   function centrarEnSuCaja(el) {
@@ -2349,7 +2378,8 @@
     .map(([k, t]) => h("span", {}, signo(k, false), t ? " " + t : " … ")));
   function lineaAparato(v, toks, Tg) {
     const [tipo, pos, lect, ids] = v;
-    const tes = h("span", { class: "ms-sig" }, " " + ordenarTestigos(Tg, ids).map((id) => siglaDe(Tg, id)).join(" "));
+    // (BiEx, 13-nov-2026): cada sigla lleva a su manuscrito en la lista de abajo, que se abre y brilla un momento
+    const tes = h("span", { class: "ms-sig" }, ordenarTestigos(Tg, ids).map((id) => [" ", h("button", { type: "button", class: "ms-sig-b", title: "Ver este manuscrito", onclick: (e) => irAlMs(e.currentTarget, id) }, siglaDe(Tg, id))]));
     const p = (k) => palBase(toks, k), pt = (ks) => { const x = ks.map(p).join(" "); return [x, tlSpan(x)]; };
     if (tipo === "ausente") return ["vers. om.", tes];
     if (tipo === "om") return (pos.length > 1 ? [signo("omA"), pt(pos), signo("omZ")] : [signo("om1"), pt([pos[0]])]).concat([" om.", tes]);
@@ -2357,6 +2387,13 @@
     if (tipo === "sust") return [signo("sust"), pt([pos[0]]), "] " + sigmaFinal(lect), tlSpan(lect), tes];
     if (tipo === "orden") return [signo("ordA"), pt([pos[0]]), signo("ordZ"), " transp.", tes];
     return [tipo, tes];
+  }
+  function irAlMs(btn, id) {
+    const zona = btn.closest(".modal, #vista") || document, sel = '.ms-t[data-ms="' + String(idBase(id)).replace(/["\\]/g, "") + '"]';
+    const det = zona.querySelector(sel) || document.querySelector(sel);
+    if (!det) { avisar("Ese manuscrito no está en la lista de este verso"); return; }
+    if (!det.open) det.open = true;
+    requestAnimationFrame(() => { centrarEnSuCaja(det); det.classList.remove("ms-brillo"); void det.offsetWidth; det.classList.add("ms-brillo"); destello(det.querySelector("summary") || det); setTimeout(() => det.classList.remove("ms-brillo"), 2600); });
   }
   // Transcripción diplomática (formato MES del CNTR): mayúsculas, sigma lunar, nomina sacra con raya, letras dañadas con
   // punto debajo, letras perdidas entre corchetes, cambios de línea como en el manuscrito y correcciones de otra mano.
@@ -2534,7 +2571,7 @@
     // cada testigo
     const sep = !!prefs.msEsp;
     const filas = h("div", { class: "ms-testigos" + (sep ? " sep" : "") }, pres.map((x) => {
-      const det = h("details", { class: "ms-t" }); det._txt = x.txt;
+      const det = h("details", { class: "ms-t", "data-ms": x.t.id }); det._txt = x.txt;
       const im = enlacesImagen(x.t.id, b.c, cap, v);
       det.append(h("summary", {},
         h("span", { class: "mt-s", lang: "grc", text: x.t.s }),
@@ -2605,9 +2642,7 @@
   // instante si su libro ya está cargado): los libros pesan y el teléfono no tiene por qué bajarlos todos.
   // Y7 (BiEx, 13-nov-2026): para leer las citas de la Antigua Voluntad mientras no tenga texto de BiEx, tres traducciones de
   // otros en BibliaTodo: la Nueva Biblia Española (Schökel y Mateos), la Biblia Latinoamérica y la Septuaginta en español
-  const BT_LIB = ["genesis", "exodo", "levitico", "numeros", "deuteronomio", "josue", "jueces", "rut", "1samuel", "2samuel", "1reyes", "2reyes", "1cronicas", "2cronicas", "esdras", "nehemias", "ester", "job", "salmos", "proverbios", "eclesiastes", "cantares", "isaias", "jeremias", "lamentaciones", "ezequiel", "daniel", "oseas", "joel", "amos", "abdias", "jonas", "miqueas", "nahum", "habacuc", "sofonias", "hageo", "zacarias", "malaquias"];
-  const BT_VER = [["Schokel-y-mateos", "Nueva Biblia Española"], ["Latinoamericana-1995", "Biblia Latinoamérica"], ["Version-septuaginta", "Septuaginta en español"]];
-  const enlaceBT = (li, cap, v, slug) => "https://www.bibliatodo.com/biblia/" + slug + "/" + BT_LIB[li] + "-" + cap + "-" + v;
+  // (las tres traducciones de BibliaTodo de Y7 ya no se enlazan: BiEx pidió no salir del sitio; ver cargarAV y textoAV)
   const LIBROS_REF = ["GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI", "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER", "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL",
     "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"];
   // Antigua Voluntad: el nombre original de cada libro (hebreo masorético) y el tradicional entre [ ], mientras BiEx fija sus
@@ -2623,6 +2658,18 @@
   const refsDe = (c) => { if (!REFS.has(c)) REFS.set(c, cargar("datos/refs/" + c + ".json").catch((e) => { REFS.delete(c); throw e; })); return REFS.get(c); };
   const nivelRef = (votos, rango) => (votos >= 12 || (rango < 3 && votos >= 4) ? 1 : votos >= 4 ? 2 : 3);
   const libroListo = (c) => !!cache["datos/libros/" + c + ".json"];
+  const AVC = {};
+  const cargarAV = (cod) => AVC[cod] || (AVC[cod] = cargar("datos/av/jnm/" + cod + ".json").catch((e) => { delete AVC[cod]; throw e; }));
+  // el pasaje citado (un verso, un tramo o de un capítulo a otro), con el número de cada verso y de dónde viene el texto
+  function textoAV(d, r) {
+    const [, c1, v1, fin] = r, c2 = fin < 0 ? Math.floor(-fin / 1000) : c1, v2 = fin < 0 ? -fin % 1000 : fin > 0 ? fin : v1, piezas = [];
+    for (let c = c1; c <= c2; c++) {
+      const vs = (d.c || {})[c] || [], a = c === c1 ? v1 : 1, b = c === c2 ? v2 : vs.length;
+      for (let v = a; v <= b && v <= vs.length; v++) if (vs[v - 1]) piezas.push(h("sup", { text: (c !== c1 ? c + ":" : "") + v }), vs[v - 1] + " ");
+    }
+    return [h("p", { class: "rx-av-t" }, ...(piezas.length ? piezas : ["Este verso no está en esta traducción."])),
+      h("p", { class: "nota-ui rx-av-f", text: "Cita de otra traducción: Septuaginta en español de Guillermo Jünemann Beckschäfer (dominio público), mientras BiEx traduce la Antigua Voluntad." })];
+  }
   function etRef(r) {
     const [li, c1, v1, fin] = r, cola = c1 + ":" + v1 + (fin > 0 ? "-" + fin : fin < 0 ? "–" + Math.floor(-fin / 1000) + ":" + (-fin % 1000) : "");
     if (li < 39) { const [he, es] = AV_NOMBRES[li]; return h("span", { class: "rx-n" }, h("span", { class: "rx-he", lang: "he", text: he }), h("span", { class: "rx-es", text: " [" + es + "] " }), h("b", { text: cola })); }
@@ -2651,9 +2698,15 @@
           const item = (r) => {
             const fuerza = h("span", { class: "rx-f n" + r.nv, title: r.nv === 1 ? "Referencia principal" : r.nv === 2 ? "Referencia relacionada" : "Referencia ampliada", "aria-hidden": "true" }, h("i"), h("i"), h("i"));
             if (r[0] < 39) {
-              const panel = h("div", { class: "rx-bt", hidden: true }, h("span", { class: "rx-bt-t", text: "Para leerla mientras tanto, en traducciones de otros:" }),
-                BT_VER.map(([slug, nom], k) => h("a", { class: "rx-bt-a", href: enlaceBT(r[0], r[1], r[2], slug), target: "_blank", rel: "noopener", title: nom + " (BibliaTodo)" + (k === 2 && r[0] === 18 ? ". En la Septuaginta, muchos salmos llevan un número menos." : "") }, nom, svg(ICO.externo))));
-              const bt = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: () => { const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); } }, etRef(r), fuerza);
+              // (BiEx, 13-nov-2026) la Antigua Voluntad se lee dentro de BiEx, sin salir del sitio: mientras BiEx la traduce, la
+              // Septuaginta en español de Guillermo Jünemann (dominio público), marcada como cita de otra traducción
+              const panel = h("div", { class: "rx-txt rx-av", hidden: true });
+              const bt = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: async () => {
+                const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); if (!ab || panel.dataset.listo) return;
+                panel.replaceChildren(h("span", { class: "nota-ui", text: "Cargando…" }));
+                try { panel.replaceChildren(...textoAV(await cargarAV(LIBROS_REF[r[0]]), r)); panel.dataset.listo = "1"; }
+                catch (e) { panel.replaceChildren(h("span", { class: "nota-ui", text: "No se pudo cargar el texto. Revisa tu conexión." })); }
+              } }, etRef(r), fuerza);
               return h("li", { class: "rx-it av" }, bt, panel);
             }
             const cod = LIBROS_REF[r[0]], prev = h("div", { class: "rx-txt", hidden: true });
@@ -2729,14 +2782,14 @@
               if (!si && window.BiExJuego && window.BiExJuego.marcarVerso && window.BiExJuego.marcarVerso(b.c, cap, ctx.v)) { reemplazar(vistaVerso(ctx)); return; }
               LEI.marcar(b.c, cap, [ctx.v], !si); marcarLeidoDom(b.c, cap, [ctx.v], !si); reemplazar(vistaVerso(ctx)); avisar(si ? "Marca de leído quitada" : "Verso marcado como leído"); } }, svg(ICO.leido), si ? "Leído" : "Marcar como leído"); })(),
           L ? h("button", { class: "btn chico", type: "button", onclick: () => compartir(nombreLibro(b) + " " + cap + ":" + ctx.v, textoPlano(L.t), "#/" + b.c + "/" + cap + "/l/" + ctx.v) }, svg(ICO.compartir), "Compartir") : null,
-          h("button", { class: "btn chico", type: "button", onclick: () => empujar(vistaManuscritos(ctx)) }, svg(ICO.manuscrito), "Manuscritos"),
+          // (BiEx, 13-nov-2026) sin el botón gris «Manuscritos»: basta el dorado «Ver los manuscritos» de su sección
           h("a", { class: "btn chico oro", href: "#/" + b.c + "/" + cap + "/a/" + ctx.v }, svg(ICO.lupa), "Analizar el capítulo")));
     };
   }
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "66aaa7445f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "57ef768fc5", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5515,8 +5568,8 @@
     el.addEventListener("pointermove", (e) => { if (x0 == null) return; dx = e.clientX - x0; el.style.transform = "translate3d(" + dx + "px,0,0)"; el.style.opacity = String(Math.max(0.2, 1 - Math.abs(dx) / 260)); });
     const soltar = () => { if (x0 == null) return; x0 = null; if (Math.abs(dx) > 70) cerrar(dx > 0 ? 1 : -1, true); else { el.style.transform = ""; el.style.opacity = ""; } };
     el.addEventListener("pointerup", soltar); el.addEventListener("pointercancel", soltar);
-    // casi el doble que antes a la vista (13 s); se detiene mientras el puntero está encima
-    let t = 0, resto = 13000, desde = 0;
+    // a la vista 11 s (BiEx, 13-nov-2026: un 15 % menos que los 13 s anteriores); se detiene mientras el puntero está encima
+    let t = 0, resto = 11050, desde = 0;
     const seguir = () => { desde = performance.now(); t = setTimeout(() => cerrar(), resto); };
     el.addEventListener("pointerenter", () => { clearTimeout(t); resto = Math.max(2500, resto - (performance.now() - desde)); });
     el.addEventListener("pointerleave", () => { if (!el.dataset.sale) seguir(); });

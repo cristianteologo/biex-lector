@@ -326,6 +326,14 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .vs { cursor: pointer; border-radius: 6px; transition: background-color .15s; scroll-margin-top: 140px; }
 .vs:hover { background: var(--oro-suave); }
 .vs sup { font-family: var(--f-display); font-size: .78em; font-weight: 600; color: var(--oro); margin: 0 .25em 0 .1em; font-variant-numeric: lining-nums; }
+/* BiEx (13-nov-2026): el número del verso, igual en las dos vistas: el mismo tamaño (el de la vista por perícopa: .78 de la
+   letra del texto) y la misma altura sobre el renglón (sobre la línea base del primer renglón, subido .42 de su propio
+   tamaño). Así, al cambiar de vista, el número no queda ni más arriba ni más abajo; y en la vista continua los renglones
+   con número ya no se separan más que los otros. */
+.vs sup { vertical-align: baseline; position: relative; top: -.42em; line-height: 0; }
+.vl { align-items: first baseline; }
+.vl .vn { font-size: calc(1.16rem * .78); font-weight: 600; line-height: 1.2; top: -.42em; }
+.vl .vn .par-v { position: relative; top: calc(.42 * 1.16rem * .78); } /* el § queda en el renglón, como en la vista continua */
 .vs.n-base { color: var(--tinta-2); }
 .vs.marcado { background: var(--oro-suave); }
 
@@ -488,6 +496,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .creditos-det > summary::after { content: " +"; }
 .creditos-det[open] > summary::after { content: " −"; }
 .creditos-det .creditos { margin-top: 6px; }
+.creditos-det > .creditos-tit { margin: 0; font: 400 .62rem var(--f-ui); letter-spacing: .08em; color: var(--tenue); opacity: .8; padding: 6px 0 0; }
 
 /* ---------- movimiento */
 @media (prefers-reduced-motion: no-preference) {
@@ -530,7 +539,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
   .nota-base { margin: 4px 14px 6px; padding: 10px 12px; font-size: .8rem; }
   .lectura { padding: 4px 14px 22px 8px; }
   .vl { grid-template-columns: 1.9rem minmax(0, 1fr); gap: 0 12px; padding: 7px 4px 7px 0; }
-  .vl .vn { font-size: 1.05rem; line-height: 1.75; }
+  .vl .vn { font-size: calc(1.16rem * .78); line-height: 1.2; }
   .vl .vn::after { right: -8px; }
   .continuo { padding: 12px 16px 22px; }
   .analisis { padding: 2px 12px 24px; }
@@ -897,6 +906,7 @@ ol.tl::before { content: ""; position: absolute; left: 7.4rem; top: 4px; bottom:
 .btn-guia svg { width: 21px; height: 21px; }
 .btn-juego svg { width: 21px; height: 21px; }
 .btn-libros svg { width: 21px; height: 21px; }
+.btn-comp svg { width: 20px; height: 20px; }
 /* con el botón de los libros (10-nov-2026): si el sello y los botones no caben, el historial (también en Herramientas) y luego la guía ceden su sitio (lo mide ajustarBarra) */
 .barra-sin-hist .barra .btn-hist, .barra-sin-guia .barra .btn-guia { display: none; }
 .barra-estrecha .barra .acc { gap: 3px; }
@@ -1597,9 +1607,10 @@ html.volviendo #vista { opacity: 0; transition: none; }
 html.volviendo .barra, html.volviendo .barra-hoja { transition: none !important; }
 /* la palabra a la que se llega desde «Ver en el análisis»: un halo dorado y siete estrellitas que se encienden y se apagan */
 .pal { position: relative; }
-.pal.destello { animation: palHalo 2.4s ease-out; z-index: 3; }
+.pal.destello { animation: palHalo 2.4s ease-out; z-index: 3; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 @keyframes palHalo { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--oro) 0%, transparent); } 14% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--oro) 85%, transparent), 0 0 34px 6px color-mix(in srgb, var(--oro) 45%, transparent); } 70% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--oro) 55%, transparent), 0 0 22px 2px color-mix(in srgb, var(--oro) 22%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .chispas { position: absolute; inset: -10px; pointer-events: none; z-index: 4; }
+.chispas.suelta { inset: auto; }
 .chispas i { position: absolute; width: 11px; height: 11px; opacity: 0; background: var(--oro-vivo, #e9c779); clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--oro) 80%, transparent)); animation: chispa 1.5s cubic-bezier(.2, .7, .2, 1) calc(var(--k) * .12s) 2 both; }
 .chispas i:nth-child(1) { left: 2%; top: 8%; } .chispas i:nth-child(2) { right: 4%; top: -2%; width: 8px; height: 8px; }
 .chispas i:nth-child(3) { right: -2%; top: 46%; } .chispas i:nth-child(4) { right: 12%; bottom: 0; width: 7px; height: 7px; }
@@ -1873,10 +1884,12 @@ html[data-mov="no"] .meteoros { display: none; }
 .m-cab .m-adelante { color: var(--oro); }
 /* La palabra que se analiza, marcada en su verso (ventana de la palabra), con su halo de estrellitas (1-nov-2026) */
 .pal-sel { position: relative; border-radius: 4px; background: color-mix(in srgb, var(--oro) 20%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--oro) 42%, transparent); color: var(--tinta); }
-.pal-sel::after { content: ""; position: absolute; inset: -3px -2px; border-radius: 6px; box-shadow: 0 0 0 2px var(--oro), 0 0 16px color-mix(in srgb, var(--oro) 55%, transparent); opacity: 0; pointer-events: none; }
-.pal-sel.destello::after { animation: selHalo 2.4s ease-out; }
-@keyframes selHalo { 0%, 30% { opacity: 1; } 100% { opacity: 0; } }
-html[data-mov="no"] .pal-sel.destello::after { animation: none; }
+/* el aro va en la propia palabra y se repite en cada renglón (box-decoration-break): una traducción partida en dos renglones
+   ya no deja un marco angosto entre ellos (13-nov-2026) */
+.pal-sel { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.pal-sel.destello { animation: selHalo 2.4s ease-out; }
+@keyframes selHalo { 0%, 30% { box-shadow: 0 0 0 2px var(--oro), 0 0 16px color-mix(in srgb, var(--oro) 55%, transparent); } 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--oro) 42%, transparent); } }
+html[data-mov="no"] .pal-sel.destello { animation: none; }
 /* Versos leídos: un punto de oro junto al número (por versos) o el número subrayado (continuo) */
 .vl.leido .vn::before { content: ""; position: absolute; left: 3px; top: .74em; width: 5px; height: 5px; border-radius: 50%; background: var(--oro); opacity: .85; }
 .vs.leido > sup { text-decoration: underline 1.5px color-mix(in srgb, var(--oro) 70%, transparent); text-underline-offset: 3px; }
@@ -2235,8 +2248,9 @@ button.rx-cab[aria-expanded="true"] .rx-n b { color: var(--oro); }
 /* X18 y P33 (13-nov-2026): mensajes que entran por los lados (comunidad y lo que viene en Escudriña) */
 .dsl { position: fixed; top: calc(env(safe-area-inset-top, 0px) + var(--alto) + 12px); z-index: 70; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start;
   width: min(340px, calc(100vw - 24px)); padding: 12px 8px 12px 12px; border-radius: 16px; touch-action: pan-y; will-change: transform, opacity;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--hoja) 80%, transparent), color-mix(in srgb, var(--hoja) 92%, transparent));
-  -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25);
+  /* vidrio sutil (BiEx, 13-nov-2026): más translúcido, con un filo de luz arriba y el fondo desenfocado detrás */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hoja) 58%, transparent), color-mix(in srgb, var(--hoja) 74%, transparent));
+  -webkit-backdrop-filter: blur(18px) saturate(1.35); backdrop-filter: blur(18px) saturate(1.35);
   border: 1px solid color-mix(in srgb, var(--oro) 34%, transparent);
   box-shadow: 0 18px 42px -16px rgba(0, 0, 0, .78), inset 0 1px 0 rgba(255, 246, 214, .16); }
 .dsl-der { right: 12px; }
@@ -2272,3 +2286,29 @@ html[data-letra="dislexia"] .ms-tl { font-style: normal; }
 @keyframes marcado-sale { 0%, 55% { background-color: var(--oro-suave); } 100% { background-color: transparent; box-shadow: none; } }
 html:not(.con-modal) .vl.marcado:not(.mk), html:not(.con-modal) .vs.marcado:not(.mk) { animation: marcado-sale 3.6s ease forwards; }
 html[data-mov="no"]:not(.con-modal) .vl.marcado:not(.mk), html[data-mov="no"]:not(.con-modal) .vs.marcado:not(.mk) { animation-duration: .01s; animation-delay: 2.4s; }
+
+/* Manuscritos: la sigla del aparato lleva a su manuscrito, que se abre y brilla (BiEx, 13-nov-2026) */
+.ms-sig-b { all: unset; cursor: pointer; color: inherit; border-bottom: 1px dotted color-mix(in srgb, currentColor 60%, transparent); padding: 0 .04em; }
+.ms-sig-b:hover { color: var(--oro); }
+.ms-sig-b:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; border-radius: 3px; }
+.ms-t > summary { position: relative; }
+.ms-t.ms-brillo { animation: msBrillo 2.4s ease-out; border-radius: 12px; }
+@keyframes msBrillo { 0%, 25% { box-shadow: 0 0 0 2px var(--oro), 0 0 26px color-mix(in srgb, var(--oro) 45%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+html[data-mov="no"] .ms-t.ms-brillo { animation: none; outline: 2px solid var(--oro); outline-offset: 2px; }
+
+/* Libros en oro que respiran (BiEx, 13-nov-2026): una palpitación suave, como de respiración (como mucho un 5 % más), en las
+   barras de libros de la biblioteca y de «A lo largo del tiempo»; desfasada de barra en barra para que no lata en bloque.
+   Solo transformación (compositor); en pausa mientras se desplaza la página y sin movimiento con «Sin animaciones». */
+@keyframes respiraLibro { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.05); } }
+.panorama a i, .tt-c:not(.cero) i { transform-origin: 50% 100%; animation: respiraLibro 4.8s ease-in-out infinite; }
+.panorama a:nth-child(3n + 1) i, .tt-c:nth-child(3n + 1) i { animation-delay: -1.6s; }
+.panorama a:nth-child(3n + 2) i, .tt-c:nth-child(3n + 2) i { animation-delay: -3.2s; }
+.panorama a:nth-child(4n) i, .tt-c:nth-child(4n) i { animation-duration: 5.4s; }
+html.desplazando .panorama a i, html.desplazando .tt-c i { animation-play-state: paused; }
+html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none; }
+@media (prefers-reduced-motion: reduce) { .panorama a i, .tt-c i { animation: none; } }
+
+/* Antigua Voluntad dentro de BiEx (13-nov-2026): el pasaje citado, en la letra del texto, con su procedencia en letra de pie */
+.rx-av .rx-av-t { margin: 8px 0 4px; font: 400 1.02rem/1.6 var(--f-texto, inherit); color: var(--tinta); }
+.rx-av .rx-av-t sup { font-family: var(--f-display); font-size: .72em; font-weight: 600; color: var(--oro); margin: 0 .22em 0 .06em; vertical-align: baseline; position: relative; top: -.42em; }
+.rx-av .rx-av-f { margin: 0 0 6px; font-size: .7rem; opacity: .85; }
