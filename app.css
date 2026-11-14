@@ -287,8 +287,9 @@ a { color: var(--oro); text-underline-offset: 3px; }
 /* paso de capítulo con gesto: la página nueva entra desde el lado del dedo */
 html[data-paso="sig"] #vista .hoja > :not(.barra-hoja) { animation: entraDer .32s cubic-bezier(.2, .7, .2, 1); }
 html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32s cubic-bezier(.2, .7, .2, 1); }
-@keyframes entraDer { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
-@keyframes entraIzq { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+/* (BiEx, 13 y 14-nov-2026) ningún movimiento lateral, ni en las entradas: el capítulo nuevo entra con un fundido */
+@keyframes entraDer { from { opacity: 0; } to { opacity: 1; } }
+@keyframes entraIzq { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 1023px) { .navcap { display: none; } }
 
 .encab { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 26px clamp(10px, 2.4vw, 26px) 8px; }
@@ -908,7 +909,7 @@ ol.tl::before { content: ""; position: absolute; left: 7.4rem; top: 4px; bottom:
 .btn-libros svg { width: 21px; height: 21px; }
 .btn-comp svg { width: 20px; height: 20px; }
 /* con el botón de los libros (10-nov-2026): si el sello y los botones no caben, el historial (también en Herramientas) y luego la guía ceden su sitio (lo mide ajustarBarra) */
-.barra-sin-hist .barra .btn-hist, .barra-sin-guia .barra .btn-guia { display: none; }
+.barra-sin-hist .barra .btn-hist, .barra-sin-guia .barra .btn-guia, .barra-sin-comp .barra .btn-comp { display: none; }
 .barra-estrecha .barra .acc { gap: 3px; }
 .barra-estrecha .barra .btn-icono, .barra-estrecha .barra .btn-buscar { width: 34px; min-width: 34px; height: 34px; padding: 0; }
 .btn-juego { color: var(--oro); }
@@ -1430,7 +1431,7 @@ html.restaurando .barra, html.restaurando .barra-hoja { transition: none !import
 .mk-ref { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--mkc, var(--oro)); font: 400 1.2rem/1.2 var(--f-display); width: max-content; max-width: 100%; }
 .mk-ref small { font: 500 .66rem/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--tenue); }
 .mk-ref svg { width: 14px; height: 14px; opacity: .6; transition: transform .2s; }
-.mk-ref:hover svg { transform: translateX(3px); opacity: 1; }
+.mk-ref:hover svg { opacity: 1; }
 .mk-tx { margin: 0; font: 1.02rem/1.6 var(--f-texto); color: var(--tinta-2); }
 .mk-n { margin: 2px 0 0; display: flex; gap: 8px; align-items: flex-start; font: .95rem/1.5 var(--f-texto); color: var(--tinta); white-space: pre-wrap; }
 .mk-n svg { width: 15px; height: 15px; flex: none; margin-top: .2em; color: var(--mkc, var(--tenue)); }
@@ -1447,8 +1448,8 @@ html.restaurando .barra, html.restaurando .barra-hoja { transition: none !import
 .mk-tema-ed input { flex: 1; border: 1px solid var(--linea); border-radius: 10px; background: var(--bg); color: var(--tinta); padding: 9px 12px; font: 1rem/1.3 var(--f-ui); }
 
 /* ---------------------------------------------------------------- saltos rápidos (inicio, mitad, final) */
-.saltos-rap { position: fixed; z-index: 60; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; opacity: 0; transform: translateX(14px); pointer-events: none; transition: opacity .35s ease, transform .35s cubic-bezier(.2, .7, .2, 1); }
-.saltos-rap.vis, .saltos-rap:focus-within { opacity: 1; transform: none; pointer-events: auto; }
+.saltos-rap { position: fixed; z-index: 60; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+.saltos-rap.vis, .saltos-rap:focus-within { opacity: 1; pointer-events: auto; }
 .sr-btn { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--oro) 45%, transparent); background: color-mix(in srgb, var(--hoja) 78%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4); color: var(--oro-vivo); display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 22px rgba(0, 0, 0, .35); transition: border-color .2s, background-color .2s, transform .15s, opacity .25s; -webkit-tap-highlight-color: transparent; }
 .sr-btn svg { width: 19px; height: 19px; }
 .sr-btn:hover { border-color: var(--oro); background: color-mix(in srgb, var(--oro) 16%, var(--hoja)); }
@@ -2123,12 +2124,16 @@ html:has(.cargando.inicio) .pie { visibility: hidden; }
 .saltos-rap:not(.con-min) .sr-min { display: none; }
 /* (12-nov-2026; idea de la app de junio) la línea del buscador, con colores que se desplazan despacio (solo transformación) */
 .bq-campo:has(.bq-linea) { border-bottom-color: transparent; }
-.bq-linea { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; border-radius: 2px; pointer-events: none; opacity: .8; transition: opacity .3s; }
-.bq-linea::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; background: linear-gradient(90deg, var(--oro) 0%, #6aa7d8 16.66%, #b08bd9 33.33%, var(--oro-vivo, #e8cf94) 50%, #6aa7d8 66.66%, #b08bd9 83.33%, var(--oro) 100%); animation: bq-linea 14s linear infinite; }
+/* (BiEx, 14-nov-2026: «no se muestra animada») más visible y igual de liviana: los colores corren en 9 s y un destello
+   recorre la línea cada 5 s; las dos capas solo se trasladan (compositor) y existen solo mientras el buscador está abierto */
+.bq-linea { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; overflow: hidden; border-radius: 3px; pointer-events: none; opacity: .9; transition: opacity .3s; contain: strict; }
+.bq-linea::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 200%; background: linear-gradient(90deg, var(--oro) 0%, #6aa7d8 16.66%, #b08bd9 33.33%, var(--oro-vivo, #e8cf94) 50%, #6aa7d8 66.66%, #b08bd9 83.33%, var(--oro) 100%); animation: bq-linea 9s linear infinite; will-change: transform; }
+.bq-linea::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 26%; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 250, 230, .95), rgba(255, 255, 255, 0)); transform: translate3d(-110%, 0, 0); animation: bq-brillo 5s cubic-bezier(.45, 0, .2, 1) 1s infinite; will-change: transform; }
 .bq-campo:focus-within .bq-linea { opacity: 1; }
 @keyframes bq-linea { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
-@media (prefers-reduced-motion: reduce) { .bq-linea::before { animation: none; } }
-html[data-mov="no"] .bq-linea::before { animation: none; }
+@keyframes bq-brillo { 0% { transform: translate3d(-110%, 0, 0); } 55%, 100% { transform: translate3d(400%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .bq-linea::before, .bq-linea::after { animation: none; } }
+html[data-mov="no"] .bq-linea::before, html[data-mov="no"] .bq-linea::after { animation: none; }
 /* (R10, 12-nov-2026) la vista entra con un fundido breve al levantarse el velo de la vuelta */
 html.aparece #vista { animation: vista-aparece .26s ease-out both; }
 @keyframes vista-aparece { from { opacity: 0; } to { opacity: 1; } }
@@ -2139,9 +2144,10 @@ html[data-mov="no"].aparece #vista { animation: none; }
    nítido y la hoja menos translúcida. Solo variables y fondos: no cuesta nada a la fluidez. */
 :root { --bg: #060607; --bg-2: #0b0b0d; --hoja: #101012; --hoja-2: #17171a; --hoja-3: #212125;
   --tinta: #f3ecde; --tinta-2: #e1d9c8; --tenue: #aba397; --oro-vivo: #efd8a0; --linea: rgba(201, 168, 101, .3); --linea-2: rgba(236, 229, 214, .11);
-  --ed-azul: #c3d3f4; --ed-gris: #b5b5b5; }
+  /* (BiEx, 14-nov-2026) el azul del texto, más cerca del azul oscuro del formato de BiEx: misma familia de tono, más color y contraste AAA (≈ 10:1) */
+  --ed-azul: #a8c0f5; --ed-gris: #b5b5b5; }
 :root[data-theme="light"] { --bg: #f3ede1; --hoja: #fffefb; --tinta: #14110d; --tinta-2: #2c2820; --tenue: #5d554a; --oro: #7c5e22; --oro-vivo: #5f4615;
-  --linea: rgba(124, 94, 34, .34); --linea-2: rgba(20, 17, 13, .12); --ed-azul: #142e66; --ed-naranja: #a64a08; --ed-gris: #5a5a5a; }
+  --linea: rgba(124, 94, 34, .34); --linea-2: rgba(20, 17, 13, .12); --ed-azul: #1d3f9a; --ed-naranja: #a64a08; --ed-gris: #5a5a5a; }
 .hoja { background: color-mix(in srgb, var(--hoja) 90%, transparent); --fondo-c: color-mix(in srgb, var(--hoja) 90%, transparent); }
 :root[data-theme="light"] .hoja { background: color-mix(in srgb, var(--hoja) 93%, transparent); --fondo-c: color-mix(in srgb, var(--hoja) 93%, transparent); }
 
@@ -2312,3 +2318,21 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 .rx-av .rx-av-t { margin: 8px 0 4px; font: 400 1.02rem/1.6 var(--f-texto, inherit); color: var(--tinta); }
 .rx-av .rx-av-t sup { font-family: var(--f-display); font-size: .72em; font-weight: 600; color: var(--oro); margin: 0 .22em 0 .06em; vertical-align: baseline; position: relative; top: -.42em; }
 .rx-av .rx-av-f { margin: 0 0 6px; font-size: .7rem; opacity: .85; }
+
+/* (BiEx, 14-nov-2026) «Cap. 1/5»: el total del libro, más tenue y pegado al número */
+.btn-cap .cap-de { opacity: .62; font-size: .86em; margin-left: .06em; font-variant-numeric: tabular-nums; }
+.nav-ir { display: flex; justify-content: center; }
+/* P11 (14-nov-2026): lupa de la ventana de los libros */
+.libs-lupa-c { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 8px 14px; border: 1px solid var(--linea); border-radius: 999px; background: color-mix(in srgb, var(--hoja) 70%, transparent); }
+.libs-lupa-c svg { width: 18px; height: 18px; color: var(--oro); flex: none; }
+.libs-lupa { flex: 1; min-width: 0; border: 0; background: none; outline: none; font: inherit; font-size: 1rem; color: inherit; padding: 2px 0; }
+.libs-lupa::-webkit-search-cancel-button { filter: grayscale(1); opacity: .6; }
+.libs-lupa-c:focus-within { border-color: var(--oro); }
+.lib-chip[hidden] { display: none !important; }
+.libs-nada { text-align: center; margin: 10px 0 0; }
+/* (14-nov-2026) en escritorio, donde no está «Cap. n/total», la franja dice cuántos capítulos tiene el libro */
+.bh-tit .bh-de { display: none; font-family: var(--f-ui); font-size: .8em; letter-spacing: .02em; opacity: .7; font-variant-numeric: tabular-nums; }
+@media (min-width: 1024px) { .bh-tit .bh-de { display: inline; } }
+/* (14-nov-2026) versos de un libro que aún no está abierto: teselas neutras, del mismo tamaño que las de siempre */
+.tesela.n-x { background: color-mix(in srgb, var(--oro) 9%, transparent); color: var(--tinta); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 26%, transparent); }
+.tesela.n-x:hover, .tesela.n-x:focus-visible { background: color-mix(in srgb, var(--oro) 22%, transparent); }

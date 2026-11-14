@@ -331,6 +331,47 @@
 @keyframes ap-gl{0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35)}40%{opacity:1;transform:translate(-50%,-50%) scale(1)}62%{opacity:.7;transform:translate(-50%,-50%) scale(.85)}}
 @keyframes ap-mo{0%{opacity:0;transform:translate3d(0,0,0)}15%{opacity:.85}100%{opacity:0;transform:translate3d(0,-90px,0)}}
 .ap-arbol.quieto .ap-vida i{animation-play-state:paused}
+.ap-gr-v{position:absolute;width:19%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;opacity:var(--o,.5)}
+.ap-gr-v::before,.ap-gr-v::after{content:"";position:absolute;border-radius:50%;will-change:opacity}
+.ap-gr-v::before{inset:0;background:radial-gradient(closest-side,rgba(255,74,104,.34),rgba(224,33,63,.12) 58%,rgba(224,33,63,0));animation:ap-gr1 6.7s ease-in-out infinite alternate}
+.ap-gr-v::after{inset:-16%;background:radial-gradient(closest-side,rgba(255,160,178,.16),rgba(255,160,178,0));animation:ap-gr2 10.3s ease-in-out -3.1s infinite alternate}
+@keyframes ap-gr1{0%{opacity:.5}100%{opacity:1}}
+@keyframes ap-gr2{0%{opacity:.25}100%{opacity:.9}}
+.ap-arbol.quieto .ap-gr-v::before,.ap-arbol.quieto .ap-gr-v::after{animation-play-state:paused}
+.ap-gr-b{position:absolute;width:14%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ap-gr-b:focus-visible{outline:2px solid rgba(255,120,144,.8);outline-offset:3px}
+.co-c{display:grid;gap:12px;justify-items:center;text-align:center}
+.co-cesta{position:relative;width:min(220px,58vw);aspect-ratio:200/160}
+.co-cesta svg{position:relative;display:block;width:100%;height:100%}
+.co-cesta::before{content:"";position:absolute;inset:-18% -10% -6%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,120,.28),rgba(255,214,120,0));opacity:calc(.25 + var(--f,0) * .75);pointer-events:none}
+.co-cesta.llena::before{animation:ap-gr1 3.9s ease-in-out infinite alternate}
+.co-txt{margin:0;max-width:560px;font-size:.9rem;line-height:1.5}
+.co-est{margin:0;font-size:.82rem;color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.co-medidor{position:relative;width:min(260px,70vw);aspect-ratio:240/140}
+.co-medidor svg,.co-aguja{position:absolute;inset:0;width:100%;height:100%}
+.co-aguja{transform-origin:50% 85.7%;transform:rotate(-90deg);will-change:transform}
+.co-res{margin:0;display:grid;gap:2px}
+.co-res b{font-size:1.6rem;font-family:var(--f-titulo,inherit);letter-spacing:.02em;color:#ffd77a}
+.co-res small{font-size:.8rem;color:var(--tinta-2)}
+.fr-c{display:grid;gap:14px;justify-items:center}
+.fr-gr{position:relative;width:min(232px,60vw);aspect-ratio:1}
+.fr-gr::before{content:"";position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,70,100,.2),rgba(255,70,100,0));animation:ap-gr1 7.9s ease-in-out infinite alternate;pointer-events:none}
+.fr-gr svg{position:relative;display:block;width:100%;height:100%}
+.fr-gr .gr-cam{transition:opacity .35s ease}
+.fr-gr.elige .gr-cam:not(.sel){opacity:.55}
+.fr-rej{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:660px;list-style:none;margin:0;padding:0}
+.fr-t{display:grid;justify-items:center;align-content:start;gap:4px;width:100%;min-height:100%;padding:10px 4px 9px;border-radius:14px;border:1px solid rgba(255,96,122,.2);background:linear-gradient(180deg,rgba(255,60,90,.08),rgba(255,60,90,.02));color:inherit;font:inherit;cursor:pointer;transition:border-color .25s,box-shadow .25s}
+.fr-t:focus-visible{outline:2px solid rgba(255,120,144,.8);outline-offset:2px}
+.fr-t.sel{border-color:rgba(255,118,142,.62);box-shadow:inset 0 0 0 1px rgba(255,118,142,.22),0 8px 22px -12px rgba(255,60,90,.7)}
+.fr-dot{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#ff9aab,#c8183a 58%,#550716);box-shadow:0 0 var(--l,0px) rgba(255,70,100,.85)}
+.fr-dot.cero{background:radial-gradient(circle at 38% 34%,#7a2a36,#3a0a12 70%);box-shadow:none}
+.fr-t b{font-size:.78rem;font-weight:600;letter-spacing:.01em;line-height:1.2;max-width:100%;overflow-wrap:anywhere}
+.fr-t small{font-size:.7rem;color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.fr-bar{width:76%;height:3px;border-radius:2px;background:rgba(127,127,127,.18);overflow:hidden}
+.fr-bar i{display:block;height:100%;width:var(--p,0%);background:linear-gradient(90deg,#b3132e,#ff6f86)}
+.fr-desc{max-width:660px;margin:0;text-align:center;font-size:.9rem;line-height:1.55}
+.fr-pie{margin:0;text-align:center;font-size:.8rem;color:var(--tinta-2)}
+@media (min-width:900px){.fr-c{grid-template-columns:auto minmax(0,1fr);align-items:center;justify-items:stretch;column-gap:28px}.fr-c .fr-gr{width:236px}.fr-c .fr-desc,.fr-c .fr-pie{grid-column:1/-1}}
 .ap-datos{display:grid;gap:10px;padding:4px 16px 16px}
 .ap-ap{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:4px 12px;margin:0;text-align:center}
 .ap-ap b{font:500 1.5rem/1.15 var(--f-display);color:var(--tinta)}
@@ -1121,8 +1162,11 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .74rem .18rem .2rem;color:var(--tinta)}
 .jg-lbp .jg-lb-i{width:1rem;height:1rem}
 /* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
-.jg-pie{position:absolute;left:auto;top:auto;right:10px;bottom:0;z-index:3;display:inline-flex;gap:.32rem;align-items:center;transform:translate3d(0,50%,0)}
+.jg-pie{position:absolute;left:auto;top:0;right:10px;bottom:auto;z-index:3;display:inline-flex;gap:.32rem;align-items:center}
 .vl.con-pie{position:relative}
+.vl.con-pie.pie-abajo{padding-bottom:calc(9px + var(--pie-h,0px))}
+.jg-pie-n{font:600 .56rem/1 var(--f-ui);letter-spacing:.04em;opacity:.78}
+.jg-pie-n:not(:empty)::before{content:"·";margin:0 .3em 0 .1em;opacity:.7}
 .jg-pie[hidden],.jg-pie [hidden]{display:none}
 .jg-pie-b{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:.3rem;height:1.14rem;padding:0 .56rem 0 .16rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .58rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 46%,transparent);
@@ -1774,6 +1818,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", libroInv: (a) => a.a + " terminó su primer libro: +" + a.xp + ".", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + ".",
     liga: (a) => "Semana de liga cerrada: puesto " + a.pos + " de " + a.n + (a.nvNuevo > a.nv ? "; ¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
     compania: (a) => "¡«" + a.nombre + "» logró su meta común de la semana! +" + a.h + " h de experiencia doble.",
+    fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
     mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble." };
   // Hora de cada novedad, en la zona horaria de quien lee (BiEx, 13-nov-2026): «Hace 5 min · 6:35 a. m.», «Hoy · 6:40 a. m.»,
   // «Ayer · 9:12 p. m.» o «12 nov. · 9:12 p. m.»; lo reciente se actualiza solo cada minuto mientras la tarjeta está a la vista
@@ -2276,7 +2321,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
       vida.append(h("i", { class: "ap-gl", style: pc(x, yy) + ";--s:" + (1.6 + r / 7).toFixed(2) + ";--d:" + dl.toFixed(2) + "s;--t:" + (4.6 + (i % 5) * 0.7).toFixed(1) + "s" })); }
     frutXY.slice(0, 8).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
     for (let i = 0; i < 14; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
-    const el = A.svg('<defs><radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
+    // V22: la granada del fruto del espíritu en la copa (sus cámaras se iluminan con los niveles)
+    const GR_X = 500, GR_Y = 236, gr = granadaSVG(av.fr || {}, 68);
+    const ramita = "";
+    vida.append(h("i", { class: "ap-gr-v", style: pc(GR_X, GR_Y) + ";--o:" + Math.min(1, 0.35 + gr.tot / 40).toFixed(2) }));
+    const el = A.svg('<defs>' + gr.defs + '<radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="ap-halo2"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#f5c64e" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="ap-tronco" x1="0" x2="1"><stop offset="0" stop-color="#4a3415"/><stop offset=".45" stop-color="#b8873a"/><stop offset=".6" stop-color="#e2b55a"/><stop offset="1" stop-color="#3b2a10"/></linearGradient>' +
       '<linearGradient id="ap-oro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2c4"/><stop offset=".5" stop-color="#f2c14e"/><stop offset="1" stop-color="#a8701a"/></linearGradient>' +
@@ -2288,9 +2337,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<path d="M488 790C476 700 478 600 490 500M512 792C524 700 522 600 510 500M500 800V520" fill="none" stroke="#2a1d0a" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>' +
       '<path d="M430 818C462 796 478 786 500 776 522 786 538 796 570 818Z" fill="#3b2a10"/><ellipse cx="500" cy="818" rx="300" ry="26" fill="url(#ap-halo2)" opacity=".55"/>' +
       '<g class="ap-ramas" fill="none" stroke="url(#ap-tronco)" stroke-linecap="round">' + ramas + "</g>" + '<g class="ap-hojas" fill="#f7d77c">' + luces + "</g>" + frut +
+      ramita + '<g class="ap-granada" transform="translate(' + GR_X + " " + GR_Y + ')">' + gr.cuerpo + "</g>" +
       '<line x1="40" y1="812" x2="960" y2="812" stroke="url(#ap-oro)" stroke-opacity=".35" stroke-width="2"/>' + raices + med + corazon, "0 0 1000 1110");
     el.setAttribute("class", "ap-svg"); el.setAttribute("role", "img");
-    el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : ""));
+    el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : "") + "; en la copa, la granada del fruto del espíritu con " + plural(gr.tot, "nivel", "niveles"));
     // Savia (BiEx, 10-nov-2026: «me gustaba el movimiento de las raíces; vuélvelo más espectacular»): luces del color de cada
     // atributo suben por su raíz desde el medallón hasta el tronco, con su estela; cuantos más puntos tiene el atributo, más
     // luces y más rápidas. Capa aparte en las coordenadas del dibujo (offset-path): el árbol sigue quieto y nítido.
@@ -2303,7 +2353,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       }
     });
     savia.append(h("b", { class: "ap-bebe" }));
-    const caja = h("div", { class: "ap-arbol" }, el, vida, savia);
+    const verFruto = h("button", { class: "ap-gr-b", type: "button", style: pc(GR_X, GR_Y), "aria-label": "Ver el fruto del espíritu", onclick: () => { const t = document.getElementById("jg-fruto"); if (t) t.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" }); } });
+    const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("quieto", !e.isIntersecting); }); IO_ARBOL.observe(caja); }
     return caja;
@@ -2449,6 +2500,167 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-acciones ap-acc-b" }, confirmar,
         h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo"); if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
         av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
+  }
+  // V22 · Granada de nueve cámaras (BiEx, 13-nov-2026; Gálatas 5:22-23, καρπός en singular): el corte de la fruta con sus
+  // nueve cámaras de arilos; cada cámara se llena de luz rubí con el nivel de su aspecto. Vectorial y quieta (se pinta una
+  // sola vez a la densidad real); la luz que respira va aparte, por el compositor. En el corte no se ve la corona del fruto.
+  const FR_ORDEN = ["be", "go", "pl", "lo", "bn", "bo", "cf", "ma", "te"];
+  let GR_N = 0;
+  function granadaSVG(fr, R, sel) {
+    const id = "gr" + (++GR_N), f = (v) => v.toFixed(1), niv = (k) => (fr && fr[k] ? fr[k].n | 0 : 0);
+    const clase = (n) => (n <= 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4);
+    const ARIL = [["#5c1422", "#2a050c", 0.2], ["#a51d33", "#4d0814", 0.45], ["#cf2640", "#6a0b1c", 0.58], ["#f03c58", "#8c1024", 0.7], ["#ff7d93", "#b3132e", 0.82]];
+    let defs = "";
+    ARIL.forEach(([a, b], i) => { defs += '<radialGradient id="' + id + "a" + i + '" cx=".36" cy=".32" r=".78"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></radialGradient>'; });
+    defs += '<radialGradient id="' + id + 'c" cx=".42" cy=".36" r=".72"><stop offset="0" stop-color="#b52a3b"/><stop offset=".72" stop-color="#7a0f1f"/><stop offset="1" stop-color="#430610"/></radialGradient>' +
+      '<radialGradient id="' + id + 'p" cx=".5" cy=".5" r=".56"><stop offset="0" stop-color="#f4e2c8"/><stop offset=".78" stop-color="#e7c9a0"/><stop offset="1" stop-color="#cfa274"/></radialGradient>' +
+      '<radialGradient id="' + id + 'l"><stop offset="0" stop-color="#ff6680" stop-opacity=".95"/><stop offset=".6" stop-color="#e3223f" stop-opacity=".32"/><stop offset="1" stop-color="#e3223f" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="' + id + 'h"><stop offset="0" stop-color="#ff3a5c" stop-opacity=".4"/><stop offset=".6" stop-color="#c8183a" stop-opacity=".12"/><stop offset="1" stop-color="#c8183a" stop-opacity="0"/></radialGradient>';
+    // contorno apenas facetado: la granada no es una esfera perfecta
+    const borde = (rr, a1, a2) => { let d = ""; for (let i = 0; i <= 96; i++) { const t = (i / 96) * Math.PI * 2, r = rr * (1 + a1 * Math.cos(9 * t + 0.4) + a2 * Math.cos(4 * t + 1.1)); d += (i ? "L" : "M") + f(r * Math.sin(t)) + " " + f(-r * Math.cos(t)); } return d + "Z"; };
+    let out = '<circle r="' + f(R * 1.32) + '" fill="url(#' + id + 'h)"/><path d="' + borde(R, 0.022, 0.012) + '" fill="url(#' + id + 'c)" stroke="#36050d" stroke-width="' + f(R * 0.022) + '"/>' +
+      '<path d="' + borde(R * 0.985, 0.022, 0.012) + '" fill="none" stroke="#e0596a" stroke-opacity=".28" stroke-width="' + f(R * 0.012) + '"/><path d="' + borde(R * 0.9, 0.02, 0.01) + '" fill="url(#' + id + 'p)"/>';
+    FR_ORDEN.forEach((k, i) => {
+      const n = niv(k), c = clase(n), a0 = (i / 9) * Math.PI * 2, w = (Math.PI / 9) * 0.93, r0 = R * 0.15, r1 = R * 0.84;
+      const P = (r, a) => f(r * Math.sin(a)) + " " + f(-r * Math.cos(a));
+      // cámara: cuña de bordes redondeados; entre una y otra queda la membrana blanca
+      const cam = "M" + P(r0, a0 - w * 0.55) + "Q" + P(r0 * 1.45, a0 - w * 1.02) + " " + P(R * 0.5, a0 - w) + "Q" + P(r1 * 1.02, a0 - w * 0.98) + " " + P(r1, a0) +
+        "Q" + P(r1 * 1.02, a0 + w * 0.98) + " " + P(R * 0.5, a0 + w) + "Q" + P(r0 * 1.45, a0 + w * 1.02) + " " + P(r0, a0 + w * 0.55) + "Q" + P(r0 * 0.9, a0) + " " + P(r0, a0 - w * 0.55) + "Z";
+      let g = '<g class="gr-cam' + (sel === k ? " sel" : "") + '" data-k="' + k + '"><path d="' + cam + '" fill="#2c050b"/>';
+      [[0.26, 1], [0.35, 2], [0.44, 2], [0.53, 3], [0.62, 3], [0.71, 4], [0.79, 4]].forEach(([rr, m]) => {
+        for (let j = 0; j < m; j++) {
+          const aa = a0 + (m === 1 ? 0 : (j / (m - 1) - 0.5) * w * (0.5 + rr * 0.92) * (m > 3 ? 1.06 : 1)), rad = R * rr, ax = rad * Math.sin(aa), ay = -rad * Math.cos(aa), sz = R * (0.041 + rr * 0.027);
+          g += '<ellipse cx="' + f(ax) + '" cy="' + f(ay) + '" rx="' + f(sz) + '" ry="' + f(sz * 0.82) + '" transform="rotate(' + f((aa * 180) / Math.PI) + " " + f(ax) + " " + f(ay) + ')" fill="url(#' + id + "a" + c + ')"/>' +
+            '<ellipse cx="' + f(ax - sz * 0.3) + '" cy="' + f(ay - sz * 0.32) + '" rx="' + f(sz * 0.32) + '" ry="' + f(sz * 0.2) + '" fill="#fff" opacity="' + (ARIL[c][2] * 0.8).toFixed(2) + '"/>';
+        }
+      });
+      if (n > 0) g += '<path d="' + cam + '" fill="url(#' + id + 'l)" opacity="' + Math.min(0.9, 0.2 + n / 14).toFixed(2) + '" style="mix-blend-mode:screen"/>';
+      out += g + "</g>";
+    });
+    out += '<circle r="' + f(R * 0.11) + '" fill="url(#' + id + 'p)" stroke="#cfa77a" stroke-width="' + f(R * 0.012) + '"/>' +
+      '<ellipse cx="' + f(-R * 0.3) + '" cy="' + f(-R * 0.36) + '" rx="' + f(R * 0.5) + '" ry="' + f(R * 0.28) + '" transform="rotate(-28 ' + f(-R * 0.3) + " " + f(-R * 0.36) + ')" fill="#fff" opacity=".06"/>';
+    return { defs, cuerpo: out, tot: FR_ORDEN.reduce((t, k) => t + niv(k), 0) };
+  }
+  // La tarjeta del fruto: la granada grande y los nueve aspectos en rejilla de 3 × 3; al tocar uno, su cámara se ilumina y
+  // abajo se lee qué lo hace crecer, qué da y su cita (con su lumbrerita, abre los versos en BiEx)
+  function tarjetaFruto(y, P) {
+    const defs = P.def && P.def.fruto, fr = (P.av && P.av.fr) || {}; if (!Array.isArray(defs)) return null;
+    const caja = h("div", { class: "fr-gr" }), desc = h("p", { class: "fr-desc", "aria-live": "polite" });
+    const pintar = (sel) => { const g = granadaSVG(fr, 80, sel), el = A.svg("<defs>" + g.defs + "</defs>" + g.cuerpo, "-108 -108 216 216"); el.setAttribute("role", "img");
+      el.setAttribute("aria-label", "La granada del fruto del espíritu: " + defs.map((d) => d[1] + " nivel " + ((fr[d[0]] || {}).n | 0)).join(", ")); caja.classList.toggle("elige", !!sel); caja.replaceChildren(el); };
+    const rej = h("ul", { class: "fr-rej" });
+    const ver = (d, li) => {
+      const [k, n, crece, efecto, c] = d, x = fr[k] || { p: 0, n: 0, a: 0, b: 10 }, falta = Math.max(0, x.b - x.p), atr = k === "pl" || k === "cf";
+      for (const o of rej.children) o.firstChild.classList.toggle("sel", o === li);
+      pintar(k);
+      const cita = A.nombreLibro(c[0]) + " " + c[1] + ":" + c[2] + (c[3] > c[2] ? "-" + c[3] : "");
+      desc.replaceChildren(h("b", { text: n + " · nivel " + x.n }), x.n >= (P.def.frTope || 40) ? " (el más alto). " : " (faltan " + plural(falta, "punto", "puntos") + " para el nivel " + (x.n + 1) + "). ",
+        "Crece: " + crece.charAt(0).toLowerCase() + crece.slice(1) + ". Da: " + efecto.replace(/^\+1 /, "+1 por nivel ").replace("+1 por nivel % ", "+1 % por nivel ") + (x.n ? " (ahora +" + x.n + (atr ? "" : " %") + ")" : "") + ". ",
+        h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + cita, onclick: () => verCita(c[0], c[1], c[2], c[3] || c[2]) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), cita));
+    };
+    defs.forEach((d) => {
+      const x = fr[d[0]] || { p: 0, n: 0, a: 0, b: 10 }, pct = x.b > x.a ? Math.max(0, Math.min(100, (100 * (x.p - x.a)) / (x.b - x.a))) : 100;
+      const li = h("li");
+      li.append(h("button", { class: "fr-t", type: "button", "aria-label": d[1] + ", nivel " + x.n, onclick: () => ver(d, li) },
+        h("i", { class: "fr-dot" + (x.n ? "" : " cero"), style: "--l:" + Math.min(16, 3 + x.n * 1.2).toFixed(1) + "px", "aria-hidden": "true" }),
+        h("b", { text: d[1] }), h("small", { text: "nivel " + x.n }), h("span", { class: "fr-bar", "aria-hidden": "true" }, h("i", { style: "--p:" + pct.toFixed(1) + "%" }))));
+      rej.append(li);
+    });
+    pintar(null);
+    const tot = defs.reduce((t, d) => t + ((fr[d[0]] || {}).n | 0), 0), citaG = A.nombreLibro("GAL") + " 5:22-23";
+    desc.replaceChildren("Un solo fruto con nueve cámaras. Cada una se llena de luz rubí al crecer su aspecto, y lo ganado nunca se pierde. Toca un aspecto para ver qué lo hace crecer.");
+    const sec = tarjeta("El fruto del espíritu", ico("arbol"), h("div", { class: "fr-c" }, caja, rej, desc,
+      h("p", { class: "fr-pie" }, plural(tot, "nivel", "niveles") + " en total · ", h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + citaG, onclick: () => verCita("GAL", 5, 22, 23) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaG))));
+    sec.id = "jg-fruto";
+    return sec;
+  }
+  // Cosecha del Árbol (BiEx, 14-nov-2026; YÔḥānā́n 4:36-38: uno siembra y otro siega). La cesta se llena con el tiempo hasta
+  // 18 h y su medida crece con lo que siembran todos; se recoge cuando se quiera. Al recogerla, una aguja recorre de 0,20 % a
+  // 0,50 % y se detiene en la parte que tocó (el fruto del espíritu sube la probabilidad de lo alto).
+  let CO_N = 0;
+  function cestaSVG(f) {
+    // vista desde arriba en perspectiva: por la boca de la cesta se ve el grano subir; llena, el montón asoma sobre el borde
+    f = Math.max(0, Math.min(1, f));
+    const id = "co" + (++CO_N), r = azar(77), f1 = (v) => v.toFixed(1), CX = 100, CY = 60, RX = 74, RY = 24;
+    const ys = CY + 2 + (1 - f) * 62, rxs = 50 + 22 * f, rys = (RY * rxs) / RX, hd = 24 * Math.max(0, (f - 0.82) / 0.18);
+    let gr = "";
+    const grano = (x, y) => { const rojo = r() < 0.09, a = Math.round(r() * 180);
+      gr += '<ellipse cx="' + f1(x) + '" cy="' + f1(y) + '" rx="' + (rojo ? 2.9 : 4.1) + '" ry="' + (rojo ? 2.5 : 2.6) + '" transform="rotate(' + a + " " + f1(x) + " " + f1(y) + ')" fill="url(#' + id + (rojo ? "r" : "g") + ')"/>'; };
+    if (f > 0.02) {
+      for (let y = ys + rys; y >= ys - rys; y -= 3.6) { const hw = rxs * Math.sqrt(Math.max(0, 1 - Math.pow((y - ys) / rys, 2))); for (let x = -hw + 2 + r() * 3; x < hw - 2; x += 6 + r() * 1.6) grano(CX + x, y + r() * 1.5); }
+      for (let y = CY; hd > 0 && y >= CY - hd; y -= 3.8) { const hw = (RX - 2) * Math.sqrt(Math.max(0, 1 - Math.pow((CY - y) / hd, 2))); for (let x = -hw + 2 + r() * 3; x < hw - 2; x += 6 + r() * 1.6) grano(CX + x, y + r() * 1.5); }
+    }
+    const boca = '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + (RX - 2) + '" ry="' + (RY - 2) + '"/>' + (hd > 0 ? '<path d="M' + (CX - RX + 2) + " " + CY + "A" + (RX - 2) + " " + f1(hd) + " 0 0 1 " + (CX + RX - 2) + " " + CY + 'Z"/>' : "");
+    const frente = "M" + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 0 " + (CX + RX) + " " + CY + "L152 138Q100 156 48 138Z";
+    let bandas = ""; for (const dy of [16, 33, 50, 66]) { const hw = RX - ((RX - 50) * dy) / 78, ry = RY * (hw / RX) * 0.92; bandas += '<path d="M' + f1(CX - hw - 4) + " " + (CY + dy) + "A" + f1(hw + 4) + " " + f1(ry) + " 0 0 0 " + f1(CX + hw + 4) + " " + (CY + dy) + '"/>'; }
+    let ribs = ""; for (let i = -5; i <= 5; i++) { const a = i / 5.6, x0 = CX + RX * Math.sin(a), y0 = CY + RY * Math.cos(a), x1 = CX + 50 * Math.sin(a), y1 = 139 + 9 * Math.cos(a); ribs += '<path d="M' + f1(x0) + " " + f1(y0) + "L" + f1(x1) + " " + f1(y1) + '"/>'; }
+    return '<defs><radialGradient id="' + id + 'g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff0b8"/><stop offset=".55" stop-color="#f0c45a"/><stop offset="1" stop-color="#a8701a"/></radialGradient>' +
+      '<radialGradient id="' + id + 'r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff8aa0"/><stop offset="1" stop-color="#a5132d"/></radialGradient>' +
+      '<linearGradient id="' + id + 'b" x1="0" x2="1"><stop offset="0" stop-color="#5a3a12"/><stop offset=".35" stop-color="#b9843a"/><stop offset=".55" stop-color="#d9a855"/><stop offset="1" stop-color="#4a3010"/></linearGradient>' +
+      '<linearGradient id="' + id + 'w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2f0e"/><stop offset="1" stop-color="#1c1105"/></linearGradient>' +
+      '<radialGradient id="' + id + 'l" cx=".5" cy=".7" r=".6"><stop offset="0" stop-color="#ffd77a" stop-opacity="' + (0.15 + 0.5 * f).toFixed(2) + '"/><stop offset="1" stop-color="#ffd77a" stop-opacity="0"/></radialGradient>' +
+      '<clipPath id="' + id + 'c">' + boca + '</clipPath><clipPath id="' + id + 'f"><path d="' + frente + '"/></clipPath></defs>' +
+      '<ellipse cx="100" cy="148" rx="72" ry="7" fill="#000" opacity=".35"/>' +
+      '<ellipse cx="' + CX + '" cy="' + CY + '" rx="' + RX + '" ry="' + RY + '" fill="url(#' + id + 'w)"/>' +
+      '<ellipse cx="' + CX + '" cy="' + (CY + 6) + '" rx="' + (RX - 6) + '" ry="' + (RY - 4) + '" fill="url(#' + id + 'l)"/>' +
+      '<path d="M' + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 1 " + (CX + RX) + " " + CY + '" fill="none" stroke="url(#' + id + 'b)" stroke-width="6"/>' +
+      '<g clip-path="url(#' + id + 'c)">' + gr + "</g>" +
+      '<path d="' + frente + '" fill="url(#' + id + 'b)"/>' +
+      '<g clip-path="url(#' + id + 'f)"><g fill="none" stroke="#3a2408" stroke-opacity=".55" stroke-width="1.6">' + bandas + '</g><g fill="none" stroke="#f3d08a" stroke-opacity=".2" stroke-width="2.2">' + ribs + "</g></g>" +
+      '<path d="M' + (CX - RX) + " " + CY + "A" + RX + " " + RY + " 0 0 0 " + (CX + RX) + " " + CY + '" fill="none" stroke="url(#' + id + 'b)" stroke-width="6.5" stroke-linecap="round"/>' +
+      '<path d="M' + (CX - RX + 3) + " " + (CY + 2) + "A" + (RX - 3) + " " + (RY - 2) + " 0 0 0 " + (CX + RX - 3) + " " + (CY + 2) + '" fill="none" stroke="#ffe7a6" stroke-opacity=".32" stroke-width="1.2"/>';
+  }
+  function medidorSVG() {
+    let t = "";
+    for (let i = 0; i <= 6; i++) { const a = Math.PI * (1 - i / 6), x1 = 120 + 86 * Math.cos(a), y1 = 120 - 86 * Math.sin(a), x2 = 120 + 76 * Math.cos(a), y2 = 120 - 76 * Math.sin(a);
+      t += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#f3d08a" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>'; }
+    return '<defs><linearGradient id="co-arco" x1="0" x2="1"><stop offset="0" stop-color="#c9902e"/><stop offset=".6" stop-color="#e3485f"/><stop offset="1" stop-color="#ff7d93"/></linearGradient></defs>' +
+      '<path d="M20 120A100 100 0 0 1 220 120" fill="none" stroke="rgba(127,127,127,.18)" stroke-width="12" stroke-linecap="round"/>' +
+      '<path d="M20 120A100 100 0 0 1 220 120" fill="none" stroke="url(#co-arco)" stroke-width="8" stroke-linecap="round"/>' + t +
+      '<text x="20" y="138" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7" style="font-family:var(--f-ui)">0,20 %</text><text x="220" y="138" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7" style="font-family:var(--f-ui)">0,50 %</text>';
+  }
+  const pctTxt = (p) => (p * 100).toFixed(2).replace(".", ",") + " %";
+  function tarjetaCosecha(y, rehacer) {
+    const co = y.co; if (!co || !co.lleno) return null;
+    const dur = Math.max(1, co.lleno - co.t), fr = () => Math.max(0, Math.min(1, (Date.now() - co.t) / dur));
+    const cesta = h("div", { class: "co-cesta", "aria-hidden": "true" }), est = h("p", { class: "co-est" }), txt = h("p", { class: "co-txt" });
+    const btn = h("button", { class: "btn oro", type: "button" }, h("span", { text: "Recoger" })), zona = h("div", { class: "co-c" });
+    let fUlt = -1;
+    const pintar = () => {
+      const f = fr(), lleno = f >= 1;
+      if (Math.abs(f - fUlt) >= 0.004 || lleno !== fUlt >= 1) { fUlt = f; cesta.replaceChildren(A.svg(cestaSVG(f), "0 0 200 160")); cesta.style.setProperty("--f", f.toFixed(3)); cesta.classList.toggle("llena", lleno); }
+      const falta = co.lleno - Date.now();
+      txt.replaceChildren(lleno ? "Tu cesta está llena: recógela. Mientras no la recojas, no se llena más." : "Se llena en " + horas(falta) + ". A las 18 h se detiene hasta que la recojas; puedes recogerla antes, cuantas veces quieras.");
+      est.textContent = "Ahora daría entre " + fmt(Math.round(co.min1 * f)) + " y " + fmt(Math.round(co.max1 * f)) + " de experiencia · " + Math.round(f * 100) + " % llena";
+    };
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const r = await pedir("/cosecha", { metodo: "POST", cuerpo: {} });
+      if (r.error === "pronto") { btn.disabled = false; return A.avisar("Tu cesta aún está casi vacía: vuelve en " + (r.falta > 90 ? Math.ceil(r.falta / 60) + " min" : r.falta + " s")); }
+      if (r.error) { btn.disabled = false; return A.avisar(mensaje(r)); }
+      if (r.yo) actualizarYo(r.yo);
+      revelar(r);
+    };
+    function revelar(r) {
+      const med = h("div", { class: "co-medidor", role: "img", "aria-label": "Tocó el " + pctTxt(r.p) + " de lo sembrado" }), ag = h("div", { class: "co-aguja", "aria-hidden": "true" });
+      med.append(A.svg(medidorSVG(), "0 0 240 140")); ag.append(A.svg('<line x1="120" y1="120" x2="120" y2="34" stroke="#ffe7a6" stroke-width="3" stroke-linecap="round"/><circle cx="120" cy="120" r="7" fill="#f2c14e" stroke="#16120b" stroke-width="2"/>', "0 0 240 140")); med.append(ag);
+      const cifra = h("b", { text: "+0" }), res = h("p", { class: "co-res", "aria-live": "polite" }, cifra, h("small", { text: "de experiencia · " + pctTxt(r.p) + " de lo sembrado" + (r.f < 0.999 ? " · cesta al " + Math.round(r.f * 100) + " %" : "") }));
+      res.style.opacity = "0";
+      zona.replaceChildren(med, res, h("p", { class: "co-est", text: (r.plena ? "¡Cosecha plena! " : "") + "Tu fruto del espíritu (" + plural(r.F || 0, "nivel", "niveles") + ") sube la probabilidad de lo alto." }),
+        h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => rehacer() }, h("span", { text: "Ver mi cesta" }))));
+      const T = -90 + (180 * Math.max(0, Math.min(1, (r.p - 0.002) / 0.003)));
+      const fin = () => { ag.style.transform = "rotate(" + T.toFixed(1) + "deg)"; res.style.opacity = "1"; contarRapido(cifra, r.xp, 900, "+"); chispas(r.plena ? 30 : 16); if (r.plena) vibrar([20, 40, 20]); };
+      if (sinAnim() || !ag.animate) return fin();
+      ag.animate([{ transform: "rotate(-90deg)" }, { transform: "rotate(" + Math.min(84, T + 70).toFixed(1) + "deg)", offset: 0.55 }, { transform: "rotate(" + (T - 6).toFixed(1) + "deg)", offset: 0.8 }, { transform: "rotate(" + T.toFixed(1) + "deg)" }],
+        { duration: 1900, easing: "cubic-bezier(.25,.8,.25,1)", fill: "forwards" }).finished.then(fin, fin);
+    }
+    pintar();
+    const citaC = A.nombreLibro("JHN") + " 4:36-38";
+    zona.append(cesta, txt, est, h("div", { class: "jg-acciones" }, btn),
+      h("p", { class: "co-est" }, "Uno siembra y otro siega: la medida de tu cesta crece con lo que siembran todos los estudiantes · ", h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + citaC, onclick: () => verCita("JHN", 4, 36, 38) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaC)));
+    const sec = tarjeta("La cosecha", ico("arbol"), zona); sec.id = "jg-cosecha";
+    enVivo(sec, 30e3, async () => { if (zona.contains(cesta)) pintar(); });
+    return sec;
   }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
   const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
@@ -2606,7 +2818,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu imagen personalizada"); if (r) rehacer(); } }, h("span", { text: "Quitar mi imagen personalizada" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
     const heroe = h("section", { class: "ap-heroe" }, h("div", { class: "ap-lienzo" }, arbolPoder(yy, av, (yy.invi && yy.invi.unidos) || 0)), datos);
-    zona.replaceChildren(heroe, tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
+    zona.replaceChildren(heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
     if (habia && !sinAnim() && zona.animate) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
     animarCifras(zona);
   }
@@ -3035,6 +3247,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
         y.verCiudad === false ? h("p", { class: "jg-mini", text: "Ocultaste tu ciudad en tu perfil: tu lectura no suma a su prestigio." }) : null),
       tarjetaLugar(true), tarjeta(null, null, zona));
     cargarP();
+    rehacerAlCambiarLugar(zona, lugar, () => pintarPrestigio(cont));
+  }
+  // (BiEx, 14-nov-2026) al elegir otra ciudad, toda la vista se pone al día en el acto (lista, país y fila propia), sin salir y volver
+  const claveLugar = (l) => (l ? [l.pais, l.region, l.ciudad, l.zona || l.tz].map((x) => x || "").join("|") : "");
+  function rehacerAlCambiarLugar(el, lugar, rehacer) {
+    const k0 = claveLugar(lugar);
+    const alYo = () => {
+      if (!el.isConnected) return document.removeEventListener("jg:yo", alYo);
+      if (claveLugar((S.yo || {}).lugar) === k0 || document.querySelector(".lg-panel:not([hidden])")) return;
+      document.removeEventListener("jg:yo", alYo); rehacer();
+    };
+    document.addEventListener("jg:yo", alYo);
   }
 
   // --- clasificación
@@ -3519,7 +3743,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (LB.pie) LB.pie.remove();
       LB.pie = h("div", { class: "jg-pie", hidden: true },
         h("button", { type: "button", class: "jg-pie-b jg-pie-p", hidden: true, onclick: (ev) => { ev.stopPropagation(); tocarPeri(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t" })),
-        h("button", { type: "button", class: "jg-pie-b jg-pie-v", onclick: (ev) => { ev.stopPropagation(); tocarLB(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t", text: "Leído" })));
+        h("button", { type: "button", class: "jg-pie-b jg-pie-v", onclick: (ev) => { ev.stopPropagation(); tocarLB(ev.currentTarget); } }, h("span", { class: "jg-pie-i", "aria-hidden": "true" }), h("span", { class: "jg-pie-t", text: "Leído" }), h("small", { class: "jg-pie-n" })));
       for (const ev of ["pointerdown", "click", "keydown"]) LB.pie.addEventListener(ev, (e) => e.stopPropagation());
       hoja.append(LB.pie);
     }
@@ -3616,9 +3840,22 @@ html[data-mov="no"] .ap-savia{display:none!important}
     return 0;
   }
   const alFinalPag = () => { const se = document.scrollingElement || document.documentElement; return se.scrollHeight - (scrollY + innerHeight) < 8; };
+  // (BiEx, 14-nov-2026: versos cortos como YÔḥānā́n 11:35 o Yaʿăqṓḇ 1:8) el primero, de arriba hacia abajo, que ya cumplió su
+  // tiempo y falta marcar, desde las barras hasta el final de la franja: recibe el «Leído» aunque otro verso más largo ocupe más
+  // la franja. Así ningún verso corto se queda sin su «Leído», y se marca en el orden en que se lee.
+  function primeroListo() {
+    const [, b] = zonaLectura(), T = topeFijo() + 6, vis = LB.vis && LB.vis.size ? LB.vis : null;
+    for (const el of R.els) {
+      const v = +el.id.slice(1); if (vis && !vis.has(v)) continue;
+      const r = el.getBoundingClientRect(); if (!r.height || r.bottom <= T + 18) continue; if (r.top >= b) break;
+      if (marcable(v) && R.pend.has(v)) return v;
+    }
+    return 0;
+  }
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
     let v = versoFranja();
+    const w = primeroListo(); if (w && (!v || !R.pend.has(v) || w < v)) v = w;
     if (alFinalPag() && (!v || !marcable(v))) v = debajoFranja(marcable);
     ponerLB(v && marcable(v) ? v : 0);
   }
@@ -3686,11 +3923,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const conPeri = !!(pe && pe.ok && v === pe.b);
     const bp = P.querySelector(".jg-pie-p"); bp.hidden = !conPeri;
     if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
-    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
+    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.querySelector(".jg-pie-n").textContent = String(v); bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
     P.classList.toggle("espera", !R.pend.has(v)); P.classList.remove("hecho");
     // BiEx (13-nov-2026): sin relampagueo ni corrimientos. El pie vive dentro de la fila de su verso (se mueve con ella, también
     // cuando el texto de arriba termina de dibujarse) y solo se funde, sin desenfoque, cuando cambia de verso.
-    if (P.parentElement !== el) { if (LB.pieEn) LB.pieEn.classList.remove("con-pie"); el.classList.add("con-pie"); el.append(P); LB.pieEn = el; }
+    if (P.parentElement !== el) { if (LB.pieEn) { LB.pieEn.classList.remove("con-pie", "pie-abajo"); LB.pieEn.style.removeProperty("--pie-h"); } el.classList.add("con-pie"); el.append(P); LB.pieEn = el; }
     // el verso largo se sigue leyendo: su «Leído» aparece cuando su pie ya está a la vista
     const rb = el.getBoundingClientRect(); if (rb.bottom > innerHeight - 8 || rb.bottom < topeFijo() + 18) { P.hidden = true; return; }
     P.hidden = false;
@@ -3698,6 +3935,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
     let der = 10; const sr = document.querySelector(".saltos-rap");
     if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && q.left < rb.right - 10) der = Math.max(10, Math.round(rb.right - q.left + 8)); }
     P.style.right = der + "px";
+    // (BiEx, 14-nov-2026: «confunde») el pie queda DENTRO de su verso: al final de su último renglón si hay sitio; si no, justo
+    // debajo de ese renglón (nunca sobre el borde con el verso siguiente)
+    // el último renglón real del texto (las cajas de cada renglón, no la del bloque entero)
+    const vt = el.querySelector(":scope > .vt") || el, rg = document.createRange(); rg.selectNodeContents(vt);
+    const rs = [...rg.getClientRects()].filter((q) => q.width > 0.5 && q.height > 1), fondo = rs.reduce((m, q) => Math.max(m, q.bottom), -1e9);
+    const enUlt = rs.filter((q) => q.bottom > fondo - 4), ult = enUlt.length ? { top: Math.min(...enUlt.map((q) => q.top)), bottom: fondo, right: Math.max(...enUlt.map((q) => q.right)), height: fondo - Math.min(...enUlt.map((q) => q.top)) } : rb;
+    const pw = P.offsetWidth || 90, ph = P.offsetHeight || 18, cabe = rb.right - der - ult.right >= pw + 12;
+    let top = cabe ? ult.top - rb.top + (ult.height - ph) / 2 : ult.bottom - rb.top + 3;
+    // si debajo del último renglón no hay hueco suficiente antes del verso siguiente, la fila crece lo justo (solo esa fila,
+    // que está a la altura de la lectura: lo de arriba no se mueve)
+    const pad0 = el.classList.contains("pie-abajo") ? parseFloat(el.style.getPropertyValue("--pie-h")) || 0 : 0;
+    if (!cabe) {
+      const sig = el.nextElementSibling, g = sig ? Math.max(0, sig.getBoundingClientRect().top - rb.bottom) : 0, falta = Math.ceil(top + ph + 4 - (rb.height - pad0 + g));
+      if (falta > 0) { el.classList.add("pie-abajo"); if (Math.abs(falta - pad0) > 1) el.style.setProperty("--pie-h", falta + "px"); }
+      else { el.classList.remove("pie-abajo"); el.style.removeProperty("--pie-h"); }
+    } else if (pad0) { el.classList.remove("pie-abajo"); el.style.removeProperty("--pie-h"); }
+    P.style.top = Math.round(top) + "px";
     if (LB.pieV !== v && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
     LB.pieV = v;
   }
@@ -4982,5 +5236,13 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
+    // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista (14-nov-2026)
+    versoActivo: () => (R.lib && (LB.v || R.vf)) || 0,
+    // V22 · benignidad: compartir un verso o un capítulo hace crecer ese aspecto del fruto (cuenta una vez al día por pasaje)
+    async compartido(hh) {
+      const m = /^#\/([1-3A-Z]{3})\/(\d{1,3})(?:\/[a-z]+)?(?:\/(\d{1,3}))?/.exec(String(hh || "")); if (!m || !S.token) return;
+      const r = await pedir("/compartir", { metodo: "POST", cuerpo: { lib: m[1], cap: +m[2], v: m[3] ? +m[3] : 0 } });
+      if (r && r.fr > 0) A.avisar("Compartiste: tu benignidad crece");
+    },
   };
 })();

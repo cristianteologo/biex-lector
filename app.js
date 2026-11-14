@@ -640,7 +640,42 @@
     }
     return null;
   }
+  // (BiEx, 14-nov-2026) Al cambiar entre «por versos» y «continuo», el número del verso de referencia queda EXACTAMENTE a la
+  // misma altura de la pantalla (al píxel), sobre una línea horizontal invisible: se toma el número más cercano a esa línea
+  // (40 % del área de lectura) y, en la otra vista, se desplaza la página hasta que sus cifras queden en la misma altura.
+  const cifrasNum = (el) => {
+    const n = el && (el.querySelector(":scope > .vn") || el.querySelector(":scope > sup")); if (!n) return null;
+    const tn = [...n.childNodes].reverse().find((x) => x.nodeType === 3 && /\d/.test(x.nodeValue));
+    if (!tn) return n.getBoundingClientRect();
+    const rg = document.createRange(); rg.selectNodeContents(tn); const r = rg.getBoundingClientRect(); return r.height ? r : n.getBoundingClientRect();
+  };
+  function capturarAnclaNum() {
+    if (window.scrollY < 40) return { tope: true };
+    const top = bordeSup() + 6, ref = top + (window.innerHeight - top) * 0.4;
+    let mejor = null, dm = Infinity;
+    const fija = (a) => { RP.ultNum = { v: a.v, num: a.num }; if (navigator.webdriver) window.__biexAnclaNum = a; return a; };
+    // ida y vuelta sin desplazarse: se conserva el MISMO verso de referencia (su número sigue donde quedó)
+    if (RP.ultNum) { const eu = document.getElementById("v" + RP.ultNum.v), ru = eu && cifrasNum(eu); if (ru && Math.abs(ru.top - RP.ultNum.num) < 1.5) return fija({ v: RP.ultNum.v, num: RP.ultNum.num, abs: 1, frac: 0, off: 0 }); }
+    // si se está leyendo con Escudriña, la referencia es el verso del hilo de luz (el que tiene la línea de lectura)
+    try { const va = window.BiExJuego && BiExJuego.versoActivo && BiExJuego.versoActivo(), ea = va && document.getElementById("v" + va), ra = ea && cifrasNum(ea);
+      if (ra && ra.top >= top && ra.bottom <= window.innerHeight) return fija({ v: va, num: ra.top, abs: 1, frac: 0, off: 0 }); } catch (e) { /* sin juego */ }
+    for (const el of document.querySelectorAll("#vista [id^='v']")) {
+      if (!/^v\d+$/.test(el.id)) continue;
+      const r0 = el.getBoundingClientRect(); if (r0.bottom < top || r0.top > window.innerHeight) continue;
+      const r = cifrasNum(el); if (!r || r.bottom < top || r.top > window.innerHeight) continue;
+      const d = Math.abs(r.top - ref); if (d < dm) { dm = d; mejor = { v: +el.id.slice(1), num: r.top, abs: 1, frac: 0, off: 0 }; }
+    }
+    return mejor ? fija(mejor) : capturarAncla();
+  }
   function yDeAncla(a) {
+    if (a && a.num != null) {
+      const el = document.getElementById("v" + a.v);
+      if (el) {
+        for (let n = el, acc = 0; n && acc < window.innerHeight * 1.6; n = n.previousElementSibling) { n.classList.add("cv-vis"); acc += n.getBoundingClientRect().height; }
+        if (el.nextElementSibling) el.nextElementSibling.classList.add("cv-vis");
+        const r = cifrasNum(el); if (r) return Math.max(0, window.scrollY + r.top - a.num);
+      }
+    }
     let el = document.getElementById("v" + a.v), exacto = true;
     if (!el) { exacto = false; for (const x of document.querySelectorAll("#vista [id^='v']")) if (/^v\d+$/.test(x.id) && +x.id.slice(1) >= a.v) { el = x; break; } }
     if (!el) return null;
@@ -1042,11 +1077,12 @@
     catch (e) { avisar("No se pudo copiar; el enlace es " + url); }
   }
   async function compartir(titulo, texto, hh) {
+    const hh0 = hh, juego = () => { try { if (window.BiExJuego && BiExJuego.compartido) BiExJuego.compartido(hh0); } catch (e) { /* sin juego */ } };
     const inv = (store.get("jg:t", null) && store.get("jg:mio", null)) || (await semilla());
     if (inv && /^[a-z0-9]{4,12}$/.test(inv) && /^#\/[A-Z0-9]{3}\//.test(hh || "")) hh = "#/escudrina/i/" + inv + "/" + hh.slice(2);
     const url = enlacePublico(hh);
-    try { if (navigator.share) { await navigator.share({ title: titulo, text: titulo + " — " + texto, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
-    try { await navigator.clipboard.writeText(titulo + " — " + texto + "\n" + url); avisar("Verso y enlace copiados"); }
+    try { if (navigator.share) { await navigator.share({ title: titulo, text: titulo + " — " + texto, url }); juego(); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(titulo + " — " + texto + "\n" + url); avisar("Verso y enlace copiados"); juego(); }
     catch (e) { avisar("No se pudo copiar; el enlace es " + url); }
   }
 
@@ -1201,7 +1237,8 @@
   // la pista del buscador y después los enlaces de secciones (siguen en Herramientas y en la portada)
   function ajustarBarra() {
     const m = $(".barra .marca"), bi = $(".barra .in"), r = document.documentElement; if (!m || !bi) return;
-    const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-guia", "barra-sin-hist", "barra-estrecha"];
+    // (BiEx, 14-nov-2026) compartir se va antes que el historial: sigue a la mano sobre la flecha de subir de la derecha
+    const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-guia", "barra-sin-comp", "barra-sin-hist", "barra-estrecha"];
     r.classList.remove(...PASOS);
     const sello = $(".barra .sello"), acc = $(".barra .acc");
     // también cuenta como recorte que el primer botón visible se acerque al sello (los botones se encogen sin desbordar)
@@ -1565,10 +1602,22 @@
   }
   // Capítulos y teselas numeradas de los versos (en el riel de escritorio y en la ventana del móvil)
   function navContenido(b, cap, versos, alElegir) {
+    // (BiEx, 14-nov-2026) en un libro que no está abierto, tocar un capítulo muestra sus versos para elegir también el verso
+    const otro = !versos || versos === "num";
     const caps = h("div", { class: "caps", role: "group", "aria-label": "Capítulos" }, b.caps.map((C) => h("a", {
       class: "cap", href: "#/" + b.c + "/" + C.c + (esc.modo === "a" ? "/a" : ""), "aria-current": C.c === cap ? "true" : "false",
-      title: "Capítulo " + C.c + (C.pal != null ? ": palabras traducidas " + pctEnt(C.pal) + " · revisión " + pctEnt(C.pct) : ": " + pct(C.pct) + " de avance"), onclick: alElegir || null }, String(C.c),
+      title: "Capítulo " + C.c + (C.pal != null ? ": palabras traducidas " + pctEnt(C.pal) + " · revisión " + pctEnt(C.pct) : ": " + pct(C.pct) + " de avance"),
+      onclick: otro && C.total > 1 ? (e) => { e.preventDefault(); empujar(vistaNavegador(b, C.c, "num")); } : alElegir || null }, String(C.c),
       C.pal != null ? h("i", { class: "cap-pal", style: "width:" + Math.min(100, C.pal) + "%" }) : null, h("i", { style: "width:" + Math.min(100, C.pct) + "%" }))));
+    if (versos === "num" && cap) {
+      const C = b.caps[cap - 1] || {}, ir = (v) => { if (alElegir) alElegir(); location.hash = "#/" + b.c + "/" + cap + "/" + (esc.modo === "a" ? "a" : "l") + (v ? "/" + v : ""); };
+      return [
+        h("div", {}, h("p", { class: "rotulo", text: "Capítulos" }), caps),
+        h("div", {}, h("p", { class: "rotulo", text: "Versos del capítulo " + cap }),
+          h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, Array.from({ length: C.total || 0 }, (_, i) => h("button", {
+            type: "button", class: "tesela n-x", title: cap + ":" + (i + 1), "aria-label": "Verso " + (i + 1), onclick: () => ir(i + 1) }, String(i + 1))))),
+        h("div", { class: "nav-ir" }, h("button", { class: "btn oro", type: "button", onclick: () => ir(0) }, h("span", { text: "Leer el capítulo " + cap })))];
+    }
     const teselas = versos ? h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, versos.map((x) => aplicarMarca(h("button", {
       type: "button", class: "tesela n-" + x.n + (esc.modo !== "a" && prefs.nivel && !pasaFiltro(x, prefs.nivel) ? " fuera" : ""), "data-v": x.v, title: cap + ":" + x.v + " · " + estadoEt(x.n), "aria-label": "Verso " + x.v + ", " + estadoEt(x.n),
       onclick: () => { if (alElegir) alElegir(); irVerso(x.v); } }, String(x.v)), marcaDe(b, cap, x.v)))) : null;
@@ -1607,7 +1656,7 @@
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
     const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
       [["versos", "Por versos", ICO.lista], ["continuo", "Continuo", ICO.parrafo]].map(([k, t, ico]) => h("button", { type: "button", "aria-pressed": prefs.disp === k ? "true" : "false", "aria-label": t, title: t, onclick: () => {
-        if (prefs.disp === k) return; RP.anclaEnSitio = capturarAncla(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
+        if (prefs.disp === k) return; RP.anclaEnSitio = capturarAnclaNum(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
       } }, svg(ico), h("span", { class: "txt", text: t })))) : null;
     const filtro = modo !== "a" && versos ? h("label", { class: "filtro-niv" + (prefs.nivel ? " activo" : ""), title: "Mostrar los versos según su nivel de avance" }, svg(ICO.filtro),
       h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); if (a) a.barra = true; RP.anclaEnSitio = a || { barra: true, v: null }; prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); } },
@@ -1619,12 +1668,12 @@
     const titulo = h("button", { class: "bh-tit", type: "button", title: "Elegir capítulo y verso",
       "aria-label": nombreLibro(b) + ", capítulo " + cap + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) },
       h("span", { class: "bh-lib" }, h("span", { class: "tr", text: b.t || b.n }), b.t ? h("span", { class: "es", text: tradQ(b) }) : null),
-      h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom })));
+      h("span", { class: "bh-cap" }, he ? h("span", { lang: "he", dir: "rtl", text: he }) : null, h("span", { class: "rom", text: rom }), h("span", { class: "bh-de", text: "· " + cap + "/" + b.caps.length })));
     return h("div", { class: "barra-hoja" },
       h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("a", "Análisis"), btnModo("o", "Lectura"), btnModo("l", "Textual")),
       h("div", { class: "cap-grupo movil" },
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
-        h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), "Cap. " + cap),
+        h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), h("span", { class: "cap-n" }, "Cap. " + cap, h("span", { class: "cap-de", text: "/" + b.caps.length }))), // (BiEx, 14-nov-2026) cuántos capítulos tiene el libro
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der))),
       h("span", { class: "bh-salto", "aria-hidden": "true" }),
       disp, filtro, opciones,
@@ -1650,11 +1699,22 @@
   function abrirLibros() {
     if (!D) return;
     const b = esc.libro ? libroDe(esc.libro) : null;
-    abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
-      h("div", { class: "nav-libros todos" }, h("div", { class: "libs", role: "group", "aria-label": "Elegir un libro" }, librosEnOrden().map((x) => h("button", {
+    // P11 (BiEx, 11-nov-2026): lupa interna que filtra los libros por el nombre o las letras que se escriban (también con
+    // letras latinas para las transliteraciones con letras griegas)
+    const GL = { α: "a", β: "b", γ: "g", δ: "d", ε: "e", ζ: "z", η: "e", θ: "th", ι: "i", κ: "k", λ: "l", μ: "m", ν: "n", ξ: "x", ο: "o", π: "p", ρ: "r", σ: "s", ς: "s", τ: "t", υ: "u", φ: "f", χ: "j", ψ: "ps", ω: "o" };
+    const llano = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f\u02b0-\u02ff\u1dc0-\u1dff]/g, "").toLowerCase().replace(/[α-ω]/g, (c) => GL[c] || c).replace(/[^a-z0-9ñ ]/g, "");
+    const chips = librosEnOrden().map((x) => { const c = h("button", {
         type: "button", class: "lib-chip", "aria-current": x === b ? "true" : "false", title: nombreLibro(x),
         onclick: () => empujar(vistaNavegador(x, x === b ? esc.cap : 0, null)) },
-        h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: tradQ(x) }) : null))))));
+        h("span", { class: "lt", text: x.t || x.n }), x.t ? h("span", { class: "ln", text: tradQ(x) }) : null);
+      c._k = llano([x.t, x.n, tradQ(x), nombreLibro(x), x.c].join(" ")); return c; });
+    const nada = h("p", { class: "nota-ui libs-nada", hidden: true, text: "Ningún libro con esas letras." });
+    const lupa = h("input", { type: "search", class: "libs-lupa", placeholder: "Busca un libro por su nombre…", "aria-label": "Buscar un libro por su nombre", autocomplete: "off", spellcheck: "false",
+      oninput: (e) => { const q = llano(e.target.value).trim(); let n = 0; for (const c of chips) { const si = !q || q.split(/\s+/).every((w) => c._k.includes(w)); c.hidden = !si; if (si) n++; } nada.hidden = n > 0; },
+      onkeydown: (e) => { if (e.key === "Enter") { const c = chips.find((x) => !x.hidden); if (c) c.click(); } } });
+    abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
+      h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
+      h("div", { class: "nav-libros todos" }, h("div", { class: "libs", role: "group", "aria-label": "Elegir un libro" }, chips), nada)));
   }
   const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
   // O99/U2 (BiEx, 12-nov-2026): dos cifras por capítulo, en vez de un «10 % de avance» que no dice nada: las palabras griegas
@@ -2789,7 +2849,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "57ef768fc5", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "64a190056a", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4888,6 +4948,8 @@
     // (BiEx, 12-nov-2026; idea de la app de junio) junto al aro, los minutos de lectura que faltan desde donde se va
     const mins = h("span", { class: "sr-min", "aria-hidden": "true" });
     const caja = h("div", { class: "saltos-rap", role: "group", "aria-label": "Ir rápido por la página" },
+      // (BiEx, 14-nov-2026) compartir, encima de la flecha de subir; aparece y se oculta con ellas
+      h("button", { type: "button", class: "sr-btn sr-comp", "aria-label": "Compartir con tu enlace de invitación", title: "Compartir", onclick: () => { compartirPagina(); mostrar(); } }, svg(ICO.compartir)),
       btn("sr-ini", "Ir al inicio de la página", ICO.subir, 0), btn("sr-med", "Ir a la mitad de la página", ICO.centro, 0.5, aro), btn("sr-fin", "Ir al final de la página", ICO.bajar, 1), mins);
     document.body.append(caja);
     const ATADO = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
