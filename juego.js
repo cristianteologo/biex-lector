@@ -353,6 +353,24 @@
 .co-res{margin:0;display:grid;gap:2px}
 .co-res b{font-size:1.6rem;font-family:var(--f-titulo,inherit);letter-spacing:.02em;color:#ffd77a}
 .co-res small{font-size:.8rem;color:var(--tinta-2)}
+.av-z{display:grid;gap:14px;margin-top:12px}
+.av-tit{margin:0;text-align:center;font:600 .78rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)}
+.av-cif{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.av-cif li{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 22%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 10%,transparent),transparent);text-align:center}
+.av-cif b{font:600 1.18rem/1 var(--f-titulo,var(--f-ui));color:var(--oro-vivo);font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(255,214,120,.35)}
+.av-cif small{font-size:.66rem;color:var(--tinta-2);line-height:1.2}
+.av-sube{font:600 .66rem/1 var(--f-ui);color:#9fe0b4}
+.av-antes{font-size:.62rem;color:var(--tenue)}
+.av-bar{display:flex;align-items:flex-end;justify-content:center;gap:5px;height:120px;padding:0 2px}
+.av-col{flex:1;min-width:0;max-width:46px;display:grid;grid-template-rows:1fr auto;gap:5px;height:100%}
+.av-pozo{position:relative;display:block;overflow:hidden;border-radius:7px 7px 3px 3px;background:color-mix(in srgb,var(--oro) 7%,transparent)}
+.av-pozo i{position:absolute;left:0;right:0;bottom:0;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#fff0bf,#e9b84a 45%,#8a5a0c);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);animation:av-sube .9s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 45ms) both}
+.av-col.ya .av-pozo i{background:linear-gradient(180deg,#ffd0d9,#ff6f86 45%,#a5132d);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 16px rgba(255,90,120,.45)}
+.av-col small{font-size:.58rem;color:var(--tenue);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip}
+@keyframes av-sube{from{transform:translate3d(0,100%,0)}to{transform:none}}
+@media (max-width:420px){.av-cif{gap:4px}.av-cif li{padding:9px 2px}.av-cif b{font-size:.98rem}.av-cif small{font-size:.58rem}}
+@media (prefers-reduced-motion:reduce){.av-pozo i{animation:none}}
+html[data-mov="no"] .av-pozo i{animation:none}
 .fr-c{display:grid;gap:14px;justify-items:center}
 .fr-gr{position:relative;width:min(232px,60vw);aspect-ratio:1}
 .fr-gr::before{content:"";position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,70,100,.2),rgba(255,70,100,0));animation:ap-gr1 7.9s ease-in-out infinite alternate;pointer-events:none}
@@ -385,8 +403,13 @@
 .ap-cab{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .ap-pts{font:500 .88rem/1.2 var(--f-ui);color:var(--tinta)}
 .ap-pts b{font-size:1.2rem;color:var(--oro-vivo);margin-right:2px}
-.ap-poder{display:inline-flex;align-items:baseline;gap:5px;padding:5px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 35%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2)}
-.ap-poder b{color:var(--oro-vivo);font-size:1rem}
+.ap-poder{--pd-sombra:inset 0 1px 0 rgba(255,246,214,.4),inset 0 -8px 14px -10px rgba(255,214,120,.55),0 8px 20px -12px rgba(0,0,0,.8);position:relative;display:inline-flex;align-items:baseline;gap:6px;padding:6px 13px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  border:1px solid color-mix(in srgb,var(--oro-vivo) 55%,transparent);background:radial-gradient(120% 140% at 50% -40%,rgba(255,246,214,.28),transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 6%,var(--hoja)));
+  box-shadow:var(--pd-sombra);font:600 .74rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-2)}
+.ap-poder b{color:var(--oro-vivo);font:600 1.08rem/1 var(--f-titulo,var(--f-ui));letter-spacing:.02em;text-transform:none;text-shadow:0 0 12px rgba(255,214,120,.45)}
+.ap-poder:focus-visible{outline:2px solid var(--oro);outline-offset:3px}
+.ap-rayos{position:absolute;inset:-12px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(150,205,255,.9))}
+.ap-rayos svg{display:block;width:100%;height:100%;overflow:visible}
 .ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
 .ap-atr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ap-atr li{display:grid;justify-items:center;gap:7px;padding:10px 6px 9px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 26%,var(--linea-2));background:radial-gradient(120% 85% at 50% 0%,color-mix(in srgb,var(--ac) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
@@ -406,7 +429,21 @@
 .ap-desc{margin:0;min-height:2.9em;font:400 .84rem/1.45 var(--f-ui)!important;color:var(--tinta-2)}
 .ap-desc b{color:var(--oro-vivo);font-weight:600}
 .ap-arm{display:grid;grid-template-columns:minmax(112px,40%) minmax(0,1fr);gap:10px;align-items:center}
-.ap-fig{display:grid;place-items:center;padding:4px;border-radius:16px;background:radial-gradient(circle at 50% 40%,rgba(245,198,78,.12),transparent 70%)}
+.ap-fig{display:grid;place-items:center;padding:0;background:none}
+.si{position:relative;width:100%;max-width:230px;aspect-ratio:300/420;margin:0 auto;isolation:isolate}
+.si .si-c,.si .si-mueve{position:absolute;inset:0;width:100%;height:100%}
+.si .si-mueve{will-change:transform}
+.si .si-mueve>svg{position:absolute;inset:0;width:100%;height:100%}
+.si-alma,.si-pecho{position:absolute;border-radius:50%;pointer-events:none;will-change:opacity}
+.si-alma{left:41%;top:18%;width:18%;height:16%;background:radial-gradient(closest-side,color-mix(in srgb,var(--si-luz,#ffe4a0) 55%,transparent),transparent);opacity:.38}
+.si-pecho{left:37%;top:31%;width:26%;height:18%;background:radial-gradient(closest-side,color-mix(in srgb,var(--si-luz,#ffe4a0) 70%,transparent),transparent);opacity:var(--si-pecho,.55)}
+.si-niebla{position:absolute;left:8%;right:8%;bottom:1%;height:13%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,244,214,.16),rgba(255,244,214,0));will-change:transform,opacity;animation:si-niebla 23s ease-in-out infinite alternate}
+.si-niebla.n2{left:18%;right:-2%;bottom:3%;height:10%;animation-duration:31s;animation-delay:-9s;opacity:.8}
+@keyframes si-niebla{0%{transform:translate3d(-3%,0,0);opacity:.55}50%{opacity:1}100%{transform:translate3d(3%,-2%,0);opacity:.7}}
+.si-mo{position:absolute;bottom:14%;width:3px;height:3px;margin-left:-1.5px;border-radius:50%;background:#ffe9b0;box-shadow:0 0 5px 1px rgba(255,226,150,.5);opacity:0;pointer-events:none;will-change:transform,opacity;animation:si-mo var(--t) linear var(--d) infinite}
+@keyframes si-mo{0%{opacity:0;transform:translate3d(0,0,0)}18%{opacity:.8}100%{opacity:0;transform:translate3d(0,-150px,0)}}
+@media (prefers-reduced-motion:reduce){.si-niebla,.si-mo{animation:none}}
+html[data-mov="no"] .si-niebla,html[data-mov="no"] .si-mo{animation:none}
 .av-fig{display:block;width:100%;max-width:210px;height:auto;margin:0 auto}
 .ap-piezas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .ap-piezas li{position:relative;display:grid}
@@ -905,6 +942,21 @@ html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);borde
 .jg-yo{overflow:hidden;border-color:color-mix(in srgb,var(--oro) 46%,transparent);background:radial-gradient(120% 150% at 0% 0%,color-mix(in srgb,var(--oro) 17%,transparent),transparent 58%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 66%,transparent),color-mix(in srgb,var(--hoja) 92%,transparent))}
 .jg-yo::before{content:"א";position:absolute;right:.02em;bottom:-.46em;font:500 9rem/1 "Frank Ruhl Libre",var(--f-texto);color:var(--oro);opacity:.055;pointer-events:none}
 .jg-yo>*{position:relative}
+.jg-yo>.jg-esq{position:absolute;width:30px;height:30px;pointer-events:none;opacity:.7;z-index:1}
+.jg-yo>.jg-esq svg{display:block;width:100%;height:100%}
+.jg-yo>.jg-esq.e1{left:3px;top:3px}.jg-yo>.jg-esq.e2{right:3px;top:3px;transform:scaleX(-1)}
+.jg-yo{border-color:color-mix(in srgb,var(--et,var(--oro)) 55%,transparent)}
+.jg-etapa{margin-top:3px;font:600 .7rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--et,var(--oro-vivo))}
+.jg-yo.etapa-2 .jg-emb::before,.jg-yo.etapa-3 .jg-emb::before,.jg-yo.etapa-4 .jg-emb::before,.jg-yo.etapa-5 .jg-emb::before{content:"";position:absolute;inset:-26%;border-radius:50%;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--et) 45%,transparent),transparent);will-change:opacity;animation:jg-aura-et 5.3s ease-in-out infinite alternate}
+.jg-yo.etapa-4 .jg-emb::before,.jg-yo.etapa-5 .jg-emb::before{animation-duration:4.1s}
+@keyframes jg-aura-et{0%{opacity:.45}100%{opacity:1}}
+.jg-yo .jg-emb{position:relative;isolation:isolate}
+.jg-yo>.jg-mota{position:absolute;bottom:10%;width:3px;height:3px;border-radius:50%;background:var(--et);box-shadow:0 0 6px 1px color-mix(in srgb,var(--et) 70%,transparent);opacity:0;pointer-events:none;will-change:transform,opacity;animation:si-mo var(--t) linear var(--d) infinite}
+.jg-yo.etapa-5{box-shadow:0 0 0 1px color-mix(in srgb,#ff7d93 30%,transparent),0 18px 40px -22px rgba(255,90,120,.55)}
+.jg-epica>.jg-hoy{position:absolute;top:2px;bottom:2px;z-index:1;border-radius:99px;pointer-events:none;background:linear-gradient(90deg,rgba(255,250,230,0),rgba(255,250,230,.55));mix-blend-mode:screen}
+.jg-hoy-t{color:var(--oro-vivo);font-weight:600}
+@media (prefers-reduced-motion:reduce){.jg-yo .jg-emb::before,.jg-yo>.jg-mota{animation:none}}
+html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{animation:none}
 .jg-yo .jg-perfil{grid-template-columns:auto 1fr auto}
 .jg-pid{min-width:0;align-self:center}
 .jg-chips-yo{justify-content:center;margin:10px 0 14px}
@@ -1246,7 +1298,7 @@ html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 .jg-fan-t{position:relative;margin:0;font:500 clamp(1.6rem,7vw,2.2rem)/1.1 var(--f-display);color:#fff4d2;letter-spacing:.04em;text-shadow:0 2px 14px rgba(0,0,0,.6);will-change:transform,opacity}
 .ap-savia{position:absolute;left:0;top:0;width:1000px;height:1110px;transform-origin:0 0;transform:scale(var(--k,.38));pointer-events:none;display:none}
 @supports (offset-path:path("M0 0")){.ap-savia{display:block}}
-.ap-sv{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:50%;offset-rotate:0deg;offset-anchor:50% 50%;background:radial-gradient(circle,#fffdf3 0 22%,var(--c) 40%,color-mix(in srgb,var(--c) 0%,transparent) 72%);opacity:0;animation:ap-savia var(--t) cubic-bezier(.45,.05,.55,.95) var(--d) infinite;will-change:offset-distance,opacity}
+.ap-sv{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,#fffdf3 0 22%,var(--c) 40%,color-mix(in srgb,var(--c) 0%,transparent) 72%);opacity:0;will-change:transform,opacity}
 @keyframes ap-savia{0%{offset-distance:100%;opacity:0}12%{opacity:var(--o)}82%{opacity:var(--o)}100%{offset-distance:0%;opacity:0}}
 .ap-bebe{position:absolute;left:500px;top:800px;width:220px;height:70px;margin:-35px 0 0 -110px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,230,160,.42),rgba(245,198,78,.12) 60%,rgba(245,198,78,0));animation:ap-respira 2.6s ease-in-out infinite;will-change:opacity}
 .ap-arbol.quieto .ap-savia i,.ap-arbol.quieto .ap-savia b{animation-play-state:paused}
@@ -1665,6 +1717,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", {}, barraEpica(y, pct),
         h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
     t.classList.add("jg-yo");
+    // P24 + V18 (BiEx, 11 y 12-nov-2026): la tarjeta crece por etapas con tu poder (Semilla, Brote, Raíz honda, Copa, Fruto;
+    // Tehillim [Salmos] 1:3): marco con filigrana de vid en las esquinas, cada etapa con su metal; desde la segunda, un aura que
+    // respira tras el emblema; desde la cuarta, motas de luz; en la quinta, destellos rubí. Todo quieto salvo la opacidad.
+    const poder = (y.av && y.av.poder) | 0, et = poder >= 2400 ? 5 : poder >= 1200 ? 4 : poder >= 600 ? 3 : poder >= 250 ? 2 : 1;
+    const ETN = ["", "Semilla", "Brote", "Raíz honda", "Copa", "Fruto"], ETC = ["", "#c9813f", "#c3ccd8", "#f0c04a", "#ffe39a", "#ff7d93"];
+    t.classList.add("etapa-" + et); t.style.setProperty("--et", ETC[et]);
+    const esq = (cl) => h("span", { class: "jg-esq " + cl, "aria-hidden": "true" }, A.svg('<path d="M3 41C3 21 21 3 41 3" fill="none" stroke="var(--et)" stroke-width="1.6" stroke-linecap="round"/><path d="M9 41C9 25 25 9 41 9" fill="none" stroke="var(--et)" stroke-opacity=".5" stroke-width="1"/>' +
+      '<path d="M15 24c3-6 9-8 13-5-4 4-9 6-13 5zM24 15c5-4 11-3 13 1-5 2-10 2-13-1z" fill="var(--et)" fill-opacity=".75"/><circle cx="8" cy="20" r="1.6" fill="var(--et)"/>', "0 0 44 44"));
+    t.prepend(esq("e1"), esq("e2"));
+    const rg = t.querySelector(".jg-rango"); if (rg) rg.after(h("div", { class: "jg-etapa", title: "Tu tarjeta crece con tu poder (" + fmt(poder) + ")", text: "Etapa " + ["", "I", "II", "III", "IV", "V"][et] + " · " + ETN[et] }));
+    if (et >= 4) for (let i = 0; i < 4; i++) t.append(h("i", { class: "jg-mota", "aria-hidden": "true", style: "left:" + (14 + i * 23) + "%;--d:" + (i * 1.7).toFixed(1) + "s;--t:" + (6.5 + i * 0.9).toFixed(1) + "s" }));
+    // V18: lo ganado hoy se ve en la barra (tramo más claro antes del borde) y en el renglón de abajo
+    const hoyXp = (y.hoy && y.hoy.xp) | 0, bar = t.querySelector(".jg-epica");
+    if (bar && hoyXp > 0 && y.xpSig) { const ph = Math.min(pct, (100 * hoyXp) / y.xpSig); if (ph >= 0.6) bar.append(h("i", { class: "jg-hoy", "aria-hidden": "true", style: "left:" + (pct - ph).toFixed(2) + "%;width:" + ph.toFixed(2) + "%" })); }
+    const nv = t.querySelector(".jg-nivel span"); if (nv && hoyXp > 0) nv.append(h("b", { class: "jg-hoy-t", text: " · hoy +" + fmt(hoyXp) }));
     return t;
   }
   function botonSeguir() {
@@ -2316,11 +2383,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // (las mueve el compositor, sin volver a pintar el árbol) y se detienen cuando el árbol sale de la pantalla.
     const pc = (x, yy) => "left:" + (x / 10).toFixed(2) + "%;top:" + (yy / 11.1).toFixed(2) + "%";
     const vida = h("div", { class: "ap-vida", "aria-hidden": "true" }, h("i", { class: "ap-copa-v" }));
-    const paso = Math.max(1, Math.floor(brillos.length / 16));
-    for (let i = 0, n = 0; i < brillos.length && n < 16; i += paso, n++) { const [x, yy, r, dl] = brillos[i];
+    const paso = Math.max(1, Math.floor(brillos.length / 10));
+    for (let i = 0, n = 0; i < brillos.length && n < 10; i += paso, n++) { const [x, yy, r, dl] = brillos[i];
       vida.append(h("i", { class: "ap-gl", style: pc(x, yy) + ";--s:" + (1.6 + r / 7).toFixed(2) + ";--d:" + dl.toFixed(2) + "s;--t:" + (4.6 + (i % 5) * 0.7).toFixed(1) + "s" })); }
     frutXY.slice(0, 8).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
-    for (let i = 0; i < 14; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
+    for (let i = 0; i < 8; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
     // V22: la granada del fruto del espíritu en la copa (sus cámaras se iluminan con los niveles)
     const GR_X = 500, GR_Y = 236, gr = granadaSVG(av.fr || {}, 68);
     const ramita = "";
@@ -2344,123 +2411,180 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // Savia (BiEx, 10-nov-2026: «me gustaba el movimiento de las raíces; vuélvelo más espectacular»): luces del color de cada
     // atributo suben por su raíz desde el medallón hasta el tronco, con su estela; cuantos más puntos tiene el atributo, más
     // luces y más rápidas. Capa aparte en las coordenadas del dibujo (offset-path): el árbol sigue quieto y nítido.
-    const savia = h("div", { class: "ap-savia", "aria-hidden": "true" });
-    raizD.forEach(([d, col, val], i) => {
-      const n = 1 + Math.min(3, Math.floor(val / 8)), dur = Math.max(2.2, 4.8 - val * 0.06);
-      for (let k = 0; k < n; k++) {
-        const dl = -((dur * k) / n + i * 0.41);
-        [[16, 1, 0], [11, 0.55, 0.07], [7, 0.3, 0.14]].forEach(([tam, op, lag]) => savia.append(h("i", { class: "ap-sv", style: "offset-path:path('" + d + "');--c:" + col + ";--t:" + dur.toFixed(2) + "s;--d:" + (dl - lag).toFixed(2) + "s;--s:" + tam + "px;--o:" + op })));
-      }
-    });
+    // V19 (BiEx, 12-nov-2026: fluidez del Árbol): la savia ya no anima «offset-path» (el navegador lo calcula en el hilo
+    // principal en cada cuadro); cada luz recorre puntos tomados de su raíz con traslados (compositor) y opacidad, y se
+    // detiene cuando el árbol sale de la pantalla. Menos luces: hasta 3 por raíz, con una sola estela.
+    const savia = h("div", { class: "ap-savia", "aria-hidden": "true" }), saviaA = [];
+    try {
+      const ns = "http://www.w3.org/2000/svg", sv = document.createElementNS(ns, "svg"); sv.setAttribute("style", "position:absolute;width:0;height:0;overflow:hidden"); document.body.append(sv);
+      raizD.forEach(([d, col, val], i) => {
+        const pa = document.createElementNS(ns, "path"); pa.setAttribute("d", d); sv.append(pa);
+        const L = pa.getTotalLength(), pts = []; for (let q = 0; q <= 18; q++) { const pt = pa.getPointAtLength(L * (1 - q / 18)); pts.push([pt.x, pt.y]); }
+        const n = 1 + Math.min(2, Math.floor(val / 10)), dur = Math.max(2.2, 4.8 - val * 0.06) * 1000;
+        for (let k = 0; k < n; k++) for (const [tam, op, lag] of [[16, 1, 0], [10, 0.45, 70]]) {
+          const el = h("i", { class: "ap-sv", style: "--c:" + col + ";--s:" + tam + "px" }); savia.append(el);
+          const kf = pts.map(([x, y], q) => ({ transform: "translate3d(" + (x - tam / 2).toFixed(1) + "px," + (y - tam / 2).toFixed(1) + "px,0)", opacity: q === 0 ? 0 : q === 2 ? op : q === 16 ? op : q === 18 ? 0 : undefined, offset: q / 18 }));
+          for (const f of kf) if (f.opacity === undefined) delete f.opacity;
+          if (el.animate && !sinAnim()) saviaA.push(el.animate(kf, { duration: dur, delay: -((dur * k) / n + i * 410 + lag), iterations: Infinity, easing: "cubic-bezier(.45,.05,.55,.95)" }));
+        }
+      });
+      sv.remove();
+    } catch (e) { /* sin savia */ }
     savia.append(h("b", { class: "ap-bebe" }));
     const verFruto = h("button", { class: "ap-gr-b", type: "button", style: pc(GR_X, GR_Y), "aria-label": "Ver el fruto del espíritu", onclick: () => { const t = document.getElementById("jg-fruto"); if (t) t.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" }); } });
     const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
-    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("quieto", !e.isIntersecting); }); IO_ARBOL.observe(caja); }
+    caja._anims = saviaA;
+    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
     return caja;
   }
-  // Figura por capas con la armadura (Efesios 6:13-17; nombres provisionales) y los accesorios. Vectorial y estática (se
-  // dibuja una sola vez a la densidad real): cada pieza forjada es metal con luz, sombra y filo según su grado; la que falta
-  // se insinúa con un trazo dorado tenue, para que la figura nunca se vea incompleta. Sin yelmo, la capucha del manto.
+  // Z1 · El ser interior (BiEx, 13 y 14-nov-2026: «Presencia velada», «vivo y sereno»): realista y sin sexo (es espíritu: el
+  // rostro queda en penumbra con su luz, sin rasgos), sin caja (luz de lo alto, halo y niebla que se desvanecen sin bordes) y
+  // con movimientos que nunca se repiten (respiración de período y hondura distintos en cada ciclo, gestos con esperas y
+  // amplitudes elegidas aleatoriamente). Armadura de Ἐfέsιοι 6:13-17 sin cruces: espada μάχαιρα (curva, de un filo, sin
+  // guarda), escudo θυρεός (largo, de puerta), peto de bandas horizontales y celada lisa sin cimera. Capas vectoriales quietas
+  // (se pintan una sola vez a la densidad real); solo se mueven por el compositor (traslados y opacidad).
   let FA_N = 0;
+  const SI_MET = [null, ["#fbf6e6", "#e6d9b6", "#a8966a"], ["#ffd9a6", "#c9813f", "#5e3210"], ["#ffffff", "#c3ccd8", "#5f6b7a"], ["#fff3c4", "#f0c04a", "#8a5a0c"], ["#dcfff6", "#7fb8ff", "#7a4dff"]];
+  const SI_MANTO = { "manto-lino": ["#f6efdf", "#ddd1b8", "#a99c80", "#6f6450"], "manto-escarlata": ["#d4555a", "#9c262c", "#5a0f14", "#2b0508"], "manto-azul": ["#5d8fe6", "#2f5fb8", "#16336e", "#081633"], "manto-purpura": ["#a865c2", "#7a3594", "#45165a", "#200829"] };
+  const SI_AURA = { "aura-oro": "#f5c64e", "aura-zafiro": "#7da2ff", "aura-esmeralda": "#5fdca6", "aura-amatista": "#c39bff", "aura-alba": "#ffc4a0", "aura-columna": "#ff9a52", "aura-nube": "#eef4fb" };
   function figuraArmadura(av) {
-    const g = (id) => Math.max(0, Math.min(5, (av.eq || {})[id] | 0)), acc = av.acc || {}, u = "fa" + (++FA_N) + "-";
-    const MET = [null, ["#fbf6e6", "#e6d9b6", "#a8966a"], ["#ffd9a6", "#c9813f", "#5e3210"], ["#ffffff", "#c3ccd8", "#5f6b7a"], ["#fff3c4", "#f0c04a", "#8a5a0c"], ["#dcfff6", "#7fb8ff", "#7a4dff"]];
-    const grad = (id, n) => { const c = MET[n]; return '<linearGradient id="' + u + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset=".48" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></linearGradient>'; };
-    const piezas = ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"];
-    let defs = piezas.filter((p) => g(p)).map((p) => grad(p, g(p))).join("");
-    const auraC = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a", "aura-columna": "#ff8a3d", "aura-nube": "#e3ecf8" }[acc.aura] || "#f5c64e";
-    const mantoC = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#c23a40", "#4e1014"], "manto-azul": ["#3a6fd0", "#101f4a"], "manto-purpura": ["#8e3fa6", "#2c0b38"] }[acc.manto] || ["#2f3a47", "#0b1015"];
-    defs += '<radialGradient id="' + u + 'halo" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="' + auraC + '" stop-opacity="' + (acc.aura ? ".55" : ".3") + '"/><stop offset=".55" stop-color="' + auraC + '" stop-opacity=".08"/><stop offset="1" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>' +
-      '<linearGradient id="' + u + 'haz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6dc" stop-opacity="0"/><stop offset=".1" stop-color="#fff6dc" stop-opacity=".15"/><stop offset=".72" stop-color="#fff6dc" stop-opacity="0"/></linearGradient>' +
-      '<linearGradient id="' + u + 'manto" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + mantoC[0] + '"/><stop offset="1" stop-color="' + mantoC[1] + '"/></linearGradient>' +
-      '<linearGradient id="' + u + 'tela" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d3124"/><stop offset=".5" stop-color="#4d3e2c"/><stop offset="1" stop-color="#1d1610"/></linearGradient>' +
-      '<linearGradient id="' + u + 'piel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ebc59c"/><stop offset=".55" stop-color="#c79a70"/><stop offset="1" stop-color="#7a5536"/></linearGradient>' +
-      '<radialGradient id="' + u + 'suelo"><stop offset="0" stop-color="' + auraC + '" stop-opacity=".55"/><stop offset="1" stop-color="' + auraC + '" stop-opacity="0"/></radialGradient>';
-    const F = (id) => "url(#" + u + id + ")";
-    const fant = (d) => '<path d="' + d + '" fill="none" stroke="#e8cf94" stroke-opacity=".36" stroke-width="1.2" stroke-dasharray="3 3"/>'; // pieza por forjar
-    const filo = 'stroke="rgba(0,0,0,.45)" stroke-width="1"';
-    const brillo = (d) => '<path d="' + d + '" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round"/>';
-    const chispa = (x, y, s) => '<path d="M' + x + " " + (y - s) + "L" + (x + s * 0.28) + " " + (y - s * 0.28) + "L" + (x + s) + " " + y + "L" + (x + s * 0.28) + " " + (y + s * 0.28) + "L" + x + " " + (y + s) + "L" + (x - s * 0.28) + " " + (y + s * 0.28) + "L" + (x - s) + " " + y + "L" + (x - s * 0.28) + " " + (y - s * 0.28) + 'Z" fill="#fff" opacity=".9"/>';
+    const g = (k) => Math.max(0, Math.min(5, (av.eq || {})[k] | 0)), acc = av.acc || {}, u = "si" + (++FA_N) + "-", url = (n) => "url(#" + u + n + ")";
+    const M = SI_MANTO[acc.manto] || ["#4a5a6e", "#2a3644", "#121921", "#070b10"], luz = SI_AURA[acc.aura] || "#ffe4a0", borde = acc.manto === "manto-lino" ? "#fffaf0" : "#ffe9b8";
+    const st = (a) => a.map(([o, c, op]) => '<stop offset="' + o + '" stop-color="' + c + '"' + (op != null ? ' stop-opacity="' + op + '"' : "") + "/>").join("");
+    const lin = (n, x2, y2, a) => '<linearGradient id="' + u + n + '" x1="0" y1="0" x2="' + x2 + '" y2="' + y2 + '">' + st(a) + "</linearGradient>";
+    const rad = (n, cx, cy, r, a) => '<radialGradient id="' + u + n + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '">' + st(a) + "</radialGradient>";
+    // metal convexo (peto, celada): la luz cae arriba a la izquierda y se apaga hacia los bordes; la hoja, un reflejo a lo largo
+    const met = (n, k) => { const c = SI_MET[k]; return n === "g-espada" || n === "g-cinto" || n === "g-calzado" ? lin(n, 1, 0, [[0, c[2]], [0.4, c[1]], [0.5, c[0]], [0.62, c[1]], [1, c[2]]])
+      : rad(n, ".38", ".3", ".78", [[0, c[0]], [0.35, c[1]], [0.85, c[2]], [1, c[2]]]); };
+    let defs = lin("m", 1, 0, [[0, M[3]], [0.22, M[2]], [0.46, M[1]], [0.6, M[0]], [0.8, M[2]], [1, M[3]]]) + lin("mv", 0, 1, [[0, "#fff", 0.14], [0.4, "#fff", 0], [1, "#000", 0.42]]) +
+      lin("capa", 1, 0, [[0, M[3]], [0.3, M[2]], [0.55, M[0]], [0.75, M[1]], [1, M[3]]]) + rad("cara", ".5", ".62", ".62", [[0, luz, 0.18], [0.42, luz, 0.04], [1, "#030405", 0.97]]) +
+      lin("oro", 1, 1, [[0, "#fff3c4"], [0.45, "#e6b445"], [1, "#6e460b"]]) + lin("cuero", 1, 1, [[0, "#a2723f"], [0.55, "#6d4520"], [1, "#3c220c"]]) + lin("mtv", 0, 1, [[0, "#fff", 0.25], [1, "#000", 0.3]]) +
+      lin("pies", 0, 1, [[0.74, "#fff"], [0.985, "#fff", 0]]) + '<mask id="' + u + 'fun" maskUnits="userSpaceOnUse" x="0" y="0" width="300" height="420"><rect width="300" height="420" fill="' + url("pies") + '"/></mask>' +
+      '<filter id="' + u + 'b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>';
+    for (const k of ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"]) if (g(k)) defs += met("g-" + k, g(k));
+    const fant = (d) => '<path d="' + d + '" fill="none" stroke="#e8cf94" stroke-opacity=".38" stroke-width="1.2" stroke-dasharray="3 3"/>';
+    const fulgor = (x, y, r) => '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" opacity=".55"/><circle cx="' + x + '" cy="' + y + '" r="' + (r * 2.6).toFixed(1) + '" fill="#bff3ff" opacity=".14"/>'; // bloque precioso: luz redonda, sin puntas
     const P = {
-      coraza: "M93 90Q120 81 147 90L144 141Q120 153 96 141Z",
-      hombros: "M74 98Q76 84 92 86L100 94Q90 98 84 108ZM166 98Q164 84 148 86L140 94Q150 98 156 108Z",
-      cinto: "M94 147L146 147L147 160L93 160Z",
-      escudo: "M146 128Q178 114 210 128L208 204Q178 228 148 204Z",
-      espada: "M60.5 166L67.5 166L66.5 52L64 38L61.5 52Z",
-      yelmo: "M104 60Q103 33 120 30Q137 33 136 60L132 63Q120 55 108 63Z",
-      grebas: "M99 250L115 250L114 294L100 294ZM125 250L141 250L140 294L126 294Z",
+      manto: "M108 196C100 240 94 290 88 340C85 362 82 380 78 398C112 410 192 408 224 400C220 380 216 360 213 338C208 288 202 240 194 196Z",
+      capa: "M100 122C86 142 80 172 77 214C96 228 118 232 128 230C126 196 124 164 124 140C134 132 166 132 176 140C176 164 174 196 172 230C182 232 204 228 223 214C220 172 214 142 200 122C184 112 116 112 100 122Z",
+      capucha: "M150 30C124 30 105 50 102 84C99 108 102 126 96 144C112 134 132 130 150 130C168 130 188 134 204 144C198 126 201 108 198 84C195 50 176 30 150 30Z",
+      cara: "M150 56C133 56 123 73 123 95C123 113 133 125 150 129C167 125 177 113 177 95C177 73 167 56 150 56Z",
+      coraza: "M127 141C137 135 163 135 173 141C176 158 175 180 170 197C162 205 138 205 130 197C125 180 124 158 127 141Z",
+      cinto: "M120 202C134 209 166 209 180 202L181 214C166 221 134 221 119 214Z",
+      calzado: "M130 400C131 393 142 391 145 397L146 405H128ZM156 397C159 391 170 393 171 400L173 405H155Z",
+      espada: "M146.5 254C146 300 148 334 156 362C152 340 152 300 153.5 254Z",
+      escudo: "M198 176C214 168 236 168 252 176L250 318C236 330 214 330 200 318Z",
+      yelmo: "M108 76C106 48 124 32 150 32C176 32 194 48 192 76C178 66 122 66 108 76Z",
     };
-    const yelmo = g("yelmo");
-    let s = "<defs>" + defs + "</defs>" +
-      '<ellipse cx="120" cy="150" rx="118" ry="160" fill="' + F("halo") + '"/>' +
-      '<path d="M96 0L144 0L200 320L40 320Z" fill="' + F("haz") + '"/>' +
-      '<ellipse cx="120" cy="310" rx="88" ry="11" fill="' + F("suelo") + '"/>' +
-      // manto (y la capucha, si no hay yelmo)
-      '<path d="M88 92C70 140 56 222 48 306L192 306C184 222 170 140 152 92Z" fill="' + F("manto") + '"/>' +
-      '<path d="M96 120C88 190 82 250 80 304M144 120C152 190 158 250 160 304M120 160C120 220 120 270 120 304" stroke="rgba(0,0,0,.28)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-      '<path d="M88 92C70 140 56 222 48 306" stroke="' + mantoC[0] + '" stroke-opacity=".55" stroke-width="1.4" fill="none"/>' +
-      (yelmo ? "" : '<path d="M101 64C99 40 107 25 120 24C133 25 141 40 139 64C138 76 134 84 126 90L114 90C106 84 102 76 101 64Z" fill="' + F("manto") + '"/>') +
-      // piernas, faldón y torso de tela
-      '<path d="M104 206L100 298L114 298L117 206ZM123 206L126 298L140 298L136 206Z" fill="#241c14"/>' +
-      '<path d="M96 150L144 150L153 214Q120 224 87 214Z" fill="' + F("tela") + '"/>' +
-      '<path d="M92 88Q120 79 148 88L145 152L95 152Z" fill="' + F("tela") + '"/>' +
-      // brazos (la mano izquierda empuña la espada; la derecha sostiene el escudo)
-      '<path d="M82 92C70 112 63 140 60 168L71 170C74 144 81 120 93 100Z" fill="' + F("tela") + '"/><circle cx="65" cy="172" r="6.5" fill="' + F("piel") + '"/>' +
-      '<path d="M158 92C170 112 176 138 176 160L166 161C166 140 160 118 147 100Z" fill="' + F("tela") + '"/>' + (g("escudo") ? "" : '<circle cx="171" cy="164" r="6" fill="' + F("piel") + '"/>') +
-      // cuello y rostro en penumbra, con la mirada encendida
-      '<path d="M113.5 68h13v18h-13z" fill="#7a5536"/><ellipse cx="120" cy="56" rx="12.5" ry="15.5" fill="' + F("piel") + '"/>' +
-      '<path d="M108.5 53.5Q120 49 131.5 53.5L131 57.8Q120 54.6 109 57.8Z" fill="rgba(40,22,10,.5)"/>' +
-      '<circle cx="115" cy="56.5" r="1.15" fill="#fff8e6" opacity=".9"/><circle cx="125" cy="56.5" r="1.15" fill="#fff8e6" opacity=".9"/>' +
-      '<path d="M120 58L118.7 63.6L121.3 63.9" fill="none" stroke="rgba(60,34,16,.55)" stroke-width="1" stroke-linecap="round"/><path d="M116.5 66.8Q120 68.2 123.5 66.8" fill="none" stroke="rgba(60,34,16,.45)" stroke-width="1" stroke-linecap="round"/>' +
-      '<path d="M132.4 55Q131.6 67.5 120 71.6Q127.5 66.8 129.4 57Z" fill="rgba(40,22,10,.32)"/>' +
-      (yelmo ? "" : '<path d="M105 52Q105 33 120 32Q135 33 135 52Q129 41.5 120 41.5Q111 41.5 105 52Z" fill="' + F("manto") + '"/><path d="M106.5 51Q120 39 133.5 51L133 55Q120 45 107 55Z" fill="rgba(0,0,0,.38)"/>' +
-        '<path d="M105 52Q105 33 120 32" fill="none" stroke="' + mantoC[0] + '" stroke-opacity=".6" stroke-width="1"/>');
-    // grebas y sandalias
-    s += g("calzado") ? '<path d="' + P.grebas + '" fill="' + F("calzado") + '" ' + filo + '/><ellipse cx="107" cy="250" rx="9" ry="6" fill="' + F("calzado") + '" ' + filo + '/><ellipse cx="133" cy="250" rx="9" ry="6" fill="' + F("calzado") + '" ' + filo + "/>" + brillo("M103 256L103 290M129 256L129 290")
-      : fant(P.grebas);
-    s += '<path d="M96 296h21v9q-12 3-24 0zM123 296h21q3 3 3 9q-12 3-24 0z" fill="' + (g("calzado") ? F("calzado") : "#1a140e") + '"' + (g("calzado") ? " " + filo : "") + "/>";
-    // coraza con hombreras
-    s += g("coraza") ? '<path d="' + P.hombros + '" fill="' + F("coraza") + '" ' + filo + '/><path d="' + P.coraza + '" fill="' + F("coraza") + '" ' + filo + "/>" +
-      '<path d="M120 86V148M100 112Q110 120 120 112Q130 120 140 112M100 126Q120 134 140 126M101 136Q120 144 139 136" stroke="rgba(0,0,0,.28)" stroke-width="1.1" fill="none"/>' + brillo("M98 96Q106 92 114 92M78 96Q82 90 90 89") +
-      (g("coraza") === 5 ? chispa(106, 100, 4) : "") : fant(P.coraza) + fant(P.hombros);
-    // cinto con su hebilla y tiras
-    if (g("cinto")) { let tiras = ""; for (let i = 0; i < 7; i++) tiras += '<rect x="' + (96 + i * 7) + '" y="161" width="5.6" height="' + (34 + (i % 2) * 4) + '" rx="2" fill="' + F("cinto") + '" opacity=".92" ' + filo + "/>";
-      s += tiras + '<path d="' + P.cinto + '" fill="' + F("cinto") + '" ' + filo + '/><rect x="113" y="144" width="14" height="19" rx="3" fill="' + F("cinto") + '" stroke="rgba(0,0,0,.5)"/>' + (g("cinto") >= 4 ? '<circle cx="120" cy="153.5" r="3.4" fill="#fff" opacity=".85"/>' : ""); }
-    else s += fant(P.cinto);
-    // espada en alto
-    s += g("espada") ? (g("espada") >= 4 ? '<path d="M64 160V44" stroke="' + (g("espada") === 5 ? "#9fe0ff" : "#ffe08a") + '" stroke-opacity=".45" stroke-width="7" stroke-linecap="round"/>' : "") +
-      '<path d="' + P.espada + '" fill="' + F("espada") + '" ' + filo + '/><path d="M64.6 158V54" stroke="rgba(0,0,0,.28)" stroke-width="1.3"/><path d="M62.6 160V52" stroke="#fff" stroke-opacity=".6" stroke-width=".8"/>' +
-      '<rect x="50" y="163" width="28" height="5.4" rx="2.7" fill="' + F("espada") + '" ' + filo + '/><rect x="61" y="168" width="6" height="15" rx="2" fill="#4a2f16"/><circle cx="64" cy="186" r="4.2" fill="' + F("espada") + '" ' + filo + "/>" +
-      (g("espada") === 5 ? chispa(64, 42, 5) : "") : fant(P.espada + "M51 165.5h26");
-    // escudo
-    s += g("escudo") ? '<path d="' + P.escudo + '" fill="' + F("escudo") + '" stroke="rgba(0,0,0,.55)" stroke-width="1.6"/><path d="M152 133Q178 121 204 133L202 202Q178 220 154 202Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>' +
-      // BiEx (10-nov-2026): en la armadura no va un libro sino un rollo: papiro desenrollado desde su vara, con dos columnas
-      // de escritura y el borde inferior enrollado
-      '<path d="M165 156.4H191V174.2Q185.6 176.9 178 175.2Q170.4 173.5 165 176.2Z" fill="rgba(0,0,0,.18)" stroke="rgba(0,0,0,.4)" stroke-width=".9"/>' +
-      '<path d="M165 176.2Q170.4 173.5 178 175.2Q185.6 176.9 191 174.2Q192.6 178.3 189.4 179.5Q184.2 181 178 179.3Q171.2 177.6 166.6 180.1Q163.6 179.9 165 176.2Z" fill="rgba(0,0,0,.26)" stroke="rgba(0,0,0,.42)" stroke-width=".8"/>' +
-      '<rect x="161.6" y="151.2" width="32.8" height="5.6" rx="2.8" fill="rgba(0,0,0,.24)" stroke="rgba(0,0,0,.45)" stroke-width=".9"/><path d="M163.4 152.6H192.6" stroke="#fff" stroke-opacity=".3" stroke-width=".7" stroke-linecap="round"/>' +
-      '<ellipse cx="161.6" cy="154" rx="1.5" ry="3.3" fill="rgba(0,0,0,.3)" stroke="rgba(0,0,0,.45)" stroke-width=".7"/><ellipse cx="194.4" cy="154" rx="1.5" ry="3.3" fill="rgba(0,0,0,.3)" stroke="rgba(0,0,0,.45)" stroke-width=".7"/>' +
-      '<path d="M168 160.2H176.4M168 163.4H176.4M168 166.6H175.2M168 169.8H176.4M180.2 160.2H188.4M180.2 163.4H187.2M180.2 166.6H188.4M180.2 169.8H186.6" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width=".8" stroke-linecap="round"/>' + brillo("M156 136Q170 128 186 128") +
-      (g("escudo") === 5 ? chispa(196, 140, 4.5) : "") : fant(P.escudo);
-    // yelmo con cimera
-    s += yelmo ? '<path d="M120 31C121 15 134 6 152 12C140 15 130 22 125 33Z" fill="' + (yelmo >= 4 ? F("yelmo") : "#9b2c2c") + '"/><path d="' + P.yelmo + '" fill="' + F("yelmo") + '" ' + filo + '/><path d="M106 60L109 74L114 70M134 60L131 74L126 70" fill="' + F("yelmo") + '" ' + filo + "/>" + brillo("M110 42Q114 34 122 33") + (yelmo === 5 ? chispa(136, 36, 4) : "")
-      : fant(P.yelmo);
-    // corona y sello
-    if (acc.corona) { const mirto = acc.corona === "corona-laurel", verde = mirto ? "#5f9a4c" : "#8fbf6a", cy = yelmo ? 45 : 43; let h2 = "";
-      for (let i = 0; i < 6; i++) for (const a of [Math.PI * (1.08 + i * 0.07), Math.PI * (1.92 - i * 0.07)]) { const x = 120 + 17 * Math.cos(a), y = cy + 9 * Math.sin(a);
-        h2 += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="3.4" ry="1.6" transform="rotate(' + ((a * 180) / Math.PI + 90).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + verde + '"/>'; if (mirto && i % 2) h2 += '<circle cx="' + x.toFixed(1) + '" cy="' + (y - 1.6).toFixed(1) + '" r=".9" fill="#fffaf0"/>'; }
-      s += h2; }
-    if (acc.sello && SELLO_RARO[acc.sello]) s += '<g transform="translate(110.4 104.4) scale(.4)"><circle cx="24" cy="24" r="19" fill="#f2c14e" stroke="#7a5212" stroke-width="2"/>' + SELLO_RARO[acc.sello] + "</g>";
-    else if (acc.sello) s += '<circle cx="120" cy="114" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M114.6 116.6h10.8" stroke="#7a5212" stroke-width="1.2" stroke-linecap="round"/><circle cx="120" cy="112.8" r="3.9" fill="#fff6d6" opacity=".4"/><circle cx="120" cy="112.8" r="2.1" fill="#fffaf0"/>' : '<path d="M116.5 116h7l-1.2 2.6h-4.6zM118.5 116c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
-    // (BiEx, 12-nov-2026) al elegir qué forjar, la pieza se ilumina en la figura: capas vectoriales que solo cambian de opacidad
-    // (empiezan en opacity="0", así una copia de la figura sin estas reglas, como la imagen para compartir, no las muestra)
-    const LUZ_PZ = { coraza: P.coraza + P.hombros, cinto: P.cinto, calzado: P.grebas, escudo: P.escudo, yelmo: P.yelmo, espada: P.espada };
-    s += '<defs><filter id="' + u + 'luz" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4"/></filter></defs>' +
-      Object.entries(LUZ_PZ).map(([k, d]) => '<g class="fa-luz" data-pz="' + k + '" opacity="0"><path d="' + d + '" fill="#ffe6a3" fill-opacity=".2" stroke="#ffe39a" stroke-width="5" filter="url(#' + u + 'luz)"/><path d="' + d + '" fill="none" stroke="#fff4cf" stroke-width="1.5" stroke-linejoin="round"/></g>').join("");
-    const el = A.svg(s, "0 0 240 320"); el.setAttribute("class", "av-fig"); el.setAttribute("role", "img");
-    el.setAttribute("aria-label", "Tu ser interior, con su armadura: " + piezas.map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", "));
-    return el;
+    // manto, túnica, calzado y el escudo apoyado (capa quieta, anclada al suelo)
+    let pl = "";
+    for (const [x0, x1, x2, w, a] of [[112, 104, 96, 7, 0.34], [122, 118, 112, 4, 0.2], [188, 196, 206, 7, 0.34], [178, 182, 190, 4, 0.22], [103, 98, 90, 3, 0.18]]) {
+      const k = x0 < 150 ? 4 : -4;
+      pl += '<path d="M' + x0 + " 206C" + x1 + " 270 " + x1 + " 330 " + x2 + ' 398" fill="none" stroke="#000" stroke-opacity="' + a + '" stroke-width="' + w + '" stroke-linecap="round" filter="' + url("b2") + '"/>' +
+        '<path d="M' + (x0 + k) + " 210C" + (x1 + k) + " 272 " + (x1 + k) + " 330 " + (x2 + k) + ' 396" fill="none" stroke="' + borde + '" stroke-opacity=".17" stroke-width="1.1" stroke-linecap="round"/>';
+    }
+    const calz = g("calzado") ? '<path d="' + P.calzado + '" fill="' + url("cuero") + '"/><path d="M131 397H145M157 397H171" stroke="' + url("g-calzado") + '" stroke-width="2.2" stroke-linecap="round"/>' + (g("calzado") === 5 ? fulgor(138, 396, 1.6) : "") : fant(P.calzado);
+    const esc = g("escudo") ? '<g transform="rotate(4 224 260)"><path d="' + P.escudo + '" fill="' + url("cuero") + '" stroke="rgba(0,0,0,.5)" stroke-width="1"/>' +
+      '<path d="M202 180C216 173 234 173 248 180L246 314C234 324 216 324 204 314Z" fill="none" stroke="' + url("g-escudo") + '" stroke-width="2.8"/><path d="' + P.escudo + '" fill="' + url("mv") + '"/>' +
+      '<circle cx="225" cy="246" r="12" fill="' + url("g-escudo") + '" stroke="rgba(0,0,0,.45)" stroke-width=".8"/><circle cx="221" cy="242" r="3.6" fill="#fff" opacity=".45"/>' +
+      '<path d="M213 272C218 268 222 268 225 272C228 268 232 268 237 272L237 284C232 280 228 280 225 284C222 280 218 280 213 284Z" fill="none" stroke="#f3d08a" stroke-opacity=".78" stroke-width="1.1"/>' + (g("escudo") === 5 ? fulgor(236, 190, 2) : "") + "</g>"
+      : '<g transform="rotate(4 224 260)">' + fant(P.escudo) + "</g>";
+    // V6·2 (BiEx, 12-nov-2026: «que los mantos se vean épicos»): el escarlata y la púrpura con orla de oro bordada; el azul con
+    // sus flecos y su cordón azul (Bᵉmiḏbar [Números] 15:38); el de lino, con su brillo fino
+    const orla = acc.manto === "manto-escarlata" || acc.manto === "manto-purpura";
+    const bordado = (d, w) => '<path d="' + d + '" fill="none" stroke="' + url("oro") + '" stroke-width="' + w + '"/><path d="' + d + '" fill="none" stroke="#fff6d6" stroke-opacity=".55" stroke-width=".7" stroke-dasharray="1.2 2.4"/>';
+    const flecos = (x, y, sx) => { let f2 = ""; for (let i = 0; i < 5; i++) f2 += '<path d="M' + (x + sx * i * 2.2).toFixed(1) + " " + y + "q" + (sx * 0.8).toFixed(1) + " 7 " + (sx * 0.2).toFixed(1) + ' 14" fill="none" stroke="' + (i === 2 ? "#3f7be0" : "#f3ead6") + '" stroke-width="' + (i === 2 ? 1.3 : 0.9) + '" stroke-linecap="round"/>'; return f2; };
+    const adorno = (orla ? bordado("M80 394C96 388 108 400 126 395M176 397C192 392 206 401 222 396", 2.4) : "") + (acc.manto === "manto-azul" ? flecos(84, 392, 1) + flecos(214, 392, -1) : "");
+    const adornoCapa = (orla ? bordado("M78 212C96 226 118 230 128 228M222 212C204 226 182 230 172 228M126 140C126 170 127 200 128 228M174 140C174 170 173 200 172 228", 2.2) : "") +
+      (acc.manto === "manto-azul" ? flecos(80, 212, 1) + flecos(220, 212, -1) : "") + (acc.manto === "manto-lino" ? '<path d="M110 130C106 160 104 190 102 216M196 132C200 160 202 190 204 214" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.6" filter="' + url("b2") + '"/>' : "");
+    const capaManto = '<g mask="url(#' + u + 'fun)"><path d="' + P.manto + '" fill="' + url("m") + '"/><path d="' + P.manto + '" fill="' + url("mv") + '"/>' +
+      '<path d="M134 214C132 280 129 340 126 402C142 406 160 406 176 402C172 340 168 280 166 214Z" fill="' + M[3] + '" opacity=".75"/>' +
+      '<path d="M139 216C138 282 136 342 134 404C146 406 156 406 168 404C165 342 162 282 161 216Z" fill="#e9dfca"/><path d="M139 216C138 282 136 342 134 404C146 406 156 406 168 404C165 342 162 282 161 216Z" fill="' + url("mv") + '"/>' +
+      '<path d="M134 214C132 280 129 340 126 402M166 214C168 280 172 340 176 402" fill="none" stroke="#000" stroke-opacity=".46" stroke-width="5" filter="' + url("b2") + '"/>' + pl +
+      '<path d="M78 398C96 392 108 404 126 399M176 401C192 396 206 405 224 400" fill="none" stroke="' + borde + '" stroke-opacity=".34" stroke-width="1.3"/>' + adorno + calz + "</g>" + esc;
+    // torso: capa, peto, cinta, mangas, manos y la μάχαιρα (respira junto con la cabeza)
+    const peto = g("coraza") ? '<path d="' + P.coraza + '" fill="' + url("g-coraza") + '" stroke="rgba(0,0,0,.42)" stroke-width="1"/><path d="' + P.coraza + '" fill="' + url("mtv") + '"/>' +
+      '<path d="M126.3 158C137 164 163 164 173.7 158M126.6 174C137 180 163 180 173.4 174M128.3 189C138 195 162 195 171.7 189" fill="none" stroke="#2f3843" stroke-opacity=".5" stroke-width="1.3"/>' +
+      '<path d="M127 156.4C137 162.4 163 162.4 173 156.4M127.3 172.4C137 178.4 163 178.4 172.7 172.4" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".8"/>' + (g("coraza") === 5 ? fulgor(136, 150, 2) : "")
+      : '<path d="' + P.coraza + '" fill="#e9dfca" opacity=".92"/><path d="' + P.coraza + '" fill="' + url("mtv") + '"/>' + fant(P.coraza);
+    const cinta = g("cinto") ? '<path d="' + P.cinto + '" fill="' + url("cuero") + '"/>' + [128, 137, 163, 172].map((x) => '<rect x="' + (x - 2.6) + '" y="' + (x < 150 ? 206.5 : 206.5) + '" width="5.2" height="7" rx="1.2" fill="' + url("g-cinto") + '"/>').join("") + '<circle cx="150" cy="211" r="5.4" fill="' + url("g-cinto") + '" stroke="rgba(0,0,0,.45)" stroke-width=".8"/>'
+      : '<path d="' + P.cinto + '" fill="' + url("cuero") + '" opacity=".55"/>' + fant(P.cinto);
+    const espada = g("espada") ? '<path d="M148 240L152 240L152 254L148 254Z" fill="' + url("cuero") + '"/><path d="' + P.espada + '" fill="' + url("g-espada") + '" stroke="rgba(0,0,0,.35)" stroke-width=".7"/>' +
+      '<path d="M150.5 258C150.6 300 152 332 155 352" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".8"/>' + (g("espada") === 5 ? fulgor(153, 300, 1.8) : "") : fant(P.espada);
+    const manos = '<path d="M144 236C146 230 154 230 156 236C155 240 145 240 144 236Z" fill="' + url("oro") + '"/>' +
+      '<path d="M139 232C140 224 148 222 152 226L151 236C147 240 141 238 139 232Z" fill="#c9a37e"/><path d="M161 232C160 224 152 222 148 226L149 236C153 240 159 238 161 232Z" fill="#b48c66"/>' +
+      '<path d="M141 230C144 228 148 228 150 230M150 230C152 228 156 228 159 230" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".8"/>';
+    const capaTorso = peto + cinta + '<path d="' + P.capa + '" fill="' + url("capa") + '"/><path d="' + P.capa + '" fill="' + url("mv") + '"/>' +
+      '<path d="M104 132C96 160 92 190 90 218M196 132C204 160 208 190 210 218" fill="none" stroke="#000" stroke-opacity=".32" stroke-width="4" filter="' + url("b2") + '"/>' +
+      '<path d="M126 140C126 170 127 200 128 230M174 140C174 170 173 200 172 230" fill="none" stroke="' + borde + '" stroke-opacity=".22" stroke-width="1.1"/>' + adornoCapa + espada +
+      '<path d="M112 206C116 220 126 230 140 236L146 226C134 222 126 214 122 204Z" fill="' + url("capa") + '"/><path d="M188 206C184 220 174 230 160 236L154 226C166 222 174 214 178 204Z" fill="' + url("capa") + '"/>' + manos;
+    // cabeza: capucha honda (o celada lisa), el rostro en penumbra, el lauro y el sello en el broche del manto
+    let cab = '<path d="' + P.capucha + '" fill="' + url("capa") + '"/><path d="' + P.capucha + '" fill="' + url("mv") + '"/><path d="' + P.cara + '" fill="' + url("cara") + '"/>' +
+      '<path d="M123 95C123 73 133 56 150 56C167 56 177 73 177 95" fill="none" stroke="' + borde + '" stroke-opacity=".38" stroke-width="1.4"/>' +
+      '<path d="M126 96C127 112 136 122 150 126C164 122 173 112 174 96" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="5" filter="' + url("b2") + '"/>' +
+      '<path d="M110 70C118 48 134 38 150 38C166 38 182 48 190 70" fill="none" stroke="' + borde + '" stroke-opacity=".26" stroke-width="1.2"/>';
+    cab += g("yelmo") ? '<path d="' + P.yelmo + '" fill="' + url("g-yelmo") + '" stroke="rgba(0,0,0,.45)" stroke-width="1"/><path d="' + P.yelmo + '" fill="' + url("mtv") + '"/><path d="M110 74C126 66 174 66 190 74" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>' + (g("yelmo") === 5 ? fulgor(134, 46, 2) : "") : fant(P.yelmo);
+    if (acc.corona) { const pal = acc.corona === "corona-palmas", verde = acc.corona === "corona-laurel" ? "#5f9a4c" : pal ? "#b9c96a" : "#8fbf6a"; let h2 = "";
+      for (let i = 0; i < 7; i++) for (const a of [Math.PI * (1.06 + i * 0.062), Math.PI * (1.94 - i * 0.062)]) { const x = 150 + 34 * Math.cos(a), y = 70 + 13 * Math.sin(a);
+        h2 += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (pal ? 6 : 5) + '" ry="' + (pal ? 1.7 : 2.2) + '" transform="rotate(' + ((a * 180) / Math.PI + 90).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + verde + '"/>';
+        if (acc.corona === "corona-laurel" && i % 2) h2 += '<circle cx="' + x.toFixed(1) + '" cy="' + (y - 2).toFixed(1) + '" r="1.2" fill="#fffaf0"/>'; }
+      cab += h2; }
+    if (acc.sello && SELLO_RARO[acc.sello]) cab += '<g transform="translate(140.4 127.4) scale(.4)"><circle cx="24" cy="24" r="19" fill="#f2c14e" stroke="#7a5212" stroke-width="2"/>' + SELLO_RARO[acc.sello] + "</g>";
+    else if (acc.sello) cab += '<circle cx="150" cy="137" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M144.6 139.6h10.8" stroke="#7a5212" stroke-width="1.2" stroke-linecap="round"/><circle cx="150" cy="135.8" r="3.9" fill="#fff6d6" opacity=".4"/><circle cx="150" cy="135.8" r="2.1" fill="#fffaf0"/>' : '<path d="M146.5 139h7l-1.2 2.6h-4.6zM148.5 139c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
+    // luz de la pieza que se elige para forjar (capa aparte: solo cambia su opacidad)
+    const LUZ = { coraza: P.coraza, cinto: P.cinto, calzado: P.calzado, escudo: P.escudo, yelmo: P.yelmo, espada: P.espada };
+    const luces = '<defs><filter id="' + u + 'luz" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4"/></filter></defs>' +
+      Object.entries(LUZ).map(([k, d]) => '<g class="fa-luz" data-pz="' + k + '" opacity="0"' + (k === "escudo" ? ' transform="rotate(4 224 260)"' : "") + '><path d="' + d + '" fill="#ffe6a3" fill-opacity=".2" stroke="#ffe39a" stroke-width="5" filter="url(#' + u + 'luz)"/><path d="' + d + '" fill="none" stroke="#fff4cf" stroke-width="1.5" stroke-linejoin="round"/></g>').join("");
+    const capa = (cls, cuerpo, conDefs) => { const el = A.svg((conDefs ? "<defs>" + defs + "</defs>" : "") + cuerpo, "0 0 300 420"); el.setAttribute("class", "si-c " + cls); el.setAttribute("aria-hidden", "true"); return el; };
+    // escena sin bordes: el halo del color del aura, el haz desde lo alto y el suelo con su niebla
+    const fondo = capa("si-fondo", '<defs><radialGradient id="' + u + 'halo" cx=".5" cy=".34" r=".5">' + st([[0, luz, 0.4], [0.35, luz, 0.13], [0.75, luz, 0.02], [1, luz, 0]]) + '</radialGradient>' +
+      lin("haz", 0, 1, [[0, "#fff8e4", 0], [0.1, "#fff8e4", 0.2], [0.75, "#fff8e4", 0]]) + '<radialGradient id="' + u + 'suelo">' + st([[0, luz, 0.5], [0.45, luz, 0.14], [1, luz, 0]]) + "</radialGradient></defs>" +
+      '<ellipse cx="150" cy="200" rx="158" ry="222" fill="' + url("halo") + '"/><path d="M122 0H178L236 420H64Z" fill="' + url("haz") + '" opacity=".75"/><ellipse cx="152" cy="400" rx="126" ry="18" fill="' + url("suelo") + '"/>');
+    const caja = h("div", { class: "av-fig si", role: "img", "aria-label": "Tu ser interior, con su armadura: " + ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"].map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", ") },
+      fondo, h("i", { class: "si-niebla n1" }), h("i", { class: "si-niebla n2" }),
+      capa("si-manto", capaManto, true),
+      h("div", { class: "si-mueve si-torso" }, capa("", capaTorso, true), h("i", { class: "si-pecho" }),
+        h("div", { class: "si-mueve si-cabeza" }, capa("", cab, true), h("i", { class: "si-alma" }))),
+      capa("si-luces", luces), ...Array.from({ length: 6 }, (_, i) => h("i", { class: "si-mo", style: "left:" + (22 + ((i * 37) % 56)) + "%;--t:" + (6 + (i % 3) * 1.7).toFixed(1) + "s;--d:" + (i * 1.3).toFixed(1) + "s" })));
+    caja.style.setProperty("--si-luz", luz);
+    setTimeout(() => vivirSer(caja), 60);
+    return caja;
+  }
+  // Vida del ser interior: nada se repite. Respiración: cada ciclo con su propio período (3,4–5,6 s) y hondura (0,4–1,1 px);
+  // gestos sueltos tras esperas distintas (4–13 s): alzar un poco la mirada hacia la luz, acomodar los hombros, la luz del rostro
+  // que crece y se calma. Al llegar con versos leídos hoy, la luz del pecho crece una vez. Solo traslados y opacidad (compositor);
+  // se detiene fuera de la pantalla, con la pestaña oculta y con «Sin animaciones».
+  function vivirSer(caja) {
+    if (!caja.isConnected || !caja.animate || sinAnim()) return;
+    const torso = caja.querySelector(".si-torso"), cabeza = caja.querySelector(".si-cabeza"), alma = caja.querySelector(".si-alma"), pecho = caja.querySelector(".si-pecho");
+    const al = (a, b) => a + Math.random() * (b - a);
+    let visible = true, t1 = 0, t2 = 0;
+    const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { const v = e.some((x) => x.isIntersecting); if (v && !visible) { visible = true; respira(); gesto(); } else if (!v) visible = false; }) : null;
+    if (io) io.observe(caja);
+    const vivo = () => caja.isConnected && visible && !document.hidden;
+    function respira() {
+      clearTimeout(t1); if (!caja.isConnected) { if (io) io.disconnect(); return; } if (!vivo()) return;
+      const T = al(3400, 5600), A = al(0.4, 1.1), pico = al(0.38, 0.52);
+      const a = torso.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(0," + (-A).toFixed(2) + "px,0)", offset: pico }, { transform: "translate3d(0,0,0)" }], { duration: T, easing: "ease-in-out" });
+      pecho.animate([{ opacity: 0.55 }, { opacity: 0.55 + A * 0.32, offset: pico }, { opacity: 0.55 }], { duration: T, easing: "ease-in-out" });
+      a.onfinish = () => { t1 = setTimeout(respira, al(80, 900)); };
+    }
+    const GESTOS = [
+      () => cabeza.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.5, 0.5).toFixed(2) + "px," + (-al(0.6, 1.4)).toFixed(2) + "px,0)", offset: al(0.3, 0.5) }, { transform: "translate3d(0,0,0)" }], { duration: al(2600, 4800), easing: "cubic-bezier(.4,0,.2,1)" }),
+      () => alma.animate([{ opacity: 0.38 }, { opacity: al(0.58, 0.72), offset: al(0.35, 0.6) }, { opacity: 0.38 }], { duration: al(2200, 4200), easing: "ease-in-out" }),
+      () => torso.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.6, 0.6).toFixed(2) + "px," + al(-0.3, 0.3).toFixed(2) + "px,0)", offset: 0.5 }, { transform: "translate3d(0,0,0)" }], { duration: al(1800, 3200), easing: "ease-in-out", composite: "add" }),
+    ];
+    function gesto() {
+      clearTimeout(t2); if (!caja.isConnected) return; if (!vivo()) return;
+      t2 = setTimeout(() => { if (!vivo()) return; try { GESTOS[Math.floor(Math.random() * GESTOS.length)](); } catch (e) { /* sin gesto */ } gesto(); }, al(4000, 13000));
+    }
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && caja.isConnected && visible) { respira(); gesto(); } });
+    // al llegar con versos leídos hoy que aún no había visto, la luz del pecho y del rostro crece una vez (reacción a la lectura)
+    try { const y = S.yo || {}, n = (y.hoy && y.hoy.versos) | 0, ant = A.store.get("jg:siV", null) || {}; const f = (y.hoy && y.hoy.f) || "";
+      caja.style.setProperty("--si-pecho", (0.4 + Math.min(0.55, n / 40)).toFixed(2));
+      if (n > (ant.f === f ? ant.n | 0 : 0)) { A.store.set("jg:siV", { f, n }); setTimeout(() => { if (!vivo()) return; pecho.animate([{ opacity: 0.55 }, { opacity: 1 }, { opacity: 0.55 }], { duration: 2600, easing: "ease-in-out" }); alma.animate([{ opacity: 0.38 }, { opacity: 0.85 }, { opacity: 0.38 }], { duration: 2800, easing: "ease-in-out" }); }, 900); } } catch (e) { /* sin datos */ }
+    respira(); gesto();
   }
   const errPoder = (r) => r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
   async function accionPoder(ruta, cuerpo, ok) {
@@ -2495,7 +2619,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); confirmar.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
-    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, h("span", { class: "ap-poder" }, "Poder ", h("b", { text: fmt(av.poder) }))),
+    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => { desc.replaceChildren(h("b", { text: "Poder " + fmt(av.poder) + ": " }), "suma tus atributos (×10), tus accesorios (×25), tu nivel (×15) y los niveles del fruto del espíritu (×6). Crece leyendo, forjando y con todo lo que hace crecer el fruto."); for (const x of lista.children) x.classList.remove("sel"); })),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, confirmar,
         h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo"); if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
@@ -2662,6 +2786,74 @@ html[data-mov="no"] .ap-savia{display:none!important}
     enVivo(sec, 30e3, async () => { if (zona.contains(cesta)) pintar(); });
     return sec;
   }
+  // V16 (BiEx, 12-nov-2026): el poder, épico. Descargas eléctricas que nunca se repiten: cada una con su trazo quebrado, su
+  // número de ramas, su lado y su momento (2,6 a 9 s); solo cambia la opacidad de una capa pequeña. En pausa fuera de la
+  // pantalla, con la pestaña oculta y con «Sin animaciones».
+  function chipPoder(valor, alTocar) {
+    const capa = h("span", { class: "ap-rayos", "aria-hidden": "true" });
+    const chip = h("button", { class: "ap-poder", type: "button", title: "Qué es tu poder", onclick: alTocar }, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), capa);
+    let t = 0, visible = true;
+    const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { visible = e.some((x) => x.isIntersecting); }) : null; if (io) io.observe(chip);
+    const al = (a, b) => a + Math.random() * (b - a);
+    function rayo(W, H) {
+      // nace en un punto del borde de la píldora y salta hacia afuera en zigzag, con una rama a veces
+      const lado = Math.floor(Math.random() * 4), m = 12;
+      let x = lado < 2 ? al(m + 6, W + m - 6) : lado === 2 ? m : W + m, y = lado === 0 ? m : lado === 1 ? H + m : al(m + 4, H + m - 4);
+      const dx = lado === 2 ? -1 : lado === 3 ? 1 : al(-0.6, 0.6), dy = lado === 0 ? -1 : lado === 1 ? 1 : al(-0.5, 0.5);
+      let d = "M" + x.toFixed(1) + " " + y.toFixed(1), ram = "";
+      const pasos = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < pasos; i++) {
+        x += dx * al(2, 4.5) + al(-2.6, 2.6); y += dy * al(2, 4.5) + al(-2.6, 2.6); d += "L" + x.toFixed(1) + " " + y.toFixed(1);
+        if (!ram && i === 1 && Math.random() < 0.5) ram = "M" + x.toFixed(1) + " " + y.toFixed(1) + "l" + (dx * al(3, 6) + al(-3, 3)).toFixed(1) + " " + (dy * al(3, 6) + al(-3, 3)).toFixed(1);
+      }
+      return d + ram;
+    }
+    function descarga() {
+      clearTimeout(t); if (!chip.isConnected) { if (io) io.disconnect(); return; }
+      if (visible && !document.hidden && !sinAnim() && capa.animate) {
+        const W = chip.offsetWidth, H = chip.offsetHeight, n = 1 + Math.floor(Math.random() * 3);
+        let d = ""; for (let i = 0; i < n; i++) d += rayo(W, H);
+        capa.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".5" stroke-linejoin="round"/>', "0 0 " + (W + 24) + " " + (H + 24)));
+        const dur = al(320, 760);
+        capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.07 }, { opacity: 0.15, offset: 0.17 }, { opacity: al(0.7, 1), offset: 0.27 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+      }
+      t = setTimeout(descarga, al(2600, 9000));
+    }
+    t = setTimeout(descarga, al(900, 2400));
+    return chip;
+  }
+  // V21 (BiEx, 12-nov-2026): estadísticas del día, la semana y el mes, espectaculares. Lo de ahora frente a lo anterior (solo
+  // se celebra lo que crece: nunca una flecha de pérdida) y las barras de los últimos días, semanas o meses, que suben al
+  // aparecer (traslado por el compositor, sin escalas).
+  function tarjetaAvance(y, P) {
+    const hist = Array.isArray(P.hist) ? P.hist.slice() : []; if (P.hoyR) hist.push(Object.assign({ hoy: 1 }, P.hoyR)); if (hist.length < 1) return null;
+    const MET = [["xp", "experiencia"], ["v", "versos marcados"], ["m", "minutos"], ["a", "aciertos"], ["c", "capítulos"]];
+    const suma = (l) => l.reduce((o, d) => { for (const [k] of MET) o[k] = (o[k] || 0) + (d[k] | 0); return o; }, {});
+    const sem = (f) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d.toISOString().slice(0, 10); }; // la semana empieza el domingo
+    const grupos = (clave) => { const m = new Map(); for (const d of hist) { const k = clave(d.f); if (!m.has(k)) m.set(k, []); m.get(k).push(d); } return [...m].map(([k, l]) => Object.assign({ k }, suma(l))); };
+    const F_D = new Intl.DateTimeFormat(LOC_ES, { weekday: "short", day: "numeric" }), F_M = new Intl.DateTimeFormat(LOC_ES, { month: "short" });
+    const VISTAS = {
+      dia: () => ({ l: hist.slice(-14).map((d) => Object.assign({ et: d.hoy ? "hoy" : F_D.format(new Date(d.f + "T12:00:00Z")) }, d)), ahora: "Hoy", antes: "ayer" }),
+      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "esta" : F_D.format(new Date(g2.k + "T12:00:00Z")) }, g2)), ahora: "Esta semana", antes: "la semana anterior" }),
+      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "este" : F_M.format(new Date(g2.k + "-15T12:00:00Z")) }, g2)), ahora: "Este mes", antes: "el mes anterior" }),
+    };
+    const zona = h("div", { class: "av-z" }); let vista = A.store.get("jg:avVista", null) || "dia";
+    function pintar() {
+      const V = VISTAS[vista](), l = V.l, cur = l[l.length - 1] || {}, prev = l[l.length - 2] || null;
+      const cifras = h("ul", { class: "av-cif" }, MET.map(([k, nom]) => { const a = cur[k] | 0, b = prev ? prev[k] | 0 : 0, sube = prev && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
+        const num = h("b", { text: "0" });
+        setTimeout(() => contarRapido(num, a, 900), 60);
+        return h("li", {}, num, h("small", { text: nom }), sube > 0 ? h("span", { class: "av-sube", text: "▲ " + sube + " %" }) : prev ? h("span", { class: "av-antes", text: V.antes + ": " + fmt(b) }) : null); }));
+      const max = Math.max(1, ...l.map((d) => d.xp | 0));
+      const barras = h("div", { class: "av-bar", role: "img", "aria-label": "Experiencia: " + l.map((d) => d.et + " " + fmt(d.xp | 0)).join(", ") },
+        l.map((d, i) => h("div", { class: "av-col" + (i === l.length - 1 ? " ya" : "") }, h("span", { class: "av-pozo" }, h("i", { style: "height:" + Math.max(2, (100 * (d.xp | 0)) / max).toFixed(1) + "%;--i:" + i })), h("small", { text: d.et }))));
+      zona.replaceChildren(h("p", { class: "av-tit", text: V.ahora }), cifras, barras);
+    }
+    const seg = h("div", { class: "jg-seg fila", role: "group" }, [["dia", "Día"], ["semana", "Semana"], ["mes", "Mes"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(vista === k), onclick: (e) => {
+      vista = k; A.store.set("jg:avVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintar(); } }, t)));
+    pintar();
+    return tarjeta("Tu avance", ico("arbol"), seg, zona);
+  }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
   const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
   // Armadura: la figura y las seis piezas en rejilla (2 × 3) con su grado en cinco cuentas; la pieza elegida muestra abajo
@@ -2818,7 +3010,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu imagen personalizada"); if (r) rehacer(); } }, h("span", { text: "Quitar mi imagen personalizada" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
     const heroe = h("section", { class: "ap-heroe" }, h("div", { class: "ap-lienzo" }, arbolPoder(yy, av, (yy.invi && yy.invi.unidos) || 0)), datos);
-    zona.replaceChildren(heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
+    zona.replaceChildren(heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
     if (habia && !sinAnim() && zona.animate) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
     animarCifras(zona);
   }
