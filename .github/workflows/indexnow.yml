@@ -1,0 +1,29 @@
+# AB1 (BiEx, 14-nov-2026): avisar a los buscadores que usan IndexNow (Bing, que alimenta también a DuckDuckGo, Yahoo y
+# Ecosia; Yandex, Seznam, Naver…) cada vez que cambian las páginas rastreables del lector. Google no usa IndexNow: para él
+# está el sitemap en Search Console. La llave es pública por diseño (el archivo e959eb026e71e325787bd6fe69fcd3cc.txt en la raíz).
+name: IndexNow
+on:
+  push:
+    branches: [main]
+    paths: ["sitemap.xml", "biblia/**", "comunidad/**", "index.html", "escudrina/index.html"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enviar las direcciones del sitemap
+        run: |
+          sleep 90
+          python3 - <<'PY'
+          import json, re, urllib.request
+          urls = re.findall(r"<loc>([^<]+)</loc>", open("sitemap.xml", encoding="utf-8").read())
+          cuerpo = json.dumps({"host": "bibliaexacta.pages.dev", "key": "e959eb026e71e325787bd6fe69fcd3cc", "keyLocation": "https://bibliaexacta.pages.dev/e959eb026e71e325787bd6fe69fcd3cc.txt", "urlList": urls[:10000]}).encode()
+          req = urllib.request.Request("https://api.indexnow.org/indexnow", data=cuerpo, headers={"Content-Type": "application/json; charset=utf-8"})
+          try:
+              r = urllib.request.urlopen(req, timeout=30); print("IndexNow:", r.status, len(urls), "direcciones")
+          except Exception as e:
+              print("IndexNow respondió:", e)
+          PY

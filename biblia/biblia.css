@@ -1,0 +1,48 @@
+/* Páginas rastreables de BiEx (/biblia/, /comunidad/): negro, marfil y oro; texto y CSS (alta definición, sin barras ni
+   movimiento lateral). Las mismas letras del lector. */
+@font-face { font-family: "BiEx Texto"; src: url("/fuentes/biex-texto.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "BiEx Texto"; src: url("/fuentes/biex-texto-it.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "BiEx Titular"; src: url("/fuentes/biex-titular.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "BiEx Interfaz"; src: url("/fuentes/biex-interfaz.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+:root { --fondo: #09090a; --hoja: #121214; --hoja-2: #18181b; --tinta: #efe9dc; --tinta-2: #c9c2b4; --tenue: #8e877a; --oro: #c9a45c; --oro-vivo: #e8cf94; --linea: rgba(201, 164, 92, .28); --azul: #a8c0f5; --anadido: #c4a7f2; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: clip; scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+body { background: radial-gradient(1200px 600px at 50% -10%, rgba(201, 164, 92, .10), transparent 60%), var(--fondo); color: var(--tinta); font: 400 1.06rem/1.7 "BiEx Texto", Georgia, serif; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; }
+a { color: var(--oro-vivo); text-decoration-color: rgba(232, 207, 148, .45); text-underline-offset: 3px; }
+.b-cab { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: rgba(9, 9, 10, .92); border-bottom: 1px solid var(--linea); }
+.b-marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinta); min-width: 0; }
+.b-sello { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--oro); color: var(--oro-vivo); font: 500 .86rem/1 "BiEx Titular", serif; letter-spacing: .02em; }
+.b-nom { font: 500 1.06rem/1 "BiEx Titular", serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; }
+.b-nav { display: flex; align-items: center; gap: 6px; font: 500 .78rem/1 "BiEx Interfaz", system-ui, sans-serif; }
+.b-nav a { padding: 8px 10px; border-radius: 999px; text-decoration: none; color: var(--tinta-2); white-space: nowrap; }
+.b-nav a.b-abrir { color: #1a1408; background: linear-gradient(180deg, #f0d79d, #c9a45c); }
+@media (max-width: 560px) { .b-nom { display: none; } .b-nav a:not(.b-abrir) { padding: 8px 7px; } }
+.b-hoja { width: min(760px, 100%); margin: 0 auto; padding: 22px 18px 34px; }
+.b-migas { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 400 .74rem/1.4 "BiEx Interfaz", system-ui, sans-serif; color: var(--tenue); letter-spacing: .04em; }
+.b-migas a { color: var(--tinta-2); text-decoration: none; }
+h1 { margin: 14px 0 6px; font: 400 clamp(2rem, 7vw, 2.9rem)/1.08 "BiEx Titular", serif; letter-spacing: .01em; }
+.b-t { color: var(--tinta); } .b-tn { display: inline-block; font-size: .42em; letter-spacing: .26em; text-transform: uppercase; color: var(--oro); vertical-align: .55em; margin-left: .2em; } .b-cap { color: var(--oro-vivo); }
+.b-intro { margin: 10px 0 14px; color: var(--tinta-2); font-size: .98rem; }
+.b-accion { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.b-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 18px; border-radius: 999px; text-decoration: none; color: #1a1408; background: linear-gradient(180deg, #f0d79d, #c9a45c); font: 600 .82rem/1 "BiEx Interfaz", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 10px 24px -14px rgba(232, 207, 148, .6); }
+.b-btn.b-btn2 { color: var(--oro-vivo); background: transparent; border: 1px solid var(--linea); box-shadow: none; }
+.b-texto { padding: 18px 18px 8px; border-radius: 18px; border: 1px solid var(--linea); background: linear-gradient(180deg, rgba(255, 255, 255, .03), transparent 30%), var(--hoja); }
+.b-v { margin: 0 0 .7em; color: var(--azul); }
+.b-v .b-n { display: inline-block; min-width: 1.5em; margin-right: .2em; color: var(--oro); font: 500 .74em/1 "BiEx Interfaz", system-ui, sans-serif; vertical-align: .32em; text-decoration: none; }
+.b-v .an { color: var(--anadido); font-style: italic; }
+.b-sigue { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-top: 18px; font: 500 .82rem/1.3 "BiEx Interfaz", system-ui, sans-serif; }
+.b-sigue a { text-decoration: none; } .b-sigue a[rel="next"] { text-align: right; } .b-sigue a:not([rel]) { padding: 8px 14px; border: 1px solid var(--linea); border-radius: 999px; color: var(--tinta-2); }
+.b-h2 { margin: 26px 0 10px; font: 500 1.4rem/1.2 "BiEx Titular", serif; color: var(--tinta); }
+.b-caps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr)); gap: 8px; }
+.b-caps a { display: grid; place-items: center; height: 3.2rem; border-radius: 12px; border: 1px solid var(--linea); background: var(--hoja); text-decoration: none; font: 500 1rem/1 "BiEx Interfaz", system-ui, sans-serif; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.b-libros { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); gap: 8px; }
+.b-libros a { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--linea); background: var(--hoja); text-decoration: none; }
+.b-libros b { font: 500 1.14rem/1.2 "BiEx Titular", serif; color: var(--tinta); } .b-libros small { font: 400 .74rem/1.3 "BiEx Interfaz", system-ui, sans-serif; color: var(--tenue); }
+.b-sec { padding: 14px 16px; margin: 10px 0; border-radius: 16px; border: 1px solid var(--linea); background: var(--hoja); }
+.b-sec .b-h2 { margin: 0 0 6px; font-size: 1.2rem; } .b-sec p { margin: 0; color: var(--tinta-2); }
+.b-pie-sitio { width: min(760px, 100%); margin: 0 auto; padding: 18px 18px 40px; border-top: 1px solid var(--linea); text-align: center; }
+.b-autoria { font: 400 .86rem/1.5 "BiEx Interfaz", system-ui, sans-serif; color: var(--tinta-2); }
+.b-autoria strong { font: 500 1rem/1 "BiEx Titular", serif; letter-spacing: .08em; color: var(--tinta); }
+.b-cred { font: 400 .62rem/1.6 "BiEx Interfaz", system-ui, sans-serif; color: var(--tenue); text-align: right; }
+@media (hover: hover) and (pointer: fine) { .b-caps a:hover, .b-libros a:hover { border-color: var(--oro); } .b-nav a:not(.b-abrir):hover { color: var(--oro-vivo); } }

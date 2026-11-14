@@ -2353,3 +2353,69 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 .rk-it.usa .rk-p { color: var(--tinta-2); }
 .rk-nota { margin: 18px 2px 0; font: 400 .8rem/1.55 var(--f-ui); color: var(--tenue); max-width: 62ch; }
 .rx-av-nota a { color: var(--oro-vivo); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ------------------------------------------------------------------ libro de páginas (X11/Z8 y AA22, 14-nov-2026)
+   La hoja gira sobre su lomo (izquierda), en profundidad y dentro de su marco: nada se sale ni mueve la pantalla */
+.lp { display: grid; gap: 10px; }
+.lp-marco { position: relative; perspective: 1500px; perspective-origin: 0 50%; overflow: hidden; contain: layout paint; border-radius: 14px; border: 1px solid var(--linea-2); background: var(--hoja-2); }
+.lp-marco.con-lomo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; z-index: 3; pointer-events: none; background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, 0)); }
+.lp-hoja { position: relative; padding: 6px 8px 6px 14px; background: linear-gradient(180deg, var(--vidrio-luz, transparent), transparent 40%), var(--hoja-2); }
+.lp-giro { position: absolute; inset: 0; z-index: 2; transform-origin: 0 50%; backface-visibility: hidden; will-change: transform; box-shadow: 8px 0 22px -14px rgba(0, 0, 0, .7); }
+.lp-sombra { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .55)); }
+.lp-lista { list-style: none; margin: 0; padding: 0; }
+.lp-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; }
+.lp-n, .lp-fl { min-width: 2rem; height: 2rem; padding: 0 .45rem; border-radius: 999px; border: 1px solid var(--linea-2); background: transparent; color: var(--tinta-2); font: 500 .8rem/1 var(--f-ui); font-variant-numeric: tabular-nums; cursor: pointer; display: inline-grid; place-items: center; }
+.lp-fl svg { width: 15px; height: 15px; }
+.lp-n[aria-current="page"] { border-color: var(--oro); color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 14%, transparent); }
+.lp-fl[disabled] { opacity: .32; cursor: default; }
+.lp-et { color: var(--tenue); font: 400 .8rem/1 var(--f-ui); padding: 0 2px; }
+@media (hover: hover) and (pointer: fine) { .lp-n:hover, .lp-fl:not([disabled]):hover { border-color: color-mix(in srgb, var(--oro) 60%, var(--linea-2)); } }
+/* formas del lema en la ficha (X11) */
+.fl-lista { list-style: none; margin: 0; padding: 0; }
+.fl-it + .fl-it { border-top: 1px dashed var(--linea-2); }
+.fl-b { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "g n" "m m"; gap: 1px 10px; padding: 7px 4px; border-radius: 8px; }
+.fl-b:focus-visible { outline: 2px solid var(--oro); outline-offset: 1px; }
+.fl-g { grid-area: g; display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 1.06rem; }
+.fl-tl { font: italic 400 .78rem/1.2 var(--f-texto); color: var(--tenue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fl-n { grid-area: n; align-self: center; font: 500 .74rem/1 var(--f-ui); color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.fl-m { grid-area: m; font: 400 .74rem/1.4 var(--f-ui); color: var(--tinta-2); }
+.fl-it.esta .fl-g { color: var(--oro-vivo); }
+.fl-it.abierta .fl-b { background: color-mix(in srgb, var(--oro) 10%, transparent); }
+@media (hover: hover) and (pointer: fine) { .fl-b:hover { background: color-mix(in srgb, var(--oro) 7%, transparent); } }
+.fl-lugares { margin-top: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--oro) 30%, var(--linea-2)); background: color-mix(in srgb, var(--oro) 5%, transparent); }
+.fl-lugares h5 { margin: 0 0 6px; font: 500 .82rem/1.3 var(--f-ui); color: var(--tinta); }
+.fl-lugares h5 small { color: var(--tenue); font-weight: 400; }
+.fl-lib { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; padding: 4px 0; }
+.fl-lib b { font: 500 .82rem/1.3 var(--f-display); color: var(--oro-vivo); margin-right: 2px; }
+.fl-ref { font: 500 .74rem/1 var(--f-ui); padding: 4px 7px; border-radius: 999px; border: 1px solid var(--linea-2); color: var(--tinta-2); text-decoration: none; font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) { .fl-ref:hover { border-color: var(--oro); color: var(--oro-vivo); } }
+/* «En el verso»: la palabra española también se toca (X11) */
+.contexto-es.toca { cursor: pointer; }
+/* «Dónde aparece» lleva a las apariciones por libro (Z8) */
+.h4-enl { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--oro) 55%, transparent); text-underline-offset: 3px; }
+.h4-n { font: 400 .72rem/1 var(--f-ui); color: var(--tenue); letter-spacing: 0; text-transform: none; }
+.barras.enl > a { display: grid; grid-template-columns: 8rem minmax(0, 1fr) 2.8rem; gap: 10px; align-items: center; color: inherit; text-decoration: none; border-radius: 6px; padding: 2px 0; }
+@media (hover: hover) and (pointer: fine) { .barras.enl > a:hover span:first-child { color: var(--oro-vivo); } }
+.h4-mas { display: inline-block; margin-top: 6px; color: var(--oro-vivo); }
+/* X12: secciones sobre las flechas de los saltos rápidos */
+.sr-sec[hidden], .sr-secs[hidden] { display: none; }
+.sr-secs { position: absolute; right: calc(100% + 8px); bottom: 0; display: grid; justify-items: end; gap: 5px; width: max-content; max-width: min(64vw, 260px); }
+.saltos-rap:has(.sr-secs:not([hidden])) .sr-min { display: none; }
+.sr-sec-it { all: unset; box-sizing: border-box; cursor: pointer; max-width: 100%; padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--oro) 42%, transparent); background: color-mix(in srgb, var(--hoja) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 var(--vidrio-filo, transparent), 0 10px 22px -14px var(--vidrio-sombra, rgba(0, 0, 0, .5)); color: var(--tinta); font: 500 .76rem/1.2 var(--f-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+.sr-sec-it:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .sr-sec-it:hover { border-color: var(--oro); color: var(--oro-vivo); } }
+.sr-sec[aria-expanded="true"] { border-color: var(--oro); }
+.rz-pag .lp-hoja { padding: 10px 10px 10px 16px; }
+/* X4: una sola vista del aparato; las siglas de cada diferencia llevan a su manuscrito (AA23) */
+.mv-ap + .mv-fr { margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--linea-2); }
+.chip.ms-ir { cursor: pointer; display: inline-flex; align-items: baseline; gap: 5px; font: inherit; }
+.chip.ms-ir b { font-family: var(--f-texto); font-weight: 600; }
+.chip.ms-ir small { font: 400 .68em/1 var(--f-ui); color: var(--tenue); }
+@media (hover: hover) and (pointer: fine) { .chip.ms-ir:hover { border-color: var(--oro); } }
+.ms-pct { margin: 0 0 10px; }
+.fl-ref small { margin-left: 3px; font-size: .86em; color: var(--oro); }
+.fl-todas { margin-top: 8px; }
+/* AA9: «Repasado» (marca doble) */
+:root { --repaso: #8fd0ff; }
+:root[data-theme="light"] { --repaso: #1f6fb8; }
+.btn-leido.repaso.si { border-color: var(--repaso); color: var(--repaso); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 40%, transparent); }

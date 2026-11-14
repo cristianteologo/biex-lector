@@ -100,7 +100,7 @@
     if (r.status === 401 && d.error === "sesion" && t && !o.sin) olvidarSesion(true);
     return d;
   }
-  const MENSAJES = { red: "Sin conexión con el juego. Vuelve a intentarlo en un momento.", sin_servidor: "Escudriña abre muy pronto.", limite: "Demasiados intentos seguidos: espera unos minutos.",
+  const MENSAJES = { red: "Sin conexión con el juego. Vuelve a intentarlo en un momento.", sin_ruptura: "No tienes ninguna perseverancia rota que recuperar: ¡sigue así!", renuevo_en_curso: "Ya tienes un Renuevo en curso: cumple sus misiones.", renuevo_espera: "El Renuevo se compra uno cada 2 semanas.", sin_servidor: "Escudriña abre muy pronto.", limite: "Demasiados intentos seguidos: espera unos minutos.",
     apodo_usado: "Ese apodo ya lo tiene otra persona.", codigo: "Ese código no existe. Revisa que esté completo.", vencido: "Se venció la espera: vuelve a intentarlo.",
     llave: "No se pudo comprobar la llave de acceso.", llave_desconocida: "Esa llave de acceso no corresponde a ningún perfil de Escudriña.", llave_usada: "Esa llave ya está en tu perfil.",
     llaves_max: "Ya tienes 10 llaves de acceso.", ya_vinculada: "Esa cuenta ya está vinculada a otro perfil.", sin_google: "La entrada con Google todavía no está activa.", sin_facebook: "La entrada con Facebook todavía no está activa.",
@@ -1248,6 +1248,23 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-lb-t b{font-weight:600}
 .jg-lb-t small{font:500 .56rem/1 var(--f-ui);letter-spacing:.09em;color:var(--tenue);text-transform:uppercase}
 .jg-lb-t small:not(:empty)::before{content:"·";margin-right:.4em;opacity:.7}
+.jg-rec{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px}
+.jg-rec-velo{position:absolute;inset:0;background:rgba(6,5,3,.62)}
+.jg-rec-c{position:relative;width:min(420px,100%);display:grid;justify-items:center;gap:10px;padding:22px 18px 18px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro-vivo) 45%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 12%,transparent),transparent 42%),color-mix(in srgb,var(--hoja) 94%,transparent);box-shadow:inset 0 1px 0 var(--vidrio-filo,rgba(255,255,255,.12)),0 30px 60px -24px rgba(0,0,0,.8)}
+.jg-rec-sello{width:56px;height:56px;display:grid;place-items:center;filter:drop-shadow(0 6px 14px rgba(255,200,90,.35))}.jg-rec-sello svg{width:100%;height:100%}
+.jg-rec-c h3{margin:0;font:500 1.42rem/1.15 var(--f-display);color:var(--oro-vivo);letter-spacing:.02em}
+.jg-rec-l{list-style:none;margin:2px 0 4px;padding:0;width:100%;display:grid;gap:6px}
+.jg-rec-it{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 80%,transparent)}
+.jg-rec-i{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 14%,transparent)}.jg-rec-i svg{width:17px;height:17px}
+.jg-rec-t{display:grid;min-width:0}.jg-rec-t b{font:600 .86rem/1.25 var(--f-ui);color:var(--tinta)}.jg-rec-t small{font:400 .74rem/1.3 var(--f-ui);color:var(--tinta-2);overflow:hidden;text-overflow:ellipsis}
+.jg-rec-v{display:grid;justify-items:end;gap:1px;font-variant-numeric:tabular-nums}.jg-rec-v b{font:600 1rem/1 var(--f-ui);color:var(--oro-vivo)}.jg-rec-v small{font:400 .62rem/1 var(--f-ui);color:var(--tenue)}.jg-rec-v em{display:inline-flex;align-items:center;gap:3px;font:500 .74rem/1 var(--f-ui);font-style:normal;color:var(--tinta-2)}.jg-rec-v em svg{width:13px;height:13px}
+.jg-rec-b{min-width:12rem;margin-top:4px}
+.jg-ren{margin-top:10px;padding:10px 12px;border-radius:14px;border:1px solid color-mix(in srgb,#7cc47a 40%,var(--linea-2));background:color-mix(in srgb,#7cc47a 6%,transparent)}
+.jg-ren-cab{display:flex;align-items:center;gap:10px}.jg-ren-cab b{display:block;font:600 .9rem/1.2 var(--f-ui);color:var(--tinta)}.jg-ren-cab small{font:400 .74rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-ren-i{display:inline-grid;place-items:center;width:28px;height:28px;flex:none;color:#8fd48d}.jg-ren-i svg{width:22px;height:22px}
+.jg-ren-l{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:7px}.jg-ren-l li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;font:400 .78rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-ren-l li em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--tinta)}.jg-ren-l li.ok em{color:#8fd48d}.jg-ren-l .jg-barra{grid-column:1/-1}
+.jg-ren-esp{display:flex;gap:8px;align-items:flex-start}
 .jg-ah{position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
 .jg-ah[hidden],.jg-ah [hidden]{display:none}
 /* «Leído» (13-nov-2026): un hilo de luz en el margen a lo largo del verso que se marcaría y un halo suave detrás de su número;
@@ -1263,6 +1280,11 @@ html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 .vn.jg-leido,.vs>sup.jg-leido{color:var(--oro-vivo);text-shadow:0 0 10px color-mix(in srgb,var(--oro) 45%,transparent)}
 .vl .vn.jg-leido::before{content:"";position:absolute;left:1px;top:.9em;width:6px;height:3px;border:solid var(--oro-vivo);border-width:0 0 1.6px 1.6px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
 .vs>sup.jg-leido{background:linear-gradient(currentColor,currentColor) 50% 100%/72% 1.5px no-repeat}
+.vl .vn.jg-leido.jg-repaso::before{width:6px;height:3px;border-color:var(--repaso,#8fd0ff);box-shadow:-2.6px 2.6px 0 -.2px transparent;filter:drop-shadow(-3px 1px 0 var(--oro-vivo))}
+.vl .vn.jg-repaso::after{width:6px;background:none;border-left:2px solid var(--e);border-right:2px solid var(--repaso,#8fd0ff);border-radius:1px}
+.vn.jg-repaso,.vs>sup.jg-repaso{text-shadow:0 0 10px color-mix(in srgb,var(--repaso,#8fd0ff) 40%,transparent)}
+.vs>sup.jg-repaso{background:linear-gradient(currentColor,currentColor) 50% calc(100% - 3px)/72% 1.2px no-repeat,linear-gradient(var(--repaso,#8fd0ff),var(--repaso,#8fd0ff)) 50% 100%/72% 1.2px no-repeat}
+:root[data-theme="light"]{--repaso:#1f6fb8}
 .vn.jg-quiere,.vs>sup.jg-quiere{text-decoration:underline dotted color-mix(in srgb,var(--oro-vivo) 80%,transparent);text-underline-offset:4px}
 .fin-leido.jg-fin{display:grid;justify-items:center;gap:8px}
 .fin-leido.jg-fin.hecho{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--oro-vivo)}
@@ -1893,6 +1915,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", libroInv: (a) => a.a + " terminó su primer libro: +" + a.xp + ".", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + ".",
     liga: (a) => "Semana de liga cerrada: puesto " + a.pos + " de " + a.n + (a.nvNuevo > a.nv ? "; ¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
     compania: (a) => "¡«" + a.nombre + "» logró su meta común de la semana! +" + a.h + " h de experiencia doble.",
+    renuevo: (a) => "¡Renuevo cumplido! Recuperaste " + plural(a.p, "día", "días") + " de perseverancia: ahora llevas " + plural(a.pers, "día", "días") + ".",
+    renuevo_vence: (a) => "Tu Renuevo venció sin completar sus misiones; tus " + plural(a.p, "día", "días") + " de perseverancia siguen esperando otro Renuevo.",
     fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
     mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble." };
   // Hora de cada novedad, en la zona horaria de quien lee (BiEx, 13-nov-2026): «Hace 5 min · 6:35 a. m.», «Hoy · 6:40 a. m.»,
@@ -1988,6 +2012,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const ayuda = sec === "hoy" ? h("a", { class: "jg-ayuda", href: "#/escudrina/guia", title: "Cómo se juega", "aria-label": "Cómo se juega: paso a paso y a tu ritmo", onclick: () => { S.guiaPaso = 0; vibrar(8); } }, ico("jugar"), h("span", { text: "Cómo se juega" })) : null;
     return h("div", { class: "panel-cab jg-cab2" }, h("div", {}, h("small", { text: "Escudriña · El Códice Viviente" }), h("h1", { class: "texto", text: t[0] })), h("div", { class: "jg-cab-d" }, h("p", { class: "jg-mini", text: t[1] }), ayuda));
   }
+  // AA21 · Renuevo (BiEx, 14-nov-2026; אִיּוֹב [Job] 14:7): el árbol cortado vuelve a brotar. Muestra el Renuevo en curso con sus
+  // misiones de la semana, o las perseverancias rotas que esperan uno (se compra en la tienda del Árbol, uno cada 2 semanas)
+  const REN_MIS = { vc: ["Marca «Leído» en", "versos"], dias: ["Lee en", "días distintos"], min: ["Lee", "minutos"], ac: ["Acierta", "preguntas de la prueba"], pal: ["Lee", "palabras griegas"] };
+  function bloqueRenuevo(y) {
+    const c = y.ren, rup = y.rup || [];
+    if (!c && !rup.length) return null;
+    const fechaR = (f) => { try { return new Date(f + "T12:00:00Z").toLocaleDateString(LOC_ES, { day: "numeric", month: "short" }); } catch (e) { return f; } };
+    if (c) {
+      const falta = c.hasta - Date.now();
+      return h("div", { class: "jg-ren" }, h("div", { class: "jg-ren-cab" }, h("span", { class: "jg-ren-i", "aria-hidden": "true" }, A.svg(ICO_USO.renuevo)),
+        h("div", {}, h("b", { text: "Renuevo en curso" }), h("small", { text: "Recupera " + plural(c.p, "día", "días") + " de perseverancia · " + (falta > 48 * 3600e3 ? "quedan " + plural(Math.ceil(falta / 864e5), "día", "días") : falta > 0 ? "quedan " + horas(falta) : "vence hoy") }))),
+        h("ul", { class: "jg-ren-l" }, c.mis.map(([k, meta, hecho]) => { const [a, b] = REN_MIS[k] || ["", k]; const ok = hecho >= meta;
+          return h("li", { class: ok ? "ok" : "" }, h("span", { text: a + " " + fmt(meta) + " " + b }), h("em", { text: ok ? "✓" : fmt(hecho) + " / " + fmt(meta) }), h("i", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * hecho) / Math.max(1, meta)).toFixed(1) + "%" }))); })));
+    }
+    const t = y.renHasta && y.renHasta > Date.now() ? " El próximo Renuevo se puede comprar desde el " + new Date(y.renHasta).toLocaleDateString(LOC_ES, { day: "numeric", month: "long" }) + "." : " Cómpralo en la tienda del Árbol: aparecen de 2 a 5 misiones para cumplir en una semana.";
+    return h("p", { class: "jg-mini jg-ren-esp" }, h("span", { class: "jg-ren-i", "aria-hidden": "true" }, A.svg(ICO_USO.renuevo)), "Perseverancias que un Renuevo puede recuperar: " + rup.slice().sort((a, b) => b[1] - a[1]).slice(0, 4).map(([f, p]) => plural(p, "día", "días") + " (hasta el " + fechaR(f) + ")").join(", ") + "." + t);
+  }
   function tarjetaPotencias(y) {
     const extra = [];
     if (y.dob > 0) extra.push("Experiencia doble: " + horas(y.dob) + " de lectura (no vence).");
@@ -1997,7 +2038,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", {}, cifra(y.dr), h("span", { text: "dracmas" })),
       h("div", {}, cifra(y.pers), h("span", { text: y.pers === 1 ? "día de perseverancia" : "días de perseverancia" })),
       h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" }))),
-      h("p", { class: "jg-mini", text: extra.join(" ") }));
+      h("p", { class: "jg-mini", text: extra.join(" ") }), bloqueRenuevo(y));
   }
   function tarjetaClasificacion(y) {
     return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu departamento o estado, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
@@ -2985,6 +3026,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   const ICO_USO = {
     pergamino: '<path d="M7 4.5h9.5a2.5 2.5 0 0 1 0 5H9v9.5a2 2 0 0 1-4 0V6.5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9.5h8.5V18a2 2 0 0 1-2 2H7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 13h3.5M11.5 16h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    // AA21 · Renuevo: el tocón del árbol cortado con su brote nuevo (אִיּוֹב [Job] 14:7)
+    renuevo: '<path d="M6.2 20.5l1.1-7.2h9.4l1.1 7.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="12" cy="13.3" rx="4.7" ry="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><ellipse cx="12" cy="13.3" rx="2.2" ry=".7" fill="none" stroke="currentColor" stroke-width=".9" opacity=".7"/><path d="M4.4 20.5h15.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14.6 12.4c.4-3 1.6-5.3 3.6-6.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16.4 8.4c-1.9-.2-3.2-1.3-3.6-3.2 1.9.1 3.2 1.2 3.6 3.2z" fill="currentColor"/><path d="M17.6 6.2c1.3-1.2 2.9-1.5 4.1-.9-1.1 1.1-2.6 1.5-4.1.9z" fill="currentColor"/>',
     descanso: '<path d="M18.5 15.2A7.5 7.5 0 0 1 8.8 5.5a7.5 7.5 0 1 0 9.7 9.7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 4.5h3l-3 3.5h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
     apodo: '<path d="M4 20l1.2-4.6L15.8 4.8a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13.8 6.8l3.4 3.4" stroke="currentColor" stroke-width="1.6"/>',
   };
@@ -4278,6 +4321,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     for (const el of R.els) {
       const v = +el.id.slice(1), num = numeroDe(el); if (!num) continue;
       num.classList.toggle("jg-leido", cf[v - 1] === "1" || yaLeido(v) || !!(A.leido && A.leido(R.lib, R.cap, v)));
+      num.classList.toggle("jg-repaso", esRepaso(R.lib, R.cap, v));
       num.classList.toggle("jg-quiere", R.quiere.has(v));
     }
   }
@@ -4292,12 +4336,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const lc = R.lib + "." + R.cap;
     LB.ok.add(lc + "." + v);
     const num = numeroDe(document.getElementById("v" + v));
-    if (num) { num.classList.remove("jg-quiere"); num.classList.add("jg-leido"); }
+    if (num) { num.classList.remove("jg-quiere"); num.classList.add("jg-leido"); num.classList.toggle("jg-repaso", esRepaso(R.lib, R.cap, v)); }
     if (A.marcarLeido) A.marcarLeido(R.lib, R.cap, [v]);
     const cf = cfDe(lc); if (cf[v - 1] !== "1") guardarCf(lc, pon(cf, v - 1, "1"));
   }
+  // AA9 (BiEx, 14-nov-2026): los versos repasados (ya marcados otro día y marcados de nuevo) llevan una marca doble
+  const diaRep = () => new Date().toISOString().slice(0, 10);
+  const repasos = () => { const o = A.store.get("jg:rep", null); return o && o.f === diaRep() && Array.isArray(o.k) ? o.k : []; };
+  const esRepaso = (lib, cap, v) => repasos().includes(lib + "." + cap + "." + v);
+  function anotarRepaso(v) { const k = R.lib + "." + R.cap + "." + v, l = repasos(); if (!l.includes(k)) { l.push(k); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); } }
   function tocarLeido(v, boton, quieto) {
     if (!v || !R.lib || yaLeido(v) || R.quiere.has(v)) return;
+    if (marcadoAntes(R.lib + "." + R.cap, v)) anotarRepaso(v);
     if (!quieto) { vibrar([12, 30, 16]); sonar("chispa"); }
     const p = R.pend.get(v);
     if (p) { R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, p[0], 3, true); marcarLeidoV(v); if (tocaPremio()) enviar(false); }
@@ -4668,7 +4718,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   document.addEventListener("visibilitychange", () => {
     if (document.hidden || !CEL_PEND.length) return;
     const l = CEL_PEND.splice(0); S.silencio = true;
-    setTimeout(() => { try { for (const r of l) celebrar(r); } finally { setTimeout(() => { S.silencio = false; }, 1200); } }, 450);
+    setTimeout(() => { try { for (const r of l) { if (r && r._recibir) recibir(r._recibir); else celebrar(r); } } finally { setTimeout(() => { S.silencio = false; }, 1200); } }, 450);
   });
   // Premios de «Leído» (fragmentos de papiro y dracmas): fichas pequeñas que suben, con su cifra que cuenta
   function premioPop(txt, n, clase, i) {
@@ -4689,16 +4739,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (L.raro && L.raro !== "dones") setTimeout(() => celebracion({ tipo: "raro", id: L.raro }), 900);
       else if (L.raro === "dones") A.avisar("¡70 fragmentos de papiro! Ya tienes todos los accesorios raros: +100 dracmas y 1 h de experiencia doble.");
     }
-    const avisos = [];
-    for (const m of r.misiones || []) avisos.push("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
-    if (r.diaCompleto) avisos.push("¡Cumpliste todas las misiones de hoy! +50 y 10 dracmas");
+    const avisos = [], premios = [];
+    // AA8 (BiEx, 14-nov-2026): las recompensas de las misiones esperan a que se toque «Recibir» (que se note lo ganado)
+    for (const m of r.misiones || []) premios.push({ t: "Misión cumplida", d: textoMision(m), xp: m.xp | 0, ico: "mision" });
+    if (r.diaCompleto) premios.push({ t: "¡Todas las misiones de hoy!", d: "El día completo", xp: 50, dr: 10, ico: "corona" });
     let grande = null;
     for (const x of r.hallazgos || []) {
       if (x.tipo === "lauro") grande = { tipo: "lauro" };
       else if (x.tipo === "piedra" && (!grande || grande.tipo !== "lauro")) grande = x;
       else if (x.tipo === "dracma") avisos.push("Hallaste " + x.dr + " dracmas");
-      else if (x.tipo === "libro") avisos.push("¡Terminaste " + nombreLibro(x.lib) + "! +200 y 20 dracmas");
+      else if (x.tipo === "libro") premios.push({ t: "¡Libro terminado!", d: nombreLibro(x.lib), xp: 200, dr: 20, ico: "libro" });
     }
+    if (premios.length) setTimeout(() => recibir(premios), grande ? 2600 : 500);
     if (r.subio) { if (r.subio.rango && !grande) grande = { tipo: "rango", nivel: r.subio.nivel, rango: r.subio.rango }; else avisos.push("Subiste al nivel " + r.subio.nivel); sonar("nivel"); }
     for (const lc of r.pruebas || []) {
       if (lc === R.lib + "." + R.cap) { avisos.push("Capítulo completo: al final te espera su prueba"); R.prueba = true; tarjetaPrueba(); }
@@ -4714,6 +4766,38 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const k = grande && (grande.tipo === "piedra" || grande.tipo === "lauro") ? "hallazgo" : S.yo.nivel >= 5 ? "n5" : S.yo.pers >= 7 ? "p7" : null;
       if (k && !A.store.get("jg:aseg:" + k, false)) { A.store.set("jg:aseg:" + k, true); setTimeout(() => A.avisar("Ya tienes avance que cuidar: asegúralo en Escudriña › Cuenta"), 900 + avisos.length * 2400 + 2400); }
     }
+  }
+  // AA8 · «Recibir» (BiEx, 14-nov-2026): una tarjeta de cristal con lo ganado (misiones, el día completo, un libro terminado)
+  // que se queda hasta tocar «Recibir»: entonces cuenta la experiencia, suenan las monedas y se apaga con un fundido. Si llegan
+  // más mientras está abierta, se suman a la misma. Solo opacidad y traslados (compositor).
+  const REC = { el: null, lista: null, items: [] };
+  function recibir(items) {
+    if (!items || !items.length) return;
+    if (document.hidden) { if (CEL_PEND.length < 6) CEL_PEND.push({ _recibir: items }); return; }
+    REC.items.push(...items);
+    const fila = (x) => h("li", { class: "jg-rec-it" }, h("span", { class: "jg-rec-i", "aria-hidden": "true" }, ico(x.ico === "mision" ? "hoy" : x.ico === "libro" ? "liga" : "arbol")),
+      h("span", { class: "jg-rec-t" }, h("b", { text: x.t }), x.d ? h("small", { text: x.d }) : null),
+      h("span", { class: "jg-rec-v" }, x.xp ? h("b", { text: "+" + fmt(x.xp) }) : null, x.xp ? h("small", { text: "exp." }) : null, x.dr ? h("em", {}, dracma(), "+" + x.dr) : null));
+    if (REC.el && REC.el.isConnected) { REC.lista.append(...items.map(fila)); return; }
+    REC.lista = h("ul", { class: "jg-rec-l" }, REC.items.map(fila));
+    const boton = h("button", { class: "btn oro jg-rec-b", type: "button" }, h("span", { text: "Recibir" }));
+    const tarjeta = h("div", { class: "jg-rec-c", role: "dialog", "aria-modal": "true", "aria-label": "Recompensas" },
+      h("div", { class: "jg-rec-sello", "aria-hidden": "true" }, gema(0, true)), h("h3", { text: REC.items.length > 1 ? "¡Recompensas!" : "¡Recompensa!" }), REC.lista, boton);
+    REC.el = h("div", { class: "jg-rec" }, h("div", { class: "jg-rec-velo" }), tarjeta);
+    document.body.append(REC.el);
+    sonar("chispa"); vibrar([10, 40, 14]);
+    if (!sinAnim() && tarjeta.animate) { tarjeta.animate([{ opacity: 0, transform: "translate3d(0,26px,0)" }, { opacity: 1, transform: "none" }], { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)" }); REC.el.firstChild.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 }); }
+    setTimeout(() => { try { boton.focus({ preventScroll: true }); } catch (e) { /* */ } }, 60);
+    boton.onclick = () => {
+      boton.disabled = true;
+      const xp = REC.items.reduce((a, x) => a + (x.xp | 0), 0), dr = REC.items.reduce((a, x) => a + (x.dr | 0), 0);
+      chispas(26, boton, ["aro", "polvo"]); sonar("nivel"); vibrar([18, 40, 24, 40, 30]);
+      if (xp) { pulsoMedidor(xp); pop(xp); }
+      const fin = () => { if (REC.el) REC.el.remove(); REC.el = null; REC.items = []; };
+      if (sinAnim() || !tarjeta.animate) return setTimeout(fin, 200);
+      tarjeta.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translate3d(0,-22px,0)" }], { duration: 520, delay: 380, easing: "ease-in", fill: "forwards" }).finished.then(fin, fin);
+      REC.el.firstChild.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, delay: 380, fill: "forwards" });
+    };
   }
   // Hallazgo a la vista (BiEx, 10-nov-2026: «que no pase desapercibido mientras se leen los versos»): antes de la ventana,
   // un velo con la luz del color de la piedra, la gema que sube girando como una moneda (sin ampliarse: nítida), un aro de
@@ -5521,10 +5605,12 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
+    // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
+    estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v) } : null),
     // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista (14-nov-2026)
     versoActivo: () => (R.lib && (LB.v || R.vf)) || 0,
     // V22 · benignidad: compartir un verso o un capítulo hace crecer ese aspecto del fruto (cuenta una vez al día por pasaje)
