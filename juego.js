@@ -1077,41 +1077,42 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
 .ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
 .ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
-.jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:6px 18px 6px 7px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  font:600 .84rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
+.jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:.42rem;min-height:1.62rem;padding:.2rem .82rem .2rem .22rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
   box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,224,140,.6),0 12px 28px -10px rgba(0,0,0,.78),0 0 0 1px rgba(0,0,0,.22);
   transition:opacity .24s ease,transform .26s cubic-bezier(.3,1.3,.5,1)}
-.jg-lb::after,.jg-lbp::after{content:"";position:absolute;inset:-7px}
+.jg-lb::after,.jg-lbp::after{content:"";position:absolute;inset:-.6rem -.3rem}
 .jg-lb.fuera,.jg-lbp.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
 .jg-lb:active,.jg-lbp:active{transform:translate3d(-50%,0,0) scale(.96)}
 /* X16: la perícopa entera, encima del botón del verso (vista continua) */
-.jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 58px);min-height:40px;padding:5px 16px 5px 6px;color:var(--tinta)}
-.jg-lbp .jg-lb-i{width:26px;height:26px}
+.jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .74rem .18rem .2rem;color:var(--tinta)}
+.jg-lbp .jg-lb-i{width:1rem;height:1rem}
 /* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
-.jg-pie{position:absolute;left:0;top:0;z-index:3;display:inline-flex;gap:6px;align-items:center;will-change:transform}
+.jg-pie{position:absolute;left:0;top:0;z-index:3;display:inline-flex;gap:.32rem;align-items:center;will-change:transform}
 .jg-pie[hidden],.jg-pie [hidden]{display:none}
-.jg-pie-b{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px 0 5px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  font:600 .66rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 46%,transparent);
+.jg-pie-b{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:.3rem;height:1.14rem;padding:0 .56rem 0 .16rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font:600 .58rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 46%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.24),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 8%,var(--hoja)));
   box-shadow:inset 0 1px 0 rgba(255,246,214,.38),0 8px 18px -10px rgba(0,0,0,.75);transition:transform .2s cubic-bezier(.3,1.3,.5,1),opacity .2s}
-.jg-pie-b::after{content:"";position:absolute;inset:-9px -4px}
+.jg-pie-b::after{content:"";position:absolute;inset:-.62rem -.28rem}
 .jg-pie-b:active{transform:scale(.95)}
 .jg-pie-b:focus-visible{outline:2px solid var(--oro);outline-offset:2px}
 .jg-pie-p{color:var(--tinta);border-color:color-mix(in srgb,var(--oro) 32%,transparent)}
-.jg-pie-i{width:18px;height:18px;border-radius:50%;border:1.3px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
-.jg-pie-i::after{content:"";width:7px;height:3.5px;margin-top:-2px;border:solid currentColor;border-width:0 0 1.6px 1.6px;transform:rotate(-45deg);opacity:.6;transition:opacity .2s}
+.jg-pie-i{width:.82rem;height:.82rem;border-radius:50%;border:1.1px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
+.jg-pie-i::after{content:"";width:.3rem;height:.15rem;margin-top:-.08rem;border:solid currentColor;border-width:0 0 1.3px 1.3px;transform:rotate(-45deg);opacity:.6;transition:opacity .2s}
 .jg-pie.espera .jg-pie-v .jg-pie-i::after{opacity:.28}
 .jg-pie.hecho .jg-pie-i{background:var(--oro-vivo)}
 .jg-pie.hecho .jg-pie-i::after{border-color:var(--hoja);opacity:1}
-.jg-lb-i{width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
-.jg-lb-i::after{content:"";width:10px;height:5px;margin-top:-3px;border:solid currentColor;border-width:0 0 2px 2px;transform:rotate(-45deg);opacity:.5;transition:opacity .2s}
+.jg-lb-i{width:1.12rem;height:1.12rem;border-radius:50%;border:1.3px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
+.jg-lb-i::after{content:"";width:.4rem;height:.2rem;margin-top:-.1rem;border:solid currentColor;border-width:0 0 1.5px 1.5px;transform:rotate(-45deg);opacity:.5;transition:opacity .2s}
 .jg-lb.hecho .jg-lb-i,.jg-lbp.hecho .jg-lb-i{background:var(--oro-vivo)}
 .jg-lb.hecho .jg-lb-i::after{border-color:var(--hoja);opacity:1}
 .jg-lb.espera .jg-lb-i::after{opacity:.32}
-.jg-lb-t{display:grid;gap:4px;text-align:left}
+.jg-lb-t{display:flex;align-items:baseline;gap:.4em;text-align:left;white-space:nowrap}
 .jg-lb-t b{font-weight:600}
-.jg-lb-t small{font:500 .62rem/1 var(--f-ui);letter-spacing:.1em;color:var(--tenue);text-transform:uppercase}
+.jg-lb-t small{font:500 .56rem/1 var(--f-ui);letter-spacing:.09em;color:var(--tenue);text-transform:uppercase}
+.jg-lb-t small:not(:empty)::before{content:"·";margin-right:.4em;opacity:.7}
 .jg-ah{position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
 .jg-ah[hidden],.jg-ah [hidden]{display:none}
 /* «Leído» (13-nov-2026): un hilo de luz en el margen a lo largo del verso que se marcaría y un halo suave detrás de su número;
@@ -3267,16 +3268,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const topeDw = (v) => 1.6 * msCap() * (R.pal[v - 1] || 0);
   function acumularLinea(dt) {
     if (!R.dw) R.dw = new Map();
-    const T = topeBarras() + 6, B = pieLB() - 6, H = Math.max(1, B - T), linea = T + H * 0.34;
-    const se = document.scrollingElement || document.documentElement, alFinal = se.scrollHeight - (scrollY + innerHeight) < 8;
-    let destino = 0;
-    for (const e of R.els) {
-      if (!R.vis.get(e)) continue;
-      const v = +e.id.slice(1), r = e.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
-      const libre = !R.hechos.has(v) && !yaLeido(v) && valeLeer(v) && (R.dw.get(v) || 0) < topeDw(v);
-      if (alFinal) { if (libre) { destino = v; break; } continue; } // al final ya no se puede bajar: el primero que falte
-      if (r.bottom > linea) { if (libre) destino = v; break; }
-    }
+    const libre = (v) => !!v && !R.hechos.has(v) && !yaLeido(v) && valeLeer(v) && (R.dw.get(v) || 0) < topeDw(v);
+    let destino = versoFranja();
+    if (!libre(destino)) destino = alFinalPag() ? debajoFranja(libre) : 0; // al final ya no se puede bajar: el primero que falte
     if (!destino) return;
     const ya = R.dw.get(destino) || 0, add = Math.min(dt, topeDw(destino) - ya); if (add <= 0) return;
     R.dw.set(destino, ya + add);
@@ -3347,9 +3341,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     celebrar(r);
     return r;
   }
-  // «Leído» (T3 + P20, BiEx, 11 y 12-nov-2026). Un solo botón fijo abajo al centro (no tapa la sala ni los saltos) y un
-  // resplandor en el número del verso que marcaría: el primero sin marcar en la mitad de arriba de la pantalla (o, si
-  // todos los de arriba ya están marcados, el siguiente a la vista). Solo cuenta como leído lo marcado a mano: «Leído»,
+  // «Leído» (T3 + P20, BiEx, 11 y 12-nov-2026; Y4, 13-nov-2026). En la vista continua, un botón fijo abajo al centro (no
+  // tapa la sala ni los saltos); en la vista por versos, al pie del verso. El resplandor va en el verso que se está leyendo:
+  // el que ocupa la franja fija de lectura (versoFranja). Solo cuenta como leído lo marcado a mano: «Leído»,
   // el capítulo marcado con su tiempo de seguridad (0,85 s por palabra griega) o la prueba bien respondida. La
   // experiencia sigue llegando con el tiempo de lectura (30 %) y al marcar (70 %).
   const LB = { el: null, ah: null, v: 0, io: null, ioB: null, zona: new Set(), bajo: new Set(), ok: new Set(), t: 0 };
@@ -3390,7 +3384,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
     pintarMarcados();
-    // los versos a la vista (sin franjas fijas: la zona útil se mide con las barras reales, ver elegirLB)
+    // los versos a la vista (la franja fija de lectura los recorre: ver zonaLectura y versoFranja)
     LB.io = new IntersectionObserver((ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) LB.vis.add(v); else LB.vis.delete(v); } pedirLB(); }, { threshold: 0 });
     for (const e of R.els) LB.io.observe(e);
     // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
@@ -3411,15 +3405,6 @@ html[data-mov="no"] .ap-savia{display:none!important}
     return t;
   }
   const enFilaVista = () => !!(R.els && R.els.length && R.els[0].classList.contains("vl"));
-  // borde superior de lo que flota abajo (el botón «Leído», que ya sube sobre la sala)
-  function pieLB() {
-    // vista por versos: no hay botón fijo; el límite es el borde de abajo (o los saltos rápidos, que flotan a la derecha)
-    if (enFilaVista()) return innerHeight - 12;
-    const r = LB.el && LB.el.getBoundingClientRect();
-    let y = r && r.height ? r.top - (LB.el.classList.contains("fuera") ? 14 : 0) : innerHeight - 90;
-    if (LB.pb && !LB.pb.classList.contains("fuera")) { const q = LB.pb.getBoundingClientRect(); if (q.height) y = Math.min(y, q.top); }
-    return y;
-  }
   // la perícopa de un verso: en la vista por versos, de una fila con § a la siguiente; en la continua, su párrafo
   function periDe(v) {
     const el = document.getElementById("v" + v); if (!el) return null;
@@ -3433,46 +3418,56 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const vs = grupo.map((e) => +e.id.slice(1)), marc = vs.filter((x) => marcable(x));
     return { a: vs[0], b: vs[vs.length - 1], vs, marc, fin: grupo[grupo.length - 1], ok: vs.length >= 2 && marc.length >= 2 && marc.every((x) => R.pend.has(x)) };
   }
-  // El verso que marcaría «Leído» (13-nov-2026; afinado a las 13:04 y a las 15:13 con capturas de BiEx): el resplandor empieza
-  // MÁS ABAJO de las barras, en la franja donde de verdad se lee (de ~16 % a 62 % de la zona útil), no en el primer renglón
-  // que asoma bajo ellas. Se elige el primer verso sin marcar cuyo número se ve entero en esa franja; si ninguno empieza ahí
-  // (versos largos), el que cruza la línea de lectura con su número a la vista; luego el primero que asoma más abajo, y solo
-  // al final uno cuyo número quedó en la franja de arriba. Arriba del capítulo (sin poder subir más) la franja empieza bajo
-  // las barras, para que el verso 1 también se pueda marcar; lo mismo con los últimos versos al llegar al final.
+  // Y4 (BiEx, 13-nov-2026, 18:26, con capturas): UNA franja fija en la pantalla decide el verso que se está leyendo, igual
+  // en las dos vistas y sin depender de que las barras de arriba estén desplegadas o plegadas: del 32 % al 56 % del alto de
+  // la ventana (en pantallas bajas, nunca bajo las barras). Manda el verso que ocupa más de la franja con sus palabras (el
+  // área de sus renglones dentro de ella); para no titilar, el actual se conserva hasta que otro ocupe claramente más (20 %).
+  // Ese verso lleva el resplandor, recibe el tiempo de lectura y es el que marca «Leído». Arriba del capítulo, mientras la
+  // franja no llega a ningún verso, vale el primero a la vista; al final, cuando ya no se puede bajar, el primero sin marcar
+  // que quedó debajo de la franja.
+  const FRANJA = [0.32, 0.56];
+  function zonaLectura() {
+    const vh = innerHeight, T = topeBarras() + 8;
+    let a = vh * FRANJA[0], b = vh * FRANJA[1];
+    if (a < T) { b = Math.min(vh - 24, b + (T - a)); a = T; }
+    return [a, b];
+  }
+  function enFranja(el, a, b) {
+    let s = 0;
+    for (const r of el.getClientRects()) { const o = Math.min(r.bottom, b) - Math.max(r.top, a); if (o > 0) s += o * r.width; }
+    return s;
+  }
+  function versoFranja() {
+    if (!R.els || !R.els.length) return 0;
+    const [a, b] = zonaLectura(), vis = LB.vis && LB.vis.size ? LB.vis : null;
+    let mejor = 0, ms = 0, actual = 0, debajo = 0, hay = false;
+    for (const el of R.els) {
+      const v = +el.id.slice(1); if (vis && !vis.has(v)) continue;
+      const r = el.getBoundingClientRect(); if (!r.height || r.bottom <= a) continue;
+      if (r.top >= b) { if (!debajo) debajo = v; break; }
+      hay = true;
+      const s = enFranja(el, a, b);
+      if (v === R.vf) actual = s;
+      if (s > ms) { ms = s; mejor = v; }
+    }
+    let v = mejor;
+    if (R.vf && actual > 0 && v !== R.vf && ms < actual * 1.2) v = R.vf;
+    if (!v) v = !hay && debajo && scrollY < innerHeight * 0.6 ? debajo : (R.vf && (!vis || vis.has(R.vf)) ? R.vf : 0);
+    R.vf = v;
+    return v;
+  }
+  // al final del capítulo (ya no se puede bajar): el primero que cumpla «ok» entre los que quedaron debajo de la franja
+  function debajoFranja(ok) {
+    const [, b] = zonaLectura();
+    for (const el of R.els) { const x = +el.id.slice(1), r = el.getBoundingClientRect(); if (r.top >= b - 4 && r.bottom <= innerHeight && ok(x)) return x; }
+    return 0;
+  }
+  const alFinalPag = () => { const se = document.scrollingElement || document.documentElement; return se.scrollHeight - (scrollY + innerHeight) < 8; };
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
-    const T = topeBarras() + 6, B = pieLB() - 6, H = B - T;
-    if (H < 90) { clearTimeout(LB.st3); LB.st3 = setTimeout(pedirLB, 450); return; } // las barras se están moviendo: se vuelve a mirar enseguida
-    // X15 · vista por versos: el primer verso sin marcar que sigue a la vista bajo las barras; su «Leído» aparece en su pie
-    // cuando ese pie ya se ve (un verso largo se termina de leer antes de que aparezca)
-    if (enFilaVista()) {
-      const ini = T + H * 0.1; let v = 0;
-      for (const el of R.els) {
-        const x = +el.id.slice(1); if (!LB.vis.has(x)) continue;
-        const r = el.getBoundingClientRect(); if (r.bottom <= ini) continue; if (r.top >= B) break;
-        if (!marcable(x)) continue;
-        if (r.bottom <= B - 4) v = x;
-        break;
-      }
-      return ponerLB(v);
-    }
-    const se = document.scrollingElement || document.documentElement, alFinal = se.scrollHeight - (scrollY + innerHeight) < 8;
-    const m = Math.min(H * 0.16, Math.max(0, scrollY - 40)), ini = T + m, arriba = T + H * 0.62, linea = T + H * 0.34;
-    let v = 0, cruza = 0, sig = 0, alto = 0, largo = 0, algunNumero = false;
-    for (const el of R.els) {
-      const x = +el.id.slice(1); if (!LB.vis.has(x)) continue;
-      const r = el.getBoundingClientRect(); if (r.bottom <= T || r.top >= B) continue;
-      const nr = rectNum(el), numVe = nr.height > 0 && nr.top >= T && nr.bottom <= B;
-      if (numVe) algunNumero = true;
-      if (!marcable(x)) continue;
-      if (!numVe) { if (!largo && r.top < T && r.bottom > T + H * 0.85) largo = x; continue; }
-      if (nr.top < ini) { if (!cruza && r.bottom > linea) cruza = x; if (!alto) alto = x; continue; }
-      if (nr.top <= arriba) { v = x; break; }
-      if (!sig) sig = x;
-    }
-    // al final del capítulo ya no se puede bajar más: vale cualquier número a la vista, empezando por arriba
-    if (alFinal && !v && alto) v = alto;
-    ponerLB(v || cruza || sig || alto || (!algunNumero ? largo : 0));
+    let v = versoFranja();
+    if (alFinalPag() && (!v || !marcable(v))) v = debajoFranja(marcable);
+    ponerLB(v && marcable(v) ? v : 0);
   }
   function numeroVisible(v, T, B) { const el = document.getElementById("v" + v); if (!el) return false; const nr = rectNum(el); return nr.height > 0 && nr.top >= T && nr.bottom <= B; }
   // la caja de las cifras del número (la celda del número ocupa todo el alto del verso en la vista por fila)
@@ -3540,6 +3535,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
     const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
     P.classList.toggle("espera", !R.pend.has(v)); P.classList.remove("hecho");
+    // el verso largo se sigue leyendo: su «Leído» aparece cuando su pie ya está a la vista
+    const rb = el.getBoundingClientRect(); if (rb.bottom > innerHeight - 8 || rb.bottom < topeBarras() + 18) { P.hidden = true; return; }
     const antes = P.hidden; P.hidden = false;
     const vt = el.querySelector(":scope > .vt") || el, rv = vt.getBoundingClientRect(), r = el.getBoundingClientRect(), rh = hoja.getBoundingClientRect();
     const w = P.offsetWidth, hh = P.offsetHeight, y = r.bottom - hh / 2;
@@ -4824,7 +4821,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, vis: [...(LB.vis || [])], T: topeBarras(), B: pieLB(), marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, lb: () => ({ v: LB.v, vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
