@@ -859,7 +859,10 @@
   window.addEventListener("scroll", (e) => { if (menuAbierto && !menuAbierto.pop.contains(e.target)) cerrarMenu(false); }, true);
 
   // ------------------------------------------------------------------ ventana (diálogo modal)
-  const modal = h("dialog", { class: "modal", "aria-label": "Detalle" });
+  // AC15 (BiEx, 15-nov-2026): con «closedby=none» el gesto de volver de Android ya no cierra la ventana entera (la vigilancia de
+  // cierre del navegador la cerraba y el lector deshacía todos sus pasos: se caía al verso base). Ahora ese gesto es un «atrás»
+  // normal del historial y la ventana retrocede un paso, a la vista exacta de antes; Esc la cierra por el teclado (abajo).
+  const modal = h("dialog", { class: "modal", "aria-label": "Detalle", closedby: "none" });
   // Cada ventana (y cada paso dentro de ella) deja un paso en el historial: el botón atrás del teléfono o del navegador
   // vuelve un paso o cierra la ventana, igual que ×, Esc, tocar fuera o deslizar hacia abajo la cabecera.
   const M = { pila: [], nav: null, alCerrar: null, estados: 0, saltando: false, destino: null, porHistoria: false, porRuta: false, fwd: [], encima: false, cortar: false };
@@ -969,6 +972,9 @@
     pasoVentana.t = setTimeout(() => modal.removeAttribute("data-paso"), 450);
     f(); return true;
   }
+  // Esc cierra la ventana (con «closedby=none» el navegador ya no lo hace solo); si algo de dentro ya lo atendió, se respeta
+  // (en el documento: al rehacerse la vista de la ventana el foco puede quedar fuera de ella)
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { M.tEsc = performance.now(); if (!e.defaultPrevented && modal.open) { e.preventDefault(); cerrarModal(); } } });
   modal.addEventListener("keydown", (e) => {
     if (e.target && /input|select|textarea/i.test(e.target.tagName)) return;
     if (e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowRight") && M.navV) { e.preventDefault(); pasoVentana(e.key === "ArrowRight" ? 1 : -1); return; }
@@ -1010,7 +1016,11 @@
     M.pila.pop(); pintarModal();
   };
   const reemplazar = (fn) => { M.pila[M.pila.length - 1] = fn; pintarModal(); };
-  modal.addEventListener("cancel", () => { guardarScrollM(); salidaModal(); });
+  // Navegadores sin «closedby»: el gesto de volver llega como «cancel»; si la ventana tiene un paso anterior, retrocede uno
+  modal.addEventListener("cancel", (e) => {
+    if (e.cancelable && M.pila.length > 1 && !(performance.now() - (M.tEsc || -1e9) < 400)) { e.preventDefault(); volver(); return; }
+    guardarScrollM(); salidaModal();
+  });
   // La ventana se va con un fundido suave: una copia quieta se desvanece encima mientras la de verdad se cierra al instante
   // (así ninguna lógica de historial espera a la animación)
   // Donde el navegador sabe animar la salida de la ventana misma (CSS «overlay»), la ventana real se desvanece con su cristal
@@ -1039,7 +1049,8 @@
   // Cabecera común de la ventana: volver, título, flechas y cerrar
   function cabModal(tit, sub, nav) {
     return h("div", { class: "m-cab" },
-      M.pila.length > 1 ? h("button", { class: "btn-icono", type: "button", "aria-label": "Volver", title: "Volver", onclick: volver }, svg(ICO.atras)) : null,
+      // AC13: el lugar de «Volver» se reserva siempre, para que el título no se corra ni la cabecera cambie de alto al aparecer
+      M.pila.length > 1 ? h("button", { class: "btn-icono m-atras", type: "button", "aria-label": "Volver", title: "Volver", onclick: volver }, svg(ICO.atras)) : h("span", { class: "btn-icono m-atras vacio", "aria-hidden": "true" }),
       M.fwd.length ? h("button", { class: "btn-icono m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, svg(ICO.adelante)) : null,
       h("div", { class: "m-tit" }, h("b", { text: tit }), sub ? h("small", { text: sub }) : null),
       nav ? h("button", { class: "btn-icono", type: "button", "aria-label": nav.etiqueta[0], title: nav.etiqueta[0], disabled: !nav.prev, onclick: () => nav.prev && nav.prev() }, svg(ICO.izq)) : null,
@@ -1210,7 +1221,7 @@
       h("main", { class: "pagina", id: "vista", tabindex: "-1" }),
       h("footer", { class: "pie" }, h("div", { class: "in" },
         h("div", { class: "marca-pie", text: "Biblia Exacta" }),
-        h("p", { text: "Ningún verso se da por terminado: la traducción sigue abierta a ajustes. Los versos sin traducción completa se leen como texto base, palabra por palabra; lo que aún no tiene traducción fijada se muestra en griego." }),
+        h("p", { class: "nota-pie", text: "Ningún verso se da por terminado: la traducción sigue abierta a ajustes. Los versos sin traducción completa se leen como texto base, palabra por palabra; lo que aún no tiene traducción fijada se muestra en griego." }),
         h("div", { class: "autoria" },
           h("span", { text: "Traducción, transliteración y análisis:" }),
           h("strong", { text: "BiEx – Biblia Exacta ©™." }),
@@ -1780,7 +1791,31 @@
   }
 
   // Perícopas: las marcas § de BiEx cuando el capítulo las tiene; si no, los párrafos (¶) del texto griego
-  const iniciaPericopa = (usaP, x, k) => k === 0 || !!(usaP ? x.p : x.q);
+  // AC10 (BiEx, 15-nov-2026: «en Juan hay perícopas que no se están marcando»): antes, si el capítulo tenía alguna § de BiEx,
+  // se usaban solo esas y se ignoraban los párrafos ¶ del griego; en YÔḥānā́n 1 su borrador cubre los versos 1-18 y del 19 al
+  // 51 todo quedaba en una sola perícopa. Ahora, por tramos: donde el texto es de BiEx (borrador o revisión) mandan sus §;
+  // donde es el texto base, los ¶ del griego; donde cambia el tramo, empieza una perícopa; y si en un tramo de BiEx pasan más
+  // de 14 versos sin §, los ¶ del griego completan ese hueco. (usaP queda solo por compatibilidad de las llamadas)
+  const PER_MAX = 14;
+  const INI_PER = new WeakMap();
+  function iniciosPericopa(todos) {
+    let s = INI_PER.get(todos); if (s) return s;
+    s = new Set(); const autor = (x) => x && x.n && x.n !== "base";
+    for (let k = 0; k < todos.length; k++) {
+      const x = todos[k], a = autor(x);
+      if (k === 0 || a !== autor(todos[k - 1])) { s.add(x.v); continue; }
+      if (a ? x.p : x.q) s.add(x.v);
+    }
+    // huecos largos en los tramos de BiEx: se completan con los ¶ del griego
+    let ini = 0;
+    for (let k = 1; k <= todos.length; k++) {
+      if (k < todos.length && !s.has(todos[k].v)) continue;
+      if (k - ini > PER_MAX && autor(todos[ini])) for (let j = ini + 1; j < k; j++) if (todos[j].q) s.add(todos[j].v);
+      ini = k;
+    }
+    INI_PER.set(todos, s); return s;
+  }
+  const iniciaPericopa = (usaP, x, k, todos) => k === 0 || (todos ? iniciosPericopa(todos).has(x.v) : !!(usaP ? x.p : x.q));
   // BiEx (9-nov-2026): que nadie tome el proceso semana a semana por el resultado final. Tras «Entendido» vuelve a los 7 días.
   function notaObra() {
     // Sale como mucho un par de veces por semana (cada 84 h): al mostrarse cuenta como vista; en la misma visita sigue arriba de cada capítulo hasta «Entendido»
@@ -1823,7 +1858,7 @@
         const A = anadido(b.c, cap, x.v), av = avisoAnadido(b, cap, x.v, A, false, k === 0);
         if (av) { parrafos.push(av); actual = null; }
         // § solo donde de verdad empieza una perícopa (y al comienzo del capítulo); tras una caja violeta el párrafo sigue sin §
-        if (!actual || iniciaPericopa(usaP, x, k)) { const ini = k === 0 || iniciaPericopa(usaP, x, k); actual = h("p", { class: "peri" + (ini ? "" : " sigue") }, ini ? h("span", { class: "par", "aria-hidden": "true", text: "§" }) : null); parrafos.push(actual); }
+        if (!actual || iniciaPericopa(usaP, x, k, todos)) { const ini = k === 0 || iniciaPericopa(usaP, x, k, todos); actual = h("p", { class: "peri" + (ini ? "" : " sigue") }, ini ? h("span", { class: "par", "aria-hidden": "true", text: "§" }) : null); parrafos.push(actual); }
         actual.append(aplicarMarca(h("span", { class: "vs n-" + x.n + (A ? (A.entero ? " anadido" : " an-parcial") : "") + (LEI.es(b.c, cap, x.v) ? " leido" : ""), id: "v" + x.v, role: "button", tabindex: "0", title: refCorta(b, cap, x.v) + " · " + estadoEt(x.n),
           onclick: (e) => abrir(x, e), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
           h("sup", { text: x.v }), corcheteAn(A, 0), vtx(x), corcheteAn(A, 1)), marcaDe(b, cap, x.v)), " ");
@@ -1845,12 +1880,12 @@
     function filaVerso(x, k) {
       const A = anadido(b.c, cap, x.v);
       return aplicarMarca(h("div", {
-      class: "vl n-" + x.n + (iniciaPericopa(usaP, x, k) ? " p" : "") + (A ? (A.entero ? " anadido" : " an-parcial") : "") + (LEI.es(b.c, cap, x.v) ? " leido" : ""), id: "v" + x.v, role: "button", tabindex: "0",
+      class: "vl n-" + x.n + (iniciaPericopa(usaP, x, k, todos) ? " p" : "") + (A ? (A.entero ? " anadido" : " an-parcial") : "") + (LEI.es(b.c, cap, x.v) ? " leido" : ""), id: "v" + x.v, role: "button", tabindex: "0",
       "aria-label": "Verso " + x.v + " (" + estadoEt(x.n) + "). Abrir su griego palabra por palabra",
       onclick: (e) => abrir(x, e), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(x); } } },
       // § delante del número del verso que abre la perícopa (el carácter mismo, como en los textos de BiEx: «§1.»)
       h("span", { class: "vn", title: estadoEt(x.n) + (x.n === "base" ? ": " + x.k + " % de las palabras ya traducidas" : "") },
-        iniciaPericopa(usaP, x, k) ? h("span", { class: "par-v", "aria-hidden": "true", text: "§" }) : null, String(x.v)),
+        iniciaPericopa(usaP, x, k, todos) ? h("span", { class: "par-v", "aria-hidden": "true", text: "§" }) : null, String(x.v)),
       h("span", { class: "vt" }, corcheteAn(A, 0), vtx(x), corcheteAn(A, 1))), marcaDe(b, cap, x.v));
     }
   }
@@ -2293,12 +2328,33 @@
     setTimeout(() => { el.classList.remove("destello"); for (const c of capas) c.remove(); }, 2600);
   }
   // centra un elemento dentro de su contenedor desplazable (la ventana) o de la página, sin animación
+  // AC22 (BiEx, 15-nov-2026, regla ineludible de simetría): lo que se enfoca al saltar queda centrado en el área VISIBLE de su
+  // caja (entre la cabecera y el pie de la ventana, o entre las barras fijas de la página); si es más alto que esa área, su
+  // comienzo queda arriba con un margen. Se vuelve a centrar cuando termina de abrirse o de dibujarse, salvo que la persona
+  // ya se haya movido.
   function centrarEnSuCaja(el) {
     let s = el.parentElement;
     while (s && s !== document.body && !(s.scrollHeight > s.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(s).overflowY))) s = s.parentElement;
-    if (!s || s === document.body || s === document.documentElement) { el.scrollIntoView({ block: "center", behavior: "instant" }); return; }
-    const r = el.getBoundingClientRect(), rs = s.getBoundingClientRect();
-    s.scrollTop += (r.top + r.height / 2) - (rs.top + rs.height / 2);
+    const enVentana = !!(s && s !== document.body && s !== document.documentElement);
+    const area = () => {
+      if (enVentana) { const rs = s.getBoundingClientRect(); return [rs.top, rs.bottom]; }
+      let sup = 0, inf = window.innerHeight;
+      for (const b of document.querySelectorAll(".barra, .barra-hoja.bh-pegada")) { const r = b.getBoundingClientRect(); if (r.height && r.top <= 2 && r.bottom > sup && r.bottom < inf / 2) sup = r.bottom; }
+      for (const b of document.querySelectorAll(".jg-muelle")) { const r = b.getBoundingClientRect(); if (r.height && r.bottom >= inf - 2 && r.top > inf / 2 && r.top < inf) inf = Math.min(inf, r.top); }
+      return [sup, inf];
+    };
+    const ajustar = () => {
+      if (!el.isConnected) return;
+      const [sup, inf] = area(), r = el.getBoundingClientRect(), alto = inf - sup;
+      const d = r.height <= alto - 24 ? (r.top + r.height / 2) - (sup + alto / 2) : r.top - (sup + 14);
+      if (Math.abs(d) < 1) return;
+      if (enVentana) s.scrollTop += d; else window.scrollBy({ top: d, behavior: "instant" });
+    };
+    let movio = false; const marca = () => { movio = true; };
+    const blanco = enVentana ? s : window;
+    for (const ev of ["wheel", "touchstart", "keydown"]) blanco.addEventListener(ev, marca, { passive: true, once: true });
+    ajustar();
+    for (const ms of [140, 420]) setTimeout(() => { if (!movio) ajustar(); }, ms);
   }
   function destellarPalabra(v, i) {
     const el = $("#vista .pal[data-v='" + v + "'][data-i='" + i + "']");
@@ -2342,11 +2398,12 @@
       fijarAlto(); p = k; pintarPie(); if (op.alCambiar) op.alCambiar(p);
       if (sinMov() || !vieja) { hoja.replaceChildren(nueva); if (hoja.animate && !sinMov()) hoja.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180 }); requestAnimationFrame(fijarAlto); return; }
       girando = true;
-      // adelante: la hoja de encima gira hacia el fondo sobre su lomo y deja ver la siguiente; atrás: la anterior vuelve
-      // desde el fondo y se asienta encima
+      // AC14 (BiEx, 15-nov-2026): como una hoja de verdad. Adelante: la hoja de encima se levanta hacia quien lee desde su borde
+      // libre, gira sobre el lomo (izquierda) y se va, dejando ver la siguiente; atrás: la anterior vuelve desde el lado del
+      // lomo, baja hacia quien lee y se asienta encima. Antes giraba hacia el fondo (se veía como si la hoja se hundiera).
       const capa = h("div", { class: "lp-hoja lp-giro", "aria-hidden": "true" }, dir > 0 ? vieja : nueva, h("i", { class: "lp-sombra" }));
       hoja.replaceChildren(dir > 0 ? nueva : vieja); marco.append(capa);
-      const kf = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(86deg)" }], sh = [{ opacity: 0 }, { opacity: 0.6 }];
+      const kf = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-98deg)" }], sh = [{ opacity: 0 }, { opacity: 0.6 }];
       const t = { duration: 620, easing: "cubic-bezier(.33,.72,.24,1)", fill: "both" };
       const a = capa.animate(dir > 0 ? kf : kf.slice().reverse(), t);
       capa.lastChild.animate(dir > 0 ? sh : sh.slice().reverse(), t);
@@ -2811,7 +2868,8 @@
       h("ul", { class: "ms-eds" }, sinEd.map(([t]) => h("li", {}, h("span", { lang: "grc", text: T.F[t[0]] }), " — no figura en: " + T.ediciones.filter((_, k) => t[6] & (1 << k)).join(", ") + ".")))) : null;
     const resumen = pres.filter((x) => x.cob > 0);
     cuerpo.replaceChildren(
-      h("p", { class: "ms-intro" }, "Así se lee este verso en los manuscritos griegos más antiguos que se conservan, frente al texto base (edición crítica): cada diferencia va con su notación de aparato crítico y, debajo, explicada en español. ",
+      // AC22 (BiEx, 15-nov-2026): textos de la introducción y del porcentaje, tal como los pidió
+      h("p", { class: "ms-intro" }, "Así se lee este verso en los manuscritos griegos más antiguos que se conservan, frente al texto base (edición crítica): cada diferencia va con su notación de aparato crítico y, debajo, explicada. ",
         resumen.length + (resumen.length === 1 ? " manuscrito lo conserva" : " manuscritos lo conservan") + (vars.length ? "; " + vars.length + (vars.length === 1 ? " diferencia." : " diferencias.") : "; coinciden con el texto base.")),
       h("div", { class: "bloque" }, h("h4", { text: "En el tiempo" }), eje),
       h("div", { class: "bloque" }, h("h4", { text: "El texto base" + (vars.length ? " · toca una palabra marcada" : "") }), texto,
@@ -2820,7 +2878,7 @@
       h("div", { class: "bloque" }, h("h4", { text: "Diferencias · aparato crítico" }), lista, vars.length ? leyendaSignos() : null),
       h("div", { class: "bloque" }, h("h4", {}, "Cada manuscrito"),
         // X4: qué significa el porcentaje de cada manuscrito
-        h("p", { class: "nota-ui ms-pct" }, h("b", { text: "El porcentaje" }), " es la parte de las palabras de este verso que se alcanza a leer en cada manuscrito: 100 % es el verso completo; menos, que el papiro o el pergamino está roto o dañado en ese lugar. Una raya (—) indica que el manuscrito no contiene el verso. No mide su calidad ni su antigüedad."),
+        h("p", { class: "nota-ui ms-pct", text: "El porcentaje es la parte de las palabras de este verso que se alcanza a leer en cada manuscrito: 100 % es el verso completo; menos, que el papiro o el pergamino está roto o dañado en ese lugar. Una raya (—) indica que el manuscrito no contiene el verso. No mide su calidad ni su antigüedad." }),
         h("div", { class: "ms-ctl" }, sepBtn, pres.length > 1 ? abrirTodos : null), filas),
       eds || "");
   }
@@ -3004,7 +3062,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "f975fef61f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "3f7def2b3d", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4138,10 +4196,12 @@
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Ranking de BiEx" }),
         h("h1", { class: "texto", text: "Las 16 ediciones bíblicas menos mal traducidas al español" }),
-        h("p", { class: "est-sub", text: "En el orden del ranking: ninguna es exacta, pero estas son las que mejor resisten la comparación con los textos más antiguos." })),
+        h("p", { class: "est-sub", text: "En el orden del ranking: ninguna es exacta, pero estas son las que menos deficientemente resisten la comparación con los textos más antiguos." })), // AC2 (BiEx, 15-nov-2026)
       h("ol", { class: "rk-lista" }, RANKING.map(item)),
       h("p", { class: "rk-nota" }, "BiEx consulta y compara una media de 79 traducciones frente a unas 180 ediciones en español. Ninguna de las demás supera hoy la prueba, por eso no se recomiendan para decisiones de doctrina ni para el estudio serio del texto sagrado. La lista no está completa y se revisa. ",
-        h("a", { href: "https://bibliaexacta.wixsite.com/biex/info", target: "_blank", rel: "noopener", text: "Ver la página de información del sitio oficial" }), "."))));
+        // AC1 (BiEx, 15-nov-2026): dentro del sitio oficial el enlace abre la página «info» en la ventana principal (en un marco,
+        // una pestaña nueva podía no abrirse, sobre todo en la app instalada); fuera de él, en una pestaña nueva
+        h("a", { href: OFICIAL + "info", target: EMBED ? "_top" : "_blank", rel: "noopener", text: "Ver la página de información del sitio oficial" }), "."))));
     if (restaurando()) intentarRestaurar(); else alTope();
   }
   // Estudios: «Lo que pocos saben», «Por qué estas fechas» y «Falacias lógicas» (datos/estudios.json, con los nombres ya
@@ -5232,7 +5292,12 @@
     const el = document.documentElement;
     try { if (document.fullscreenEnabled && !document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); } catch (e) { /* sin pantalla completa */ }
   }
-  document.addEventListener("touchend", pedirPantalla, { passive: true });
+  // AC18 y AC13 (BiEx, 15-nov-2026): ya no se pide pantalla completa al primer toque. En la app instalada no tiene sentido
+  // (ya ocupa toda la pantalla), el navegador mostraba su cuadro gris «Para salir de la pantalla completa…» y, al volver
+  // tras un rato, ese primer toque cambiaba el tamaño de la vista en pleno gesto: parpadeo y un toque que no obedecía.
+  // La lectura inmersiva (barras que se retiran al bajar) da el mismo espacio sin nada de eso. pedirPantalla queda por si
+  // algún día se ofrece como opción explícita en «Aa».
+  void pedirPantalla;
   let yInm = window.scrollY, tInm = 0, tDesp = 0;
   // (con la lupa puesta las barras no se retiran: la del capítulo va en el flujo y su cambio de altura movería la página)
   const inmersivo = (si) => { if (si && document.documentElement.classList.contains("lupa")) si = false; if (si) { medirBarraHoja(); marcarPegada(); } document.documentElement.classList.toggle("inmersivo", !!si); };
@@ -5508,7 +5573,7 @@
     vs.forEach((x, k) => {
       const A2 = anadido(c, cap, x.v);
       if (A2 && A2.ini) o.push("> [!warning] Texto añadido · " + mdLinea(A2.p.t) + "\n> " + mdLinea(A2.p.d) + "\n");
-      const pre = iniciaPericopa(usaP, x, k) ? "**§** " : "";
+      const pre = iniciaPericopa(usaP, x, k, vs) ? "**§** " : "";
       let lin = pre + '<sup style="color:' + MDC.vn + '">' + x.v + "</sup> " + mdDeNodo(txtVerso(x)).trim();
       if (gr && gr.get(x.v)) lin += '<br><span style="color:' + MDC.gr + '" lang="grc">' + mdTexto(gr.get(x.v)) + "</span>";
       o.push(lin + " ^v" + x.v + "\n");
@@ -5729,6 +5794,8 @@
     if (partes[0] !== "escudrina" && !(D && libroDe(String(partes[0] || "").toUpperCase())) && window.BiExJuego) window.BiExJuego.salir();
     rutaVista = ruta;
     creditosPie(!partes.length || (partes[0] === "escudrina" && partes[1] === "mas"));
+    // AC2: en el ranking sobra la nota del pie sobre los versos (se oculta solo ahí)
+    document.documentElement.classList.toggle("sin-nota-pie", partes[0] === "ranking");
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }

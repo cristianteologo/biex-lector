@@ -388,6 +388,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .m-cab .m-tit small { font-family: var(--f-ui); font-size: .72rem; letter-spacing: .1em; color: var(--tenue); white-space: normal; overflow-wrap: anywhere; line-height: 1.35; margin-top: 2px; }
 .m-cab .btn-icono { width: 38px; height: 38px; }
 .m-cab .btn-icono:disabled { opacity: .3; cursor: default; }
+.m-cab .m-atras.vacio { visibility: hidden; pointer-events: none; flex: none; } /* AC13: lugar reservado de «Volver» */
 .m-cuerpo { overflow: auto; overscroll-behavior: contain; padding: clamp(18px, 3vw, 30px) clamp(16px, 3.4vw, 34px) calc(28px + env(safe-area-inset-bottom, 0px)); flex: 1; min-height: 0; }
 .m-pie { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--linea-2); flex: none; }
 
@@ -2357,7 +2358,7 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 /* ------------------------------------------------------------------ libro de páginas (X11/Z8 y AA22, 14-nov-2026)
    La hoja gira sobre su lomo (izquierda), en profundidad y dentro de su marco: nada se sale ni mueve la pantalla */
 .lp { display: grid; gap: 10px; }
-.lp-marco { position: relative; perspective: 1500px; perspective-origin: 0 50%; overflow: hidden; contain: layout paint; border-radius: 14px; border: 1px solid var(--linea-2); background: var(--hoja-2); }
+.lp-marco { position: relative; perspective: 1700px; perspective-origin: 30% 50%; overflow: hidden; contain: layout paint; border-radius: 14px; border: 1px solid var(--linea-2); background: var(--hoja-2); }
 .lp-marco.con-lomo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; z-index: 3; pointer-events: none; background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, 0)); }
 .lp-hoja { position: relative; padding: 6px 8px 6px 14px; background: linear-gradient(180deg, var(--vidrio-luz, transparent), transparent 40%), var(--hoja-2); }
 .lp-giro { position: absolute; inset: 0; z-index: 2; transform-origin: 0 50%; backface-visibility: hidden; will-change: transform; box-shadow: 8px 0 22px -14px rgba(0, 0, 0, .7); }
@@ -2419,3 +2420,17 @@ html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none
 :root { --repaso: #8fd0ff; }
 :root[data-theme="light"] { --repaso: #1f6fb8; }
 .btn-leido.repaso.si { border-color: var(--repaso); color: var(--repaso); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 40%, transparent); }
+
+/* AC2 (15-nov-2026): sin la nota de los versos al pie del ranking */
+html.sin-nota-pie .pie .nota-pie { display: none; }
+
+/* AC22 (BiEx, 15-nov-2026): «En el tiempo» de Manuscritos respira como los libros en oro: cada sigla late apenas (3 %),
+   desfasada de una a otra; propiedad «scale» (no pisa su translateX), por el compositor, en pausa al desplazar */
+@keyframes respiraMs { 0%, 100% { scale: 1; } 50% { scale: 1.035; } }
+.ms-eje .ms-punto:not(.sin) { animation: respiraMs 4.6s ease-in-out infinite; transform-origin: 50% 100%; }
+.ms-eje .ms-punto:nth-child(3n + 1) { animation-delay: -1.5s; }
+.ms-eje .ms-punto:nth-child(3n + 2) { animation-delay: -3.1s; }
+.ms-eje .ms-punto:nth-child(4n) { animation-duration: 5.3s; }
+html.desplazando .ms-eje .ms-punto { animation-play-state: paused; }
+html[data-mov="no"] .ms-eje .ms-punto { animation: none; }
+@media (prefers-reduced-motion: reduce) { .ms-eje .ms-punto { animation: none; } }

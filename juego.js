@@ -248,7 +248,12 @@
     try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume().catch(() => {}); } catch (e) { return; }
     if (AC.state !== "running") return;
     const N = { chispa: [[1046.5, 0, 0.16], [1568, 0.07, 0.22]], nivel: [[659.3, 0, 0.3], [880, 0.11, 0.3], [1318.5, 0.22, 0.55]], hallazgo: [[784, 0, 1.1], [1174.7, 0.06, 1.2], [1568, 0.12, 1.4], [2349.3, 0.18, 0.9]],
-      bienvenida: [[392, 0, 1.9], [523.25, 0.22, 1.9], [659.25, 0.44, 2.1], [783.99, 0.66, 2.3], [1046.5, 1.0, 2.6], [1318.5, 1.4, 2.4]] }[tipo] || [];
+      bienvenida: [[392, 0, 1.9], [523.25, 0.22, 1.9], [659.25, 0.44, 2.1], [783.99, 0.66, 2.3], [1046.5, 1.0, 2.6], [1318.5, 1.4, 2.4]],
+      // AC12 (BiEx, 15-nov-2026): un sonido propio para cada premio
+      cosecha: [[392, 0, 0.9], [587.3, 0.1, 0.9], [784, 0.2, 1.1], [987.8, 0.34, 1.2], [1174.7, 0.5, 1.5]],
+      reparto: [[523.25, 0, 0.5], [659.25, 0.12, 0.55], [783.99, 0.24, 0.6], [1046.5, 0.38, 0.9], [1567.98, 0.52, 1.1]],
+      fragmento: [[880, 0, 0.35], [1318.5, 0.05, 0.5], [1760, 0.13, 0.6]],
+      dracma: [[1975.5, 0, 0.18], [2637, 0.06, 0.22], [3951, 0.12, 0.3]] }[tipo] || [];
     const t0 = AC.currentTime + 0.02;
     for (const [f, d, dur] of N) {
       const o = AC.createOscillator(), g = AC.createGain();
@@ -347,7 +352,34 @@
 .co-cesta.llena::before{animation:ap-gr1 3.9s ease-in-out infinite alternate}
 .co-txt{margin:0;max-width:560px;font-size:.9rem;line-height:1.5}
 .co-est{margin:0;font-size:.82rem;color:var(--tinta-2);font-variant-numeric:tabular-nums}
-.co-medidor{position:relative;width:min(260px,70vw);aspect-ratio:240/140}
+.co-medidor{position:relative;width:min(300px,78vw);aspect-ratio:240/140;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+/* AC5 (15-nov-2026): al detenerse la aguja, un barrido de luz cruza el cristal una vez (solo opacidad y traslado) */
+.co-destello{position:absolute;inset:6% 10% 18%;border-radius:50% 50% 0 0/100% 100% 0 0;overflow:hidden;pointer-events:none}
+.co-destello::before{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,244,214,.28),transparent);opacity:0;transform:translateX(0)}
+.co-medidor.brilla .co-destello::before{animation:co-barre 1.3s ease-out .1s 1 both}
+@keyframes co-barre{0%{opacity:0;transform:translateX(0)}20%{opacity:1}100%{opacity:0;transform:translateX(480%)}}
+html[data-mov="no"] .co-medidor.brilla .co-destello::before{animation:none}
+/* AC5 y AC6: el verso de la Lectura que acompaña la cosecha y el reparto */
+.jg-vl{position:relative;display:grid;gap:6px;justify-items:center;text-align:center;max-width:34rem;margin:4px auto 0;padding:14px 16px 12px;border-radius:16px;overflow:hidden;isolation:isolate;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 9%,transparent),transparent 60%),color-mix(in srgb,var(--hoja-2) 86%,transparent);border:1px solid color-mix(in srgb,var(--oro) 34%,transparent);box-shadow:0 10px 26px -18px rgba(0,0,0,.6);transition:opacity .5s ease,transform .5s ease}
+.jg-vl.espera{opacity:0;transform:translateY(6px)}
+.jg-vl-luz{position:absolute;inset:-40% -10% auto;height:80%;z-index:-1;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 22%,transparent),transparent);opacity:.8}
+.jg-vl-rot{font:600 .68rem/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:var(--oro)}
+.jg-vl .jg-vl-t{margin:0;font-family:var(--f-texto);font-size:1.02rem;line-height:1.55;color:var(--tinta)}
+.jg-vl-ref{display:inline-flex;align-items:center;gap:4px;font:500 .82rem/1 var(--f-ui);color:var(--oro-vivo);text-decoration:none;padding:6px 10px;border-radius:999px}
+.jg-vl-ref svg{width:13px;height:13px}
+.jg-vl-ref:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+/* AC6: la celebración del reparto de atributos */
+.jg-rp-l{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.jg-rp-m{display:grid;justify-items:center;gap:3px;min-width:84px;padding:12px 10px 10px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--hoja-2) 80%,transparent);opacity:.45;transform:translateY(6px) scale(.96);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.9,.25,1.2),box-shadow .6s ease}
+.jg-rp-m.on{opacity:1;transform:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 45%,transparent),0 0 26px -4px color-mix(in srgb,var(--ac) 55%,transparent)}
+.jg-rp-ico svg{width:30px;height:30px;color:var(--ac);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--ac) 60%,transparent))}
+.jg-rp-n{font:500 .78rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.jg-rp-v{font:500 1.5rem/1 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
+.jg-rp-m small{font:600 .72rem/1 var(--f-ui);color:var(--ac)}
+.jg-rp-p{margin:0;font:500 .9rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.jg-rp-p b{font:500 1.35rem/1 var(--f-display);color:var(--oro-vivo);margin-left:4px;font-variant-numeric:lining-nums tabular-nums}
+html[data-mov="no"] .jg-rp-m{transition:none}
 .co-medidor svg,.co-aguja{position:absolute;inset:0;width:100%;height:100%}
 .co-aguja{transform-origin:50% 85.7%;transform:rotate(-90deg);will-change:transform}
 .co-res{margin:0;display:grid;gap:2px}
@@ -430,10 +462,10 @@ html[data-mov="no"] .av-pozo i{animation:none}
 .ap-desc b{color:var(--oro-vivo);font-weight:600}
 .ap-arm{display:grid;grid-template-columns:minmax(112px,40%) minmax(0,1fr);gap:10px;align-items:center}
 .ap-fig{display:grid;place-items:center;padding:0;background:none}
-.si{position:relative;width:100%;max-width:230px;aspect-ratio:300/420;margin:0 auto;isolation:isolate}
-.si .si-c,.si .si-mueve{position:absolute;inset:0;width:100%;height:100%}
-.si .si-mueve{will-change:transform}
-.si .si-mueve>svg{position:absolute;inset:0;width:100%;height:100%}
+/* AC19 (15-nov-2026): antes «.si», que chocaba con la clase de estado «si» del lector (aviso «Actualizar», «Leído», «Repasado»): nunca una clase genérica sin prefijo */.ser-in{position:relative;width:100%;max-width:230px;aspect-ratio:300/420;margin:0 auto;isolation:isolate}
+.ser-in .si-c,.ser-in .si-mueve{position:absolute;inset:0;width:100%;height:100%}
+.ser-in .si-mueve{will-change:transform}
+.ser-in .si-mueve>svg{position:absolute;inset:0;width:100%;height:100%}
 .si-alma,.si-pecho{position:absolute;border-radius:50%;pointer-events:none;will-change:opacity}
 .si-alma{left:41%;top:18%;width:18%;height:16%;background:radial-gradient(closest-side,color-mix(in srgb,var(--si-luz,#ffe4a0) 55%,transparent),transparent);opacity:.38}
 .si-pecho{left:37%;top:31%;width:26%;height:18%;background:radial-gradient(closest-side,color-mix(in srgb,var(--si-luz,#ffe4a0) 70%,transparent),transparent);opacity:var(--si-pecho,.55)}
@@ -1184,6 +1216,16 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-relevo{justify-self:start;margin:0 0 6px}
 .jg-premio{bottom:calc(132px + var(--i) * 46px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,#2b2214,#17120b)!important;color:var(--oro-vivo)!important;border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);opacity:0}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
+/* AC12 (15-nov-2026): la figura del premio gira y brilla una vez; el rollo de papiros de Tesoro */
+.jg-premio-fig{display:block;width:34px;height:34px;margin:0 auto 2px;filter:drop-shadow(0 0 8px rgba(255,214,140,.55));animation:jg-fig 1.1s cubic-bezier(.2,.9,.25,1.1) .25s both}
+.jg-premio-fig svg{width:100%;height:100%;display:block}
+@keyframes jg-fig{0%{transform:rotate(-24deg) scale(.4);opacity:0}60%{transform:rotate(8deg) scale(1.12);opacity:1}100%{transform:rotate(0) scale(1)}}
+html[data-mov="no"] .jg-premio-fig{animation:none}
+.jg-pp{width:100%;max-width:440px;margin:0 auto;aspect-ratio:2/1}
+.jg-pp svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.35))}
+.jg-pp-c{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:4px;margin:0}
+.jg-pp-c b{font:500 1.6rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
+.jg-pp-c small{flex-basis:100%;text-align:center;font:400 .78rem/1.3 var(--f-ui);color:var(--tenue)}
 .ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
 .ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}
 /* X3 (BiEx, 13-nov-2026): simetría en PC. Escudriña en una columna central (el Árbol ya no queda en 760 px por la clase .ap
@@ -1273,6 +1315,18 @@ html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-ah .f::before{content:"";position:absolute;left:-10px;right:-10px;top:-4px;bottom:-4px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 30%,transparent),transparent)}
 .jg-ah .n{position:absolute;left:0;top:0;border-radius:50%;will-change:opacity;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro-vivo) 48%,transparent),color-mix(in srgb,var(--oro) 16%,transparent) 64%,transparent)}
 .jg-ah .f,.jg-ah .n{animation:jg-ah 3.4s ease-in-out infinite}
+/* AC17 (15-nov-2026): la clasificación y el prestigio, desplegados en su tarjeta */
+.jg-cl2{display:grid;gap:10px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
+.jg-cl2-z{display:grid;gap:8px;min-width:0}
+.jg-cl2-z .jg-lista{margin:0}
+.jg-cl2-tu{border-top:1px dashed var(--linea);padding-top:6px}
+.jg-cl2-yo{text-align:center}
+.jg-cl2-mas{justify-self:center;margin-top:2px}
+.jg-cl2-mas svg{width:14px;height:14px}
+/* AC10 (15-nov-2026): sobre un verso ya marcado el resplandor no se apaga: se queda en un tono más sereno (azul de repaso) */
+.jg-ah.marcado .f{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 14%,color-mix(in srgb,var(--repaso,#8fd0ff) 55%,#fff) 50%,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 86%,transparent)}
+.jg-ah.marcado .f::before{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 22%,transparent),transparent)}
+.jg-ah.marcado .n{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 34%,transparent),color-mix(in srgb,var(--repaso,#8fd0ff) 10%,transparent) 64%,transparent)}
 @keyframes jg-ah{0%,100%{opacity:.66}50%{opacity:1}}
 html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 @media (prefers-reduced-motion:reduce){.jg-ah .f,.jg-ah .n{animation:none}}
@@ -1907,7 +1961,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("p", { text: "La " + ORDINAL[i] + " piedra del fundamento del muro de la ciudad. " + (veces ? "La hallaste " + plural(veces, "vez", "veces") + "." : "Aún no la hallas: sigue leyendo.") }),
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
   }
-  const NOVEDAD = { piedra: (a) => "Hallaste " + piedraNombre(a.i) + ".", lauro: () => "Hallaste un lauro trenzado incorruptible.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
+  const NOVEDAD = { frag: (a) => (a.n === 1 ? "Hallaste un fragmento de papiro" : "Hallaste " + a.n + " fragmentos de papiro") + (a.c ? " · " + a.c + " de " + (a.meta || 70) + " en tu rollo (Tesoro)" : "") + ".", drl: (a) => "Hallaste " + a.dr + " dracmas al marcar «Leído».",
+    piedra: (a) => "Hallaste " + piedraNombre(a.i) + ".", lauro: () => "Hallaste un lauro trenzado incorruptible.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
     conf: (a) => a.a + " confirmó su lugar: sumas un peldaño de tu escalera.", marco: (a) => "¡Subiste al peldaño «" + ((marcos()[a.m - 1] || [])[1] || "") + "» de la escalera del Sembrador" + (a.v > 1 ? " (vuelta " + a.v + ")" : "") + "!" + (a.h ? " +" + a.h + " h de experiencia doble." : ""),
     lanzamiento: (a) => "¡Escudriña abrió! " + (a.p ? "Conservaste el " + String(a.p).replace(".", ",") + " % de tu avance de práctica y, por inscribirte antes, recibiste " + a.h + " horas de experiencia doble." : "Por inscribirte antes recibiste " + a.h + " horas de experiencia doble."),
     micro: (a) => a.a + " confirmó su lugar en tu " + (a.g === 2 ? "segunda" : "tercera") + " generación" + (a.via ? " (llegó por " + a.via + ")" : "") + ": +" + a.min + " min de experiencia doble.",
@@ -1933,8 +1988,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const ayer = new Date(hoy); ayer.setDate(hoy.getDate() - 1);
     return (igual(d, ayer) ? "Ayer" : F_DIA.format(d) + (d.getFullYear() !== hoy.getFullYear() ? " de " + d.getFullYear() : "")) + " · " + hr;
   }
+  // AC12: lo que sale al marcar «Leído» (fragmentos y dracmas) también queda en Novedades: se guarda en este dispositivo y se
+  // une a las novedades del servidor por su hora
+  function novedadLocal(k, d) { const l = A.store.get("jg:novL", null) || []; l.unshift(Object.assign({ k, t: Date.now() }, d)); A.store.set("jg:novL", l.slice(0, 30)); }
   function tarjetaNovedades(y) {
-    const l = (y.avisos || []).filter((a) => NOVEDAD[a.k]).slice(0, 6);
+    const loc = (A.store.get("jg:novL", null) || []).filter((a) => a && a.t);
+    const l = [...(y.avisos || []), ...loc].filter((a) => NOVEDAD[a.k]).sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 8);
     if (!l.length) return null;
     const horas = [];
     const ul = h("ul", { class: "jg-novedades" }, l.map((a) => {
@@ -1965,7 +2024,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // «Que la distribución tenga sus propios botones, como los menús de los juegos»: cinco secciones fijas, siempre a la mano.
   // El menú vive fuera de la vista (no parpadea al repintar) y se retira al salir de Escudriña.
   // El Árbol de la siembra con su propio botón en el menú (BiEx, 10-nov-2026)
-  const SECC = [["hoy", "Hoy", "hoy"], ["mundo", "Mundo", "mundo"], ["tesoro", "Tesoro", "liga"], ["juntos", "Juntos", "compania"], ["arbol", "Árbol", "arbol"], ["mas", "Más", "mas"]];
+  // AC20 (BiEx, 15-nov-2026): el Árbol pasa al lugar de Juntos y Juntos al del Árbol
+  const SECC = [["hoy", "Hoy", "hoy"], ["mundo", "Mundo", "mundo"], ["tesoro", "Tesoro", "liga"], ["arbol", "Árbol", "arbol"], ["juntos", "Juntos", "compania"], ["mas", "Más", "mas"]];
   const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "arbol",
     mas: "mas", cuenta: "mas", propuestas: "mas", guia: "hoy" };
   const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
@@ -2040,11 +2100,54 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" }))),
       h("p", { class: "jg-mini", text: extra.join(" ") }), bloqueRenuevo(y));
   }
+  // AC17 (BiEx, 15-nov-2026): las posiciones ya desplegadas en la tarjeta, con dos vistas que se intercambian en el mismo lugar
+  // (clasificación de tu rango y prestigio de las ciudades), sin botones que lleven a otra página para verlas. El cambio es un
+  // fundido en su sitio (nada se mueve a los lados) y la altura se conserva para que no salte; «Ver todo» abre la vista
+  // completa con sus filtros. Se recuerda la última vista elegida.
   function tarjetaClasificacion(y) {
+    const lugar = y.lugar || {}, zona = h("div", { class: "jg-cl2-z", "aria-live": "polite" }, h("p", { class: "cargando", text: "Cargando…" }));
+    let vista = A.store.get("jg:clVista", "clas") === "pres" ? "pres" : "clas", alto = 0;
+    const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
+    const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }),
+      h("span", { class: "n" }, x.ciudad, h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x", text: fmt(x.pr) }));
+    const pie = (href, t) => h("a", { class: "btn chico jg-cl2-mas", href }, h("span", { text: t }), A.svg(A.ICO.der));
+    async function pintar() {
+      alto = Math.max(alto, zona.offsetHeight); if (alto) zona.style.minHeight = alto + "px";
+      const yoVista = vista;
+      let nodos;
+      if (vista === "clas") {
+        const r = await pedir("/clasificacion?" + new URLSearchParams({ ambito: lugar.pais ? "pais" : "mundo", periodo: "semana" }));
+        if (yoVista !== vista || !zona.isConnected) return;
+        if (r.error) nodos = [h("p", { class: "jg-mini", text: mensaje(r) })];
+        else {
+          const l = r.lista || [], mio = r.yo && !l.slice(0, 5).some((x) => x.yo);
+          nodos = [h("p", { class: "jg-mini", text: "Esta semana · " + (RANGOS[r.rango] || "tu rango") + " · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") }),
+            l.length ? h("ol", { class: "jg-lista" }, l.slice(0, 5).map(fila)) : h("p", { class: "jg-mini", text: "Todavía nadie de tu rango suma experiencia aquí. ¡Puedes ser la primera persona!" }),
+            mio ? h("p", { class: "jg-mini jg-cl2-yo", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia" }) : null,
+            pie("#/escudrina/clasificacion", "Ver toda la clasificación")];
+        }
+      } else {
+        const r = await pedir("/prestigio?" + new URLSearchParams({ periodo: "semana", pais: lugar.pais || "" }), { guardable: true });
+        if (yoVista !== vista || !zona.isConnected) return;
+        if (r.error) nodos = [h("p", { class: "jg-mini", text: mensaje(r) })];
+        else {
+          const l = r.lista || [], mia = l.find((x) => x.ciudad === lugar.ciudad && x.pais === lugar.pais), arriba = l.slice(0, 5);
+          nodos = [h("p", { class: "jg-mini", text: "Esta semana · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") + " · cada ciudad suma a sus 12 mejores lectores" }),
+            l.length ? h("ol", { class: "jg-lista" }, arriba.map(filaC)) : h("p", { class: "jg-mini", text: "Todavía ninguna ciudad suma prestigio aquí. ¡La tuya puede ser la primera!" }),
+            mia && !arriba.includes(mia) ? h("ol", { class: "jg-lista jg-cl2-tu", start: String(mia.p) }, filaC(mia)) : null,
+            pie("#/escudrina/prestigio", "Ver todo el prestigio local")];
+        }
+      }
+      zona.replaceChildren(...nodos.filter(Boolean));
+      if (zona.animate && !sinAnim()) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
+      requestAnimationFrame(() => { zona.style.minHeight = ""; alto = 0; });
+    }
+    const seg = h("div", { class: "jg-seg fila jg-cl2-seg", role: "group", "aria-label": "Qué ver" }, [["clas", "Clasificación"], ["pres", "Prestigio"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(vista === k), onclick: (e) => {
+      if (vista === k) return; vista = k; A.store.set("jg:clVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); vibrar(6); pintar(); } }, t)));
+    setTimeout(pintar, 0);
     return tarjeta("Clasificación", ico("mundo"), h("p", { text: "Tu puesto en tu ciudad, tu departamento o estado, tu país, tu continente y el mundo, entre quienes tienen tu mismo rango, y el prestigio local de tu ciudad." }),
-        tarjetaColeccion(y),
-        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/clasificacion" }, h("span", { text: "Ver la clasificación" })),
-          h("a", { class: "btn", href: "#/escudrina/prestigio" }, h("span", { text: "Prestigio de las ciudades" }))), vivoLinea());
+        h("div", { class: "jg-cl2" }, seg, zona), tarjetaColeccion(y), vivoLinea());
   }
   function dibujarPanel(cont, y) {
     const sec = SECC_DE[S.sub[0] || ""] || "hoy";
@@ -2052,7 +2155,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const pend = null; // P20 (12-nov-2026): ya no se piden confirmaciones manuales
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
-    if (sec === "tesoro") partes = [tarjetaHallazgos(y), tarjetaPotencias(y)];
+    if (sec === "tesoro") partes = [tarjetaPapiros(y), tarjetaHallazgos(y), tarjetaPotencias(y)];
     else if (sec === "mundo") partes = [tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
     else if (sec === "juntos") partes = [salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
@@ -2205,13 +2308,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("ul", {}, CIUDADES.map(([tz, n]) => h("li", {}, h("span", { text: n }), h("b", { text: horaEn(ms, tz) })))));
   }
   const uni = (n, a, b) => h("span", {}, h("b", { text: String(n) }), h("small", { text: n === 1 ? a : b }));
-  function cuentaAtras(ms) {
+  // AC4 (BiEx, 15-nov-2026): COMPONENTE REUTILIZABLE, no quitar. La cuenta regresiva del lanzamiento ya no se ve porque solo
+  // se pinta en el pre-registro (cfg.ciclo «previa»), pero sirve para cualquier momento con hora fija (incursiones del Coloso,
+  // eventos de las salas, misiones con preaviso, fechas especiales): cuentaAtras(ms, «Rótulo», «texto al llegar a cero»).
+  // Muestra días, horas, minutos y segundos, la fecha en la hora de quien lee y, plegada, la hora en otras ciudades.
+  function cuentaAtras(ms, rotulo, alTerminar) {
     if (!ms) return null;
     const reloj = h("span", { class: "jg-reloj", role: "timer" });
-    const el = h("div", { class: "jg-cuenta" }, h("span", { class: "jg-mini", text: "Lanzamiento: " + fechaLarga(ms) + " (tu hora local)" }), reloj, zonasLanzamiento(ms));
+    const el = h("div", { class: "jg-cuenta" }, h("span", { class: "jg-mini", text: (rotulo || "Lanzamiento") + ": " + fechaLarga(ms) + " (tu hora local)" }), reloj, zonasLanzamiento(ms));
     const pintar = () => {
       const f = ms - Date.now();
-      if (f <= 0) { el.replaceChildren(h("span", { text: "¡Escudriña ya abrió!" })); return false; }
+      if (f <= 0) { el.replaceChildren(h("span", { text: alTerminar || "¡Escudriña ya abrió!" })); return false; }
       reloj.replaceChildren(uni(Math.floor(f / 864e5), "día", "días"), uni(Math.floor((f % 864e5) / 36e5), "hora", "horas"), uni(Math.floor((f % 36e5) / 6e4), "minuto", "minutos"), uni(Math.floor((f % 6e4) / 1000), "segundo", "segundos"));
       return true;
     };
@@ -2590,7 +2697,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const fondo = capa("si-fondo", '<defs><radialGradient id="' + u + 'halo" cx=".5" cy=".34" r=".5">' + st([[0, luz, 0.4], [0.35, luz, 0.13], [0.75, luz, 0.02], [1, luz, 0]]) + '</radialGradient>' +
       lin("haz", 0, 1, [[0, "#fff8e4", 0], [0.1, "#fff8e4", 0.2], [0.75, "#fff8e4", 0]]) + '<radialGradient id="' + u + 'suelo">' + st([[0, luz, 0.5], [0.45, luz, 0.14], [1, luz, 0]]) + "</radialGradient></defs>" +
       '<ellipse cx="150" cy="200" rx="158" ry="222" fill="' + url("halo") + '"/><path d="M122 0H178L236 420H64Z" fill="' + url("haz") + '" opacity=".75"/><ellipse cx="152" cy="400" rx="126" ry="18" fill="' + url("suelo") + '"/>');
-    const caja = h("div", { class: "av-fig si", role: "img", "aria-label": "Tu ser interior, con su armadura: " + ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"].map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", ") },
+    const caja = h("div", { class: "av-fig ser-in", role: "img", "aria-label": "Tu ser interior, con su armadura: " + ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"].map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", ") },
       fondo, h("i", { class: "si-niebla n1" }), h("i", { class: "si-niebla n2" }),
       capa("si-manto", capaManto, true),
       h("div", { class: "si-mueve si-torso" }, capa("", capaTorso, true), h("i", { class: "si-pecho" }),
@@ -2665,7 +2772,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       lista.append(li);
     }
     const quedan = h("span", { class: "ap-pts" }), btnRep = h("button", { class: "btn oro", type: "button", disabled: true, onclick: async (e) => {
-      e.currentTarget.disabled = true; const r = await accionPoder("/poder/repartir", { at: plan }, "Puntos repartidos"); if (r) { chispas(16); rehacer(); } else e.currentTarget.disabled = false; } }, h("span", { text: "Repartir" }));
+      e.currentTarget.disabled = true; const antes = Object.assign({}, av.ef), dado = Object.assign({}, plan), p0 = av.poder;
+      const r = await accionPoder("/poder/repartir", { at: plan }, null); if (r) celebrarReparto(defs, antes, dado, p0, rehacer); else e.currentTarget.disabled = false; } }, h("span", { text: "Repartir" }));
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); btnRep.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
@@ -2837,7 +2945,43 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<path d="M' + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + '" fill="none" stroke="url(#' + id + 'o)" stroke-width="10" stroke-linecap="round" opacity=".55"/>' +
       '<path d="M' + P(pt(0, PI - 0.06)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0.9)) + '" fill="none" stroke="#fff1cc" stroke-opacity=".38" stroke-width="1.3" transform="translate(-1 -2.6)"/>';
   }
+  // AC5 (BiEx, 15-nov-2026: «híper realista y épico»): instrumento de joyería en vector (nítido a cualquier densidad): bisel de
+  // oro cepillado con su brillo, esfera honda de esmalte negro con grabado de rayas, escala mayor y menor grabadas, arco de
+  // gemas del ámbar al rubí con su resplandor, cifras en la letra de los títulos y un cristal con su reflejo. La aguja de
+  // metal y su eje de gema van en la capa que gira (medidorAguja).
   function medidorSVG() {
+    const C = 120, R0 = 104, P = (r, a) => (C + r * Math.cos(a)).toFixed(2) + " " + (C - r * Math.sin(a)).toFixed(2);
+    let esc = "";
+    for (let i = 0; i <= 30; i++) { const a = Math.PI * (1 - i / 30), m = i % 5 === 0;
+      esc += '<path d="M' + P(m ? 70 : 74, a) + "L" + P(m ? 83 : 80, a) + '" stroke="' + (m ? "#f6dc9a" : "#cfae6a") + '" stroke-opacity="' + (m ? 0.95 : 0.55) + '" stroke-width="' + (m ? 2.2 : 1.1) + '" stroke-linecap="round"/>'; }
+    const cif = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5].map((x, i) => { const a = Math.PI * (1 - i / 6); return '<text x="' + (C + 58 * Math.cos(a)).toFixed(1) + '" y="' + (C - 58 * Math.sin(a) + 3.6).toFixed(1) + '" text-anchor="middle" font-size="' + (i % 3 === 0 ? 9.6 : 7.6) + '" fill="#f2dfb0" fill-opacity="' + (i % 3 === 0 ? 0.92 : 0.6) + '" style="font-family:var(--f-display);letter-spacing:.02em">' + String(x.toFixed(2)).replace(".", ",") + "</text>"; }).join("");
+    const rayas = Array.from({ length: 36 }, (_, i) => { const a = Math.PI * (i / 35); return '<path d="M' + P(18, a) + "L" + P(96, a) + '" stroke="#ffffff" stroke-opacity=".025" stroke-width="2.2"/>'; }).join("");
+    return '<defs>' +
+      '<linearGradient id="co-bisel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2c4"/><stop offset=".22" stop-color="#e2b55a"/><stop offset=".5" stop-color="#8a5a1a"/><stop offset=".74" stop-color="#d8a648"/><stop offset="1" stop-color="#5b3a10"/></linearGradient>' +
+      '<radialGradient id="co-esfera" cx=".5" cy=".95" r=".95"><stop offset="0" stop-color="#2a1e12"/><stop offset=".55" stop-color="#140f0a"/><stop offset="1" stop-color="#060504"/></radialGradient>' +
+      '<linearGradient id="co-gema" x1="0" x2="1"><stop offset="0" stop-color="#b9772a"/><stop offset=".35" stop-color="#e8a640"/><stop offset=".62" stop-color="#d6344f"/><stop offset="1" stop-color="#ff6f8a"/></linearGradient>' +
+      '<linearGradient id="co-cristal" x1="0" y1="0" x2=".2" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".45" stop-color="#ffffff" stop-opacity=".04"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
+      '<filter id="co-brillo" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>' +
+      // bisel y esfera
+      '<path d="M' + P(R0 + 8, Math.PI) + "A" + (R0 + 8) + " " + (R0 + 8) + " 0 0 1 " + P(R0 + 8, 0) + "L" + P(R0 - 8, 0) + "A" + (R0 - 8) + " " + (R0 - 8) + ' 0 0 0 ' + P(R0 - 8, Math.PI) + 'Z" fill="url(#co-bisel)"/>' +
+      '<path d="M' + P(R0 + 8, Math.PI) + "A" + (R0 + 8) + " " + (R0 + 8) + " 0 0 1 " + P(R0 + 8, 0) + '" fill="none" stroke="#fff6d8" stroke-opacity=".55" stroke-width=".9"/>' +
+      '<path d="M' + P(R0 - 8, Math.PI) + "A" + (R0 - 8) + " " + (R0 - 8) + " 0 0 1 " + P(R0 - 8, 0) + 'L' + P(R0 - 8, 0) + 'Z" fill="url(#co-esfera)"/>' + rayas +
+      // arco de gemas con su resplandor
+      '<path d="M' + P(88, Math.PI) + "A88 88 0 0 1 " + P(88, 0) + '" fill="none" stroke="url(#co-gema)" stroke-width="7" stroke-linecap="round" filter="url(#co-brillo)" opacity=".55"/>' +
+      '<path d="M' + P(88, Math.PI) + "A88 88 0 0 1 " + P(88, 0) + '" fill="none" stroke="url(#co-gema)" stroke-width="4.2" stroke-linecap="round"/>' +
+      '<path d="M' + P(89.6, Math.PI - 0.05) + "A89.6 89.6 0 0 1 " + P(89.6, 0.05) + '" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".7"/>' +
+      esc + cif +
+      // cristal
+      '<path d="M' + P(R0 - 9, Math.PI - 0.02) + "A" + (R0 - 9) + " " + (R0 - 9) + " 0 0 1 " + P(R0 - 9, 0.02) + 'Q120 40 ' + P(R0 - 9, Math.PI - 0.02) + 'Z" fill="url(#co-cristal)"/>';
+  }
+  function medidorAguja() {
+    return '<defs><linearGradient id="co-ag" x1="0" x2="1"><stop offset="0" stop-color="#8f6420"/><stop offset=".5" stop-color="#fff0c2"/><stop offset="1" stop-color="#a87628"/></linearGradient>' +
+      '<radialGradient id="co-eje" cx=".38" cy=".32" r=".7"><stop offset="0" stop-color="#ffd9e2"/><stop offset=".35" stop-color="#e0405e"/><stop offset="1" stop-color="#5e0c1c"/></radialGradient></defs>' +
+      '<path d="M120 26L123.4 118L120 132L116.6 118Z" fill="url(#co-ag)" stroke="#3a2608" stroke-width=".6"/>' +
+      '<path d="M120 26L121 118" stroke="#fffbe8" stroke-opacity=".7" stroke-width=".6"/>' +
+      '<circle cx="120" cy="120" r="10" fill="#1a1208" stroke="url(#co-ag)" stroke-width="2.4"/><circle cx="120" cy="120" r="6.2" fill="url(#co-eje)"/><circle cx="118" cy="118" r="1.8" fill="#fff" fill-opacity=".8"/>';
+  }
+  function medidorSVGViejo() {
     let t = "";
     for (let i = 0; i <= 6; i++) { const a = Math.PI * (1 - i / 6), x1 = 120 + 86 * Math.cos(a), y1 = 120 - 86 * Math.sin(a), x2 = 120 + 76 * Math.cos(a), y2 = 120 - 76 * Math.sin(a);
       t += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#f3d08a" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>'; }
@@ -2847,6 +2991,55 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<text x="20" y="138" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7" style="font-family:var(--f-ui)">0,20 %</text><text x="220" y="138" text-anchor="middle" font-size="12" fill="currentColor" opacity=".7" style="font-family:var(--f-ui)">0,50 %</text>';
   }
   const pctTxt = (p) => (p * 100).toFixed(2).replace(".", ",") + " %";
+  // AC12 (BiEx, 15-nov-2026: «no puedo ver en dónde se almacenan ni cuántos tengo ni cómo lucen»): los fragmentos de papiro se
+  // guardan en Tesoro, en un rollo de 70 piezas que se va completando (las que tienes, en papiro iluminado; las que faltan,
+  // apenas trazadas). Al reunir 70 se abre un accesorio raro de la vitrina del Árbol; luego empieza otro rollo.
+  function papiroSVG(c, meta) {
+    const N = meta || 70, cols = 10, filas = Math.ceil(N / cols), W = 300, H = 150, x0 = 26, y0 = 22, w = (W - 2 * x0) / cols, hh = (H - 2 * y0) / filas;
+    let piezas = "";
+    for (let i = 0; i < N; i++) {
+      const cx = x0 + (i % cols) * w, cy = y0 + Math.floor(i / cols) * hh, j = ((i * 37) % 11) / 11, k = ((i * 53) % 7) / 7, si = i < c;
+      // cada pieza con su borde roto propio (determinista)
+      const d = "M" + (cx + 1.5 + j * 2).toFixed(1) + " " + (cy + 1.2).toFixed(1) + "L" + (cx + w - 1.2).toFixed(1) + " " + (cy + 1 + k * 2).toFixed(1) + "L" + (cx + w - 1.6 - j * 1.5).toFixed(1) + " " + (cy + hh - 1.4).toFixed(1) + "L" + (cx + 1 + k * 1.8).toFixed(1) + " " + (cy + hh - 1).toFixed(1) + "Z";
+      piezas += '<path d="' + d + '" ' + (si ? 'fill="url(#pp-f)" stroke="#7a5326" stroke-opacity=".55" stroke-width=".6"' : 'fill="none" stroke="#c9a46a" stroke-opacity=".22" stroke-width=".7" stroke-dasharray="2 2"') + "/>";
+      if (si && (i * 7) % 3 === 0) piezas += '<path d="M' + (cx + 3).toFixed(1) + " " + (cy + hh / 2).toFixed(1) + "h" + (w - 7).toFixed(1) + '" stroke="#5d3b16" stroke-opacity=".35" stroke-width=".7"/>';
+    }
+    return '<defs><linearGradient id="pp-f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfaf"/><stop offset=".55" stop-color="#ddb979"/><stop offset="1" stop-color="#b98a4b"/></linearGradient>' +
+      '<linearGradient id="pp-r" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8b5e2b"/><stop offset=".5" stop-color="#e3c48b"/><stop offset="1" stop-color="#7a4f22"/></linearGradient></defs>' +
+      '<rect x="18" y="14" width="264" height="122" rx="6" fill="#2a1d10" fill-opacity=".35"/>' + piezas +
+      '<rect x="6" y="8" width="12" height="134" rx="6" fill="url(#pp-r)"/><rect x="282" y="8" width="12" height="134" rx="6" fill="url(#pp-r)"/>';
+  }
+  function tarjetaPapiros(y) {
+    const f = y.frag || { n: 0, c: 0, meta: 70 }, meta = f.meta || 70, c = Math.min(meta, f.c || 0);
+    const raros = (S.cfg && S.cfg.raros) || RAROS_C, inv = (y.av && y.av.inv) || [], sig = raros.find((x) => !inv.includes(x[0])) || null; // el servidor abre el primer raro que aún no tienes
+    const arte = h("div", { class: "jg-pp", role: "img", "aria-label": "Rollo de papiro: " + c + " de " + meta + " fragmentos" }, A.svg(papiroSVG(c, meta), "0 0 300 150"));
+    return tarjeta("Tus fragmentos de papiro", ico("liga"), arte,
+      h("p", { class: "jg-pp-c" }, h("b", { text: fmt(c) }), h("span", { text: " de " + meta }), h("small", { text: "fragmentos en este rollo" + (f.n > c ? " · " + fmt(f.n) + " en total" : "") })),
+      h("div", { class: "jg-barra oro", "aria-hidden": "true" }, h("i", { style: "width:" + (100 * c / meta).toFixed(1) + "%" })),
+      h("p", { class: "jg-mini", text: "Salen al marcar «Leído» en los versos (cada vez hay más probabilidad hasta que sale uno). Al reunir " + meta + " se abre " + (sig ? "un accesorio raro: «" + sig[2] + "»" : "un premio: 100 dracmas y 1 hora de experiencia doble") + ", y empieza otro rollo. Cada hallazgo queda en tus Novedades." }));
+  }
+  // AC5 y AC6 (BiEx, 15-nov-2026): un verso aleatorio de la Lectura acompaña la cosecha y el reparto de atributos. Solo versos
+  // con su traducción completa (datos/juego/versos_lectura.json); la mitad de las veces, de los textos de BiEx. Se dibuja como
+  // en el lector (A.versos respeta sus opciones del texto) y lleva a su capítulo.
+  let VL = null;
+  async function versoDeLectura() {
+    if (!VL) VL = A.cargar("datos/juego/versos_lectura.json").catch(() => { VL = null; return null; });
+    const d = await VL; if (!d) return null;
+    const l = Math.random() < 0.5 && d.a && d.a.length ? d.a : d.b; if (!l || !l.length) return null;
+    const [c, cap, v] = l[Math.floor(Math.random() * l.length)];
+    try { const r = await A.versos(c, cap, v, v); return r && r[0] ? { c, cap, v, nodo: r[0][1] } : null; } catch (e) { return null; }
+  }
+  function tarjetaVerso(titulo) {
+    const cuerpo = h("p", { class: "jg-vl-t" }, h("span", { class: "cargando-mini", text: "Buscando un verso…" })), pie = h("div", { class: "jg-vl-pie" });
+    const el = h("div", { class: "jg-vl", role: "group", "aria-label": titulo || "Un verso para ti" }, h("span", { class: "jg-vl-luz", "aria-hidden": "true" }), h("small", { class: "jg-vl-rot", text: titulo || "Un verso para ti" }), cuerpo, pie);
+    versoDeLectura().then((x) => {
+      if (!x) { el.remove(); return; }
+      cuerpo.replaceChildren(x.nodo);
+      pie.replaceChildren(h("a", { class: "jg-vl-ref", href: "#/" + x.c + "/" + x.cap + "/l/" + x.v, onclick: () => { if (document.documentElement.classList.contains("con-modal")) A.cerrarModal(); } }, nombreLibro(x.c) + " " + x.cap + ":" + x.v, A.svg(A.ICO.der)));
+      el.classList.add("listo");
+    });
+    return el;
+  }
   function tarjetaCosecha(y, rehacer) {
     const co = y.co; if (!co || !co.lleno) return null;
     const dur = Math.max(1, co.lleno - co.t), fr = () => Math.max(0, Math.min(1, (Date.now() - co.t) / dur));
@@ -2870,13 +3063,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     };
     function revelar(r) {
       const med = h("div", { class: "co-medidor", role: "img", "aria-label": "Tocó el " + pctTxt(r.p) + " de lo sembrado" }), ag = h("div", { class: "co-aguja", "aria-hidden": "true" });
-      med.append(A.svg(medidorSVG(), "0 0 240 140")); ag.append(A.svg('<line x1="120" y1="120" x2="120" y2="34" stroke="#ffe7a6" stroke-width="3" stroke-linecap="round"/><circle cx="120" cy="120" r="7" fill="#f2c14e" stroke="#16120b" stroke-width="2"/>', "0 0 240 140")); med.append(ag);
+      med.append(A.svg(medidorSVG(), "0 0 240 140")); ag.append(A.svg(medidorAguja(), "0 0 240 140")); med.append(ag, h("i", { class: "co-destello", "aria-hidden": "true" }));
       const cifra = h("b", { text: "+0" }), res = h("p", { class: "co-res", "aria-live": "polite" }, cifra, h("small", { text: "de experiencia · " + pctTxt(r.p) + " de lo sembrado" + (r.f < 0.999 ? " · cesta al " + Math.round(r.f * 100) + " %" : "") }));
       res.style.opacity = "0";
+      const vers = tarjetaVerso("Un verso para tu cosecha"); vers.classList.add("espera");
       zona.replaceChildren(med, res, h("p", { class: "co-est", text: (r.plena ? "¡Cosecha plena! " : "") + "Tu fruto del espíritu (" + plural(r.F || 0, "nivel", "niveles") + ") sube la probabilidad de lo alto." }),
-        h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => rehacer() }, h("span", { text: "Ver mi cesta" }))));
+        vers, h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => rehacer() }, h("span", { text: "Ver mi cesta" }))));
+      sonar("cosecha");
       const T = -90 + (180 * Math.max(0, Math.min(1, (r.p - 0.002) / 0.003)));
-      const fin = () => { ag.style.transform = "rotate(" + T.toFixed(1) + "deg)"; res.style.opacity = "1"; contarRapido(cifra, r.xp, 900, "+"); chispas(r.plena ? 30 : 16); if (r.plena) vibrar([20, 40, 20]); };
+      const fin = () => { ag.style.transform = "rotate(" + T.toFixed(1) + "deg)"; res.style.opacity = "1"; med.classList.add("brilla"); contarRapido(cifra, r.xp, 900, "+"); chispas(r.plena ? 30 : 16); if (r.plena) vibrar([20, 40, 20]); setTimeout(() => vers.classList.remove("espera"), 650); };
       if (sinAnim() || !ag.animate) return fin();
       ag.animate([{ transform: "rotate(-90deg)" }, { transform: "rotate(" + Math.min(84, T + 70).toFixed(1) + "deg)", offset: 0.55 }, { transform: "rotate(" + (T - 6).toFixed(1) + "deg)", offset: 0.8 }, { transform: "rotate(" + T.toFixed(1) + "deg)" }],
         { duration: 1900, easing: "cubic-bezier(.25,.8,.25,1)", fill: "forwards" }).finished.then(fin, fin);
@@ -4114,7 +4309,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Ese verso lleva el resplandor, recibe el tiempo de lectura y es el que marca «Leído». Arriba del capítulo, mientras la
   // franja no llega a ningún verso, vale el primero a la vista; al final, cuando ya no se puede bajar, el primero sin marcar
   // que quedó debajo de la franja.
-  const FRANJA = [0.32, 0.56];
+  const FRANJA = [0.32, 0.56]; // (anterior, ya no se usa: ver ZONA)
+  // AC10 (BiEx, 15-nov-2026, con captura): la ZONA de activación es una banda fina y fija en la pantalla, como en su captura:
+  // un renglón, más o menos del 38 % al 43 % del alto de la ventana; igual en las dos vistas y en cualquier dispositivo, sin
+  // pelear con las barras que se pliegan y se despliegan. Manda el verso cuyo NÚMERO fue el último en tocar la zona (ya no el
+  // que más palabras tiene en ella: así ningún verso corto, como YÔḥānā́n 1:2, se queda sin detectar); si hay dos números a la
+  // vez en la zona, se ofrecen los dos. Mientras ningún número la toca, sigue el último; si ese ya no está a la vista, vale el
+  // verso cuyo texto atraviesa la zona.
+  const ZONA = [0.38, 0.43];
   // BiEx (13-nov-2026, 1 Τιmόdsεος 1): la franja no se mueve cuando las barras se pliegan o se despliegan: se mide con su
   // alto desplegado (offsetHeight no cambia con la transformación que las esconde), no con lo que se ve en ese instante
   function topeFijo() {
@@ -4124,9 +4326,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   function zonaLectura() {
     const vh = innerHeight, T = topeFijo() + 8;
-    let a = vh * FRANJA[0], b = vh * FRANJA[1];
-    if (a < T) { b = Math.min(vh - 24, b + (T - a)); a = T; }
-    return [a, b];
+    let a = vh * ZONA[0], b = vh * ZONA[1];
+    const x = R.els && R.els[0], lh = x ? parseFloat(getComputedStyle(x).lineHeight) : NaN;
+    if (!isNaN(lh) && b - a < lh * 1.05) b = a + lh * 1.05; // al menos un renglón, con cualquier tamaño de letra
+    if (a < T) { b += T - a; a = T; }
+    return [a, Math.min(b, vh - 24)];
   }
   function enFranja(el, a, b) {
     let s = 0;
@@ -4135,22 +4339,27 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   function versoFranja() {
     if (!R.els || !R.els.length) return 0;
-    const [a, b] = zonaLectura(), vis = LB.vis && LB.vis.size ? LB.vis : null;
-    let mejor = 0, ms = 0, actual = 0, debajo = 0, hay = false;
+    const [a, b] = zonaLectura(), vis = LB.vis && LB.vis.size ? LB.vis : null, dentro = [];
+    let cruza = 0;
     for (const el of R.els) {
       const v = +el.id.slice(1); if (vis && !vis.has(v)) continue;
-      const r = el.getBoundingClientRect(); if (!r.height || r.bottom <= a) continue;
-      if (r.top >= b) { if (!debajo) debajo = v; break; }
-      hay = true;
-      const s = enFranja(el, a, b);
-      if (v === R.vf) actual = s;
-      if (s > ms) { ms = s; mejor = v; }
+      const nr = rectNum(el); if (!nr.height) continue;
+      if (nr.top >= b) break;
+      cruza = v; // el último número que empieza antes del fin de la zona: su texto la atraviesa
+      if (nr.bottom > a) dentro.push(v);
     }
-    let v = mejor;
-    if (R.vf && actual > 0 && v !== R.vf && ms < actual * 1.2) v = R.vf;
-    if (!v) v = !hay && debajo && scrollY < innerHeight * 0.6 ? debajo : (R.vf && (!vis || vis.has(R.vf)) ? R.vf : 0);
-    R.vf = v;
-    return v;
+    const antes = LB.zona || [];
+    if (dentro.length) {
+      const llega = dentro.filter((x) => !antes.includes(x)); // el último en tocarla es el que acaba de llegar
+      R.vf = llega.length ? llega[llega.length - 1] : (dentro.includes(R.vf) ? R.vf : dentro[dentro.length - 1]);
+      LB.zona = dentro; LB.dos = dentro.length > 1 ? dentro.slice() : null;
+      return R.vf;
+    }
+    LB.zona = []; LB.dos = null;
+    const sigue = R.vf && document.getElementById("v" + R.vf);
+    if (sigue && (!vis || vis.has(R.vf))) { const r = sigue.getBoundingClientRect(); if (r.bottom > topeFijo() && r.top < innerHeight) return R.vf; }
+    R.vf = cruza || +R.els[0].id.slice(1);
+    return R.vf;
   }
   // al final del capítulo (ya no se puede bajar): el primero que cumpla «ok» entre los que quedaron debajo de la franja
   function debajoFranja(ok) {
@@ -4181,11 +4390,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
     let v = versoFranja();
-    if (alFinalPag() && (!v || !marcable(v))) v = debajoFranja(marcable);
+    if (alFinalPag() && (!v || !marcable(v))) { const d = debajoFranja(marcable); if (d) v = d; }
     const H = v && marcable(v) ? v : 0;
     const m = H && R.pend.has(H) ? H : (listoArriba(H || v) || H);
+    const dos = LB.dos && LB.dos.includes(v) ? LB.dos.filter((x) => marcable(x)) : null;
     const f = !!LB.forzar; LB.forzar = false;
-    ponerLB(H || m, f, m);
+    // AC10: el resplandor no desaparece en un verso ya marcado: se queda, en otro tono (.jg-ah.marcado)
+    ponerLB(v, f, m, dos && dos.length > 1 ? dos : null);
   }
   function numeroVisible(v, T, B) { const el = document.getElementById("v" + v); if (!el) return false; const nr = rectNum(el); return nr.height > 0 && nr.top >= T && nr.bottom <= B; }
   // la caja de las cifras del número (la celda del número ocupa todo el alto del verso en la vista por fila)
@@ -4195,18 +4406,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const rg = document.createRange(); rg.selectNodeContents(tn); return rg.getBoundingClientRect();
   }
   // v: el verso que se está leyendo (resplandor); m: el verso al que va el «Leído» (el mismo, o uno corto de arriba ya listo)
-  function ponerLB(v, forzar, m) {
+  function ponerLB(v, forzar, m, dos) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
+    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.mm = []; LB.clave = ""; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
     const el = document.getElementById("v" + v); if (!el) return;
-    if (!m) m = LB.m && LB.v === v ? LB.m : v;
-    const elm = document.getElementById("v" + m) || el;
-    const nuevo = LB.v !== v || LB.m !== m;
-    if (!nuevo && !forzar && (!LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !R.pend.has(m)); if (LB.pie) LB.pie.classList.toggle("espera", !R.pend.has(m)); halo(el); return; }
-    const lc = R.lib + "." + R.cap, rep = marcadoAntes(lc, m);
+    m = m || 0;
+    // m: el verso al que va el «Leído» (0 = nada que marcar); dos: los dos versos que tocan la zona a la vez
+    const mm = dos && dos.length > 1 ? dos : m ? [m] : [], elm = (m && document.getElementById("v" + (dos ? dos[dos.length - 1] : m))) || el;
+    const clave = mm.join(","), listo = mm.length > 0 && mm.every((x) => R.pend.has(x));
+    const nuevo = LB.v !== v || LB.clave !== clave;
+    if (LB.ah) LB.ah.classList.toggle("marcado", !marcable(v));
+    if (!nuevo && !forzar && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
+    const lc = R.lib + "." + R.cap, rep = m ? marcadoAntes(lc, m) : false;
     const fila = el.classList.contains("vl"), pe = periDe(v);
-    if (fila) { ponerPie(elm, m, pe, rep); }
+    if (fila && mm.length) { ponerPie(elm, m, pe, rep, dos); }
     else if (LB.pie) LB.pie.hidden = true;
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
@@ -4216,18 +4430,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", LB.el.style.getPropertyValue("--jg-lb-alza") || "0px"); }
     }
     if (nuevo) {
-      LB.v = v; LB.m = m; LB.el.classList.remove("hecho");
-      LB.el.querySelector("b").textContent = rep ? "Repasado" : "Leído";
-      LB.el.querySelector("small").textContent = "verso " + m;
-      LB.el.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + m + " como leído");
+      LB.v = v; LB.m = m; LB.mm = mm; LB.clave = clave; LB.el.classList.remove("hecho");
+      const et = rep ? "Repasado" : "Leído";
+      LB.el.querySelector("b").textContent = et;
+      LB.el.querySelector("small").textContent = dos ? "versos " + dos.join(" y ") : m ? "verso " + m : "";
+      LB.el.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + m + " como leído"));
     }
-    LB.el.classList.toggle("espera", !R.pend.has(m));
+    LB.el.classList.toggle("espera", !listo);
     const sp = document.querySelector(".jg-sala-p");
     LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
-    if (fila) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
+    if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
     else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
     const hoja = LB.ah && LB.ah.parentElement; if (!hoja) return;
-    const rh = hoja.getBoundingClientRect(), r = el.getBoundingClientRect();
+    const rh = hoja.getBoundingClientRect(), r0 = el.getBoundingClientRect(), e1 = dos && document.getElementById("v" + dos[0]), e2 = dos && document.getElementById("v" + dos[dos.length - 1]);
+    const r = e1 && e2 ? { top: Math.min(e1.getBoundingClientRect().top, r0.top), bottom: Math.max(e2.getBoundingClientRect().bottom, r0.bottom) } : r0;
     // el hilo: verso por fila, sobre la rayita del estado que sigue al número (la prolonga a lo largo de todo el verso);
     // en la perícopa, en el centro del margen izquierdo, a lo largo de los renglones del verso
     const num = numeroDe(el), enFila = el.classList.contains("vl");
@@ -4249,13 +4465,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   function quitarMeta() { if (LB.meta) { LB.meta.classList.remove("jg-meta"); LB.meta = null; } }
   // al pie del verso, a la derecha de su texto, sobre el borde inferior de la fila (sin mover el texto)
-  function ponerPie(el, v, pe, rep) {
+  function ponerPie(el, v, pe, rep, dos) {
     const P = LB.pie, hoja = P && P.parentElement; if (!hoja) return;
     const conPeri = !!(pe && pe.ok && v === pe.b);
     const bp = P.querySelector(".jg-pie-p"); bp.hidden = !conPeri;
     if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
-    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.querySelector(".jg-pie-n").textContent = String(v); bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar el verso " + v + " como leído");
-    P.classList.toggle("espera", !R.pend.has(v)); P.classList.remove("hecho");
+    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.querySelector(".jg-pie-n").textContent = dos ? dos.join(" y ") : String(v); bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + v + " como leído"));
+    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho");
     // BiEx (13-nov-2026): sin relampagueo ni corrimientos. El pie vive dentro de la fila de su verso (se mueve con ella, también
     // cuando el texto de arriba termina de dibujarse) y solo se funde, sin desenfoque, cuando cambia de verso.
     if (P.parentElement !== el) { if (LB.pieEn) { LB.pieEn.classList.remove("con-pie", "pie-abajo"); LB.pieEn.style.removeProperty("--pie-h"); } el.classList.add("con-pie"); el.append(P); LB.pieEn = el; }
@@ -4308,9 +4524,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     n.hidden = false;
   }
   function tocarLB(desde) {
-    const v = LB.m || LB.v; if (!v || !R.lib) return;
+    const vs = LB.mm && LB.mm.length ? LB.mm : LB.m ? [LB.m] : []; if (!vs.length || !R.lib) return;
     const b = desde || LB.el;
-    tocarLeido(v, b);
+    vs.forEach((x, k) => tocarLeido(x, k ? null : b, k > 0));
     LB.el.classList.add("hecho"); if (LB.pie) LB.pie.classList.add("hecho");
     clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; LB.m = 0; elegirLB(); }, 480);
   }
@@ -4343,8 +4559,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // AA9 (BiEx, 14-nov-2026): los versos repasados (ya marcados otro día y marcados de nuevo) llevan una marca doble
   const diaRep = () => new Date().toISOString().slice(0, 10);
   const repasos = () => { const o = A.store.get("jg:rep", null); return o && o.f === diaRep() && Array.isArray(o.k) ? o.k : []; };
-  const esRepaso = (lib, cap, v) => repasos().includes(lib + "." + cap + "." + v);
-  function anotarRepaso(v) { const k = R.lib + "." + R.cap + "." + v, l = repasos(); if (!l.includes(k)) { l.push(k); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); } }
+  // AC10 (BiEx, 15-nov-2026): la marca doble de un verso releído (otro día) se conserva siempre, no solo el día del repaso:
+  // «jg:rp» guarda por capítulo qué versos se repasaron alguna vez (como «jg:cf»); «jg:rep» sigue siendo lo de hoy
+  const rpDe = (lc) => (A.store.get("jg:rp", null) || {})[lc] || "";
+  const esRepaso = (lib, cap, v) => rpDe(lib + "." + cap)[v - 1] === "1" || repasos().includes(lib + "." + cap + "." + v);
+  function anotarRepaso(v) {
+    const lc = R.lib + "." + R.cap, k = lc + "." + v, l = repasos(); if (!l.includes(k)) { l.push(k); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); }
+    const o = A.store.get("jg:rp", null) || {}, x = o[lc] || ""; if (x[v - 1] !== "1") { o[lc] = pon(x, v - 1, "1"); A.store.set("jg:rp", o); }
+  }
   function tocarLeido(v, boton, quieto) {
     if (!v || !R.lib || yaLeido(v) || R.quiere.has(v)) return;
     if (marcadoAntes(R.lib + "." + R.cap, v)) anotarRepaso(v);
@@ -4721,8 +4943,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     setTimeout(() => { try { for (const r of l) { if (r && r._recibir) recibir(r._recibir); else celebrar(r); } } finally { setTimeout(() => { S.silencio = false; }, 1200); } }, 450);
   });
   // Premios de «Leído» (fragmentos de papiro y dracmas): fichas pequeñas que suben, con su cifra que cuenta
+  // AC12: cada premio con su figura (un fragmento de papiro que gira y brilla; una dracma que destella)
+  const FIG_PREMIO = { frag: '<path d="M5 4.5 17.5 3 20 9.5 18.6 20 7 21 4 13z" fill="url(#fpf)" stroke="#6f4a20" stroke-width=".8"/><path d="M7.5 9h9M7 12.5h10M7.6 16h7" stroke="#5d3b16" stroke-opacity=".45" stroke-width=".9" stroke-linecap="round"/><defs><linearGradient id="fpf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e3b6"/><stop offset="1" stop-color="#c39553"/></linearGradient></defs>',
+    dr: '<circle cx="12" cy="12" r="8.6" fill="url(#fdr)" stroke="#7a5418" stroke-width=".9"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff3c8" stroke-opacity=".55" stroke-width=".8"/><defs><radialGradient id="fdr" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff2b8"/><stop offset=".55" stop-color="#e2b04a"/><stop offset="1" stop-color="#8f6118"/></radialGradient></defs>' };
   function premioPop(txt, n, clase, i) {
-    const el = h("div", { class: "jg-pop jg-premio " + (clase || ""), role: "status", style: "--i:" + (i || 0) }, h("b", { text: "+0" }), h("small", { text: txt }));
+    const fig = FIG_PREMIO[clase] ? h("span", { class: "jg-premio-fig", "aria-hidden": "true" }, A.svg(FIG_PREMIO[clase])) : null;
+    const el = h("div", { class: "jg-pop jg-premio " + (clase || ""), role: "status", style: "--i:" + (i || 0) }, fig, h("b", { text: "+0" }), h("small", { text: txt }));
     document.body.append(el); contarRapido(el.firstChild, n, 900, "+");
     if (sinAnim() || !el.animate) { setTimeout(() => el.remove(), 2200); return; }
     el.animate([{ opacity: 0, transform: "translate(-50%,12px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.15 }, { opacity: 1, transform: "translate(-50%,-8px)", offset: 0.82 }, { opacity: 0, transform: "translate(-50%,-18px)" }],
@@ -4734,8 +4960,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (r.leido) {
       const L = r.leido, f = (S.yo && S.yo.frag) || { c: 0, meta: 70 };
       let k = 0;
-      if (L.frag) premioPop(L.frag === 1 ? "fragmento de papiro · " + f.c + " de " + (f.meta || 70) : "fragmentos de papiro · " + f.c + " de " + (f.meta || 70), L.frag, "frag", k++);
-      if (L.dr) premioPop("dracmas", L.dr, "dr", k++);
+      if (L.frag) { premioPop(L.frag === 1 ? "fragmento de papiro · " + f.c + " de " + (f.meta || 70) : "fragmentos de papiro · " + f.c + " de " + (f.meta || 70), L.frag, "frag", k++); sonar("fragmento"); novedadLocal("frag", { n: L.frag, c: f.c, meta: f.meta || 70 }); }
+      if (L.dr) { premioPop("dracmas", L.dr, "dr", k++); setTimeout(() => sonar("dracma"), 380); novedadLocal("drl", { dr: L.dr }); }
       if (L.raro && L.raro !== "dones") setTimeout(() => celebracion({ tipo: "raro", id: L.raro }), 900);
       else if (L.raro === "dones") A.avisar("¡70 fragmentos de papiro! Ya tienes todos los accesorios raros: +100 dracmas y 1 h de experiencia doble.");
     }
@@ -4820,6 +5046,24 @@ html[data-mov="no"] .ap-savia{display:none!important}
       setTimeout(() => { chispas(18, fig, ["aro", "gemas"], x.tipo === "piedra" ? col : null); chispas(14, fig, ["polvo"]); }, 560);
       setTimeout(() => { capa.remove(); listo(); }, 1450);
     });
+  }
+  // AC6 (BiEx, 15-nov-2026): al repartir, una presentación breve y perceptible: los medallones que subieron se encienden con
+  // el color de su atributo, cada cifra cuenta hasta su valor nuevo, el poder sube con su chispa y un verso de la Lectura cierra.
+  // Al seguir, el Árbol se rehace ya con lo nuevo.
+  async function celebrarReparto(defs, antes, dado, p0, rehacer) {
+    const P = await cargarPoder().catch(() => null), ef = (P && P.av && P.av.ef) || {}, poder = P && P.av ? P.av.poder : p0;
+    const subieron = defs.filter(([k]) => dado[k] > 0);
+    sonar("reparto"); vibrar([12, 40, 18, 40, 24]);
+    const fila = subieron.map(([k, n, efecto], i) => { const v = h("b", { class: "jg-rp-v", text: String(antes[k] | 0) });
+      return { el: h("li", { class: "jg-rp-m", style: "--ac:" + ATR_COL[k] + ";--i:" + i }, h("span", { class: "jg-rp-ico", "aria-hidden": "true" }, A.svg(ATR_ICO[k])), h("span", { class: "jg-rp-n", text: n }), v, h("small", { text: "+" + dado[k] })), v, hasta: ef[k] != null ? ef[k] : (antes[k] | 0) + dado[k] }; });
+    const cifraP = h("b", { text: fmt(p0 || 0) });
+    const cuerpo = h("div", { class: "jg-cel jg-rp" }, h("ul", { class: "jg-rp-l" }, fila.map((x) => x.el)), h("p", { class: "jg-rp-p" }, h("span", { text: "Poder " }), cifraP),
+      h("p", { text: "Repartiste tus puntos: tu ser interior se robustece (Ἐfέsιοι 3:16)." }), tarjetaVerso("Un verso para tu ser interior"),
+      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Continuar" }))));
+    A.abrirModal(() => A.cajaModal(A.cabModal("Atributos fortalecidos", "Escudriña"), cuerpo), () => rehacer());
+    const anim = !sinAnim();
+    fila.forEach((x, i) => setTimeout(() => { x.el.classList.add("on"); contarRapido(x.v, x.hasta, 700, ""); if (anim) chispas(8, x.el, ["aro"]); }, 260 + i * 260));
+    setTimeout(() => { if (poder != null) contarRapido(cifraP, poder, 900, ""); }, 300 + fila.length * 260);
   }
   function celebracion(x) {
     if (document.documentElement.classList.contains("con-modal")) { A.avisar(x.tipo === "rango" ? "Nuevo rango: " + x.rango : "¡Hallazgo! Lo encuentras en Escudriña"); return; }
