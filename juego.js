@@ -253,7 +253,9 @@
       cosecha: [[392, 0, 0.9], [587.3, 0.1, 0.9], [784, 0.2, 1.1], [987.8, 0.34, 1.2], [1174.7, 0.5, 1.5]],
       reparto: [[523.25, 0, 0.5], [659.25, 0.12, 0.55], [783.99, 0.24, 0.6], [1046.5, 0.38, 0.9], [1567.98, 0.52, 1.1]],
       fragmento: [[880, 0, 0.35], [1318.5, 0.05, 0.5], [1760, 0.13, 0.6]],
-      dracma: [[1975.5, 0, 0.18], [2637, 0.06, 0.22], [3951, 0.12, 0.3]] }[tipo] || [];
+      dracma: [[1975.5, 0, 0.18], [2637, 0.06, 0.22], [3951, 0.12, 0.3]],
+      // (15-nov-2026) la forja: dos golpes de yunque y un acorde que se abre
+      forja: [[1396.9, 0, 0.22], [2793.8, 0.008, 0.16], [1396.9, 0.3, 0.24], [2793.8, 0.308, 0.18], [523.25, 0.6, 1.2], [783.99, 0.68, 1.3], [1046.5, 0.78, 1.5], [1567.98, 0.9, 1.4]] }[tipo] || [];
     const t0 = AC.currentTime + 0.02;
     for (const [f, d, dur] of N) {
       const o = AC.createOscillator(), g = AC.createGain();
@@ -439,6 +441,18 @@ html[data-mov="no"] .av-pozo i{animation:none}
   border:1px solid color-mix(in srgb,var(--oro-vivo) 55%,transparent);background:radial-gradient(120% 140% at 50% -40%,rgba(255,246,214,.28),transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 6%,var(--hoja)));
   box-shadow:var(--pd-sombra);font:600 .74rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-2)}
 .ap-poder b{color:var(--oro-vivo);font:600 1.08rem/1 var(--f-titulo,var(--f-ui));letter-spacing:.02em;text-transform:none;text-shadow:0 0 12px rgba(255,214,120,.45)}
+/* (15-nov-2026, adjunto 9) Poder épico: filo de oro labrado, orbe de energía y aura eléctrica (la electricidad se conserva) */
+.ap-poder{align-items:center;gap:7px;padding:7px 15px 7px 9px;border:1px solid transparent;isolation:isolate;
+  background:radial-gradient(120% 140% at 50% -40%,rgba(255,246,214,.3),transparent 60%) padding-box,linear-gradient(180deg,color-mix(in srgb,var(--oro) 24%,var(--hoja)),color-mix(in srgb,var(--oro) 6%,var(--hoja))) padding-box,linear-gradient(135deg,#fff3c4,#c9962e 26%,#6f4a10 50%,#e9c46a 74%,#fff6d6) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,214,120,.6),0 0 0 3px color-mix(in srgb,var(--oro) 11%,transparent),0 10px 24px -14px rgba(0,0,0,.85),0 0 22px -8px rgba(150,205,255,.4)}
+.ap-poder b{font-size:1.2rem;background:linear-gradient(180deg,#fffaf0,#f6d27a 52%,#c99a3a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 0 6px rgba(255,214,120,.45))}
+.ap-pd-orbe{position:relative;flex:none;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fff,#d6eeff 30%,#62a9ff 62%,#183a74);box-shadow:0 0 8px 2px rgba(150,205,255,.6),inset 0 0 0 1px rgba(255,255,255,.35)}
+.ap-pd-orbe::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(closest-side,rgba(190,230,255,.55),transparent);animation:ap-orbe 3.4s ease-in-out infinite}
+@keyframes ap-orbe{0%,100%{opacity:.4}50%{opacity:1}}
+.ap-pd-aura{position:absolute;inset:-8px;z-index:-1;border-radius:999px;pointer-events:none;opacity:0;background:radial-gradient(60% 130% at 50% 50%,rgba(170,215,255,.32),transparent 72%);box-shadow:0 0 20px 5px rgba(150,205,255,.42)}
+html.desplazando .ap-pd-orbe::after{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.ap-pd-orbe::after{animation:none}}
+html[data-mov="no"] .ap-pd-orbe::after{animation:none}
 .ap-poder:focus-visible{outline:2px solid var(--oro);outline-offset:3px}
 .ap-rayos{position:absolute;inset:-12px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(150,205,255,.9))}
 .ap-rayos svg{display:block;width:100%;height:100%;overflow:visible}
@@ -465,6 +479,13 @@ html[data-mov="no"] .av-pozo i{animation:none}
 /* AC19 (15-nov-2026): antes «.si», que chocaba con la clase de estado «si» del lector (aviso «Actualizar», «Leído», «Repasado»): nunca una clase genérica sin prefijo */.ser-in{position:relative;width:100%;max-width:230px;aspect-ratio:300/420;margin:0 auto;isolation:isolate}
 .ser-in .si-c,.ser-in .si-mueve{position:absolute;inset:0;width:100%;height:100%}
 .ser-in .si-mueve{will-change:transform}
+.ser-in .si-fig{position:absolute;inset:0;transform-origin:50% 94%;will-change:transform}
+.ser-in .si-luces,.ser-in .fa-luz,.ser-in .fa-luz>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ser-in .fa-luz{opacity:0}
+.ser-in .fa-luz.on{will-change:opacity}
+/* (15-nov-2026) mientras se desplaza, en pausa lo ambiental de Escudriña (vuelve al detenerse) */
+html.desplazando .ap-lumbre::after,html.desplazando .ap-gl,html.desplazando .ap-mo,html.desplazando .si-mo,html.desplazando .si-niebla,html.desplazando .ap-copa-v,html.desplazando .ap-gr-v::before,html.desplazando .ap-gr-v::after,html.desplazando .ap-bebe,html.desplazando .fr-gr::before,html.desplazando .jg-ah .f,html.desplazando .jg-ah .n,html.desplazando .fa-luz.on,html.desplazando .jg-yo>.jg-mota{animation-play-state:paused}
+.ser-in svg{overflow:visible}
 .ser-in .si-mueve>svg{position:absolute;inset:0;width:100%;height:100%}
 .si-alma,.si-pecho{position:absolute;border-radius:50%;pointer-events:none;will-change:opacity}
 .si-alma{left:41%;top:18%;width:18%;height:16%;background:radial-gradient(closest-side,color-mix(in srgb,var(--si-luz,#ffe4a0) 55%,transparent),transparent);opacity:.38}
@@ -581,6 +602,7 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-pres .btn{margin-left:auto}
 @media (prefers-reduced-motion:reduce){.jg-lz.on::after{animation:none}}
 .jg-chispas{position:fixed;inset:0;pointer-events:none;z-index:62;contain:strict}
+.jg-chispas[popover]{width:auto;height:auto;margin:0;padding:0;border:0;background:none;overflow:visible;color:inherit}
 .jg-ch{position:absolute;display:block;will-change:transform,opacity;--c:#f5c64e}
 .jg-ch.p{width:2px;height:2px;margin:-1px 0 0 -1px;border-radius:50%;background:#fff8dc;box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
 .jg-ch.p.g{width:3px;height:3px;margin:-1.5px 0 0 -1.5px;background:#fffdf2}
@@ -1024,6 +1046,26 @@ html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{a
 .jg-mi-fila.sin{display:block;text-align:center;cursor:default}
 .ap-fig .fa-luz.on{animation:fa-luz 1.9s ease-in-out infinite}
 @keyframes fa-luz{0%,100%{opacity:.35}50%{opacity:1}}
+/* (15-nov-2026) dracmas al final de la línea de la forja; celebración de la forja con el ser interior */
+.ap-tienes{white-space:nowrap}
+.ap-forja .ap-tienes b{font:inherit;font-weight:600;color:var(--oro-vivo);letter-spacing:0}
+.ap-forja .ap-tienes.falta b{color:var(--tinta-2)}
+.jg-fj-fig{width:min(210px,56vw);margin:4px auto 0}
+.jg-fj-fig .ser-in{max-width:none}
+.jg-fj-fig .fa-luz.on{animation:fa-luz 1.9s ease-in-out infinite}
+.jg-fj-fig .fa-luz.forjada{animation:fa-forja 2.6s cubic-bezier(.2,.7,.2,1) both,fa-luz 2.2s ease-in-out 2.6s infinite}
+@keyframes fa-forja{0%{opacity:0}12%{opacity:1}30%{opacity:.55}46%{opacity:1}100%{opacity:.6}}
+.jg-fj-fig.anim .ser-in{animation:fj-entra .9s cubic-bezier(.2,.75,.2,1) both}
+@keyframes fj-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.jg-fj-at{display:flex;justify-content:center;gap:12px;margin:0}
+.jg-fj-c{display:grid;justify-items:center;gap:2px;min-width:7.5rem;padding:8px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--ac,var(--oro)) 38%,var(--linea-2));background:color-mix(in srgb,var(--ac,var(--oro)) 9%,transparent)}
+.jg-fj-c small{font:600 .68rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-2)}
+.jg-fj-c b{font:500 1.7rem/1.05 var(--f-display);color:var(--ac,var(--oro-vivo));font-variant-numeric:lining-nums tabular-nums}
+.jg-fj-t{margin:0;max-width:34ch;color:var(--tinta-2);font:400 .92rem/1.45 var(--f-ui)}
+.jg-fj-v{display:grid;justify-items:center;gap:6px;max-width:40ch}
+.jg-fj-v p{margin:0;font:400 1.02rem/1.5 var(--f-texto,inherit);color:var(--tinta)}
+@media (prefers-reduced-motion:reduce){.jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}.jg-fj-fig.anim .ser-in{animation:none}}
+html[data-mov="no"] .jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}html[data-mov="no"] .jg-fj-fig.anim .ser-in{animation:none}
 .ap-cita{display:inline-flex;align-items:center;gap:7px;padding:2px 10px 2px 7px;border-radius:99px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);font:inherit;cursor:pointer}
 .ap-cita:hover,.ap-cita:focus-visible{border-color:var(--oro);outline:none}
 .ap-lumbre{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff6d6 0 30%,#f5c64e 62%,rgba(245,198,78,.2) 100%)}
@@ -1056,7 +1098,7 @@ html.con-modal .jg-muelle{opacity:0;pointer-events:none}
 html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
-html.jg-con-muelle:has(.jg-sala-p) body{padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))}
+/* (15-nov-2026, fluidez) clase en html en vez de html:has(.jg-sala-p): cualquier cambio en la página volvía a calcular su estilo */html.jg-con-muelle.jg-con-sala body{padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:7px 12px;font-size:.84rem}
 html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
@@ -1262,9 +1304,12 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .74rem .18rem .2rem;color:var(--tinta)}
 .jg-lbp .jg-lb-i{width:1rem;height:1rem}
 /* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
-.jg-pie{position:absolute;left:auto;top:0;right:10px;bottom:auto;z-index:3;display:inline-flex;gap:.32rem;align-items:center}
-.vl.con-pie{position:relative}
-.vl.con-pie.pie-abajo{padding-bottom:calc(9px + var(--pie-h,0px))}
+/* (15-nov-2026, fluidez) el pie vive en la capa de la hoja y se coloca con una transformación: nunca cambia la fila mientras se lee */
+.jg-pie{position:absolute;left:0;top:0;right:auto;bottom:auto;z-index:3;display:inline-flex;gap:.32rem;align-items:center;will-change:transform;transition:transform .26s cubic-bezier(.2,.7,.2,1)}
+.jg-pie.jg-pie-quieto{transition:none}
+/* cada fila reserva desde el principio, bajo su último renglón, el lugar de su «Leído» (sin crecer ni encoger al leer) */
+.hoja.jg-pies .vl{padding-bottom:calc(9px + 1.14rem)}
+@media (max-width:600px){.hoja.jg-pies .vl{padding-bottom:calc(7px + 1.14rem)}}
 .jg-pie-n{font:600 .56rem/1 var(--f-ui);letter-spacing:.04em;opacity:.78}
 .jg-pie-n:not(:empty)::before{content:"·";margin:0 .3em 0 .1em;opacity:.7}
 .jg-pie[hidden],.jg-pie [hidden]{display:none}
@@ -1311,9 +1356,21 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-ah[hidden],.jg-ah [hidden]{display:none}
 /* «Leído» (13-nov-2026): un hilo de luz en el margen a lo largo del verso que se marcaría y un halo suave detrás de su número;
    el verso se elige solo si se ve de verdad (su número o al menos dos renglones bajo las barras), así nada queda tapado */
-.jg-ah .f{position:absolute;left:-1px;top:0;width:2px;border-radius:2px;will-change:opacity;background:linear-gradient(180deg,transparent,var(--oro-vivo) 14%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 86%,transparent)}
-.jg-ah .f::before{content:"";position:absolute;left:-10px;right:-10px;top:-4px;bottom:-4px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 30%,transparent),transparent)}
-.jg-ah .n{position:absolute;left:0;top:0;border-radius:50%;will-change:opacity;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro-vivo) 48%,transparent),color-mix(in srgb,var(--oro) 16%,transparent) 64%,transparent)}
+/* (15-nov-2026, fluidez: «la luz titila como un cortocircuito») el hilo y el halo tienen tamaño fijo y se colocan y estiran solo con
+   transformaciones (sin tocar el diseño de la hoja); al pasar de un verso al siguiente se deslizan en vez de apagarse y encenderse,
+   y el tono del verso ya marcado entra con un fundido */
+.jg-ah .f{position:absolute;left:-1px;top:0;width:2px;height:100px;transform-origin:50% 0;will-change:transform,opacity;transition:transform .26s cubic-bezier(.2,.7,.2,1)}
+.jg-ah .f>i{position:absolute;inset:0;border-radius:2px;transition:opacity .35s ease}
+.jg-ah .f .fo{background:linear-gradient(180deg,transparent,var(--oro-vivo) 14%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 86%,transparent)}
+.jg-ah .f>i::before{content:"";position:absolute;left:-10px;right:-10px;top:-4px;bottom:-4px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 30%,transparent),transparent)}
+.jg-ah .n{position:absolute;left:0;top:0;width:40px;height:40px;transform-origin:0 0;will-change:transform,opacity;transition:transform .26s cubic-bezier(.2,.7,.2,1)}
+.jg-ah .n>i{position:absolute;inset:0;border-radius:50%;transition:opacity .35s ease}
+.jg-ah .n .no{background:radial-gradient(closest-side,color-mix(in srgb,var(--oro-vivo) 48%,transparent),color-mix(in srgb,var(--oro) 16%,transparent) 64%,transparent)}
+.jg-ah .n.oculto{visibility:hidden}
+.jg-ah.sin-t .f,.jg-ah.sin-t .n{transition:none}
+.jg-ah .fa,.jg-ah .na{opacity:0}
+.jg-ah.marcado .fa,.jg-ah.marcado .na{opacity:1}
+.jg-ah.marcado .fo,.jg-ah.marcado .no{opacity:0}
 .jg-ah .f,.jg-ah .n{animation:jg-ah 3.4s ease-in-out infinite}
 /* AC17 (15-nov-2026): la clasificación y el prestigio, desplegados en su tarjeta */
 .jg-cl2{display:grid;gap:10px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
@@ -1324,9 +1381,9 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-cl2-mas{justify-self:center;margin-top:2px}
 .jg-cl2-mas svg{width:14px;height:14px}
 /* AC10 (15-nov-2026): sobre un verso ya marcado el resplandor no se apaga: se queda en un tono más sereno (azul de repaso) */
-.jg-ah.marcado .f{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 14%,color-mix(in srgb,var(--repaso,#8fd0ff) 55%,#fff) 50%,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 86%,transparent)}
-.jg-ah.marcado .f::before{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 22%,transparent),transparent)}
-.jg-ah.marcado .n{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 34%,transparent),color-mix(in srgb,var(--repaso,#8fd0ff) 10%,transparent) 64%,transparent)}
+.jg-ah .f .fa{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 14%,color-mix(in srgb,var(--repaso,#8fd0ff) 55%,#fff) 50%,color-mix(in srgb,var(--repaso,#8fd0ff) 80%,transparent) 86%,transparent)}
+.jg-ah .f .fa::before{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 22%,transparent),transparent)}
+.jg-ah .n .na{background:radial-gradient(closest-side,color-mix(in srgb,var(--repaso,#8fd0ff) 34%,transparent),color-mix(in srgb,var(--repaso,#8fd0ff) 10%,transparent) 64%,transparent)}
 @keyframes jg-ah{0%,100%{opacity:.66}50%{opacity:1}}
 html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 @media (prefers-reduced-motion:reduce){.jg-ah .f,.jg-ah .n{animation:none}}
@@ -2591,7 +2648,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     caja._anims = saviaA;
-    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
+    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting && !document.documentElement.classList.contains("desplazando")) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
+    // (15-nov-2026) también en pausa mientras se desplaza la página
+    if (!caja._desp) { caja._desp = (e) => { if (!caja.isConnected) { document.removeEventListener("biex:desplaza", caja._desp); return; } for (const a of caja._anims || []) { try { if (e.detail || caja._vis === false) a.pause(); else a.play(); } catch (er) { /* nada */ } } }; document.addEventListener("biex:desplaza", caja._desp); }
     return caja;
   }
   // Z1 · El ser interior (BiEx, 13 y 14-nov-2026: «Presencia velada», «vivo y sereno»): realista y sin sexo (es espíritu: el
@@ -2600,7 +2659,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // amplitudes elegidas aleatoriamente). Armadura de Ἐfέsιοι 6:13-17 sin cruces: espada μάχαιρα (curva, de un filo, sin
   // guarda), escudo θυρεός (largo, de puerta), peto de bandas horizontales y celada lisa sin cimera. Capas vectoriales quietas
   // (se pintan una sola vez a la densidad real); solo se mueven por el compositor (traslados y opacidad).
-  let FA_N = 0;
+  let FA_N = 0, FIG_PREV = null;
   const SI_MET = [null, ["#fbf6e6", "#e6d9b6", "#a8966a"], ["#ffd9a6", "#c9813f", "#5e3210"], ["#ffffff", "#c3ccd8", "#5f6b7a"], ["#fff3c4", "#f0c04a", "#8a5a0c"], ["#dcfff6", "#7fb8ff", "#7a4dff"]];
   const SI_MANTO = { "manto-lino": ["#f6efdf", "#ddd1b8", "#a99c80", "#6f6450"], "manto-escarlata": ["#d4555a", "#9c262c", "#5a0f14", "#2b0508"], "manto-azul": ["#5d8fe6", "#2f5fb8", "#16336e", "#081633"], "manto-purpura": ["#a865c2", "#7a3594", "#45165a", "#200829"] };
   const SI_AURA = { "aura-oro": "#f5c64e", "aura-zafiro": "#7da2ff", "aura-esmeralda": "#5fdca6", "aura-amatista": "#c39bff", "aura-alba": "#ffc4a0", "aura-columna": "#ff9a52", "aura-nube": "#eef4fb" };
@@ -2690,52 +2749,68 @@ html[data-mov="no"] .ap-savia{display:none!important}
     else if (acc.sello) cab += '<circle cx="150" cy="137" r="7.5" fill="#f2c14e" stroke="#7a5212"/>' + (acc.sello === "sello-estrella" ? '<path d="M144.6 139.6h10.8" stroke="#7a5212" stroke-width="1.2" stroke-linecap="round"/><circle cx="150" cy="135.8" r="3.9" fill="#fff6d6" opacity=".4"/><circle cx="150" cy="135.8" r="2.1" fill="#fffaf0"/>' : '<path d="M146.5 139h7l-1.2 2.6h-4.6zM148.5 139c0-3 1.5-5 1.5-5s1.5 2 1.5 5" fill="#7a5212"/>');
     // luz de la pieza que se elige para forjar (capa aparte: solo cambia su opacidad)
     const LUZ = { coraza: P.coraza, cinto: P.cinto, calzado: P.calzado, escudo: P.escudo, yelmo: P.yelmo, espada: P.espada };
-    const luces = '<defs><filter id="' + u + 'luz" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4"/></filter></defs>' +
-      Object.entries(LUZ).map(([k, d]) => '<g class="fa-luz" data-pz="' + k + '" opacity="0"' + (k === "escudo" ? ' transform="rotate(4 224 260)"' : "") + '><path d="' + d + '" fill="#ffe6a3" fill-opacity=".2" stroke="#ffe39a" stroke-width="5" filter="url(#' + u + 'luz)"/><path d="' + d + '" fill="none" stroke="#fff4cf" stroke-width="1.5" stroke-linejoin="round"/></g>').join("");
+    // (15-nov-2026, fluidez y calor) cada luz de pieza va en su propia capa HTML: su latido es solo de opacidad, por el compositor.
+    // Antes era un <g> dentro del SVG de la figura, y animar un <g> obligaba a volver a pintar la figura (con su desenfoque) en
+    // cada cuadro mientras se veía el Árbol.
+    const luces = h("div", { class: "si-luces" }, ...Object.entries(LUZ).map(([k, d]) => { const el = A.svg('<defs><filter id="' + u + 'luz' + k + '" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.4"/></filter></defs><g' + (k === "escudo" ? ' transform="rotate(4 224 260)"' : "") + '><path d="' + d + '" fill="#ffe6a3" fill-opacity=".2" stroke="#ffe39a" stroke-width="5" filter="url(#' + u + 'luz' + k + ')"/><path d="' + d + '" fill="none" stroke="#fff4cf" stroke-width="1.5" stroke-linejoin="round"/></g>', "0 0 300 420"); el.setAttribute("aria-hidden", "true"); return h("div", { class: "fa-luz", "data-pz": k }, el); }));
     const capa = (cls, cuerpo, conDefs) => { const el = A.svg((conDefs ? "<defs>" + defs + "</defs>" : "") + cuerpo, "0 0 300 420"); el.setAttribute("class", "si-c " + cls); el.setAttribute("aria-hidden", "true"); return el; };
     // escena sin bordes: el halo del color del aura, el haz desde lo alto y el suelo con su niebla
     const fondo = capa("si-fondo", '<defs><radialGradient id="' + u + 'halo" cx=".5" cy=".34" r=".5">' + st([[0, luz, 0.4], [0.35, luz, 0.13], [0.75, luz, 0.02], [1, luz, 0]]) + '</radialGradient>' +
-      lin("haz", 0, 1, [[0, "#fff8e4", 0], [0.1, "#fff8e4", 0.2], [0.75, "#fff8e4", 0]]) + '<radialGradient id="' + u + 'suelo">' + st([[0, luz, 0.5], [0.45, luz, 0.14], [1, luz, 0]]) + "</radialGradient></defs>" +
-      '<ellipse cx="150" cy="200" rx="158" ry="222" fill="' + url("halo") + '"/><path d="M122 0H178L236 420H64Z" fill="' + url("haz") + '" opacity=".75"/><ellipse cx="152" cy="400" rx="126" ry="18" fill="' + url("suelo") + '"/>');
+      lin("haz", 0, 1, [[0, "#fff8e4", 0], [0.22, "#fff8e4", 0.17], [0.32, "#fff8e4", 0.2], [0.8, "#fff8e4", 0]]) + '<radialGradient id="' + u + 'suelo">' + st([[0, luz, 0.5], [0.45, luz, 0.14], [1, luz, 0]]) + "</radialGradient></defs>" +
+      // (BiEx, 15-nov-2026, 19:25: «la luz de arriba no debe verse cortada; parte del entorno, no una caja») el haz nace por encima
+      // de la figura, transparente, y el halo se dibuja entero (la capa no recorta: overflow visible)
+      '<ellipse cx="150" cy="200" rx="158" ry="222" fill="' + url("halo") + '"/><path d="M127 -62H173L236 420H64Z" fill="' + url("haz") + '" opacity=".75"/><ellipse cx="152" cy="400" rx="126" ry="18" fill="' + url("suelo") + '"/>');
     const caja = h("div", { class: "av-fig ser-in", role: "img", "aria-label": "Tu ser interior, con su armadura: " + ["coraza", "cinto", "calzado", "escudo", "yelmo", "espada"].map((p) => p + " " + (g(p) ? "grado " + g(p) : "por forjar")).join(", ") },
       fondo, h("i", { class: "si-niebla n1" }), h("i", { class: "si-niebla n2" }),
-      capa("si-manto", capaManto, true),
-      h("div", { class: "si-mueve si-torso" }, capa("", capaTorso, true), h("i", { class: "si-pecho" }),
-        h("div", { class: "si-mueve si-cabeza" }, capa("", cab, true), h("i", { class: "si-alma" }))),
-      capa("si-luces", luces), ...Array.from({ length: 6 }, (_, i) => h("i", { class: "si-mo", style: "left:" + (22 + ((i * 37) % 56)) + "%;--t:" + (6 + (i % 3) * 1.7).toFixed(1) + "s;--d:" + (i * 1.3).toFixed(1) + "s" })));
+      // la figura entera (manto, torso, cabeza y luces de las piezas) respira como un todo (vivirSer)
+      h("div", { class: "si-fig" }, capa("si-manto", capaManto, true),
+        h("div", { class: "si-mueve si-torso" }, capa("", capaTorso, true), h("i", { class: "si-pecho" }),
+          h("div", { class: "si-mueve si-cabeza" }, capa("", cab, true), h("i", { class: "si-alma" }))),
+        luces), ...Array.from({ length: 6 }, (_, i) => h("i", { class: "si-mo", style: "left:" + (22 + ((i * 37) % 56)) + "%;--t:" + (6 + (i % 3) * 1.7).toFixed(1) + "s;--d:" + (i * 1.3).toFixed(1) + "s" })));
     caja.style.setProperty("--si-luz", luz);
+    caja.dataset.sig = JSON.stringify([av.eq || {}, acc]); // si no cambia, al ponerse al día el Árbol se conserva este mismo (sin redibujarlo)
     setTimeout(() => vivirSer(caja), 60);
     return caja;
   }
-  // Vida del ser interior: nada se repite. Respiración: cada ciclo con su propio período (3,4–5,6 s) y hondura (0,4–1,1 px);
-  // gestos sueltos tras esperas distintas (4–13 s): alzar un poco la mirada hacia la luz, acomodar los hombros, la luz del rostro
-  // que crece y se calma. Al llegar con versos leídos hoy, la luz del pecho crece una vez. Solo traslados y opacidad (compositor);
-  // se detiene fuera de la pantalla, con la pestaña oculta y con «Sin animaciones».
-  function vivirSer(caja) {
-    if (!caja.isConnected || !caja.animate || sinAnim()) return;
-    const torso = caja.querySelector(".si-torso"), cabeza = caja.querySelector(".si-cabeza"), alma = caja.querySelector(".si-alma"), pecho = caja.querySelector(".si-pecho");
+  // Vida del ser interior: nada se repite. (BiEx, 15-nov-2026, 19:25: «no he visto sus movimientos»: la respiración movía el
+  // torso menos de un píxel.) Ahora TODA la figura respira como en el resto del sitio (los libros en oro, Manuscritos): crece
+  // hasta un 3,5–5 % desde los pies y vuelve, cada ciclo con su propio período (4,2–6,2 s), hondura y pausa; el halo se aviva al
+  // inhalar. Gestos sueltos tras esperas distintas (4–11 s): alzar la mirada hacia la luz, acomodar los hombros, la luz del rostro
+  // que crece y se calma. Al llegar con versos leídos hoy, la luz del pecho crece una vez. Solo transformaciones y opacidad
+  // (compositor); en pausa fuera de la pantalla, con la pestaña oculta y con «Sin animaciones». Si la figura aún no está en la
+  // página (o se mueve al ponerse al día el Árbol), espera a estarlo en vez de detenerse para siempre.
+  function vivirSer(caja, intento) {
+    if (!caja.animate || sinAnim() || caja._vive) return;
+    if (!caja.isConnected) { if ((intento | 0) < 50) setTimeout(() => vivirSer(caja, (intento | 0) + 1), 160); return; }
+    caja._vive = true;
+    const fig = caja.querySelector(".si-fig"), fondo = caja.querySelector(".si-fondo"), torso = caja.querySelector(".si-torso"), cabeza = caja.querySelector(".si-cabeza"), alma = caja.querySelector(".si-alma"), pecho = caja.querySelector(".si-pecho");
     const al = (a, b) => a + Math.random() * (b - a);
-    let visible = true, t1 = 0, t2 = 0;
+    let visible = true, t1 = 0, t2 = 0, fuera = 0;
     const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { const v = e.some((x) => x.isIntersecting); if (v && !visible) { visible = true; respira(); gesto(); } else if (!v) visible = false; }) : null;
     if (io) io.observe(caja);
     const vivo = () => caja.isConnected && visible && !document.hidden;
+    const alVolver = () => { if (!document.hidden && caja.isConnected && visible) { respira(); gesto(); } };
+    const parar = () => { clearTimeout(t1); clearTimeout(t2); if (io) io.disconnect(); document.removeEventListener("visibilitychange", alVolver); caja._vive = false; };
+    // fuera del documento por un momento (al ponerse al día el Árbol): espera; si no vuelve en 30 s, se detiene
+    const ausente = () => { if (caja.isConnected) { fuera = 0; return false; } if (++fuera > 20) { parar(); return true; } t1 = setTimeout(respira, 1500); return true; };
     function respira() {
-      clearTimeout(t1); if (!caja.isConnected) { if (io) io.disconnect(); return; } if (!vivo()) return;
-      const T = al(3400, 5600), A = al(0.4, 1.1), pico = al(0.38, 0.52);
-      const a = torso.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(0," + (-A).toFixed(2) + "px,0)", offset: pico }, { transform: "translate3d(0,0,0)" }], { duration: T, easing: "ease-in-out" });
-      pecho.animate([{ opacity: 0.55 }, { opacity: 0.55 + A * 0.32, offset: pico }, { opacity: 0.55 }], { duration: T, easing: "ease-in-out" });
-      a.onfinish = () => { t1 = setTimeout(respira, al(80, 900)); };
+      clearTimeout(t1); if (ausente()) return; if (!vivo()) return;
+      const T = al(4200, 6200), k = al(0.035, 0.05), pico = al(0.4, 0.52);
+      const a = (fig || torso).animate([{ transform: "scale(1)" }, { transform: "scale(" + (1 + k).toFixed(4) + ")", offset: pico }, { transform: "scale(1)" }], { duration: T, easing: "ease-in-out" });
+      if (fondo) fondo.animate([{ opacity: 0.86 }, { opacity: 1, offset: pico }, { opacity: 0.86 }], { duration: T, easing: "ease-in-out" });
+      pecho.animate([{ opacity: 0.55 }, { opacity: 0.55 + k * 7, offset: pico }, { opacity: 0.55 }], { duration: T, easing: "ease-in-out" });
+      a.onfinish = () => { t1 = setTimeout(respira, al(120, 1100)); };
     }
     const GESTOS = [
-      () => cabeza.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.5, 0.5).toFixed(2) + "px," + (-al(0.6, 1.4)).toFixed(2) + "px,0)", offset: al(0.3, 0.5) }, { transform: "translate3d(0,0,0)" }], { duration: al(2600, 4800), easing: "cubic-bezier(.4,0,.2,1)" }),
-      () => alma.animate([{ opacity: 0.38 }, { opacity: al(0.58, 0.72), offset: al(0.35, 0.6) }, { opacity: 0.38 }], { duration: al(2200, 4200), easing: "ease-in-out" }),
-      () => torso.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.6, 0.6).toFixed(2) + "px," + al(-0.3, 0.3).toFixed(2) + "px,0)", offset: 0.5 }, { transform: "translate3d(0,0,0)" }], { duration: al(1800, 3200), easing: "ease-in-out", composite: "add" }),
+      () => cabeza.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.9, 0.9).toFixed(2) + "px," + (-al(1.4, 2.6)).toFixed(2) + "px,0)", offset: al(0.3, 0.5) }, { transform: "translate3d(0,0,0)" }], { duration: al(2600, 4800), easing: "cubic-bezier(.4,0,.2,1)" }),
+      () => alma.animate([{ opacity: 0.38 }, { opacity: al(0.62, 0.8), offset: al(0.35, 0.6) }, { opacity: 0.38 }], { duration: al(2200, 4200), easing: "ease-in-out" }),
+      () => torso.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-1.4, 1.4).toFixed(2) + "px," + al(-0.6, 0.4).toFixed(2) + "px,0)", offset: 0.5 }, { transform: "translate3d(0,0,0)" }], { duration: al(1800, 3200), easing: "ease-in-out" }),
     ];
     function gesto() {
       clearTimeout(t2); if (!caja.isConnected) return; if (!vivo()) return;
-      t2 = setTimeout(() => { if (!vivo()) return; try { GESTOS[Math.floor(Math.random() * GESTOS.length)](); } catch (e) { /* sin gesto */ } gesto(); }, al(4000, 13000));
+      t2 = setTimeout(() => { if (!vivo()) return; try { GESTOS[Math.floor(Math.random() * GESTOS.length)](); } catch (e) { /* sin gesto */ } gesto(); }, al(4000, 11000));
     }
-    document.addEventListener("visibilitychange", () => { if (!document.hidden && caja.isConnected && visible) { respira(); gesto(); } });
+    document.addEventListener("visibilitychange", alVolver);
     // al llegar con versos leídos hoy que aún no había visto, la luz del pecho y del rostro crece una vez (reacción a la lectura)
     try { const y = S.yo || {}, n = (y.hoy && y.hoy.versos) | 0, ant = A.store.get("jg:siV", null) || {}; const f = (y.hoy && y.hoy.f) || "";
       caja.style.setProperty("--si-pecho", (0.4 + Math.min(0.55, n / 40)).toFixed(2));
@@ -2743,12 +2818,47 @@ html[data-mov="no"] .ap-savia{display:none!important}
     respira(); gesto();
   }
   const errPoder = (r) => r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
-  async function accionPoder(ruta, cuerpo, ok) {
+  async function accionPoder(ruta, cuerpo, ok, son) {
     const r = await pedir(ruta, { metodo: "POST", cuerpo: cuerpo || {} });
     if (r.error) { A.avisar(errPoder(r)); return null; }
     if (r.yo) actualizarYo(r.yo); PODER = null;
-    if (ok) A.avisar(ok); sonar("chispa"); vibrar([10, 30, 12]);
+    if (ok) A.avisar(ok); if (son !== "forja") { sonar("chispa"); vibrar([10, 30, 12]); }
     return r;
+  }
+  // (BiEx, 15-nov-2026, 19:25) La forja se celebra a la vista del ser interior: su pieza nueva se enciende y respira con él, saltan
+  // las chispas de la forja, cuentan el atributo y el poder, y se lee el verso de esa pieza (Ἐfέsιοι 6:14-17, texto de BiEx). El
+  // mensaje queda hasta «Continuar»; al cerrar, el Árbol se pone al día sin volver a entrar entero.
+  const VERSO_PZ = { cinto: 14, coraza: 14, calzado: 15, escudo: 16, yelmo: 17, espada: 17 };
+  function celebrarForja(id, n, grNuevo, grado, at, nAt, antes, r, rehacer) {
+    sonar("forja"); vibrar([16, 60, 16, 80, 28]);
+    const av = r.av || null, fig = av ? figuraArmadura(av) : null;
+    if (fig) for (const g of fig.querySelectorAll(".fa-luz")) if (g.getAttribute("data-pz") === id) g.classList.add("on", "forjada");
+    const fem = /a$/i.test(n), valA = h("b", { text: String((antes.ef && antes.ef[at]) | 0) }), cifraP = h("b", { text: fmt(antes.poder || 0) });
+    const verso = h("div", { class: "jg-fj-v" }), v = VERSO_PZ[id] || 14, ref = A.nombreLibro("EPH") + " 6:" + v;
+    const cuerpo = h("div", { class: "jg-cel jg-fj" },
+      h("div", { class: "jg-fj-fig" + (sinAnim() ? "" : " anim") }, fig || h("span")),
+      h("h3", { text: n + " " + (fem ? "forjada" : "forjado") + " en " + grado.toLowerCase() }),
+      h("p", { class: "jg-fj-at" }, h("span", { class: "jg-fj-c", style: "--ac:" + (ATR_COL[at] || "var(--oro)") }, h("small", { text: nAt }), valA), h("span", { class: "jg-fj-c" }, h("small", { text: "Poder" }), cifraP)),
+      h("p", { class: "jg-fj-t", text: "Tu ser interior se robustece: cada grado suma 2 a su atributo (Ἐfέsιοι 3:16)." }),
+      verso,
+      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Continuar" }))));
+    A.abrirModal(() => A.cajaModal(A.cabModal("Forja", "Escudriña"), cuerpo), () => rehacer());
+    const anim = !sinAnim();
+    setTimeout(() => { const luzP = fig && fig.querySelector('.fa-luz[data-pz="' + id + '"]'); if (anim) chispas(16, luzP || fig || cuerpo, ["estela", "brasas"]); }, 380);
+    setTimeout(() => { const ef = av && av.ef ? av.ef[at] : null; if (ef != null) contarDesde(valA, (antes.ef && antes.ef[at]) | 0, ef, 900); }, 700);
+    setTimeout(() => { if (av && av.poder != null) contarDesde(cifraP, antes.poder || 0, av.poder, 1100); }, 900);
+    (A.versos ? A.versos("EPH", 6, v, v) : Promise.reject(new Error("sin versos"))).then((l) => {
+      verso.replaceChildren(h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + ref, onclick: () => verCita("EPH", 6, v, v) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref), ...l.map(([, nodo]) => h("p", {}, nodo)));
+    }).catch(() => { verso.replaceChildren(h("button", { class: "ap-cita", type: "button", onclick: () => verCita("EPH", 6, v, v) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref)); });
+  }
+  // cuenta de un valor a otro (sube o baja), con el mismo ritmo que contarRapido
+  function contarDesde(el, desde, hasta, ms) {
+    if (!el) return; desde = Math.round(desde || 0); hasta = Math.round(hasta || 0);
+    if (el._cnt) cancelAnimationFrame(el._cnt);
+    if (sinAnim() || document.hidden || desde === hasta) { el.textContent = fmt(hasta); return; }
+    const t0 = performance.now(); let ult = null;
+    const paso = (t) => { const k = Math.min(1, (t - t0) / ms), x = Math.round(desde + (hasta - desde) * (1 - Math.pow(1 - k, 2.2))); if (x !== ult) { ult = x; el.textContent = fmt(x); } el._cnt = k < 1 ? requestAnimationFrame(paso) : 0; };
+    el._cnt = requestAnimationFrame(paso);
   }
   // Atributos (BiEx, 10-nov-2026: «más compacto, impactante y épico»): seis medallones en rejilla simétrica (3 × 2 en
   // teléfonos, 6 en fila en pantallas anchas); al tocar uno se lee qué hace en la línea de abajo.
@@ -3006,8 +3116,36 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     return '<defs><linearGradient id="pp-f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfaf"/><stop offset=".55" stop-color="#ddb979"/><stop offset="1" stop-color="#b98a4b"/></linearGradient>' +
       '<linearGradient id="pp-r" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8b5e2b"/><stop offset=".5" stop-color="#e3c48b"/><stop offset="1" stop-color="#7a4f22"/></linearGradient></defs>' +
-      '<rect x="18" y="14" width="264" height="122" rx="6" fill="#2a1d10" fill-opacity=".35"/>' + piezas +
-      '<rect x="6" y="8" width="12" height="134" rx="6" fill="url(#pp-r)"/><rect x="282" y="8" width="12" height="134" rx="6" fill="url(#pp-r)"/>';
+      '<rect x="18" y="14" width="264" height="122" rx="6" fill="#2a1d10" fill-opacity=".35"/>' + piezas + rolloPapiro(4, false) + rolloPapiro(280, true);
+  }
+  // (BiEx, 15-nov-2026, adjunto 1: «que las hojas de los lados se vean fotorrealistas») los dos extremos enrollados del rollo:
+  // cilindro de papiro con su sombreado, fibras horizontales y verticales, bordes que no son rectos, las vueltas del rollo en
+  // la tapa de arriba y la sombra que cada rollo echa sobre la hoja abierta. Vectorial y quieto (se dibuja una sola vez).
+  function rolloPapiro(x, der) {
+    const w = 16, y0 = 7, y1 = 143, cx = x + w / 2, id = "pr" + (der ? "d" : "i");
+    const borde = "M" + (x + 0.9) + " " + (y0 + 2.4) + "Q" + cx + " " + (y0 + 0.6) + " " + (x + w - 0.9) + " " + (y0 + 2.4) + "L" + (x + w - 0.5) + " " + (y0 + 40) + "L" + (x + w - 0.8) + " " + (y0 + 41.5) + "L" + (x + w - 0.4) + " " + (y1 - 30) + "L" + (x + w - 0.9) + " " + (y1 - 2.2) +
+      "Q" + cx + " " + (y1 - 0.2) + " " + (x + 0.9) + " " + (y1 - 2.2) + "L" + (x + 0.5) + " " + (y1 - 52) + "L" + (x + 0.9) + " " + (y1 - 50.6) + "L" + (x + 0.4) + " " + (y0 + 26) + "Z";
+    const anillos = [5.9, 4.6, 3.3, 2.1, 1.1].map((r, i) => '<ellipse cx="' + cx + '" cy="' + (y0 + 2.4) + '" rx="' + r + '" ry="' + (r * 0.3).toFixed(2) + '" fill="none" stroke="' + (i % 2 ? "#5b3a13" : "#f0d9a6") + '" stroke-opacity="' + (i % 2 ? 0.75 : 0.85) + '" stroke-width=".5"/>').join("");
+    const sx = der ? x - 11 : x + w - 0.5;
+    // fibras: tiras horizontales de largo, grosor y tono distintos (como las del papiro, que nunca son regulares) y unas pocas verticales
+    let fib = ""; for (let i = 0; i < 46; i++) { const a = ((i * 73 + (der ? 29 : 11)) % 97) / 97, b = ((i * 41 + 7) % 89) / 89, yy = y0 + 4 + i * ((y1 - y0 - 8) / 46) + (a - 0.5) * 1.6, x1 = x + 0.6 + b * 4, x2 = x + w - 0.6 - a * 4;
+      fib += '<path d="M' + x1.toFixed(1) + " " + yy.toFixed(1) + "Q" + cx + " " + (yy + (b - 0.5) * 0.9).toFixed(1) + " " + x2.toFixed(1) + " " + (yy + (a - 0.5) * 0.5).toFixed(1) + '" stroke="' + (i % 3 ? "#4b3214" : "#f3e2bb") + '" stroke-opacity="' + (i % 3 ? 0.1 + a * 0.16 : 0.08 + b * 0.12).toFixed(2) + '" stroke-width="' + (0.22 + a * 0.3).toFixed(2) + '" fill="none"/>'; }
+    for (let i = 0; i < 5; i++) { const xx = x + 2.4 + i * 2.8 + (((i * 37) % 10) / 10 - 0.5); fib += '<path d="M' + xx.toFixed(1) + " " + (y0 + 5) + "V" + (y1 - 5) + '" stroke="#2d1c08" stroke-opacity=".08" stroke-width=".35"/>'; }
+    return '<defs><linearGradient id="' + id + 'c" x1="0" x2="1"><stop offset="0" stop-color="#33230e"/><stop offset=".13" stop-color="#7a5830"/><stop offset=".34" stop-color="#c8a875"/><stop offset=".49" stop-color="#ead8b0"/><stop offset=".6" stop-color="#d6b986"/><stop offset=".83" stop-color="#7f5b2e"/><stop offset="1" stop-color="#2f1f0b"/></linearGradient>' +
+      '<linearGradient id="' + id + 'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4d8" stop-opacity=".22"/><stop offset=".12" stop-color="#fff4d8" stop-opacity="0"/><stop offset=".88" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>' +
+      '<linearGradient id="' + id + 's" x1="' + (der ? 1 : 0) + '" x2="' + (der ? 0 : 1) + '"><stop offset="0" stop-color="#000" stop-opacity=".5"/><stop offset=".45" stop-color="#000" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>' +
+
+      '<linearGradient id="' + id + 'l" x1="' + (der ? 1 : 0) + '" x2="' + (der ? 0 : 1) + '"><stop offset="0" stop-color="#5a3d1a" stop-opacity=".85"/><stop offset=".55" stop-color="#a5814f" stop-opacity=".6"/><stop offset="1" stop-color="#c7a676" stop-opacity=".25"/></linearGradient>' +
+      '<clipPath id="' + id + 'k"><path d="' + borde + '"/></clipPath></defs>' +
+      // sombra sobre la hoja, el cilindro, sus fibras, el brillo de la curva y las vueltas de la tapa
+      '<rect x="' + sx + '" y="' + (y0 + 7) + '" width="11.5" height="' + (y1 - y0 - 12) + '" fill="url(#' + id + 's)"/>' +
+      '<path d="M' + (der ? x + 0.6 : x + w - 0.6) + " " + (y0 + 7.5) + "C" + (der ? x - 2.4 : x + w + 2.4) + " " + (y0 + 8) + " " + (der ? x - 3.4 : x + w + 3.4) + " " + (y0 + 9) + " " + (der ? x - 3.6 : x + w + 3.6) + " " + (y0 + 11) + "V" + (y1 - 11) + "C" + (der ? x - 3.4 : x + w + 3.4) + " " + (y1 - 9) + " " + (der ? x - 2.4 : x + w + 2.4) + " " + (y1 - 8) + " " + (der ? x + 0.6 : x + w - 0.6) + " " + (y1 - 7.5) + 'Z" fill="url(#' + id + 'l)"/>' +
+      '<path d="' + borde + '" fill="url(#' + id + 'c)" stroke="#2c1a07" stroke-opacity=".55" stroke-width=".5"/>' +
+      '<g clip-path="url(#' + id + 'k)">' + fib + '<rect x="' + x + '" y="' + y0 + '" width="' + w + '" height="' + (y1 - y0) + '" fill="url(#' + id + 'v)"/>' +
+      '<path d="M' + (cx - 1.6) + " " + (y0 + 6) + "V" + (y1 - 6) + '" stroke="#fffaf0" stroke-opacity=".38" stroke-width=".9" stroke-linecap="round"/>' +
+      '<path d="M' + (x + 2.2) + " " + (y0 + 31) + "c1.6 .8 3.4 .6 4.8 -.3M" + (x + 9) + " " + (y1 - 44) + "c1.4 .6 3 .5 4.4 -.4" + '" fill="none" stroke="#4a2e0f" stroke-opacity=".45" stroke-width=".45"/></g>' +
+      '<ellipse cx="' + cx + '" cy="' + (y0 + 2.4) + '" rx="7.2" ry="2.2" fill="#3b240b"/>' + anillos +
+      '<path d="M' + (x + 1) + " " + (y1 - 2.2) + "Q" + cx + " " + (y1 + 0.9) + " " + (x + w - 1) + " " + (y1 - 2.2) + '" fill="none" stroke="#2a1806" stroke-opacity=".6" stroke-width=".8"/>';
   }
   function tarjetaPapiros(y) {
     const f = y.frag || { n: 0, c: 0, meta: 70 }, meta = f.meta || 70, c = Math.min(meta, f.c || 0);
@@ -3088,8 +3226,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // número de ramas, su lado y su momento (2,6 a 9 s); solo cambia la opacidad de una capa pequeña. En pausa fuera de la
   // pantalla, con la pestaña oculta y con «Sin animaciones».
   function chipPoder(valor, alTocar) {
-    const capa = h("span", { class: "ap-rayos", "aria-hidden": "true" });
-    const chip = h("button", { class: "ap-poder", type: "button", title: "Qué es tu poder", onclick: alTocar }, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), capa);
+    // (BiEx, 15-nov-2026, adjunto 9: «más épico, pero que conserve la electricidad») píldora de joyería: filo de oro labrado,
+    // un orbe de energía que late y un aura eléctrica que destella con cada descarga (solo opacidad, por el compositor)
+    const capa = h("span", { class: "ap-rayos", "aria-hidden": "true" }), aura = h("span", { class: "ap-pd-aura", "aria-hidden": "true" }), orbe = h("span", { class: "ap-pd-orbe", "aria-hidden": "true" });
+    const chip = h("button", { class: "ap-poder", type: "button", title: "Qué es tu poder", onclick: alTocar }, aura, orbe, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), capa);
     let t = 0, visible = true;
     const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { visible = e.some((x) => x.isIntersecting); }) : null; if (io) io.observe(chip);
     const al = (a, b) => a + Math.random() * (b - a);
@@ -3113,7 +3253,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
         let d = ""; for (let i = 0; i < n; i++) d += rayo(W, H);
         capa.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".5" stroke-linejoin="round"/>', "0 0 " + (W + 24) + " " + (H + 24)));
         const dur = al(320, 760);
-        capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.07 }, { opacity: 0.15, offset: 0.17 }, { opacity: al(0.7, 1), offset: 0.27 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+        const pico = al(0.7, 1);
+        capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.07 }, { opacity: 0.15, offset: 0.17 }, { opacity: pico, offset: 0.27 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+        aura.animate([{ opacity: 0 }, { opacity: 0.95, offset: 0.08 }, { opacity: 0.25, offset: 0.18 }, { opacity: pico * 0.8, offset: 0.28 }, { opacity: 0 }], { duration: dur * 1.25, easing: "linear" });
+        orbe.animate([{ opacity: 1 }, { opacity: 0.55, offset: 0.1 }, { opacity: 1, offset: 0.3 }, { opacity: 1 }], { duration: dur, easing: "linear" });
       }
       t = setTimeout(descarga, al(2600, 9000));
     }
@@ -3160,15 +3303,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const av = P.av, d = P.def, cantos = (P.piedras || []).reduce((a, x) => a + x, 0);
     const puede = (gr) => { const s = d.forja[gr + 1]; return !!s && P.dr >= s.dr && cantos >= s.cantos; };
     const piezas = h("ul", { class: "ap-piezas" }), det = h("div", { class: "ap-forja", "aria-live": "polite" });
-    const fig = h("div", { class: "ap-fig" }, figuraArmadura(av));
+    // al ponerse al día el Árbol, la misma figura sigue viva si su armadura y sus accesorios no cambiaron (sin redibujarla)
+    const sigF = JSON.stringify([av.eq || {}, av.acc || {}]), previa = FIG_PREV && FIG_PREV.dataset.sig === sigF ? FIG_PREV : null; FIG_PREV = null;
+    const fig = h("div", { class: "ap-fig" }, previa || figuraArmadura(av));
     const elegir = (i) => {
       const [id, n, at] = d.piezas[i], gr = av.eq[id] | 0, sig = d.forja[gr + 1], nAt = (d.atrib.find((a) => a[0] === at) || [])[1];
       [...piezas.children].forEach((li, j) => li.classList.toggle("sel", j === i));
       for (const gz of fig.querySelectorAll(".fa-luz")) gz.classList.toggle("on", gz.getAttribute("data-pz") === id);
       det.replaceChildren(h("span", { class: "ap-n" }, h("b", { text: n + " · " + d.grados[gr] + (sig ? " › " + d.grados[gr + 1] : "") }),
-        h("small", { text: "Fortalece " + nAt + " (+" + 2 * gr + (sig ? " › +" + 2 * (gr + 1) : "") + ")" + (sig ? " · " + sig.dr + " dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") : " · grado máximo") })),
+        // (BiEx, 15-nov-2026, 19:25) al final de la línea, las dracmas que tiene ahora
+        h("small", {}, "Fortalece " + nAt + " (+" + 2 * gr + (sig ? " › +" + 2 * (gr + 1) : "") + ")" + (sig ? " · " + sig.dr + "\u00a0dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") : " · grado máximo"),
+          h("span", { class: "ap-tienes" + (sig && P.dr < sig.dr ? " falta" : "") }, " · tienes ", h("b", { text: fmt(P.dr) + " dr." })))),
         sig ? h("button", { class: "btn chico" + (puede(gr) ? " oro" : ""), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
-          const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, n + " forjado en " + d.grados[gr + 1].toLowerCase()); if (r) { chispas(18); rehacer(); } else b.disabled = false; } },
+          // (BiEx, 15-nov-2026, 19:25: «se actualizó la pantalla y solo vi un mensaje breve») la forja se celebra con el ser interior
+          const antes = { poder: av.poder, ef: Object.assign({}, av.ef) };
+          const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, null, "forja"); if (r) celebrarForja(id, n, gr + 1, d.grados[gr + 1], at, nAt, antes, r, rehacer); else b.disabled = false; } },
           A.svg(ICO_FORJA), h("span", { text: "Forjar" })) : h("span", { class: "jg-chip", text: "Máximo" }));
     };
     d.piezas.forEach(([id, n], i) => { const gr = av.eq[id] | 0, col = gr === 5 ? "#9ff3e0" : GR_COL[gr];
@@ -3307,12 +3456,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("p", { class: "jg-mini", text: "Las imágenes personalizadas se ven para todos. Si una no es apropiada, repórtala: con varios reportes se oculta hasta que el equipo la revise." }),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: async (e) => { e.currentTarget.disabled = true; const r = await pedir("/foto/reportar", { metodo: "POST", cuerpo: { f } }); A.avisar(r.error ? mensaje(r) : "Gracias: el equipo la revisará"); A.cerrarModal(); } }, h("span", { text: "Reportar esta imagen" }))))));
   }
-  async function pintarPoder(zona, y) {
+  async function pintarPoder(zona, y, suave) {
     // (12-nov-2026, P14 y adjunto 11: sin sobresalto al entrar al Árbol) lo traído al tocar su ícono se usa en el acto
     const habia = !!zona.querySelector(".cargando");
     const P = await cargarPoder(PODER && Date.now() - PODER.t < 20e3 ? false : true); if (!zona.isConnected) return;
     if (P.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(P) })));
-    const rehacer = () => { PODER = null; pintarPoder(zona, S.yo || y); }; // tras una compra o un cambio: datos frescos
+    // tras una compra o un cambio: datos frescos, puestos al día sin que el Árbol vuelva a entrar entero (BiEx, 15-nov-2026, 19:25:
+    // «la pantalla se actualizó, un parpadeo sin sentido»): el árbol y la figura se conservan si no cambiaron, las tarjetas no
+    // repiten su entrada y las cifras que cambian cuentan del valor anterior al nuevo
+    const rehacer = () => { PODER = null; pintarPoder(zona, S.yo || y, true); };
     const yy = S.yo || y, av = P.av, pct = yy.xpSig ? Math.max(0, Math.min(100, (100 * yy.xpNivel) / yy.xpSig)) : 0;
     const datos = h("div", { class: "ap-datos" },
       h("p", { class: "ap-ap" }, h("b", { text: yy.apodo }), h("span", { text: yy.rangoNombre + " · nivel " + yy.nivel })),
@@ -3329,8 +3481,22 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-acciones ap-foto" }, h("button", { class: "btn", type: "button", onclick: () => elegirFoto(rehacer) }, ico("persona"), h("span", { text: yy.foto ? "Cambiar mi imagen personalizada" : "Subir mi imagen personalizada" })),
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu imagen personalizada"); if (r) rehacer(); } }, h("span", { text: "Quitar mi imagen personalizada" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
-    const heroe = h("section", { class: "ap-heroe" }, h("div", { class: "ap-lienzo" }, arbolPoder(yy, av, (yy.invi && yy.invi.unidos) || 0)), datos);
-    zona.replaceChildren(heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer)));
+    const frutos = (yy.invi && yy.invi.unidos) || 0, sigA = JSON.stringify([yy.inv, yy.nivel, yy.vt, yy.xpNivel, yy.xpSig, yy.emb, yy.foto, av.ef, av.fr, frutos]);
+    const lienzoV = suave ? zona.querySelector(".ap-lienzo") : null, cifrasV = suave ? [...zona.querySelectorAll(".ap-cifras b")].map((b) => b.textContent) : null;
+    FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
+    const lienzo = lienzoV && lienzoV.dataset.sig === sigA ? lienzoV : h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos));
+    const heroe = h("section", { class: "ap-heroe" }, lienzo, datos);
+    const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
+    FIG_PREV = null;
+    if (suave) {
+      // sin entrada de nuevo: se dan por vistas antes de ponerlas
+      for (const t of tarjetas) { animados.add(t); for (const x of t.querySelectorAll(".jg-tarjeta, .jg-campana, .jg-heroe, .jg-barra>i, .jg-gen .b i, .jg-meta>i")) animados.add(x); }
+      zona.replaceChildren(...tarjetas);
+      const bs = [...zona.querySelectorAll(".ap-cifras b")];
+      bs.forEach((b, i) => { const a = cifrasV[i], n = b.textContent, na = parseInt(String(a || "").replace(/\D/g, ""), 10), nn = parseInt(n.replace(/\D/g, ""), 10); if (a && a !== n && /^[\d.\s]+$/.test(a) && /^[\d.\s]+$/.test(n) && !isNaN(na) && !isNaN(nn)) contarDesde(b, na, nn, 800); });
+      return;
+    }
+    zona.replaceChildren(...tarjetas);
     if (habia && !sinAnim() && zona.animate) zona.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
     animarCifras(zona);
   }
@@ -4244,12 +4410,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     LB.vis = new Set();
     if (!S.token || !R.lib || !R.pal.length || !R.els.length || !("IntersectionObserver" in window)) { ponerLB(0); return; }
     const hoja = document.querySelector(".hoja"); if (!hoja) return;
+    // cada fila reserva el lugar de su «Leído» desde que se dibuja (app.js lo pone ya al dibujar con sesión): nunca crece al leer
+    hoja.classList.toggle("jg-pies", enFilaVista());
+    LB.y0 = null; LB.pieV = 0; LB.pieY = null;
     if (!LB.el || !LB.el.isConnected) {
       LB.el = h("button", { type: "button", class: "jg-lb fuera", onclick: (ev) => { ev.stopPropagation(); tocarLB(); } },
         h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Leído" }), h("small", { text: "" })));
       document.body.append(LB.el);
     }
-    if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i", { class: "f" }), h("i", { class: "n" })); hoja.append(LB.ah); }
+    if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i", { class: "f" }, h("i", { class: "fo" }), h("i", { class: "fa" })), h("i", { class: "n" }, h("i", { class: "no" }), h("i", { class: "na" }))); hoja.append(LB.ah); }
     // X15 y X16 (BiEx, 13-nov-2026): en la vista por versos, «Leído» va discreto al pie del verso; al terminar una perícopa
     // cuyos versos ya tienen su tiempo, se ofrece también marcarla entera. En la vista continua, el botón fijo de abajo y,
     // encima, el de la perícopa cuando su final está a la vista.
@@ -4272,7 +4441,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     LB.io = new IntersectionObserver((ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) LB.vis.add(v); else LB.vis.delete(v); } pedirLB(); }, { threshold: 0 });
     for (const e of R.els) LB.io.observe(e);
     // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
-    if ("ResizeObserver" in window) { LB.ro = new ResizeObserver(() => { if (LB.v) ponerLB(LB.v, true); }); LB.ro.observe(hoja); }
+    // si la hoja cambia de alto (letra, imágenes, ventana), el resplandor y el pie se vuelven a colocar eligiendo de nuevo
+    // (antes se llamaba a ponerLB sin su verso de «Leído»: el pie se ocultaba y volvía a aparecer, un titileo)
+    if ("ResizeObserver" in window) { LB.ro = new ResizeObserver(() => { if (LB.v) { LB.forzar = true; pedirLB(); } }); LB.ro.observe(hoja); }
     // al detenerse el desplazamiento, y otra vez cuando las barras terminan de esconderse o volver (.42 s)
     if (!LB.scroll) {
       LB.scroll = true;
@@ -4442,6 +4613,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
     else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
     const hoja = LB.ah && LB.ah.parentElement; if (!hoja) return;
+    // (15-nov-2026, fluidez) primero se mide y después se escribe, y solo con transformaciones (el hilo se estira con scaleY): nada
+    // de esto cambia el diseño de la hoja. Al pasar al verso siguiente el hilo y el halo se deslizan (transición de 0,26 s); al
+    // aparecer o al saltar lejos, se colocan sin deslizarse.
     const rh = hoja.getBoundingClientRect(), r0 = el.getBoundingClientRect(), e1 = dos && document.getElementById("v" + dos[0]), e2 = dos && document.getElementById("v" + dos[dos.length - 1]);
     const r = e1 && e2 ? { top: Math.min(e1.getBoundingClientRect().top, r0.top), bottom: Math.max(e2.getBoundingClientRect().bottom, r0.bottom) } : r0;
     // el hilo: verso por fila, sobre la rayita del estado que sigue al número (la prolonga a lo largo de todo el verso);
@@ -4455,52 +4629,55 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const cont = el.closest(".lectura, .continuo") || el.parentElement, rc = cont.getBoundingClientRect(), pl = parseFloat(getComputedStyle(cont).paddingLeft) || 12;
       fx = rc.left + Math.max(4, Math.min(pl / 2, 22)); y0 = r.top + 3; y1 = r.bottom - 3;
     }
-    const f = LB.ah.firstChild;
-    f.style.transform = "translate3d(" + (fx - rh.left).toFixed(1) + "px," + (y0 - rh.top).toFixed(1) + "px,0)";
-    f.style.height = Math.max(18, y1 - y0).toFixed(1) + "px";
-    quitarMeta(); if (num) { num.classList.add("jg-meta"); LB.meta = num; }
-    halo(el);
-    const antes = LB.ah.hidden; LB.ah.hidden = false;
-    if ((antes || nuevo) && LB.ah.animate && document.documentElement.getAttribute("data-mov") !== "no") LB.ah.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-out" });
+    const f = LB.ah.firstChild, antes = LB.ah.hidden, ty = y0 - rh.top;
+    const salto = antes || LB.y0 == null || Math.abs(ty - LB.y0) > innerHeight * 0.9;
+    LB.y0 = ty;
+    LB.ah.classList.toggle("sin-t", salto);
+    const tf = "translate3d(" + (fx - rh.left).toFixed(1) + "px," + ty.toFixed(1) + "px,0) scaleY(" + (Math.max(18, y1 - y0) / 100).toFixed(4) + ")";
+    if (f.style.transform !== tf) f.style.transform = tf;
+    if (LB.meta !== num) { quitarMeta(); if (num) { num.classList.add("jg-meta"); LB.meta = num; } }
+    halo(el, rh);
+    if (antes) { LB.ah.hidden = false; if (LB.ah.animate && document.documentElement.getAttribute("data-mov") !== "no") LB.ah.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 280, easing: "ease-out" }); }
   }
   function quitarMeta() { if (LB.meta) { LB.meta.classList.remove("jg-meta"); LB.meta = null; } }
-  // al pie del verso, a la derecha de su texto, sobre el borde inferior de la fila (sin mover el texto)
+  // al pie del verso, a la derecha de su texto (15-nov-2026, fluidez: «micro sobresaltos» y «la luz titila»). Antes el pie se
+  // metía en la fila y la hacía crecer cuando no cabía: los versos de abajo se movían y se volvía a calcular el diseño de todo el
+  // capítulo en cada cambio. Ahora vive en la capa de la hoja (como el resplandor) y se coloca con una transformación: al final
+  // del último renglón si cabe; si no, justo debajo, en la franja que cada fila ya reserva para él desde que se dibuja
+  // (.hoja.jg-pies). Dentro de su verso siempre; al pasar al siguiente se desliza.
   function ponerPie(el, v, pe, rep, dos) {
     const P = LB.pie, hoja = P && P.parentElement; if (!hoja) return;
-    const conPeri = !!(pe && pe.ok && v === pe.b);
-    const bp = P.querySelector(".jg-pie-p"); bp.hidden = !conPeri;
-    if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
-    const bv = P.querySelector(".jg-pie-v"); bv.querySelector(".jg-pie-t").textContent = rep ? "Repasado" : "Leído"; bv.querySelector(".jg-pie-n").textContent = dos ? dos.join(" y ") : String(v); bv.setAttribute("aria-label", (rep ? "Repasado" : "Leído") + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + v + " como leído"));
-    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho");
-    // BiEx (13-nov-2026): sin relampagueo ni corrimientos. El pie vive dentro de la fila de su verso (se mueve con ella, también
-    // cuando el texto de arriba termina de dibujarse) y solo se funde, sin desenfoque, cuando cambia de verso.
-    if (P.parentElement !== el) { if (LB.pieEn) { LB.pieEn.classList.remove("con-pie", "pie-abajo"); LB.pieEn.style.removeProperty("--pie-h"); } el.classList.add("con-pie"); el.append(P); LB.pieEn = el; }
+    // medidas primero
+    const rb = el.getBoundingClientRect(), T = topeFijo();
     // el verso largo se sigue leyendo: su «Leído» aparece cuando su pie ya está a la vista
-    const rb = el.getBoundingClientRect(); if (rb.bottom > innerHeight - 8 || rb.bottom < topeFijo() + 18) { P.hidden = true; return; }
-    P.hidden = false;
-    // a la derecha del texto; si los saltos rápidos flotan sobre ese borde, a su izquierda (se calcula al ponerlo, no al desplazar)
+    if (rb.bottom > innerHeight - 8 || rb.bottom < T + 18) { if (!P.hidden) P.hidden = true; LB.pieV = 0; return; }
+    const rh = hoja.getBoundingClientRect();
+    // a la derecha del texto; si los saltos rápidos flotan sobre ese borde, a su izquierda
     let der = 10; const sr = document.querySelector(".saltos-rap");
     if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && q.left < rb.right - 10) der = Math.max(10, Math.round(rb.right - q.left + 8)); }
-    P.style.right = der + "px";
-    // (BiEx, 14-nov-2026: «confunde») el pie queda DENTRO de su verso: al final de su último renglón si hay sitio; si no, justo
-    // debajo de ese renglón (nunca sobre el borde con el verso siguiente)
     // el último renglón real del texto (las cajas de cada renglón, no la del bloque entero)
-    const vt = el.querySelector(":scope > .vt") || el, rg = document.createRange(); rg.selectNodeContents(vt);
+    // (solo las últimas piezas del texto: el último renglón está en ellas, y medir el verso entero costaba en los versos largos)
+    const vt = el.querySelector(":scope > .vt") || el, rg = document.createRange(), hijos = vt.childNodes;
+    if (hijos.length > 14) { rg.setStartBefore(hijos[hijos.length - 14]); rg.setEndAfter(hijos[hijos.length - 1]); } else rg.selectNodeContents(vt);
     const rs = [...rg.getClientRects()].filter((q) => q.width > 0.5 && q.height > 1), fondo = rs.reduce((m, q) => Math.max(m, q.bottom), -1e9);
     const enUlt = rs.filter((q) => q.bottom > fondo - 4), ult = enUlt.length ? { top: Math.min(...enUlt.map((q) => q.top)), bottom: fondo, right: Math.max(...enUlt.map((q) => q.right)), height: fondo - Math.min(...enUlt.map((q) => q.top)) } : rb;
+    // después, textos y estado (cambian solo dentro de la capa del pie)
+    const conPeri = !!(pe && pe.ok && v === pe.b);
+    const bp = P.querySelector(".jg-pie-p"); if (bp.hidden === conPeri) bp.hidden = !conPeri;
+    if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
+    const bv = P.querySelector(".jg-pie-v"), et = rep ? "Repasado" : "Leído", nn = dos ? dos.join(" y ") : String(v);
+    if (bv.querySelector(".jg-pie-t").textContent !== et) bv.querySelector(".jg-pie-t").textContent = et;
+    if (bv.querySelector(".jg-pie-n").textContent !== nn) bv.querySelector(".jg-pie-n").textContent = nn;
+    bv.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + v + " como leído"));
+    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho");
+    const vuelve = P.hidden; if (vuelve) P.hidden = false;
     const pw = P.offsetWidth || 90, ph = P.offsetHeight || 18, cabe = rb.right - der - ult.right >= pw + 12;
-    let top = cabe ? ult.top - rb.top + (ult.height - ph) / 2 : ult.bottom - rb.top + 3;
-    // si debajo del último renglón no hay hueco suficiente antes del verso siguiente, la fila crece lo justo (solo esa fila,
-    // que está a la altura de la lectura: lo de arriba no se mueve)
-    const pad0 = el.classList.contains("pie-abajo") ? parseFloat(el.style.getPropertyValue("--pie-h")) || 0 : 0;
-    if (!cabe) {
-      const sig = el.nextElementSibling, g = sig ? Math.max(0, sig.getBoundingClientRect().top - rb.bottom) : 0, falta = Math.ceil(top + ph + 4 - (rb.height - pad0 + g));
-      if (falta > 0) { el.classList.add("pie-abajo"); if (Math.abs(falta - pad0) > 1) el.style.setProperty("--pie-h", falta + "px"); }
-      else { el.classList.remove("pie-abajo"); el.style.removeProperty("--pie-h"); }
-    } else if (pad0) { el.classList.remove("pie-abajo"); el.style.removeProperty("--pie-h"); }
-    P.style.top = Math.round(top) + "px";
-    if (LB.pieV !== v && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
-    LB.pieV = v;
+    const x = rb.right - der - pw - rh.left, y = (cabe ? ult.top + (ult.height - ph) / 2 : ult.bottom + 3) - rh.top;
+    P.classList.toggle("jg-pie-quieto", vuelve || !LB.pieV || LB.pieY == null || Math.abs(y - LB.pieY) > innerHeight * 0.9);
+    const t = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
+    if (P.style.transform !== t) P.style.transform = t;
+    if (vuelve && P.animate && document.documentElement.getAttribute("data-mov") !== "no") P.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+    LB.pieV = v; LB.pieY = y;
   }
   function tocarPeri(desde) {
     const pe = LB.v && periDe(LB.v); if (!pe || !pe.ok || !R.lib) return;
@@ -4511,17 +4688,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (LB.pie) LB.pie.classList.add("hecho");
     clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
   }
-  // el halo detrás de las cifras del número (sin el § de la perícopa); solo si el número se ve (nunca medio tapado por las barras)
-  function halo(el) {
+  // el halo detrás de las cifras del número (sin el § de la perícopa); solo si el número se ve (nunca medio tapado por las barras).
+  // Tamaño fijo (40 px) estirado con scale: se mueve y se ajusta solo con transformaciones (15-nov-2026, fluidez)
+  function halo(el, rh0) {
     const n = LB.ah && LB.ah.lastChild, hoja = LB.ah && LB.ah.parentElement, num = numeroDe(el); if (!n || !hoja) return;
-    if (!num) { n.hidden = true; return; }
+    if (!num) { n.classList.add("oculto"); return; }
     const tn = [...num.childNodes].reverse().find((x) => x.nodeType === 3), rg = document.createRange(); rg.selectNodeContents(tn || num);
-    const r = rg.getBoundingClientRect(), rh = hoja.getBoundingClientRect(), T = topeFijo();
-    if (!r.width || r.top < T + 2) { n.hidden = true; return; }
+    const r = rg.getBoundingClientRect(), rh = rh0 || hoja.getBoundingClientRect(), T = topeFijo();
+    if (!r.width || r.top < T + 2) { n.classList.add("oculto"); return; }
     const w = Math.max(30, r.width + 24), hh = Math.max(28, r.height + 16);
-    n.style.width = w.toFixed(1) + "px"; n.style.height = hh.toFixed(1) + "px";
-    n.style.transform = "translate3d(" + (r.left + r.width / 2 - w / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - hh / 2 - rh.top).toFixed(1) + "px,0)";
-    n.hidden = false;
+    const t = "translate3d(" + (r.left + r.width / 2 - w / 2 - rh.left).toFixed(1) + "px," + (r.top + r.height / 2 - hh / 2 - rh.top).toFixed(1) + "px,0) scale(" + (w / 40).toFixed(3) + "," + (hh / 40).toFixed(3) + ")";
+    if (n.style.transform !== t) n.style.transform = t;
+    n.classList.remove("oculto");
   }
   function tocarLB(desde) {
     const vs = LB.mm && LB.mm.length ? LB.mm : LB.m ? [LB.m] : []; if (!vs.length || !R.lib) return;
@@ -4615,15 +4793,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
     else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal + ":" + E.faltaRep;
     if (caja.dataset.jg === firma) return;
     caja.dataset.jg = firma; caja.classList.add("jg-fin"); caja.classList.toggle("hecho", firma === "hecho");
-    if (firma === "hecho") return caja.replaceChildren(A.svg(ICO_JG.marca || ICO_JG.llama, "0 0 24 24"), h("span", { text: "Capítulo leído" }));
-    const btn = h("button", { class: "btn chico" + (E.listo ? " oro" : ""), type: "button", disabled: !E.listo, onclick: () => marcarCapitulo(btn) },
-      h("span", { text: E.hechos ? "Marcar como leídos los versos que faltan" : "Marcar el capítulo como leído" }));
+    if (firma === "hecho") { caja._fin = null; return caja.replaceChildren(A.svg(ICO_JG.marca || ICO_JG.llama, "0 0 24 24"), h("span", { text: "Capítulo leído" })); }
+    // (15-nov-2026, fluidez) mientras se lee, la cuenta de lo que falta cambia a menudo: se actualizan los textos en su sitio, sin
+    // volver a crear el botón (cada vez que se rehacía, se recalculaba el estilo de toda la página)
+    let F = caja._fin && caja.contains(caja._fin.btn) ? caja._fin : null;
+    if (!F) {
+      const btn = h("button", { class: "btn chico", type: "button", onclick: () => marcarCapitulo(btn) }, h("span"));
+      F = caja._fin = { btn, t: btn.firstChild, nota: h("p", { class: "jg-mini jg-fin-n" }) };
+      caja.replaceChildren(btn, F.nota);
+    }
+    F.btn.classList.toggle("oro", !!E.listo); F.btn.disabled = !E.listo;
+    const tb = E.hechos ? "Marcar como leídos los versos que faltan" : "Marcar el capítulo como leído"; if (F.t.textContent !== tb) F.t.textContent = tb;
     let nota;
     if (E.listo) nota = "Cuentan los versos que leíste con su tiempo de lectura.";
     else if (E.falta > 0) nota = "Se habilita cuando leas con calma " + (E.falta === 1 ? "1 verso más" : E.falta + " versos más") + " de este capítulo, o márcalos uno por uno con «Leído».";
     else if (E.faltaRep > 0) nota = "Se habilita cuando cada parte del capítulo tenga su tiempo de lectura: " + (E.faltaRep === 1 ? "falta 1 verso" : "faltan " + E.faltaRep + " versos") + " por leer con calma.";
     else nota = "Se habilita con unos " + plural(Math.max(1, Math.ceil((E.req - E.t) / 60000)), "minuto", "minutos") + " más de lectura en este capítulo (0,85 s por palabra griega).";
-    caja.replaceChildren(btn, h("p", { class: "jg-mini jg-fin-n", text: nota }));
+    if (F.nota.textContent !== nota) F.nota.textContent = nota;
   }
   async function marcarCapitulo(btn) {
     if (!R.lib) return;
@@ -4811,6 +4997,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const r = ref.getBoundingClientRect(); if (!r.width) return;
     const cx = r.left + r.width / 2, cy = r.top + r.height * 0.46, capa = h("div", { class: "jg-chispas", "aria-hidden": "true" });
     document.body.append(capa);
+    // con una ventana abierta (capa superior), las chispas van también en la capa superior, por encima de ella (15-nov-2026)
+    if (document.querySelector("dialog[open]") && capa.showPopover) { capa.setAttribute("popover", "manual"); try { capa.showPopover(); } catch (e) { /* sin capa superior */ } }
     const l = estilos || (() => { const a = ESTILOS_CH[Math.floor(Math.random() * ESTILOS_CH.length)]; let b = ESTILOS_CH[Math.floor(Math.random() * ESTILOS_CH.length)]; return Math.random() < 0.45 && b !== a ? [a, b] : [a]; })();
     let vivas = 0;
     const fin = () => { if (--vivas <= 0) capa.remove(); };
@@ -5718,6 +5906,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function pintarSalaPildora() {
     let p = document.querySelector(".jg-sala-p");
+    document.documentElement.classList.toggle("jg-con-sala", !!SL.cod);
     if (!SL.cod) { if (p) p.remove(); return; }
     if (!p) { p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala }); document.body.append(p); }
     const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1;
@@ -5853,6 +6042,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
+    // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
+    retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; if (S.cont && S.cont.isConnected) repintar(); },
     // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
     estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v) } : null),
     // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista (14-nov-2026)

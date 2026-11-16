@@ -1,6 +1,7 @@
 """Genera el código del sitio oficial (Wix › Código personalizado) y la página de respaldo del lector (sitio headless de Wix).
 Uso habitual (solo cambia el commit fijado para la red de respaldo):
-  python3 generar_insercion.py --sha SHA > insercion.html
+  python3 generar_insercion.py --sha SHA > insercion.html   (cargador corto: el código del acceso vive en wix/acceso.js)
+  python3 generar_insercion.py --acceso > acceso.js          (el acceso al lector; se publica con el lector, sin tocar Wix)
   python3 generar_insercion.py --cargador --sha SHA > index.html
   python3 generar_insercion.py --intro > intro.html   (presentación de apertura y datos estructurados)
   python3 generar_insercion.py --intro --config plantillas/otra.json > intro.html   (otra plantilla de textos y versos)
@@ -18,6 +19,7 @@ ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDe
 ap.add_argument("--sha", help="commit del repositorio para jsDelivr / githack")
 ap.add_argument("--cargador", action="store_true", help="genera la página index.html del sitio headless")
 ap.add_argument("--cabecera", action="store_true", help="genera el código de la cabecera del sitio oficial (manifiesto e ícono de BiEx)")
+ap.add_argument("--acceso", action="store_true", help="genera wix/acceso.js (el acceso al lector que carga el cargador de Wix)")
 ap.add_argument("--intro", action="store_true", help="genera el código de la presentación de apertura (comienzo del cuerpo, todas las páginas)")
 ap.add_argument("--config", default="", help="con --intro: plantilla de la presentación (por defecto plantillas/presentacion.json)")
 ap.add_argument("--completo", default=PAGES); ap.add_argument("--respaldo", default=HEADLESS)
@@ -58,16 +60,24 @@ if a.intro:
     out = "\n".join(l.strip() for l in t.splitlines() if l.strip() and not l.strip().startswith("//")) + "\n"
     sys.stdout.write(out); sys.stderr.write("caracteres: %d (límite de Wix: 15000)\n" % len(out))
     sys.exit("La inserción supera el límite de Wix." if len(out) > 15000 else 0)
+def minimizar(t):
+    # quitar el comentario de cabecera, las líneas de comentario y las sangrías
+    t = re.sub(r"/\*.*?\*/\n", "", t, count=1, flags=re.S)
+    lineas = [re.sub(r"\s*/\*[^*\n]*\*/", "", l).strip() for l in t.splitlines()]
+    # tablas de libros (LIB): sin los espacios entre elementos (fuera de las cadenas no hay «", "» que importe)
+    lineas = [l.replace('", "', '","').replace('": [', '":[').replace('], "', '],"') if '": ["' in l else l for l in lineas]
+    return "\n".join(l for l in lineas if l and not l.startswith("//")) + "\n"
+if a.acceso:
+    # El acceso al lector (15-nov-2026, A2): sin commit fijado; la vía jsDelivr la trae el cargador (window.BIEX_ACCESO.base2)
+    t = (d / "acceso.plantilla.js").read_text(encoding="utf-8")
+    t = t.replace("__BASE__", barra(a.base or a.completo)).replace("__BASE2__", barra(a.base2 or "")).replace("__COMPLETO__", barra(a.completo)).replace("__RESPALDO__", barra(a.respaldo))
+    out = "/* BiEx · acceso al lector en el sitio oficial (generado con wix/generar_insercion.py --acceso; no editar a mano) */\n" + minimizar(t)
+    sys.stdout.write(out); sys.stderr.write("caracteres: %d\n" % len(out)); sys.exit()
 base, base2 = barra(a.base or a.completo), barra(a.base2 or jsd)
 if not base2: sys.exit("Falta --sha (o --base2).")
 t = (d / "insercion.plantilla.html").read_text(encoding="utf-8")
 t = t.replace("__BASE__", base).replace("__BASE2__", base2).replace("__COMPLETO__", barra(a.completo)).replace("__RESPALDO__", barra(a.respaldo))
-# Minimizar: quitar el comentario de cabecera, las líneas de comentario y las sangrías
-t = re.sub(r"/\*.*?\*/\n", "", t, count=1, flags=re.S)
-lineas = [re.sub(r"\s*/\*[^*\n]*\*/", "", l).strip() for l in t.splitlines()]
-# tablas de libros (LIB): sin los espacios entre elementos (fuera de las cadenas no hay «", "» que importe)
-lineas = [l.replace('", "', '","').replace('": [', '":[').replace('], "', '],"') if '": ["' in l else l for l in lineas]
-out = "\n".join(l for l in lineas if l and not l.startswith("//")) + "\n"
+out = minimizar(t)
 sys.stdout.write(out)
 sys.stderr.write("caracteres: %d (límite de Wix: 15000)\n" % len(out))
 if len(out) > 15000: sys.exit("La inserción supera el límite de Wix.")

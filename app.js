@@ -105,8 +105,47 @@
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
   const store = {
     get(k, d) { try { const v = localStorage.getItem("biex:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("biex:" + k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } },
+    set(k, v) { try { localStorage.setItem("biex:" + k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } if (k === "jg:t" && COPIA) COPIA.enviar(v); },
   };
+  // (15-nov-2026, AC16) Copia de la sesión de Escudriña en el sitio oficial. En iPhone (WebKit) y en Brave, lo que guarda un marco
+  // de otro dominio se borra al cerrar el navegador: la página que aloja (primer nivel) conserva una copia del token y la devuelve
+  // al arrancar si aquí falta. Solo se habla con los anfitriones de la lista, con el origen verificado en los dos sentidos (wix/acceso.js).
+  const ANFITRIONES = ["https://bibliaexacta.wixsite.com"].concat(/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? ["http://localhost:8768", "http://127.0.0.1:8768"] : []);
+  const COPIA = EMBED && window.parent !== window ? {
+    enviar(t) { for (const o of ANFITRIONES) try { window.parent.postMessage({ biex: "sesion", t: typeof t === "string" ? t : null }, o); } catch (e) { /* ignorar */ } },
+    pedir: () => new Promise((ok) => {
+      let fin = false;
+      const listo = (t) => { if (fin) return; fin = true; window.removeEventListener("message", al); ok(t); };
+      const al = (e) => { if (e.source === window.parent && ANFITRIONES.includes(e.origin) && e.data && e.data.biex === "sesion") listo(typeof e.data.t === "string" && e.data.t.length > 8 && e.data.t.length < 2000 ? e.data.t : null); };
+      window.addEventListener("message", al);
+      for (const o of ANFITRIONES) try { window.parent.postMessage({ biex: "sesion?" }, o); } catch (e) { /* ignorar */ }
+      setTimeout(() => listo(null), 1500);
+    }),
+  } : null;
+  let sesionRecuperada = null;
+  if (COPIA) {
+    const t0 = store.get("jg:t", null);
+    if (t0) COPIA.enviar(t0);
+    else sesionRecuperada = COPIA.pedir().then((t) => {
+      if (!t || store.get("jg:t", null)) return false;
+      store.set("jg:t", t);
+      try { if (window.BiExJuego && BiExJuego.retomarSesion) BiExJuego.retomarSesion(); } catch (e) { /* ignorar */ }
+      return true;
+    });
+  }
+  if (navigator.webdriver) window.__biexSes = { set: (t) => store.set("jg:t", t), get: () => store.get("jg:t", null) };
+  // (15-nov-2026, fluidez y calor) Mientras se desplaza la página (o una ventana), html.desplazando pone en pausa lo que se mueve
+  // solo de fondo (motas, brillos, respiraciones, luces del Árbol); vuelve 180 ms después del último movimiento. Las reglas ya
+  // existían en el CSS, pero nada ponía la clase (se había perdido: APRENDIZAJES). Avisa con el evento «biex:desplaza».
+  { let tD = 0; const raiz = document.documentElement;
+    const fin = () => { tD = 0; raiz.classList.remove("desplazando"); document.dispatchEvent(new CustomEvent("biex:desplaza", { detail: false })); };
+    window.addEventListener("scroll", () => {
+      if (!tD) { raiz.classList.add("desplazando"); document.dispatchEvent(new CustomEvent("biex:desplaza", { detail: true })); } else clearTimeout(tD);
+      tD = setTimeout(fin, 180);
+    }, { passive: true, capture: true }); }
+  // Lo que se anima solo y de forma continua se detiene fuera de la pantalla (clase .anim-fuera; 15-nov-2026)
+  const IO_FUERA = "IntersectionObserver" in window ? new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("anim-fuera", !e.isIntersecting); }) : null;
+  const pausarFuera = (raiz) => { if (!IO_FUERA || !raiz) return; IO_FUERA.disconnect(); for (const el of raiz.querySelectorAll('.encab .h [lang="he"], .banda')) IO_FUERA.observe(el); };
   // Historial: las últimas 24 citas consultadas (capítulos y versos), la más reciente primero (biex:historial)
   function historial(c, cap, v, m) {
     if (!c || !cap) return;
@@ -307,11 +346,18 @@
   const temaActual = () => document.documentElement.getAttribute("data-theme") || "dark";
   function ponerTema(t) { document.documentElement.setAttribute("data-theme", t); store.set("tema", t); }
   let avisoT = null;
+  // (BiEx, 15-nov-2026, 19:25: «un mensaje breve que no duró lo suficiente para leerlo») El aviso dura lo que tarda en leerse
+  // (unos 15 caracteres por segundo, de 2,8 a 8 s); va en la capa superior (popover), por encima de las ventanas abiertas, con
+  // clases propias (nunca la genérica «si»: AC19).
   function avisar(txt) {
     let el = $(".aviso-flot");
-    if (!el) { el = h("div", { class: "aviso-flot", role: "status" }); document.body.append(el); }
-    el.textContent = txt; el.classList.add("si");
-    clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove("si"), 2200);
+    if (!el) {
+      el = h("div", { class: "aviso-flot", role: "status" }); document.body.append(el);
+    }
+    el.textContent = txt;
+    if (el.showPopover) { if (!el.hasAttribute("popover")) el.setAttribute("popover", "manual"); try { if (el.matches(":popover-open")) el.hidePopover(); el.showPopover(); } catch (e) { /* sin capa superior */ } }
+    el.classList.add("af-vis");
+    clearTimeout(avisoT); avisoT = setTimeout(() => el.classList.remove("af-vis"), Math.max(2800, Math.min(8000, 1200 + String(txt).length * 66)));
   }
   // Griego: minúsculas con acentos (texto de la edición) o mayúsculas sin marcas (como los códices unciales)
   const gk = (s, caja) => ((caja || prefs.caja) === "may" ? uncial(s) : s);
@@ -774,12 +820,16 @@
   let tVelo = 0;
   // (R10, BiEx 12-nov-2026: parpadeo al volver a la app instalada) al levantarse, la vista entra con un fundido breve
   // (solo opacidad) en vez de aparecer de golpe
+  // (BiEx, 15-nov-2026: «parpadeo al volver y entre vistas») el velo solo oculta la vista si la vuelta tarda más de 90 ms (CSS:
+  // la opacidad cambia con ese retraso); cuando la posición queda lista antes, la vista nunca se oculta ni vuelve a entrar.
+  let veloDesde = 0;
   function velar(si) {
     clearTimeout(tVelo);
     const r = document.documentElement, antes = r.classList.contains("volviendo");
+    if (si && !antes) veloDesde = performance.now();
     r.classList.toggle("volviendo", !!si);
     if (si) tVelo = setTimeout(() => velar(false), 900);
-    else if (antes) { r.classList.add("aparece"); setTimeout(() => r.classList.remove("aparece"), 280); }
+    else if (antes && performance.now() - veloDesde > 90) { r.classList.add("aparece"); setTimeout(() => r.classList.remove("aparece"), 280); }
   }
   const restaurando = () => RP.objetivo != null;
   // arriba del todo, salvo que se esté volviendo a una posición guardada
@@ -901,7 +951,11 @@
     if (M.estados > 0 && !M.porHistoria && !M.porRuta) {
       // cerrada con ×, Esc o tocando fuera: sus pasos del historial quedan atrás y «Adelante» no los ofrece (M.cortar)
       const n = M.estados; M.estados = 0; M.destino = location.href; M.saltando = true; M.cortar = true;
-      try { history.go(-n); } catch (e) { M.saltando = false; M.cortar = false; }
+      // (BiEx, 15-nov-2026: «parpadeo al cerrar con la X, no con el gesto de atrás») si la ventana había anotado su verso en la
+      // dirección (#/LIB/cap/l/v), al volver los pasos el navegador avisaba un cambio de dirección y la ruta volvía a dibujar el
+      // capítulo con su velo. La vista ya es la correcta: ese aviso se ignora (M.sinRuta).
+      M.sinRuta = { url: M.destino, hasta: performance.now() + 1500 };
+      try { history.go(-n); } catch (e) { M.saltando = false; M.cortar = false; M.sinRuta = null; }
     } else M.estados = 0;
     M.porHistoria = false; M.porRuta = false;
     repintarAdelante();
@@ -1050,7 +1104,7 @@
   function cabModal(tit, sub, nav) {
     return h("div", { class: "m-cab" },
       // AC13: el lugar de «Volver» se reserva siempre, para que el título no se corra ni la cabecera cambie de alto al aparecer
-      M.pila.length > 1 ? h("button", { class: "btn-icono m-atras", type: "button", "aria-label": "Volver", title: "Volver", onclick: volver }, svg(ICO.atras)) : h("span", { class: "btn-icono m-atras vacio", "aria-hidden": "true" }),
+      M.pila.length > 1 ? h("button", { class: "btn-icono m-atras", type: "button", "aria-label": "Volver", title: "Volver", onclick: volver }, svg(ICO.atras)) : h("span", { class: "btn-icono m-atras m-atras-res", "aria-hidden": "true" }),
       M.fwd.length ? h("button", { class: "btn-icono m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, svg(ICO.adelante)) : null,
       h("div", { class: "m-tit" }, h("b", { text: tit }), sub ? h("small", { text: sub }) : null),
       nav ? h("button", { class: "btn-icono", type: "button", "aria-label": nav.etiqueta[0], title: nav.etiqueta[0], disabled: !nav.prev, onclick: () => nav.prev && nav.prev() }, svg(ICO.izq)) : null,
@@ -1586,13 +1640,14 @@
     const viejo = $(".libro", vista());
     if (viejo && viejo.dataset.c === nuevo.dataset.c && viejo.children.length === 2 && nuevo.children.length === 2) viejo.replaceChild(nuevo.children[1], viejo.children[1]);
     else vista().replaceChildren(nuevo);
+    pausarFuera(vista());
   }
   function estructuraLibro(b, cap, modo, versos, cuerpo) {
     const vb = volverBusqueda && volverBusqueda.ruta.split("/").slice(0, 3).join("/") === "#/" + b.c + "/" + cap ? volverBusqueda : null;
     return h("div", { class: "libro", "data-c": b.c }, bandaLibro(b),
       h("div", { class: "in libro-grid" },
         h("aside", { class: "riel", "aria-label": "Capítulos y versos" }, navContenido(b, cap, versos)),
-        h("section", { class: "hoja" + (modo !== "a" && prefs.nivel ? " con-filtro" : "") }, h("i", { class: "bh-centinela", "aria-hidden": "true" }), barraHoja(b, cap, modo, versos),
+        h("section", { class: "hoja" + (modo !== "a" && prefs.nivel ? " con-filtro" : "") + (modo !== "a" && prefs.disp !== "continuo" && store.get("jg:t", null) ? " jg-pies" : "") }, h("i", { class: "bh-centinela", "aria-hidden": "true" }), barraHoja(b, cap, modo, versos),
           vb ? h("button", { class: "chip-volver", type: "button", onclick: () => abrirBusqueda(vb.q) }, svg(ICO.atras), h("span", { text: "Volver a los resultados de «" + vb.q + "»" })) : null,
           ...cuerpo.filter(Boolean))));
   }
@@ -3062,7 +3117,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "3f7def2b3d", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "b473c9aef1", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3116,7 +3171,8 @@
   }
   // Con sesión de Escudriña, el juego observa la lectura del capítulo (sin sesión no se carga nada)
   function juegoCapitulo(c, cap, modo) {
-    if (!store.get("jg:t", null) && !window.BiExJuego) return;
+    // AC16: si la sesión está volviendo desde el sitio oficial, el capítulo espera esa respuesta (como mucho 1,5 s)
+    if (!store.get("jg:t", null) && !window.BiExJuego) { if (sesionRecuperada) sesionRecuperada.then((ok) => { if (ok && esc.libro === c && esc.cap === cap) juegoCapitulo(c, cap, modo); }); return; }
     cargarJuego().then((J) => { if (esc.libro === c && esc.cap === cap) J.capitulo(c, cap, modo); }).catch(() => {});
   }
   let BQX = null, bqListo = false;
@@ -5151,9 +5207,13 @@
   // copia sin conexión y de una hora de ausencia; ahora es una consulta ligera y propia, sin esa condición: al abrir, al
   // volver a la app o a la pestaña (también cuando Android la congela y la reanuda, o la devuelve desde la caché de
   // navegación), al recuperar la conexión o el foco, al cambiar de vista (como mucho cada 3 min) y cada 15 min a la vista.
-  let ultVersion = 0, versionNueva = false;
+  // (15-nov-2026, adjunto 3) El aviso va en la capa superior (popover: queda por encima de las ventanas abiertas y del juego)
+  // con clases propias (antes `.si` chocó con el CSS del juego, AC19, y el aviso salió como un óvalo al final de la página);
+  // si se cierra con «Ahora no», vuelve a ofrecerse al regresar a la app o al cambiar de vista pasados 20 min.
+  let ultVersion = 0, versionNueva = false, versionCerrada = 0;
   async function revisarVersion(espera) {
-    if (versionNueva || !navigator.onLine || document.hidden) return;
+    if (versionNueva) { if (!document.hidden && versionCerrada && Date.now() - versionCerrada > 20 * 60e3) avisoVersion(); return; }
+    if (!navigator.onLine || document.hidden) return;
     const ahora = Date.now(); if (ahora - ultVersion < (espera || 0)) return;
     ultVersion = ahora;
     try {
@@ -5174,12 +5234,16 @@
   // Aviso discreto: hay una versión publicada más reciente que la que está abierta
   function avisoVersion() {
     if ($(".aviso-version")) return;
+    versionCerrada = 0;
     const el = h("div", { class: "aviso-version", role: "status" },
       h("span", { text: "Hay una versión nueva" }),
       h("button", { type: "button", class: "av-si", text: "Actualizar", onclick: () => location.reload() }),
-      h("button", { type: "button", class: "av-no", "aria-label": "Ahora no", title: "Ahora no", onclick: () => { el.classList.remove("si"); setTimeout(() => el.remove(), 300); } }, svg(ICO.cerrar)));
+      h("button", { type: "button", class: "av-no", "aria-label": "Ahora no", title: "Ahora no", onclick: () => { versionCerrada = Date.now(); el.classList.remove("av-vis"); setTimeout(() => { try { if (el.hidePopover) el.hidePopover(); } catch (e) { /* ignorar */ } el.remove(); }, 300); } }, svg(ICO.cerrar)));
+    const capa = typeof el.showPopover === "function";
+    if (capa) el.setAttribute("popover", "manual");
     document.body.append(el);
-    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("si")));
+    if (capa) try { el.showPopover(); } catch (e) { /* sin capa superior */ }
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("av-vis")));
   }
   // Si el navegador lo concede a la app instalada, la copia también se revisa en segundo plano (como mucho, una vez al día)
   async function programarPeriodico() {
@@ -5240,7 +5304,10 @@
     const ATADO = !!(window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()"));
     if (ATADO) caja.classList.add("sr-atado");
     let reloj = 0, pendiente = false;
-    const largo = () => document.documentElement.scrollHeight > window.innerHeight * 2.6;
+    // (15-nov-2026, fluidez) el alto de la página se mide como mucho cada 0,4 s: leerlo en cada evento de desplazamiento obligaba
+    // a recalcular el estilo y el diseño a mitad del gesto
+    let largoV = null, largoT = 0;
+    const largo = () => { const t = performance.now(); if (largoV === null || t - largoT > 400) { largoV = document.documentElement.scrollHeight > window.innerHeight * 2.6; largoT = t; } return largoV; };
     function mostrar() {
       if (!largo() || modal.open) { caja.classList.remove("vis"); alternarSecs(false); return; }
       const hay = secciones().length >= 2; secBtn.hidden = !hay; if (!hay) alternarSecs(false);
@@ -5673,10 +5740,11 @@
     // ciclo de ida y vuelta por tres puntos (0 %, 50 %, 100 %), con entrada y salida suaves en cada tramo
     const en = (t, dur, a, b, c) => { let q = (t / dur) % 2; if (q > 1) q = 2 - q; return q < 0.5 ? a + (b - a) * suave(q * 2) : b + (c - b) * suave((q - 0.5) * 2); };
     function pintar(ms) {
+      // (15-nov-2026, fluidez) sin leer innerWidth/innerHeight en cada dibujo: las medidas de la ventana vienen de medir()
       const t = ms / 1000, tema = document.documentElement.getAttribute("data-theme") === "light" ? LUZ.light : LUZ.dark;
       const discos = [
         [en(t, 74, 0, 22, 8) * vw, -2 * vmax + en(t, 74, 0, 14, 34) * vh, 60 * vmax, 1],
-        [window.innerWidth + 4 * vmax + en(t, 96, 0, -26, -10) * vw, window.innerHeight + 6 * vmax + en(t, 96, 0, -10, -30) * vh, 60 * vmax, 1],
+        [vw * 100 + 4 * vmax + en(t, 96, 0, -26, -10) * vw, vh * 100 + 6 * vmax + en(t, 96, 0, -10, -30) * vh, 60 * vmax, 1],
         [35 * vmax + en(t, 118, 0, 30, -12) * vw, 18 * vh + 45 * vmax + en(t, 118, 0, -12, 20) * vh, 45 * vmax, en(t, 118, 0.6, 1, 0.7)],
       ];
       cx.clearRect(0, 0, W, H);
@@ -5794,8 +5862,8 @@
     if (partes[0] !== "escudrina" && !(D && libroDe(String(partes[0] || "").toUpperCase())) && window.BiExJuego) window.BiExJuego.salir();
     rutaVista = ruta;
     creditosPie(!partes.length || (partes[0] === "escudrina" && partes[1] === "mas"));
-    // AC2: en el ranking sobra la nota del pie sobre los versos (se oculta solo ahí)
-    document.documentElement.classList.toggle("sin-nota-pie", partes[0] === "ranking");
+    // AC2: en el ranking sobra la nota del pie sobre los versos; tampoco va en Escudriña (BiEx, 15-nov-2026, adjunto 8)
+    document.documentElement.classList.toggle("sin-nota-pie", partes[0] === "ranking" || partes[0] === "escudrina");
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }
@@ -5965,7 +6033,12 @@
     const act = $("#actualizado");
     if (act) act.textContent = " · Actualizado el " + new Date(D.generado).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }) + ".";
     botonAdelante();
-    window.addEventListener("hashchange", () => { pasosApp++; resolverSeguir(); prepararPos(); enrutar(); });
+    window.addEventListener("hashchange", () => {
+      // la vuelta de los pasos de una ventana cerrada con ×, Esc o tocando fuera: la vista no cambia (ver arriba, M.sinRuta)
+      const sr = M.sinRuta; M.sinRuta = null;
+      if (sr && performance.now() < sr.hasta && location.href === sr.url) return;
+      pasosApp++; resolverSeguir(); prepararPos(); enrutar();
+    });
     if (enApp() && !EMBED && !(location.hash || "").replace(/^#\/?/, "")) { const u = store.get("ultimo", null); if (u && u.c && (!u.t || Date.now() - u.t < 60 * 864e5)) ponerHash("#/seguir"); }
     resolverSeguir();
     prepararPos();

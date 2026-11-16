@@ -388,7 +388,7 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .m-cab .m-tit small { font-family: var(--f-ui); font-size: .72rem; letter-spacing: .1em; color: var(--tenue); white-space: normal; overflow-wrap: anywhere; line-height: 1.35; margin-top: 2px; }
 .m-cab .btn-icono { width: 38px; height: 38px; }
 .m-cab .btn-icono:disabled { opacity: .3; cursor: default; }
-.m-cab .m-atras.vacio { visibility: hidden; pointer-events: none; flex: none; } /* AC13: lugar reservado de «Volver» */
+.m-cab .m-atras-res { visibility: hidden; pointer-events: none; flex: none; padding: 0; } /* AC13: lugar reservado de «Volver» (clase con prefijo: «.vacio» chocaba con el estado vacío de las listas y daba 60 px de relleno, 15-nov) */
 .m-cuerpo { overflow: auto; overscroll-behavior: contain; padding: clamp(18px, 3vw, 30px) clamp(16px, 3.4vw, 34px) calc(28px + env(safe-area-inset-bottom, 0px)); flex: 1; min-height: 0; }
 .m-pie { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--linea-2); flex: none; }
 
@@ -591,9 +591,11 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 
 /* aviso breve (enlace copiado, etc.) */
 .aviso-flot { position: fixed; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 32px); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 80; background: var(--tinta); color: var(--bg); font-family: var(--f-ui); font-size: .86rem; padding: 10px 18px; border-radius: 999px; box-shadow: var(--sombra); pointer-events: none; opacity: 0; transition: opacity .2s; }
-.aviso-flot.si { opacity: 1; }
+.aviso-flot.af-vis { opacity: 1; }
+.aviso-flot[popover] { inset: auto 0 calc(22px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; height: auto; overflow: visible; }
 .aviso-version { position: fixed; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 24px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 79; display: flex; align-items: center; gap: 10px; padding: 5px 5px 5px 16px; border-radius: 999px; font-family: var(--f-ui); font-size: .86rem; color: var(--tinta); background: color-mix(in srgb, var(--hoja-2) 80%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); border: 1px solid color-mix(in srgb, var(--oro) 34%, transparent); box-shadow: var(--sombra); opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; }
-.aviso-version.si { opacity: 1; transform: none; }
+.aviso-version.av-vis { opacity: 1; transform: none; }
+.aviso-version[popover] { inset: auto 0 calc(18px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; height: auto; overflow: visible; }
 html.jg-con-muelle .aviso-version { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .aviso-version .av-si { font: inherit; font-weight: 500; color: var(--sobre-oro); background: var(--oro); border: 0; border-radius: 999px; padding: 7px 15px; min-height: 34px; cursor: pointer; }
 .aviso-version .av-no { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--tenue); cursor: pointer; }
@@ -1598,16 +1600,16 @@ body { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
   .barra-hoja { column-gap: 10px; }
 }
 /* al final de un capítulo: el pie llega enseguida, sin una franja vacía */
-.pagina:has(.libro-grid) { min-height: 0; }
-.pagina:has(.libro-grid) .libro-grid { padding-bottom: 10px; }
-.pagina:has(.libro-grid) + .pie { margin-top: 14px; }
+.pagina:has(> .libro) { min-height: 0; } /* (15-nov-2026, fluidez) solo hijos directos: con «.libro-grid» como descendiente, cada cambio dentro del capítulo volvía a calcular el estilo de toda la página */
+.pagina > .libro > .libro-grid { padding-bottom: 10px; }
+.pagina:has(> .libro) + .pie { margin-top: 14px; }
 /* pellizco: un paso por gesto, con un sello discreto junto a los dedos */
 .sello-tam { position: fixed; z-index: 200; transform: translate(-50%, -140%); padding: 7px 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--oro) 55%, transparent); background: color-mix(in srgb, var(--hoja) 72%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); color: var(--oro); font: 600 .82rem/1 var(--f-ui); letter-spacing: .08em; white-space: pre; pointer-events: none; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); animation: selloTam .9s ease forwards; }
 .sello-tam.tope { color: var(--tenue); }
 @keyframes selloTam { 0% { opacity: 0; transform: translate(-50%, -110%) scale(.92); } 18% { opacity: 1; transform: translate(-50%, -140%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -165%); } }
 html[data-mov="no"] .sello-tam { animation: none; opacity: 1; }
 /* al volver atrás, la vista se muestra cuando ya está en su sitio exacto (unos pocos fotogramas) */
-html.volviendo #vista { opacity: 0; transition: none; }
+html.volviendo #vista { opacity: 0; transition: opacity 0s linear .09s; } /* 15-nov-2026: se oculta solo si la vuelta tarda más de 90 ms */
 #vista { transition: opacity .18s ease-out; } /* al volver, la vista aparece con un fundido breve en lugar de un golpe */
 html.volviendo .barra, html.volviendo .barra-hoja { transition: none !important; }
 /* la palabra a la que se llega desde «Ver en el análisis»: un halo dorado y siete estrellitas que se encienden y se apagan */
@@ -2023,7 +2025,7 @@ html[data-mov="no"] .btn::after { animation: none !important; }
 .cargando.inicio { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; margin: 0; pointer-events: none;
   font: 400 15px/1.4 "Cormorant Garamond", Georgia, serif; letter-spacing: .2em; text-transform: uppercase; color: #9d968a; }
 .cargando.inicio::before { width: 32px; height: 32px; margin: 0; border-color: rgba(201, 168, 101, .26); border-top-color: #c9a865; }
-html:has(.cargando.inicio) .pie { visibility: hidden; }
+.pagina:has(> .cargando.inicio) + .pie { visibility: hidden; }
 /* Fluidez de Herramientas y de toda ventana (10-nov-2026): la ventana ya no desenfoca lo de atrás por su cuenta (lo hace su
    velo, que no cambia al desplazar por dentro): con un fondo del 95 % el desenfoque de 28 px no se veía y en el teléfono
    se recalculaba en cada cuadro del desplazamiento interno */
@@ -2434,3 +2436,8 @@ html.sin-nota-pie .pie .nota-pie { display: none; }
 html.desplazando .ms-eje .ms-punto { animation-play-state: paused; }
 html[data-mov="no"] .ms-eje .ms-punto { animation: none; }
 @media (prefers-reduced-motion: reduce) { .ms-eje .ms-punto { animation: none; } }
+
+/* (15-nov-2026, fluidez y calor; AC8, AC11, AC21) Mientras se desplaza (html.desplazando) se detiene lo que se mueve solo de fondo,
+   y lo que se anima de forma continua se detiene fuera de la pantalla (.anim-fuera, IntersectionObserver de app.js). */
+html.desplazando .vivo-motas i, html.desplazando .encab .h [lang="he"], html.desplazando .banda::before { animation-play-state: paused; }
+.anim-fuera, .anim-fuera::before, .anim-fuera::after { animation-play-state: paused !important; }

@@ -1,0 +1,213 @@
+/* BiEx · Lector y analizador dentro del sitio oficial (wix/acceso.js; lo carga el cargador corto de Wix, 15-nov-2026, A2): en todas
+   las páginas aparece un acceso discreto (en cada libro, a ese libro) que abre, a pantalla completa, el griego y el análisis. La vista
+   móvil de Wix se dibuja a 320 px ampliados; el lector se contraescala para verse al tamaño real del teléfono. Vías: página propia del
+   lector → lector armado aquí → copia de respaldo → aviso con enlace. Este archivo se genera con generar_insercion.py --acceso. */
+(function () {
+  if (window.__biexLector) return; window.__biexLector = true;
+  // Direcciones: las que trae el cargador de Wix (window.BIEX_ACCESO) o las de siempre
+  var C = window.BIEX_ACCESO || {}, B1 = C.base || "__BASE__", B2 = C.base2 || "__BASE2__" || B1;
+  var BASES = [B1, B2], COMPLETO = C.completo || "__COMPLETO__", RESPALDO = C.respaldo || "__RESPALDO__";
+  var LIB = { "blank": ["MAT", "Mateo", "Mattáy"], "2mm": ["MRK", "Marcos", "Μᾶrκος"], "3ll": ["LUK", "Lucas", "Lουκᾶς"], "blank-3": ["JHN", "Juan", "YÔḥānā́n"], "5mh": ["ACT", "Hechos", "Prάc̅ṣεις"], "blank-17": ["ROM", "Romanos", "῾Hrōmαῖοι"],
+    "7q1c": ["1CO", "1 Corintios", "1 Κοrίndsιοι"], "8q2c": ["2CO", "2 Corintios", "2 Κοrίndsιοι"], "9gg": ["GAL", "Gálatas", "Gαlάται"], "10ee": ["EPH", "Efesios", "Ἐfέsιοι"], "1ff": ["PHP", "Filipenses", "Fιlιppḗsιοι"], "12qc": ["COL", "Colosenses", "Κοlοssαεῖς"],
+    "13t1t": ["1TH", "1 Tesalonicenses", "1 Dsεssαlοnικεῖς"], "blank-1": ["2TH", "2 Tesalonicenses", "2 Dsεssαlοnικεῖς"], "15t1t": ["1TI", "1 Timoteo", "1 Τιmόdsεος"], "16t2t": ["2TI", "2 Timoteo", "2 Τιmόdsεος"], "17tt": ["TIT", "Tito", "Τίτος"], "blank-15": ["PHM", "Filemón", "Fιlḗmōn"],
+    "19ih": ["HEB", "Hebreos", "ʿIḇrî́m"], "blank-2": ["JAS", "Jacobo", "Yaʿăqṓḇ"], "21k1p": ["1PE", "1 Pedro", "1 Pέτrος"], "22k2p": ["2PE", "2 Pedro", "2 Pέτrος"], "1yj": ["1JN", "1 Juan", "1 YÔḥānā́n"], "24yb": ["2JN", "2 Juan", "2 YÔḥānā́n"], "25yg": ["3JN", "3 Juan", "3 YÔḥānā́n"],
+    "blank-13": ["JUD", "Judas", "Yᵉhūḏā́h"], "27jhr": ["REV", "Revelación", "Ḥāzṓn Hiṯgallū́ṯ"] };
+  var OTRAS = { "nueva-voluntad": ["#/libros", "Los 27 libros en griego"] };
+  // Enlace compartido desde el lector: ?lector=JHN/3/a/16 abre el lector ahí mismo
+  var PEDIDO = (function () {
+    var m = /[?&#]lector=([^&#]+)/.exec(location.search + location.hash), r;
+    try { r = m ? "#/" + decodeURIComponent(m[1]).replace(/^#?\/?/, "") : null; } catch (e) { r = null; }
+    return r && /^#\/[A-Za-z0-9\/._-]{0,80}$/.test(r) ? r : null;
+  })();
+  var FUENTES = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400&family=Jost:wght@400;500&display=swap";
+  function pagina() {
+    var p = location.pathname.replace(/\/+$/, "").split("/").pop();
+    if (LIB[p]) return ["#/" + LIB[p][0] + "/1", LIB[p][2] + " [" + LIB[p][1] + "] en griego", LIB[p][2] + " [" + LIB[p][1] + "]"];
+    return OTRAS[p] ? [OTRAS[p][0], OTRAS[p][1], ""] : ["#/", "La Nueva Voluntad en griego", ""];
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // Cuánto amplía el navegador la página (vista móvil de Wix a 320 px); 1 en escritorio
+  // Solo la vista móvil de Wix (página dibujada a un ancho fijo, p. ej. 320 px) se contraescala; en una página de ancho
+  // del dispositivo (escritorio) la ampliación es de la persona (pellizco del panel táctil, Ctrl + rueda) y no se toca
+  var FIJA = /width=\s*\d/.test((document.querySelector('meta[name="viewport"]') || {}).content) || document.documentElement.clientWidth < 331 && screen.width > 360;
+  function escala() {
+    if (!FIJA) return 1;
+    var vv = window.visualViewport, k = (vv && vv.scale) || 1, w = document.documentElement.clientWidth || innerWidth;
+    if (k < 1.05 && screen.width) k = (innerWidth > innerHeight ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) / w;
+    return k > 1.05 && k < 4 ? k : 1;
+  }
+
+  var f = document.createElement("link"); f.rel = "stylesheet"; f.href = FUENTES; document.head.appendChild(f);
+  var anfitrion = document.createElement("div"); anfitrion.id = "biex-lector";
+  anfitrion.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;z-index:2147483000;";
+  document.body.appendChild(anfitrion);
+  var raiz = anfitrion.attachShadow ? anfitrion.attachShadow({ mode: "open" }) : anfitrion;
+  raiz.innerHTML = '<style>' +
+    ':host{all:initial}' +
+    '.p{position:fixed;z-index:2147483000;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;padding:5px 16px 5px 5px;border-radius:999px;border:1px solid rgba(201,168,101,.75);background:rgba(9,9,10,.93);color:#ece5d6;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-align:left;font:inherit;transition:padding .3s,gap .3s,box-shadow .2s;animation:biexEntra .5s ease-out both}' +
+    '.p[hidden]{display:none}.p:hover{box-shadow:0 12px 32px rgba(0,0,0,.5),0 0 0 3px rgba(201,168,101,.2)}.p:focus-visible{outline:2px solid #e8cf94;outline-offset:3px}' +
+    '.s{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid #c9a865;display:grid;place-items:center;font:400 19px/1 "Gentium Book Plus",Georgia,serif;color:#e8cf94;background:radial-gradient(circle at 50% 35%,rgba(201,168,101,.22),transparent 70%)}' +
+    '.t{display:grid;gap:1px;max-width:24em;overflow:hidden;transition:max-width .3s,opacity .25s}' +
+    '.t small{font:500 8.5px/1.25 Jost,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#c9a865;white-space:nowrap}' +
+    '.t b{font:400 15px/1.25 "Gentium Book Plus",Georgia,serif;letter-spacing:.01em;color:#ece5d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.p.min{padding:5px;gap:0}.p.min .t{max-width:0;opacity:0}' +
+    '@media (max-width:640px){.p{right:0;left:0;margin:0 auto;width:max-content;bottom:max(14px,env(safe-area-inset-bottom))}}' +
+    '.v{position:fixed;inset:0;z-index:2147483001;background:#09090a;display:none;opacity:0;transition:opacity .25s;font:400 16px/1.5 Jost,system-ui,sans-serif;color:#ece5d6;overflow:hidden}' +
+    '.v.a{display:block}.v.b{opacity:1}' +
+    '.v iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block;background:transparent;z-index:1;transform-origin:0 0}' +
+    '.e{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:16px;padding:24px;text-align:center;pointer-events:none}.e a{pointer-events:auto}' +
+    '.c{font:400 15px/1.4 "Cormorant Garamond",Georgia,serif;letter-spacing:.2em;text-transform:uppercase;color:#9d968a}' +
+    '.g{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,101,.26);border-top-color:#c9a865;animation:biexGiro 1s linear infinite}' +
+    '.m{max-width:34em;display:grid;gap:14px;justify-items:center;font-size:15px;color:#d6cebd}.m[hidden],.k[hidden]{display:none}' +
+    '.m a,.k a{display:inline-block;padding:11px 20px;border-radius:999px;background:#c9a865;color:#0b0a08;text-decoration:none;font-weight:500;letter-spacing:.08em;font-size:13px;text-transform:uppercase}' +
+    '.k a{background:none;color:#c9a865;border:1px solid rgba(201,168,101,.4)}.m small{color:#9d968a;font-size:12px;word-break:break-all}' +
+    '.x{position:absolute;z-index:3;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,101,.4);background:rgba(9,9,10,.9);color:#ece5d6;font:300 24px/1 system-ui,sans-serif;cursor:pointer}' +
+    '.v.listo .x,.v.listo .e{display:none}' +
+    '@keyframes biexEntra{from{opacity:0}to{opacity:1}}@keyframes biexGiro{to{transform:rotate(360deg)}}' +
+    '@media (prefers-reduced-motion:reduce){.p,.g{animation:none}}@media print{.p,.v{display:none!important}}' +
+    '</style>' +
+    '<button class="p" type="button" hidden><span class="s" aria-hidden="true">α</span><span class="t"><small>Lector y analizador · BiEx</small><b></b></span></button>' +
+    '<div class="v" role="dialog" aria-modal="true" aria-label="Lector y analizador de BiEx">' +
+    '<div class="e"><div class="g"></div><div class="c">Abriendo el códice…</div><div class="k" hidden><a target="_blank" rel="noopener">Abrir en una pestaña nueva</a></div>' +
+    '<div class="m" hidden><span>No se pudo abrir el lector dentro de esta página.</span><a target="_blank" rel="noopener">Abrir el lector en una pestaña nueva</a><small></small></div></div>' +
+    '<button class="x" type="button" aria-label="Cerrar">×</button></div>';
+  var pastilla = raiz.querySelector(".p"), velo = raiz.querySelector(".v"), titulo = raiz.querySelector(".t b");
+  var estado = raiz.querySelector(".c"), giro = raiz.querySelector(".g"), atajo = raiz.querySelector(".k"), aviso = raiz.querySelector(".m");
+  var marco = null, actual = null, listo = false, reloj = null, reloj2 = null, errores = [], desborde = "";
+  // AC16 (15-nov-2026): en iPhone (WebKit) y en Brave, lo que guarda el lector dentro del marco (otro dominio) se borra al cerrar
+  // el navegador. Esta página es de primer nivel: guarda una copia del token de Escudriña que el lector manda al entrar y se la
+  // devuelve si al arrancar no la tiene. Se atiende solo al marco propio desde los orígenes del lector (y el lector, a su vez,
+  // solo habla con los orígenes del sitio oficial).
+  var SES = "biex:sesionLector";
+  function origen(u) { try { return new URL(u, location.href).origin; } catch (e) { return ""; } }
+  var ORIGENES = [COMPLETO, RESPALDO, B1, B2, location.href].map(origen).filter(function (o) { return o && o !== "null"; });
+  function sesion(e) {
+    var d = e.data, g = null;
+    if (d.biex === "sesion") {
+      try { if (typeof d.t === "string" && d.t.length > 8 && d.t.length < 2000) localStorage.setItem(SES, JSON.stringify({ t: d.t, f: Date.now() })); else if (d.t === null) localStorage.removeItem(SES); } catch (er) { /* sin almacenamiento */ }
+      return;
+    }
+    try { g = JSON.parse(localStorage.getItem(SES) || "null"); } catch (er) { g = null; }
+    try { e.source.postMessage({ biex: "sesion", t: g && typeof g.t === "string" ? g.t : null }, e.origin); } catch (er) { /* ignorar */ }
+  }
+
+  function documento(inicio) {
+    var q = JSON.stringify;
+    return '<!doctype html><html lang="es" data-theme="dark"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><base href="about:srcdoc">' +
+      '<title>BiEx · Lector y analizador</title>' +
+      '<script>function biexAvisa(m){try{parent.postMessage({biex:"error",m:String(m).slice(0,240)},"*")}catch(e){}}' +
+      'addEventListener("error",function(e){var t=e.target;biexAvisa(t&&t!==window&&(t.src||t.href)?"No cargó "+(t.src||t.href):(e.message||"error")+" "+(e.filename||"")+":"+(e.lineno||""))},true);' +
+      'addEventListener("unhandledrejection",function(e){biexAvisa("Promesa: "+(e.reason&&e.reason.message||e.reason))});' +
+      'window.BIEX_BASE=' + q(BASES[0]) + ';window.BIEX_BASES=' + q(BASES) + ';window.BIEX_EMBED=true;window.BIEX_COMPLETO=' + q(COMPLETO) + ';' +
+      'try{var t=localStorage.getItem("biex:tema");if(t){t=JSON.parse(t);if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}}catch(e){}' +
+      'try{history.replaceState(null,"",location.href.split("#")[0]+' + q(inicio) + ')}catch(e){location.hash=' + q(inicio) + '}<\/script>' +
+      '<link rel="stylesheet" href="' + FUENTES + '">' +
+      '<link rel="stylesheet" href="' + BASES[0] + 'app.css" onerror="this.onerror=null;this.href=' + esc(q(BASES[1] + 'app.css')) + '">' +
+      '</head><body><div id="app"></div>' +
+      '<script src="' + BASES[0] + 'app.js" onerror="var s=document.createElement(&quot;script&quot;);s.src=' + esc(q(BASES[1] + 'app.js')) + ';document.body.appendChild(s)"><\/script></body></html>';
+  }
+  // Tamaño real: el acceso y el aviso se reducen con zoom; el marco se agranda y se reduce con una transformación
+  function escalar() {
+    var k = escala(), z = k === 1 ? "" : String(1 / k);
+    pastilla.style.zoom = z; raiz.querySelector(".e").style.zoom = z; raiz.querySelector(".x").style.zoom = z;
+    if (marco) { marco.style.width = marco.style.height = k === 1 ? "" : (100 * k) + "%"; marco.style.transform = k === 1 ? "" : "scale(" + (1 / k) + ")"; }
+  }
+  function mostrarEstado(t) { estado.textContent = t; estado.hidden = false; giro.hidden = false; aviso.hidden = true; }
+  function intentar(n, inicio) {
+    listo = false; velo.classList.remove("listo");
+    clearTimeout(reloj); clearTimeout(reloj2);
+    if (marco) { marco.remove(); marco = null; }
+    var vias = [COMPLETO && function (m) { m.src = COMPLETO + "?incrustado=1" + inicio; }, function (m) { m.srcdoc = documento(inicio); }, RESPALDO && function (m) { m.src = RESPALDO + "?incrustado=1" + inicio; }];
+    while (n < vias.length && !vias[n]) n++;
+    if (n >= vias.length) return fallo();
+    marco = document.createElement("iframe");
+    marco.title = "Lector y analizador de BiEx";
+    marco.setAttribute("allow", "clipboard-write; web-share; fullscreen; publickey-credentials-get; publickey-credentials-create"); marco.setAttribute("allowfullscreen", "");
+    vias[n](marco);
+    var este = marco;
+    function siguiente() { if (!listo && marco === este) intentar(n + 1, inicio); }
+    // Si el marco cargó y la aplicación no avisó que arrancó, se prueba la vía siguiente
+    marco.addEventListener("load", function () { setTimeout(siguiente, 1500); });
+    velo.appendChild(marco);
+    escalar();
+    mostrarEstado(n ? "Abriendo por otra vía…" : "Abriendo el códice…");
+    atajo.hidden = true;
+    reloj2 = setTimeout(function () { if (!listo) atajo.hidden = false; }, 3500);
+    reloj = setTimeout(siguiente, 15000);
+  }
+  function fallo() {
+    clearTimeout(reloj); clearTimeout(reloj2);
+    if (marco) { marco.remove(); marco = null; }
+    estado.hidden = true; giro.hidden = true; atajo.hidden = true; aviso.hidden = false;
+    aviso.querySelector("small").textContent = errores.length ? "Detalle: " + errores.slice(-4).join(" · ") : "";
+  }
+  var AB = "biex:lectorAbierto", EN_APP = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function recordar(si) { try { if (si) { sessionStorage[AB] = 1; localStorage[AB] = Date.now(); } else { delete sessionStorage[AB]; delete localStorage[AB]; } } catch (e) { } }
+  function abrir(ruta) {
+    recordar(true);
+    var pg = pagina(); if (typeof ruta === "string") pg = [ruta, pg[1], pg[2]];
+    var enlace = (RESPALDO || COMPLETO) + pg[0];
+    atajo.querySelector("a").href = enlace; aviso.querySelector("a").href = enlace;
+    if (!marco || !listo) { errores = []; intentar(0, pg[0]); }
+    else if (pg[0] !== actual) { try { marco.contentWindow.postMessage({ biex: "ir", hash: pg[0] }, "*"); } catch (e) { /* ignorar */ } }
+    actual = pg[0];
+    desborde = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    velo.classList.add("a");
+    escalar();
+    requestAnimationFrame(function () { velo.classList.add("b"); try { marco && marco.focus(); } catch (e) { /* ignorar */ } });
+  }
+  function cerrar() {
+    recordar(false);
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {}); } catch (e) { /* ignorar */ }
+    velo.classList.remove("b");
+    setTimeout(function () { velo.classList.remove("a"); }, 250);
+    document.documentElement.style.overflow = desborde;
+    if (!listo) { clearTimeout(reloj); clearTimeout(reloj2); if (marco) { marco.remove(); marco = null; } }
+    try { pastilla.focus({ preventScroll: true }); } catch (e) { /* ignorar */ }
+  }
+  pastilla.addEventListener("click", abrir);
+  raiz.querySelector(".x").addEventListener("click", cerrar);
+  window.addEventListener("message", function (e) {
+    if (!marco || e.source !== marco.contentWindow || !e.data) return;
+    if (e.data.biex === "listo") { listo = true; clearTimeout(reloj); clearTimeout(reloj2); velo.classList.add("listo"); }
+    else if (e.data.biex === "cerrar") cerrar();
+    // AC16: copia de la sesión de Escudriña (solo del marco propio y de los orígenes del lector)
+    else if ((e.data.biex === "sesion" || e.data.biex === "sesion?") && ORIGENES.indexOf(e.origin) >= 0) sesion(e);
+    else if (e.data.biex === "error" && !/fonts\.googleapis/.test(e.data.m)) errores.push(String(e.data.m));
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && velo.classList.contains("a")) cerrar(); });
+  window.addEventListener("resize", escalar);
+  document.addEventListener("fullscreenchange", function () { setTimeout(escalar, 60); });
+  if (window.visualViewport) visualViewport.addEventListener("resize", escalar);
+  // Al bajar por la página el acceso se recoge en su sello; al subir se despliega
+  var yAnt = window.scrollY || 0;
+  window.addEventListener("scroll", function () {
+    var y = window.scrollY || 0;
+    if (y > yAnt + 6 && y > 140) pastilla.classList.add("min"); else if (y < yAnt - 6 || y < 80) pastilla.classList.remove("min");
+    yAnt = y;
+  }, { passive: true });
+
+  var ultima = null;
+  function revisar() {
+    var ruta = location.pathname;
+    if (ruta === ultima) return;
+    ultima = ruta;
+    var pg = pagina();
+    if (velo.classList.contains("a")) cerrar();
+    if (!pg) { pastilla.hidden = true; return; }
+    titulo.innerHTML = esc(pg[1]);
+    pastilla.setAttribute("aria-label", pg[2] ? "Abrir el griego y el análisis de " + pg[2] : "Abrir el lector y analizador de la Nueva Voluntad");
+    pastilla.classList.remove("min");
+    pastilla.hidden = false;
+    escalar();
+  }
+  revisar();
+  setInterval(revisar, 700);
+  // Sin recargas que pierdan la lectura: si el lector estaba abierto (recarga de la pestaña, o la app instalada que el sistema
+  // cerró en segundo plano), vuelve a abrirse en el verso donde se leía («#/seguir» lo resuelve el lector con su memoria)
+  var SEGUIR = false;
+  try { SEGUIR = sessionStorage[AB] == 1 || EN_APP && localStorage[AB] > Date.now() - 2592e6; } catch (e) { }
+  if (PEDIDO || SEGUIR) setTimeout(function () { abrir(PEDIDO || "#/seguir"); }, 300);
+})();
