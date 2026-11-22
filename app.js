@@ -46,6 +46,7 @@
   const svg = (inner, vb) => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", vb || "0 0 24 24"); s.setAttribute("aria-hidden", "true"); s.innerHTML = inner; return s; };
   const L1 = 'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
   const ICO = {
+    info: '<circle cx="12" cy="12" r="8.6" ' + L1 + '/><path d="M12 11v5.2" ' + L1 + '/><circle cx="12" cy="7.9" r="1.05" fill="currentColor"/>',
     video: '<rect x="3" y="4.5" width="18" height="12" rx="2.2" ' + L1 + '/><path d="M9 20h6M12 16.5V20" ' + L1 + '/><path d="M10.4 8.2v4.6l4-2.3z" fill="currentColor"/>',
     comunidad: '<circle cx="9" cy="8.4" r="3" ' + L1 + '/><path d="M3.6 19c.6-3.3 2.8-5.1 5.4-5.1s4.8 1.8 5.4 5.1" ' + L1 + '/><circle cx="16.8" cy="9.3" r="2.4" ' + L1 + '/><path d="M15.6 14.1c2.4-.3 4.4 1.3 5 4.4" ' + L1 + '/>',
     externo: '<path d="M13.5 4.5H19.5V10.5" ' + L1 + '/><path d="M19.5 4.5L11 13" ' + L1 + '/><path d="M18 14.2v4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 18.2V7.8A1.8 1.8 0 0 1 5.8 6h4" ' + L1 + '/>',
@@ -387,15 +388,18 @@
   // cursiva y negrita del borrador (Markdown), ampliaciones entre corchetes (y si son la primera alternativa o una de las
   // siguientes), paréntesis, < >, marcas voladas, griego aún sin traducción (⟪…⟫ en el texto base) y hebreo.
   // Según las opciones de lectura se ocultan o se colorean; los asteriscos sueltos del texto se conservan como marcas.
-  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048, SIG: 4096, SEL: 8192, ALT2: 16384 };
+  const F = { M: 1, C: 2, IT: 4, NG: 8, COR: 16, ALT: 32, PAR: 64, ANG: 128, SUP: 256, OCU: 512, HE: 1024, AN: 2048, SIG: 4096, SEL: 8192, ALT2: 16384, RA: 32768, RL: 65536 };
   const VOLADA = /[ʰ-˿ᴬ-ᶿ⁰-₟]/;
   function rasgos(t, esBase, x) {
-    const n = t.length, f = new Uint16Array(n);
+    const n = t.length, f = new Uint32Array(n);
     for (const [a, z] of (x && x.m) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.M;
     for (const [a, z] of (x && x.c) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.C;
     for (const [a, z] of (x && x.x) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.AN;
     // significado de un nombre o de una palabra transliterada en su primera aparición del capítulo: siempre visible (BiEx, 31-oct-2026)
     for (const [a, z] of (x && x.s) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.SIG;
+    // AF6 (BiEx, 21 y 22-nov-2026): palabras casi exóticas (su lema aparece 3 veces o menos en la Nueva Voluntad), marcadas en
+    // los datos de cada verso (tramos «r» en Textual y «or» en la Lectura): en Textual con su color; en la Lectura, subrayado sutil
+    for (const [a, z] of (x && x.r) || []) for (let i = a; i < z && i < n; i++) f[i] |= x.rl ? F.RL : F.RA;
     // la traducción de la palabra que se analiza, marcada dentro de su verso (ventana de la palabra)
     for (const [a, z] of (x && x.sel) || []) for (let i = a; i < z && i < n; i++) f[i] |= F.SEL;
     if (!esBase) {
@@ -462,7 +466,7 @@
     if ((b & F.SUP) && prefs.sup === false) return true;
     return false;
   }
-  const CLASES = [[F.M, "tm"], [F.C, "tc"], [F.IT, "it"], [F.NG, "ng"], [F.COR, "tk"], [F.HE, "he"], [F.AN, "ta"], [F.SEL, "pal-sel"]];
+  const CLASES = [[F.M, "tm"], [F.C, "tc"], [F.IT, "it"], [F.NG, "ng"], [F.COR, "tk"], [F.HE, "he"], [F.AN, "ta"], [F.SEL, "pal-sel"], [F.RA, "rara-t"], [F.RL, "rara-l"]];
   // x: el verso (con sus tramos m y c); en el texto base, ⟪…⟫ es griego aún sin traducción fijada
   function textoLectura(t, esBase, x) {
     t = String(t || "");
@@ -481,7 +485,7 @@
       cont = h(k & F.HE ? "bdi" : "span", { class: cls.join(" "), lang: k & F.HE ? "he" : null });
       frag.append(cont);
     };
-    const visual = (b) => b & (F.M | F.C | F.IT | F.NG | F.COR | F.HE | F.AN | F.SEL);
+    const visual = (b) => b & (F.M | F.C | F.IT | F.NG | F.COR | F.HE | F.AN | F.SEL | F.RA | F.RL);
     for (let i = 0; i < t.length; i++) {
       const b = f[i];
       if (t[i] === "⟪" && esBase) {
@@ -501,7 +505,7 @@
     return frag;
   }
   // Lectura organizada: los versos de texto base con el orden reorganizado (o, om, oc) cuando existe
-  const txtVerso = (L, sel) => (prefs.lorg && L.o ? textoLectura(L.o, !!L.g, { m: L.om, c: L.oc, x: L.ox, s: L.os, g: L.g, n: L.n, v: L.v, sel }) : textoLectura(L.t, !!L.g, sel ? Object.assign({}, L, { sel }) : L));
+  const txtVerso = (L, sel) => (prefs.lorg && L.o ? textoLectura(L.o, !!L.g, { m: L.om, c: L.oc, x: L.ox, s: L.os, r: L.or, rl: true, g: L.g, n: L.n, v: L.v, sel }) : textoLectura(L.t, !!L.g, sel || prefs.lorg ? Object.assign({}, L, { sel, rl: !!prefs.lorg }) : L));
   const crudoVerso = (L) => String((prefs.lorg && L.o ? L.o : L.t) || "");
   // el texto del verso dentro de su propio contenedor, con el mapa de caracteres (para la palabra tocada)
   const vtx = (L) => { const fr = txtVerso(L), sp = h("span", { class: "vtx" }, fr); sp.__mapa = fr.mapa; return sp; };
@@ -1175,6 +1179,8 @@
     M.nav = null; M.navV = null;
     if (modal.open) guardarScrollM();
     modal.replaceChildren(fn());
+    // AH (BiEx, 22-nov-2026): las ventanas breves del juego (celebraciones, piezas, hallazgos) flotan centradas, no a pantalla completa
+    modal.classList.toggle("flot", !!modal.querySelector(":scope > .m-caja > .m-cuerpo > .jg-cel"));
     // «Adelante» dentro de la ventana: el mismo botón de abajo a la izquierda de las páginas, encima del pie de la ventana si lo hay
     if (M.fwd.length) {
       const ad = h("button", { class: "adelante vis m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, h("span", { text: "Adelante" }), svg(ICO.der));
@@ -1677,28 +1683,40 @@
       return el;
     };
     const item = (ico, t, p, clave, n) => { const [a, href] = ej[clave](); return hr(ico, t, p, a, href, clave, n); };
-    abrirModal(() => cajaModal(cabModal("Herramientas", "Leer, analizar, comparar"), [h("div", { class: "herramientas en-modal" },
-          item(ICO.libro, "Lectura", "Cada capítulo en su estado actual. Toca un verso y se abre su griego palabra por palabra.", "lee", 0),
-          item(ICO.lupa, "Análisis morfológico", "Forma, transliteración, lema, tiempo, voz, modo, caso, función en la oración y ediciones de cada palabra.", "an", 1),
-          item(ICO.buscar, "Buscador inteligente", "Escribe como lo recuerdes: una escena, un nombre, una cita, una palabra griega o una pregunta. Entiende también las palabras de otras traducciones.", "bq", 2),
-          item(ICO.manuscrito, "Manuscritos antiguos", "Cada verso en los papiros y códices más antiguos: qué dicen, en qué difieren y su transcripción letra por letra.", "ms", 3),
-          hr(ICO.tiempo, "Línea del tiempo", "Los acontecimientos y la fecha en que se escribió cada libro, hasta la destrucción del templo en el año 70.", "Abrir", "#/cronologia"),
-          hr(ICO.chispa, "Lo que pocos saben", "Datos de la historia del texto y de las traducciones que cambian la manera de leer, con sus pasajes y sus fuentes.", "Descubrir", "#/datos"),
-          hr(ICO.tiempo, "Por qué estas fechas", "Las razones de la datación temprana que sigue BiEx: el año 70, el final de Prάc̅ṣεις y el templo en presente.", "Leer", "#/fechas"),
-          hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias"),
-          hr(ICO.podio, "Ranking de traducciones", "Las 16 ediciones bíblicas menos mal traducidas al español, según la comparación de BiEx con los textos más antiguos.", "Ver el ranking", "#/ranking"),
-          hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
-          hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
-          hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
-          hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
-          hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
-          hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar"),
-          hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
-          (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
-          hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
-          (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
-          hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
-          hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia")), redesBiex()]));
+    // AF43 (BiEx, 21-nov-2026: «sí, esos cuatro»): Herramientas en cuatro categorías, cada una con su rótulo; una tarjeta impar
+    // al final de su categoría ocupa el ancho completo, para que la distribución quede simétrica en dos columnas
+    const idCat = (t) => "hc-" + t.normalize("NFD").replace(/[^a-z]/gi, "").toLowerCase();
+    const cat = (t, ...els) => h("section", { class: "herr-cat", id: idCat(t), "aria-label": t }, h("p", { class: "rotulo herr-cat-t", text: t }), h("div", { class: "herramientas en-modal" }, els));
+    // arriba, las cuatro categorías para ir directo a cada una (2 × 2 en teléfonos, una fila en pantallas anchas; sin desplazamiento lateral)
+    const ir = (t) => { const s = document.getElementById(idCat(t)), c = s && s.closest(".m-cuerpo"); if (!c) return; const suave = !(ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)); c.scrollBy({ top: s.getBoundingClientRect().top - c.getBoundingClientRect().top - 6, behavior: suave ? "smooth" : "auto" }); };
+    const saltos = h("nav", { class: "herr-saltos", "aria-label": "Categorías de Herramientas" }, ["Leer y guardar", "El griego a fondo", "Historia del texto", "Juego y app"].map((t) => h("button", { type: "button", class: "herr-salto", onclick: () => ir(t), text: t })));
+    abrirModal(() => cajaModal(cabModal("Herramientas", "Leer, analizar, comparar"), [saltos,
+      cat("Leer y guardar",
+        item(ICO.libro, "Lectura", "Cada capítulo en su estado actual. Toca un verso y se abre su griego palabra por palabra.", "lee", 0),
+        item(ICO.buscar, "Buscador inteligente", "Escribe como lo recuerdes: una escena, un nombre, una cita, una palabra griega o una pregunta. Entiende también las palabras de otras traducciones.", "bq", 2),
+        hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
+        (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
+        hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
+        (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
+        hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias")),
+      cat("El griego a fondo",
+        item(ICO.lupa, "Análisis morfológico", "Forma, transliteración, lema, tiempo, voz, modo, caso, función en la oración y ediciones de cada palabra.", "an", 1),
+        hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
+        hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
+        hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
+        hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar")),
+      cat("Historia del texto",
+        item(ICO.manuscrito, "Manuscritos antiguos", "Cada verso en los papiros y códices más antiguos: qué dicen, en qué difieren y su transcripción letra por letra.", "ms", 3),
+        hr(ICO.tiempo, "Línea del tiempo", "Los acontecimientos y la fecha en que se escribió cada libro, hasta la destrucción del templo en el año 70.", "Abrir", "#/cronologia"),
+        hr(ICO.tiempo, "Por qué estas fechas", "Las razones de la datación temprana que sigue BiEx: el año 70, el final de Prάc̅ṣεις y el templo en presente.", "Leer", "#/fechas"),
+        hr(ICO.chispa, "Lo que pocos saben", "Datos de la historia del texto y de las traducciones que cambian la manera de leer, con sus pasajes y sus fuentes.", "Descubrir", "#/datos"),
+        hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
+        hr(ICO.podio, "Ranking de traducciones", "Las 16 ediciones bíblicas menos mal traducidas al español, según la comparación de BiEx con los textos más antiguos.", "Ver el ranking", "#/ranking")),
+      cat("Juego y app",
+        hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
+        hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
+        hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia")),
+      redesBiex()]));
   }
   // Historial: las últimas 24 citas consultadas; tocar una lleva a ella (y «Atrás» vuelve a esta lista)
   function abrirHistorial() {
@@ -1944,25 +1962,54 @@
   // O99/U2 (BiEx, 12-nov-2026): dos cifras por capítulo, en vez de un «10 % de avance» que no dice nada: las palabras griegas
   // con traducción fijada y la revisión de la traducción (según el estado de cada verso). Medidores finos, simétricos.
   const pctEnt = (x) => String(Math.floor(x)).replace(".", ",") + " %";
-  const medidor = (cl, et, v, tt, aprox) => h("span", { class: "cc-m " + cl, title: tt + ": " + (aprox ? "≈ " : "") + pctEnt(v) },
-    h("span", { class: "cc-et", text: et }), h("b", { text: (aprox ? "≈ " : "") + pctEnt(v) }), h("i", { class: "cc-b", "aria-hidden": "true" }, h("i", { style: "width:" + Math.max(2, Math.min(100, v)).toFixed(1) + "%" })));
-  function cifrasCap(C) {
-    if (C.pal == null) return h("div", { class: "s", text: pct(C.pct) + " de avance" });
-    return h("div", { class: "encab-cifras" },
-      medidor("cc-pal", "Palabras traducidas", C.pal, "Palabras griegas de este capítulo con traducción fijada"),
-      medidor("cc-rev", "Revisión", C.pct, "Avance de la revisión de la traducción de este capítulo"));
+  // AH (BiEx, 22-nov-2026): «Palabras traducidas» ya está arriba, en la ficha del libro; el capítulo deja solo la revisión (y, en la
+  // Lectura, el reordenamiento) y la explicación de cómo leer pasa a un ícono de información junto a la cifra: una ventanita
+  // discreta que se cierra al tocar cualquier otro punto. La cifra de palabras de cada capítulo sigue en el navegador de capítulos.
+  const medidor = (cl, et, v, tt, aprox, info) => h("span", { class: "cc-m " + cl, title: tt + ": " + (aprox ? "≈ " : "") + pctEnt(v) },
+    h("span", { class: "cc-et", text: et }), h("b", { text: (aprox ? "≈ " : "") + pctEnt(v) }), info || h("i", { class: "cc-i-res", "aria-hidden": "true" }),
+    h("i", { class: "cc-b", "aria-hidden": "true" }, h("i", { style: "width:" + Math.max(2, Math.min(100, v)).toFixed(1) + "%" })));
+  function botonInfo(contenido) {
+    const pop = h("div", { class: "cc-pop", role: "note", hidden: true });
+    const b = h("button", { class: "cc-info", type: "button", "aria-label": "Cómo leer este capítulo", title: "Cómo leer este capítulo", "aria-expanded": "false" }, svg(ICO.info));
+    let fuera = null;
+    const cerrar = () => {
+      if (fuera) { document.removeEventListener("pointerdown", fuera, true); document.removeEventListener("keydown", fuera, true); fuera = null; }
+      pop.classList.remove("vis"); b.setAttribute("aria-expanded", "false");
+      setTimeout(() => { if (!pop.classList.contains("vis")) pop.hidden = true; }, 200);
+    };
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (pop.classList.contains("vis")) { cerrar(); return; }
+      if (!pop.firstChild) pop.append(...[].concat(contenido()).filter(Boolean));
+      pop.hidden = false; void pop.offsetWidth; pop.classList.add("vis"); b.setAttribute("aria-expanded", "true");
+      fuera = (ev) => {
+        if (ev.type === "keydown") { if (ev.key === "Escape") { ev.stopPropagation(); cerrar(); } return; }
+        if (!pop.contains(ev.target) && !b.contains(ev.target)) cerrar();
+      };
+      document.addEventListener("pointerdown", fuera, true); document.addEventListener("keydown", fuera, true);
+    });
+    b._pop = pop;
+    return b;
   }
-  function encabezado(b, cap, modo) {
+  function cifrasCap(C, x) {
+    if (C.pal == null) return h("div", { class: "s", text: pct(C.pct) + " de avance" });
+    const info = x && x.info ? botonInfo(x.info) : null;
+    return h("div", { class: "encab-cifras" },
+      medidor("cc-rev", "Revisión", C.pct, "Avance de la revisión de la traducción de este capítulo", false, info),
+      x && x.ro != null ? medidor("cc-ro", "Reordenamiento", x.ro, "Avance estimado del reordenamiento de la Lectura en este capítulo", true) : null,
+      info ? info._pop : null);
+  }
+  function encabezado(b, cap, modo, x) {
     const C = b.caps[cap - 1];
     const partes = String(C.h || "").split(" [");
     const flecha = (c, ico, et) => h("a", { class: "btn-icono", href: c ? rutaCap(b, c, modo) : null, "aria-label": et, title: et, "aria-disabled": c ? null : "true" }, svg(ico));
-    return h("div", { class: "encab" },
+    return h("div", { class: "encab" + (modo !== "a" && prefs.lorg ? " encab-org" : "") },
       flecha(cap > 1 ? cap - 1 : 0, ICO.izq, "Capítulo anterior"),
       h("div", { class: "encab-c" },
         // (21-nov-2026, AC11/AC21: el brillo del título hebreo movía su fondo en el hilo principal en cada cuadro, ~6 % de CPU en reposo)
         // ahora el brillo son siete luces quietas sobre el texto que se encienden en secuencia: solo opacidad, por el compositor
         C.h ? h("div", { class: "h" }, h("span", { lang: "he", class: "he-br" }, partes[0], ...Array.from({ length: 7 }, (_, k) => h("span", { class: "he-luz", "aria-hidden": "true", style: "--hk:" + k, text: partes[0] }))), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
-        h("div", { class: "s", text: "Capítulo " + cap + " de " + b.caps.length }), cifrasCap(C)),
+        h("div", { class: "s", text: "Capítulo " + cap + " de " + b.caps.length }), cifrasCap(C, x)),
       flecha(cap < b.caps.length ? cap + 1 : 0, ICO.der, "Capítulo siguiente"));
   }
   // Al terminar el capítulo: anterior y siguiente (o el libro siguiente)
@@ -2038,13 +2085,17 @@
     const ley = prefs.ed && hayAutor ? h("span", { class: "ley-mini" }, " Colores de la edición BiEx: ", h("span", { class: "tm", text: "palabras del Mashíaḥ" }), " · ", h("span", { class: "tc", text: "citas de la Antigua Voluntad" }), " · ", h("span", { class: "tk", text: "[ampliaciones]" }), " · ",
       h("button", { class: "enlace", type: "button", onclick: abrirOpciones, text: "opciones" }), ".") : null;
     const Cc = b.caps[cap - 1] || {};
-    // X2 (BiEx, 13-nov-2026): en la Lectura, cuánto se ha reordenado (estimado a la baja): que nadie la tome por el resultado final
-    const reorden = Cc.ro != null ? h("span", { class: "ro-fila" }, medidor("cc-ro", "Reordenamiento de la Lectura", Cc.ro, "Avance estimado del reordenamiento de la Lectura en este capítulo", true),
-      h("span", { class: "ro-nota", text: "Todavía no es el resultado final: el texto completo, palabra por palabra, está en Textual." })) : null;
-    const nota = prefs.lorg ? h("p", { class: "nota-base nota-org" }, h("b", { text: "Lectura: el orden natural del español. " }), reorden,
-      hayBase ? ["En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada. "] : null, "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
-      hayBase ? h("p", { class: "nota-base" }, "Los versos en texto base se presentan palabra por palabra.", h("br"), "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.", h("br"), "Toca cualquier verso para abrir su griego palabra por palabra.", ley) :
-      h("p", { class: "nota-base" }, "Toca cualquier verso para abrir su griego palabra por palabra.", ley);
+    // X2 (BiEx, 13-nov-2026): en la Lectura, cuánto se ha reordenado (estimado a la baja): que nadie la tome por el resultado final.
+    // AH (22-nov-2026): esa cifra va junto a la revisión y el texto que explica cómo leer, en la ventanita de información.
+    // AF6 (22-nov-2026): las palabras casi exóticas llevan su color en Textual y un subrayado punteado sutil en la Lectura.
+    const hayRara = todos.some((v) => (prefs.lorg && v.o ? v.or : v.r));
+    const rara = hayRara ? h("p", {}, "Palabras casi exóticas (3 veces o menos en la Nueva Voluntad): ", prefs.lorg ? h("span", { class: "rara-l", text: "con un subrayado punteado" }) : h("span", { class: "rara-t", text: "en su propio color" }), ".") : null;
+    const dorado = hayBase ? h("p", {}, "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.") : null;
+    const tocar = h("p", { text: "Toca cualquier verso para abrir su griego palabra por palabra." });
+    const info = () => prefs.lorg
+      ? [h("p", {}, h("b", { text: "Lectura: el orden natural del español." }), " Todavía no es el resultado final: el texto completo, palabra por palabra, está en Textual."), dorado, tocar, rara, ley ? h("p", {}, ley) : null]
+      : [hayBase ? h("p", { text: "Los versos en texto base se presentan palabra por palabra." }) : null, dorado, tocar, rara, ley ? h("p", {}, ley) : null];
+    const cab = encabezado(b, cap, "l", { info, ro: prefs.lorg ? Cc.ro : null });
     const quitarFiltro = () => { prefs.nivel = ""; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); };
     const obra = notaObra();
     const avisoFiltro = f ? h("div", { class: "nota-filtro" }, svg(ICO.filtro), h("span", { text: (versos.length ? "Se muestran " + versos.length + " de " + todos.length + " versos" : "Ningún verso de este capítulo está aún en este nivel") + " · " + nombreFiltro(f) + "." }),
@@ -2069,7 +2120,7 @@
         if (A && A.fin) actual = null;
       });
       if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) parrafos.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
-      return [encabezado(b, cap, "l"), obra, nota, avisoFiltro, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
+      return [cab, obra, avisoFiltro, h("div", { class: "continuo" }, parrafos), finCap(b, cap, "l")];
     }
     const filas = [];
     versos.forEach((x, k) => {
@@ -2080,7 +2131,7 @@
       filas.push(filaVerso(x, k));
     });
     if (f && versos.length && todos.indexOf(versos[versos.length - 1]) < todos.length - 1) filas.push(salto(todos.length - 1 - todos.indexOf(versos[versos.length - 1])));
-    return [encabezado(b, cap, "l"), obra, nota, avisoFiltro, h("div", { class: "lectura" }, filas), finCap(b, cap, "l")];
+    return [cab, obra, avisoFiltro, h("div", { class: "lectura" }, filas), finCap(b, cap, "l")];
     function filaVerso(x, k) {
       const A = anadido(b.c, cap, x.v);
       return aplicarMarca(h("div", {
@@ -3281,7 +3332,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "daf75bcbf4", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "ffb64051a6", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];

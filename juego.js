@@ -394,6 +394,8 @@ html[data-mov="no"] .co-medidor.brilla .co-destello::before{animation:none}
 .jg-rp-v{font:500 1.5rem/1 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
 .jg-rp-m small{font:600 .72rem/1 var(--f-ui);color:var(--ac)}
 .jg-rp-p{margin:0;font:500 .9rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.jg-rp-cita{display:grid;gap:4px;justify-items:center;text-align:center;text-wrap:balance}
+.jg-rp-ref{font-size:.88em;letter-spacing:.02em;color:var(--tinta-2)}
 .jg-rp-p b{font:500 1.35rem/1 var(--f-display);color:var(--oro-vivo);margin-left:4px;font-variant-numeric:lining-nums tabular-nums}
 html[data-mov="no"] .jg-rp-m{transition:none}
 .co-medidor svg,.co-aguja{position:absolute;inset:0;width:100%;height:100%}
@@ -601,6 +603,19 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-col-v{width:9px;height:9px;border-right:1.6px solid var(--oro-vivo);border-bottom:1.6px solid var(--oro-vivo);transform:rotate(45deg) translate(-2px,-2px);transition:transform .25s}
 .jg-coleccion.plegable[open] .jg-col-v{transform:rotate(-135deg) translate(-2px,-2px)}
 .jg-coleccion.plegable p{padding:0 14px 12px;font-size:.84rem}
+/* AF19: barra hacia la próxima Designación */
+.jg-col-c{display:grid;gap:8px;min-width:0}
+.jg-coleccion:not(.plegable){align-items:start}
+.jg-coleccion:not(.plegable)>.jg-col-ico{margin-top:2px}
+.jg-coleccion.plegable .jg-col-c{padding:0 14px 12px}
+.jg-coleccion.plegable .jg-col-c p{padding:0}
+.jg-dg{display:grid;gap:6px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--oro) 7%,transparent);border:1px solid color-mix(in srgb,var(--oro) 22%,transparent)}
+.jg-dg-f{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.jg-dg-t{font:600 .7rem/1.2 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro)}
+.jg-dg-f b{font:500 1rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums;white-space:nowrap}
+.jg-dg .jg-barra{height:6px}
+.jg-dg p{margin:0}
+.jg-dg-yo{color:var(--tinta)}
 .jg-salas-l{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
 .jg-salas-l li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--linea);border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent)}
 .jg-salas-l li.yo{border-color:color-mix(in srgb,var(--oro) 60%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 12%,transparent)}
@@ -1479,8 +1494,7 @@ html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 .jg-fan-l{position:absolute;left:50%;top:46%;width:min(70vw,340px);aspect-ratio:1;margin:calc(min(70vw,340px) / -2) 0 0 calc(min(70vw,340px) / -2);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 70%,#fff) 0,color-mix(in srgb,var(--c) 32%,transparent) 38%,transparent 70%);opacity:0;will-change:opacity}
 .jg-fan-g{position:relative;width:min(34vw,148px);will-change:transform,opacity}.jg-fan-g svg{display:block;width:100%;height:auto}
 .jg-fan-t{position:relative;margin:0;font:500 clamp(1.6rem,7vw,2.2rem)/1.1 var(--f-display);color:#fff4d2;letter-spacing:.04em;text-shadow:0 2px 14px rgba(0,0,0,.6);will-change:transform,opacity}
-.ap-savia{position:absolute;left:0;top:0;width:1000px;height:1110px;transform-origin:0 0;transform:scale(var(--k,.38));pointer-events:none;display:none}
-@supports (offset-path:path("M0 0")){.ap-savia{display:block}}
+.ap-savia{position:absolute;left:0;top:0;width:1000px;height:1110px;transform-origin:0 0;transform:scale(var(--k,.38));pointer-events:none}
 .ap-sv{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,#fffdf3 0 22%,var(--c) 40%,color-mix(in srgb,var(--c) 0%,transparent) 72%);opacity:0;will-change:transform,opacity}
 @keyframes ap-savia{0%{offset-distance:100%;opacity:0}12%{opacity:var(--o)}82%{opacity:var(--o)}100%{offset-distance:0%;opacity:0}}
 .ap-bebe{position:absolute;left:500px;top:800px;width:220px;height:70px;margin:-35px 0 0 -110px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,230,160,.42),rgba(245,198,78,.12) 60%,rgba(245,198,78,0));animation:ap-respira 2.6s ease-in-out infinite;will-change:opacity}
@@ -2459,12 +2473,38 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("button", { class: "btn oro jg-grande", type: "button", onclick: () => { try { entrada.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" }); } catch (e) { /* ignorar */ } entrada.focus({ preventScroll: true }); } }, h("span", { text: "Reservar mi lugar" })));
   }
   // Rollos de colección (lo acordado en la propuesta del juego: «La Designación»; BiEx, 10-nov-2026: con firma criptográfica).
-  // No es un premio para las Primicias: cada 2 meses se entregan dos Rollos, asignados aleatoriamente con un método que cualquiera puede comprobar.
+  // AF19 (BiEx, 21 y 22-nov-2026): ya no cada 2 meses. La primera Designación se abre al llegar a 120 lectores constantes (con su
+  // barra a la vista) y luego hay una por cada 120 lectores constantes nuevos, con al menos 60 días entre una y otra. «Lector
+  // constante»: cuenta asegurada y 14 días con lectura dentro de 60 días seguidos; una vez alcanzado cuenta para siempre, así que
+  // la barra nunca retrocede.
+  function avanceDesignacion(y, resumen) {
+    const et = h("span", { class: "jg-dg-t", text: "Primera Designación" }), num = h("b", { text: "…" }), barra = h("i", { style: "width:0%" });
+    const nota = h("p", { class: "jg-mini jg-dg-n", text: "Lectores constantes en toda la comunidad." }), yo = h("p", { class: "jg-mini jg-dg-yo" });
+    if (y) yo.textContent = y.cte ? "Tú ya cuentas como lector constante." : y.cteL && !y.asegurado ? "Ya cumples los días: asegura tu cuenta para contar como lector constante."
+      : "Tú: " + plural(y.cteN | 0, "día", "días") + " con lectura en tus últimos 60 (la meta es " + (y.cteMeta || 14) + ").";
+    const el = h("div", { class: "jg-dg" }, h("div", { class: "jg-dg-f" }, et, num), h("div", { class: "jg-barra oro", "aria-hidden": "true" }, barra), nota, y ? yo : null);
+    pedir("/designacion", { sin: true, guardable: true }).then((d) => {
+      if (!d || d.error || !d.paso) { el.hidden = true; return; }
+      et.textContent = d.hechas ? "Designación n.º " + (d.hechas + 1) : "Primera Designación";
+      num.textContent = fmt(Math.min(d.nuevos, d.paso)) + " de " + fmt(d.paso);
+      barra.style.width = Math.max(1.5, Math.min(100, (100 * d.nuevos) / d.paso)).toFixed(1) + "%";
+      nota.textContent = d.nuevos >= d.paso && d.desde && d.desde > Date.now()
+        ? "Meta alcanzada: la Designación se abre el " + new Date(d.desde).toLocaleDateString(LOC_ES, { day: "numeric", month: "long", year: "numeric" }) + " (al menos " + d.minDias + " días entre una y otra)."
+        : d.hechas ? "Lectores constantes nuevos desde la Designación anterior." : "Lectores constantes en toda la comunidad.";
+      if (resumen) resumen.textContent = "Dos PDF exclusivos por cada " + fmt(d.paso) + " lectores constantes · " + fmt(Math.min(d.nuevos, d.paso)) + " de " + fmt(d.paso);
+    });
+    return el;
+  }
   function tarjetaColeccion(y, plegable) {
     const ico0 = () => h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'));
-    const texto = "Cada 2 meses se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del bimestre y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el bimestre).";
-    if (plegable) return h("details", { class: "jg-coleccion plegable" }, h("summary", {}, ico0(), h("span", {}, h("b", { text: "Rollos de colección" }), h("small", { text: "Cada 2 meses, dos PDF exclusivos y numerados" })), h("i", { class: "jg-col-v", "aria-hidden": "true" })), h("p", { text: texto }));
-    return h("div", { class: "jg-coleccion" }, ico0(), h("p", {}, h("b", { text: "Rollos de colección. " }), texto));
+    const texto = "En cada Designación se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del período y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el período).";
+    const regla = "La primera Designación se abre al llegar a 120 lectores constantes y después hay una por cada 120 lectores constantes nuevos, con al menos 60 días entre una y otra. Lector constante: cuenta asegurada y 14 días con lectura dentro de 60 días seguidos; una vez alcanzado, cuenta para siempre.";
+    if (plegable) {
+      const res = h("small", { text: "Dos PDF exclusivos por cada 120 lectores constantes" });
+      return h("details", { class: "jg-coleccion plegable" }, h("summary", {}, ico0(), h("span", {}, h("b", { text: "Rollos de colección" }), res), h("i", { class: "jg-col-v", "aria-hidden": "true" })),
+        h("div", { class: "jg-col-c" }, avanceDesignacion(y, res), h("p", { text: regla }), h("p", { text: texto })));
+    }
+    return h("div", { class: "jg-coleccion" }, ico0(), h("div", { class: "jg-col-c" }, h("p", {}, h("b", { text: "Rollos de colección. " }), regla), avanceDesignacion(y), h("p", { class: "jg-mini", text: texto })));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
@@ -2700,7 +2740,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     caja._anims = saviaA;
-    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting && !document.documentElement.classList.contains("desplazando")) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
+    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
     // (BiEx, 21-nov-2026, AF5) la savia corre también mientras se desplaza la página (solo se detiene fuera de la pantalla)
     return caja;
   }
@@ -5334,7 +5374,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       return { el: h("li", { class: "jg-rp-m", style: "--ac:" + ATR_COL[k] + ";--i:" + i }, h("span", { class: "jg-rp-ico", "aria-hidden": "true" }, A.svg(ATR_ICO[k])), h("span", { class: "jg-rp-n", text: n }), v, h("small", { text: "+" + dado[k] })), v, hasta: ef[k] != null ? ef[k] : (antes[k] | 0) + dado[k] }; });
     const cifraP = h("b", { text: fmt(p0 || 0) });
     const cuerpo = h("div", { class: "jg-cel jg-rp" }, h("ul", { class: "jg-rp-l" }, fila.map((x) => x.el)), h("p", { class: "jg-rp-p" }, h("span", { text: "Poder " }), cifraP),
-      h("p", { text: "Repartiste tus puntos: tu ser interior se robustece (Ἐfέsιοι 3:16)." }), tarjetaVerso("Un verso para tu ser interior"),
+      // AH (BiEx, 22-nov-2026): la cita va en su propia línea, centrada, para que la distribución quede simétrica
+      h("p", { class: "jg-rp-cita" }, h("span", { text: "Repartiste tus puntos: tu ser interior se robustece." }), h("span", { class: "jg-rp-ref", text: "(Ἐfέsιοι 3:16)" })), tarjetaVerso("Un verso para tu ser interior"),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Continuar" }))));
     A.abrirModal(() => A.cajaModal(A.cabModal("Atributos fortalecidos", "Escudriña"), cuerpo), () => rehacer());
     const anim = !sinAnim();
