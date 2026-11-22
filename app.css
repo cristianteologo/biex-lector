@@ -364,6 +364,10 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 /* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .pal:hover { border-color: var(--linea); transform: translateY(-1px); } }
 .pal[aria-pressed="true"] { border-color: var(--oro); background: var(--hoja-3); }
 .pal .g { font-size: 1.38rem; line-height: 1.2; }
+/* AF6 (21-nov-2026) palabras casi exóticas (su lema aparece 3 veces o menos): color propio, turquesa luminoso, que ningún otro uso tiene */
+:root { --rara: #56dccb; } :root[data-theme="light"] { --rara: #0a8073; }
+.pal.rara .g { color: var(--rara); text-shadow: 0 0 14px color-mix(in srgb, var(--rara) 35%, transparent); }
+.pal.rara { border-color: color-mix(in srgb, var(--rara) 45%, var(--linea-2)); }
 .pal.may .g { letter-spacing: .06em; font-size: 1.24rem; }
 .pal .g sup { color: var(--tenue); font-size: .62em; margin-left: 1px; }
 .pal .tl { font-size: .9rem; color: var(--tenue); font-style: italic; line-height: 1.25; }
@@ -435,6 +439,12 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 
 /* verso en la ventana */
 .fv { display: grid; gap: 20px; }
+/* (BiEx, 21-nov-2026, AF2) copiar el griego: verso, perícopa o capítulo (discreto, bajo el palabra por palabra) */
+.fv-cg { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 12px 0 0; font: 500 .8rem/1.3 var(--f-ui); color: var(--tenue); }
+.fv-cg > svg { width: 14px; height: 14px; color: var(--oro); }
+.fv-cg-b { appearance: none; border: 1px solid color-mix(in srgb, var(--oro) 28%, transparent); background: color-mix(in srgb, var(--oro) 6%, transparent); color: var(--tinta); font: inherit; padding: 5px 11px; border-radius: 999px; cursor: pointer; min-height: 30px; }
+.fv-cg-b:hover { border-color: var(--oro); }
+.fv-cg-b:focus-visible { outline: 2px solid var(--oro-vivo); outline-offset: 2px; }
 .fv-es { font-size: 1.18rem; line-height: calc(1.7 * var(--lh)); margin: 0; padding: 18px 20px; border-left: 2px solid var(--oro); background: var(--hoja-2); border-radius: 0 12px 12px 0; overflow-wrap: anywhere; }
 .fv .palabras { padding-left: 0; }
 
@@ -519,8 +529,8 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
     .modal:not([open])::backdrop { opacity: 0; }
   }
   .hero-tit, .codice, .hero .acciones { animation: sube .8s cubic-bezier(.2, .7, .2, 1) both; }
-  .codice { animation-delay: .06s; }
-  .hero .acciones { animation-delay: .12s; }
+  .hero .acciones { animation-delay: .06s; }
+  .codice { animation-delay: .12s; }
   @keyframes sube { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
@@ -1481,7 +1491,9 @@ html.con-modal .saltos-rap { display: none; }
 /* las luces se dibujan en un lienzo diminuto que la GPU amplía (degradados suaves: se ven igual y cuestan casi nada) */
 .vivo-luces { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .vivo-motas i { position: absolute; left: var(--x); bottom: -12px; width: var(--s); height: var(--s); border-radius: 50%; background: #f0d9a2; box-shadow: 0 0 6px 1px rgba(232, 207, 148, .55); opacity: 0; animation: mota var(--d) linear var(--r) infinite; will-change: transform, opacity; }
-@keyframes mota { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(var(--w), -112vh, 0); opacity: 0; } }
+/* (21-nov-2026, AC11/AC21) nueve derivas fijas, sin var() en los fotogramas: así las motas van solas por el compositor (antes, ~35 recálculos de estilo por cuadro) */
+@keyframes mota0 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(-4vw, -112vh, 0); opacity: 0; } } @keyframes mota1 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(-3vw, -112vh, 0); opacity: 0; } } @keyframes mota2 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(-2vw, -112vh, 0); opacity: 0; } } @keyframes mota3 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(-1vw, -112vh, 0); opacity: 0; } } @keyframes mota4 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(0vw, -112vh, 0); opacity: 0; } } @keyframes mota5 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(1vw, -112vh, 0); opacity: 0; } } @keyframes mota6 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(2vw, -112vh, 0); opacity: 0; } } @keyframes mota7 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(3vw, -112vh, 0); opacity: 0; } } @keyframes mota8 { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .55; } 55% { opacity: .35; } 88% { opacity: .5; } 100% { transform: translate3d(4vw, -112vh, 0); opacity: 0; } }
+.vivo-motas i.m0 { animation-name: mota0; } .vivo-motas i.m1 { animation-name: mota1; } .vivo-motas i.m2 { animation-name: mota2; } .vivo-motas i.m3 { animation-name: mota3; } .vivo-motas i.m4 { animation-name: mota4; } .vivo-motas i.m5 { animation-name: mota5; } .vivo-motas i.m6 { animation-name: mota6; } .vivo-motas i.m7 { animation-name: mota7; } .vivo-motas i.m8 { animation-name: mota8; }
 :root[data-theme="light"] .vivo-motas i { background: #b8913f; box-shadow: 0 0 5px rgba(176, 130, 48, .45); }
 /* las hojas dejan ver apenas el fondo vivo */
 .hoja { background: color-mix(in srgb, var(--hoja) 88%, transparent); }
@@ -1775,7 +1787,7 @@ html.con-modal .meteoros { opacity: 0; }
 .lib-chip { display: grid; gap: 1px; justify-items: start; text-align: left; min-height: 44px; padding: 7px 11px; border: 1px solid var(--linea-2); border-radius: 10px;
   background: var(--hoja); color: var(--tinta); font: inherit; cursor: pointer; transition: background-color .22s ease, border-color .22s ease, transform .22s cubic-bezier(.2, .7, .2, 1); }
 .lib-chip .lt { font-family: var(--f-display); font-size: 1.02rem; line-height: 1.15; }
-.lib-chip .ln { font-family: var(--f-ui); font-size: .68rem; color: var(--tenue); letter-spacing: .02em; }
+.lib-chip .ln { font-family: var(--f-ui); font-size: .76rem; color: var(--tenue); letter-spacing: .02em; } /* (AF49, 21-nov-2026) un poco más grande: antes .68rem */
 .lib-chip:hover { background: var(--hoja-2); border-color: color-mix(in srgb, var(--oro) 40%, var(--linea-2)); }
 .lib-chip:active { transform: scale(.98); }
 .lib-chip[aria-current="true"] { border-color: var(--oro); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--oro) 45%, transparent); cursor: default; }
@@ -1792,6 +1804,8 @@ html.con-modal .meteoros { opacity: 0; }
 html.inmersivo .adelante.vis, html.con-modal .adelante.vis { opacity: 0; transform: translate3d(0, 10px, 0) scale(.96); pointer-events: none; }
 .adelante:hover { border-color: color-mix(in srgb, var(--oro) 50%, transparent); }
 .adelante:focus-visible { outline: 2px solid var(--oro-vivo); outline-offset: 2px; }
+/* (BiEx, 21-nov-2026, AF1) dentro de una ventana, «Adelante» va abajo a la izquierda (no en la cabecera) */
+.modal > .adelante.m-adelante, html.con-modal .modal > .adelante.vis { position: absolute; z-index: 6; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); opacity: 1; transform: none; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { .adelante { transition: opacity .2s; transform: none; } }
 
 /* Capas del fondo: luces y motas (-3) < fondo de los contenedores (-2) < letras meteoro (-1) < texto y controles.
@@ -1845,7 +1859,7 @@ html[data-mov="no"] .meteoros { display: none; }
 .md-op { display: flex; align-items: center; gap: 10px; margin: -4px 4px 4px; font-family: var(--f-ui); font-size: .84rem; color: var(--tinta-2); cursor: pointer; }
 .md-op input { width: 18px; height: 18px; accent-color: var(--oro); }
 @media (max-width: 560px) { .md-fila { grid-template-columns: minmax(0, 1fr); } .md-acc { justify-content: flex-start; } }
-.ap-exp { display: flex; justify-content: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--linea-2); }
+.ap-exp { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--linea-2); }
 .est-exp { margin-top: 14px; justify-self: start; }
 
 /* Planes de lectura */
@@ -1982,7 +1996,7 @@ html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; over
    degradado), brillo especular arriba, cáustica abajo y un destello que cruza al pasar o tocar. Sin desenfoque (no cuesta
    al desplazar); lo que se mueve va por el compositor (transform y opacidad). Mismas medidas de caja que antes. */
 :root { --cl-c1: rgba(255, 255, 255, .055); --cl-c2: rgba(255, 255, 255, .012); --cl-f1: rgba(255, 255, 255, .36); --cl-f2: rgba(255, 255, 255, .07); --cl-br: rgba(255, 255, 255, .15); --cl-so: rgba(0, 0, 0, .6);
-  --clo-c1: color-mix(in srgb, var(--oro) 27%, transparent); --clo-c2: color-mix(in srgb, var(--oro) 8%, transparent); --clo-f1: rgba(255, 240, 196, .9); --clo-f2: color-mix(in srgb, var(--oro) 38%, transparent); --clo-tx: #f7e6b4; --clo-br: rgba(255, 246, 214, .3); }
+  --clo-c1: color-mix(in srgb, var(--oro) 27%, transparent); --clo-c2: color-mix(in srgb, var(--oro) 8%, transparent); --clo-f1: rgba(255, 240, 196, .9); --clo-f2: color-mix(in srgb, var(--oro) 38%, transparent); --clo-tx: #fff4d6; --clo-br: rgba(255, 246, 214, .3); }
 :root[data-theme="light"] { --cl-c1: rgba(255, 255, 255, .7); --cl-c2: rgba(255, 255, 255, .3); --cl-f1: rgba(255, 255, 255, 1); --cl-f2: rgba(120, 90, 40, .2); --cl-br: rgba(255, 255, 255, .85); --cl-so: rgba(80, 60, 20, .2);
   --clo-c1: color-mix(in srgb, var(--oro) 30%, #fff6df); --clo-c2: color-mix(in srgb, var(--oro) 12%, #fffdf6); --clo-f1: #fff; --clo-f2: color-mix(in srgb, var(--oro) 60%, transparent); --clo-tx: #4e3810; --clo-br: rgba(255, 255, 255, .8); }
 .btn { position: relative; isolation: isolate; overflow: hidden; border-color: transparent;
@@ -2003,12 +2017,16 @@ html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; over
   box-shadow: inset 0 1px 0 rgba(255, 246, 214, .55), inset 0 -14px 22px -16px rgba(255, 224, 140, .7), 0 0 0 3px color-mix(in srgb, var(--oro) 8%, transparent), 0 16px 30px -18px color-mix(in srgb, var(--oro) 85%, transparent); }
 .btn.oro:hover { box-shadow: inset 0 1px 0 rgba(255, 246, 214, .7), inset 0 -14px 22px -14px rgba(255, 224, 140, .85), 0 0 0 4px color-mix(in srgb, var(--oro) 14%, transparent), 0 18px 34px -18px color-mix(in srgb, var(--oro) 95%, transparent); }
 .btn.oro .trad { color: inherit; opacity: .78; }
+/* 21-nov-2026 (diagnóstico de Neon): el texto claro sobre el oro del cristal medía 4,0:1 en el centro del botón; un poco más
+   claro y con un halo oscuro muy suave se lee nítido sin cambiar el cristal (en el tema claro la tinta ya es oscura) */
+:root:not([data-theme="light"]) .btn.oro { text-shadow: 0 1px 1.5px rgba(28, 19, 4, .6), 0 0 12px rgba(28, 19, 4, .28); }
+:root:not([data-theme="light"]) .btn.oro .trad { opacity: .86; }
 .btn:disabled, .btn[aria-disabled="true"] { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .btn::after { animation: none !important; } }
 html[data-mov="no"] .btn::after { animation: none !important; }
 @media print { .btn { background: none; box-shadow: none; border-color: currentColor; } }
 /* Portada: acciones simétricas (una principal a lo ancho y las demás en pares iguales) */
-.hero .acciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 600px); margin: 6px auto 0; }
+.hero .acciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 600px); margin: 0 auto; }
 .hero .acciones > .btn { min-width: 0; min-height: 48px; padding: 10px 14px; white-space: normal; text-align: center; line-height: 1.3; }
 .hero .acciones > .btn:not(.seguir) { flex-direction: column; gap: 7px; min-height: 76px; border-radius: 22px; font-size: .74rem; letter-spacing: .09em; }
 .hero .acciones > .btn:not(.seguir) svg { width: 19px; height: 19px; opacity: .9; }
@@ -2019,7 +2037,10 @@ html[data-mov="no"] .btn::after { animation: none !important; }
 .seguir .seg-t small svg { width: 14px; height: 14px; }
 .seguir .seg-l { font-family: var(--f-display); font-size: 1.22rem; line-height: 1.15; letter-spacing: .01em; text-transform: none; font-weight: 500; text-wrap: balance; }
 .seguir .seg-l .trad { font-size: .78em; }
-@media (min-width: 900px) { .hero .acciones { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 980px); } .hero .acciones > .btn:nth-child(even):last-child { grid-column: auto; } }
+@media (min-width: 900px) { .hero .acciones { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 980px); } .hero .acciones > .btn:nth-child(even):last-child { grid-column: auto; }
+  /* BiEx (21-nov-2026, con la propuesta de Neon): sin «Seguir leyendo» quedan una principal y tres más: tres columnas iguales
+     (antes, tres botones en una rejilla de cuatro dejaban un hueco a la derecha) */
+  .hero .acciones:not(:has(> .btn:nth-child(5))) { grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 860px); } }
 /* Primera carga (10-nov-2026): igual a la de la inserción del sitio oficial (centrada en la pantalla, misma letra y mismo
    giro) y sin el pie a media pantalla, para que al abrir el lector no haya brinco */
 .cargando.inicio { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; margin: 0; pointer-events: none;
@@ -2313,10 +2334,14 @@ html[data-mov="no"] .ms-t.ms-brillo { animation: none; outline: 2px solid var(--
    Solo transformación (compositor); en pausa mientras se desplaza la página y sin movimiento con «Sin animaciones». */
 @keyframes respiraLibro { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.05); } }
 .panorama a i, .tt-c:not(.cero) i { transform-origin: 50% 100%; animation: respiraLibro 4.8s ease-in-out infinite; }
+/* (21-nov-2026, AC8: concordancia del lema) las barras que respiran se pintan al final (z-index 1): así el navegador no tiene que
+   suponer que todo lo que viene después las tapa (antes, 24 barras convertían otros 43 elementos en capas y cada cuadro tardaba
+   más en entregarse al compositor); la respiración sigue igual */
+.tt-c:not(.cero) i { z-index: 1; }
 .panorama a:nth-child(3n + 1) i, .tt-c:nth-child(3n + 1) i { animation-delay: -1.6s; }
 .panorama a:nth-child(3n + 2) i, .tt-c:nth-child(3n + 2) i { animation-delay: -3.2s; }
 .panorama a:nth-child(4n) i, .tt-c:nth-child(4n) i { animation-duration: 5.4s; }
-html.desplazando .panorama a i, html.desplazando .tt-c i { animation-play-state: paused; }
+/* (AF5, 21-nov-2026) las respiraciones siguen al desplazar */
 html[data-mov="no"] .panorama a i, html[data-mov="no"] .tt-c i { animation: none; }
 @media (prefers-reduced-motion: reduce) { .panorama a i, .tt-c i { animation: none; } }
 
@@ -2433,11 +2458,35 @@ html.sin-nota-pie .pie .nota-pie { display: none; }
 .ms-eje .ms-punto:nth-child(3n + 1) { animation-delay: -1.5s; }
 .ms-eje .ms-punto:nth-child(3n + 2) { animation-delay: -3.1s; }
 .ms-eje .ms-punto:nth-child(4n) { animation-duration: 5.3s; }
-html.desplazando .ms-eje .ms-punto { animation-play-state: paused; }
 html[data-mov="no"] .ms-eje .ms-punto { animation: none; }
 @media (prefers-reduced-motion: reduce) { .ms-eje .ms-punto { animation: none; } }
 
 /* (15-nov-2026, fluidez y calor; AC8, AC11, AC21) Mientras se desplaza (html.desplazando) se detiene lo que se mueve solo de fondo,
    y lo que se anima de forma continua se detiene fuera de la pantalla (.anim-fuera, IntersectionObserver de app.js). */
-html.desplazando .vivo-motas i, html.desplazando .encab .h [lang="he"], html.desplazando .banda::before { animation-play-state: paused; }
+/* (BiEx, 21-nov-2026, AF5) las esferas y motas de luz, la banda y el brillo del título hebreo siguen vivos al desplazar: van por el
+   compositor (transform y opacidad); el brillo hebreo (background-position) se pinta en su propia capa pequeña (contain + capa propia) */
+/* (21-nov-2026, AC11/AC21) brillo del título hebreo por el compositor: el texto queda en oro quieto y siete copias con una franja de
+   luz fija (cada una en otro punto, de izquierda a derecha) se encienden y apagan en secuencia, como el barrido de antes (11 s) */
+.encab .h [lang="he"].he-br { position: relative; display: inline-block; background: linear-gradient(100deg, var(--oro), var(--oro)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: none; }
+.he-luz { position: absolute; inset: 0; white-space: nowrap; pointer-events: none; -webkit-user-select: none; user-select: none; --p: calc(8% + var(--hk) * 14%);
+  background: linear-gradient(100deg, transparent calc(var(--p) - 22%), color-mix(in srgb, var(--oro-vivo) 55%, var(--oro)) calc(var(--p) - 8%), var(--oro-vivo) var(--p), color-mix(in srgb, var(--oro-vivo) 55%, var(--oro)) calc(var(--p) + 8%), transparent calc(var(--p) + 22%));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; will-change: opacity;
+  animation: heLuz 11s ease-in-out infinite; animation-delay: calc(-11s * (0.55 + (0.08 + var(--hk) * 0.14 + 0.3) / 1.6 * 0.3 - 0.045)); }
+@keyframes heLuz { 0% { opacity: 0; } 4.5% { opacity: 1; } 9% { opacity: 0; } 100% { opacity: 0; } }
+.anim-fuera .he-luz, html.con-modal .he-luz { animation-play-state: paused; }
+html[data-mov="no"] .he-luz { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .he-luz { animation: none; opacity: 0; } }
 .anim-fuera, .anim-fuera::before, .anim-fuera::after { animation-play-state: paused !important; }
+
+/* AF23 (BiEx, 21-nov-2026) cuenta atrás misteriosa del pie: sin explicación, discreta; solo en la pantalla principal y en los capítulos */
+.cuenta-m { display: none; align-items: baseline; justify-content: center; gap: 0 .9rem; flex-wrap: wrap; margin: 14px auto 4px; color: color-mix(in srgb, var(--oro) 78%, var(--tenue)); font-family: var(--f-ui); opacity: .82; }
+html.ver-cuenta .cuenta-m { display: flex; }
+.cuenta-m .cm-reloj { display: inline-flex; align-self: center; width: 15px; height: 15px; color: var(--oro); opacity: .8; }
+.cuenta-m .cm-reloj svg { width: 100%; height: 100%; }
+.cuenta-m .cm-u { display: inline-flex; align-items: baseline; gap: .22rem; }
+.cuenta-m b { font: 500 1.02rem/1 var(--f-titulo, var(--f-ui)); letter-spacing: .04em; font-variant-numeric: lining-nums tabular-nums; color: var(--oro-vivo, var(--oro)); text-shadow: 0 0 12px color-mix(in srgb, var(--oro) 30%, transparent); }
+.cuenta-m small { font-size: .64rem; letter-spacing: .16em; text-transform: uppercase; color: var(--tenue); }
+
+/* AF49 (BiEx, 21-nov-2026) en las filas de capítulos y de versos, los números pares van un poco más arriba que los impares
+   (propiedad translate, independiente de las transformaciones de cada tesela) */
+.caps > .cap:nth-child(even), .teselas > .tesela:nth-child(even) { translate: 0 -3px; }

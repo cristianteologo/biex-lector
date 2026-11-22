@@ -107,7 +107,10 @@
     ya_en_compania: "Ya estás en una compañía: para unirte a otra, primero sal de la tuya.", nombre_usado: "Ese nombre ya lo tiene otra compañía.", compania: "Ese código de compañía no existe.",
     compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.",
     apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", lugar_espera: "Tu ciudad se puede cambiar una vez cada 2 meses.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
-  const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien. Vuelve a intentarlo.";
+  // AF14 (21-nov-2026): los fallos del servidor dicen qué pasó y, si no tienen mensaje propio, llevan su código discreto
+  Object.assign(MENSAJES, { interno: "El servidor del juego tuvo un tropiezo. Vuelve a intentarlo en un momento.", preguntas: "Las preguntas de este capítulo no llegaron. Vuelve a intentarlo en un momento.",
+    vencida: "Esa prueba venció sin responderse: ábrela de nuevo para recibir otra.", rapido: "Toma un momento para leer cada pregunta antes de ver el resultado.", prueba: "Esa prueba ya se respondió." });
+  const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien" + (r && r.error ? " (código «" + String(r.error).slice(0, 24) + "»)" : "") + ". Vuelve a intentarlo.";
 
   function guardarSesion(token, yo) {
     S.token = token; A.store.set("jg:t", token);
@@ -136,6 +139,16 @@
     }
     if (yo.inv) A.store.set("jg:mio", yo.inv);
     A.store.set("jg:inv", null);
+    if (yo.rpMig === false) migrarRepasos();
+  }
+  // AD2: una sola vez por cuenta, las marcas dobles guardadas en este dispositivo (jg:rp) pasan a la cuenta del servidor
+  async function migrarRepasos() {
+    if (S.rpEnviando || !S.token) return; const rp = A.store.get("jg:rp", null) || {};
+    const lista = Object.fromEntries(Object.entries(rp).filter(([k, x]) => typeof x === "string" && x.includes("1")).slice(0, 400));
+    S.rpEnviando = true;
+    const r = await pedir("/marcas/repasos", { metodo: "POST", cuerpo: { rp: lista } });
+    S.rpEnviando = false;
+    if (r && !r.error) { guardarMarcas(r); if (S.yo) { S.yo.rpMig = true; if (r.lk) S.yo.lk = r.lk; A.store.set("jg:yo", S.yo); } if (r.n) pintarMarcados(); }
   }
   function olvidarSesion(aviso) {
     R.cola = []; A.store.set("jg:cola", null); A.store.set("jg:hoy", null); A.store.set("jg:sie", null);
@@ -206,6 +219,7 @@
   const marcoVisible = (y) => (y && y.vuelta >= 1 ? 9 + y.vuelta : (y && y.marco) || 0);
   const embDe = (s) => { const t = String(s || ""); const m = /^(.+?)(\d)$/u.exec(t); return m ? [m[1], +m[2]] : ["α", 0]; };
   const ICO_JG = {
+    libro: '<path d="M12 6.6C10 5 7.4 4.5 4 4.7v12.9c3.4-.2 6 .3 8 1.9 2-1.6 4.6-2.1 8-1.9V4.7c-3.4-.2-6 .3-8 1.9zM12 6.6v12.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>',
     dracma: '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/>', // moneda sin cruz (cuidado con el arte bíblico)
     llave: '<circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.6 12H20.5M17.5 12v3M20.5 12v2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
     google: '<path d="M20.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.4h4.8a4.2 4.2 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" fill="currentColor" opacity=".9"/><path d="M12 21c2.4 0 4.5-.8 5.9-2.2L15 16.6c-.8.5-1.8.9-3 .9-2.3 0-4.3-1.6-5-3.7H4v2.3A9 9 0 0 0 12 21z" fill="currentColor" opacity=".7"/><path d="M7 13.8a5.4 5.4 0 0 1 0-3.5V8H4a9 9 0 0 0 0 8z" fill="currentColor" opacity=".5"/><path d="M12 6.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 4 8l3 2.3c.7-2.1 2.7-3.7 5-3.7z" fill="currentColor" opacity=".8"/>',
@@ -389,6 +403,9 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .co-res small{font-size:.8rem;color:var(--tinta-2)}
 .av-z{display:grid;gap:14px;margin-top:12px}
 .av-tit{margin:0;text-align:center;font:600 .78rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)}
+.lk-z{display:flex;align-items:center;gap:16px;margin:4px 0 12px}.lk-med{flex:none;width:104px;height:104px}.lk-med b{font-size:2.3rem}
+.lk-tx{min-width:0}.lk-t{margin:0 0 4px;font:500 1rem/1.4 var(--f-ui);color:var(--texto)}.lk-h small{font-size:.68rem}
+@media (max-width:420px){.lk-z{flex-direction:column;text-align:center}}
 .av-cif{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .av-cif li{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 22%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 10%,transparent),transparent);text-align:center}
 .av-cif b{font:600 1.18rem/1 var(--f-titulo,var(--f-ui));color:var(--oro-vivo);font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(255,214,120,.35)}
@@ -450,10 +467,11 @@ html[data-mov="no"] .av-pozo i{animation:none}
 .ap-pd-orbe::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(closest-side,rgba(190,230,255,.55),transparent);animation:ap-orbe 3.4s ease-in-out infinite}
 @keyframes ap-orbe{0%,100%{opacity:.4}50%{opacity:1}}
 .ap-pd-aura{position:absolute;inset:-8px;z-index:-1;border-radius:999px;pointer-events:none;opacity:0;background:radial-gradient(60% 130% at 50% 50%,rgba(170,215,255,.32),transparent 72%);box-shadow:0 0 20px 5px rgba(150,205,255,.42)}
-html.desplazando .ap-pd-orbe::after{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.ap-pd-orbe::after{animation:none}}
 html[data-mov="no"] .ap-pd-orbe::after{animation:none}
 .ap-poder:focus-visible{outline:2px solid var(--oro);outline-offset:3px}
+/* (BiEx, 21-nov-2026, AF9) el Poder, un 15 % más pequeño: cada medida × 0,85 */
+.ap-poder{gap:6px;padding:6px 13px 6px 8px;font-size:.63rem}.ap-poder b{font-size:1.02rem}.ap-pd-orbe{width:13px;height:13px}.ap-pd-orbe::after{inset:-5px}.ap-pd-aura{inset:-7px}
 .ap-rayos{position:absolute;inset:-12px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(150,205,255,.9))}
 .ap-rayos svg{display:block;width:100%;height:100%;overflow:visible}
 .ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
@@ -484,7 +502,7 @@ html[data-mov="no"] .ap-pd-orbe::after{animation:none}
 .ser-in .fa-luz{opacity:0}
 .ser-in .fa-luz.on{will-change:opacity}
 /* (15-nov-2026) mientras se desplaza, en pausa lo ambiental de Escudriña (vuelve al detenerse) */
-html.desplazando .ap-lumbre::after,html.desplazando .ap-gl,html.desplazando .ap-mo,html.desplazando .si-mo,html.desplazando .si-niebla,html.desplazando .ap-copa-v,html.desplazando .ap-gr-v::before,html.desplazando .ap-gr-v::after,html.desplazando .ap-bebe,html.desplazando .fr-gr::before,html.desplazando .jg-ah .f,html.desplazando .jg-ah .n,html.desplazando .fa-luz.on,html.desplazando .jg-yo>.jg-mota{animation-play-state:paused}
+/* (BiEx, 21-nov-2026, AF5) lo ambiental del juego ya no se detiene al desplazar: todo va por el compositor (transform y opacidad) */
 .ser-in svg{overflow:visible}
 .ser-in .si-mueve>svg{position:absolute;inset:0;width:100%;height:100%}
 .si-alma,.si-pecho{position:absolute;border-radius:50%;pointer-events:none;will-change:opacity}
@@ -836,6 +854,15 @@ html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);borde
 .jg-pel svg{width:100%;height:auto;display:block}
 .jg-pel.ya{opacity:.78}
 .jg-pel.act{opacity:1;filter:drop-shadow(0 0 7px var(--oro-vivo));transform:scale(1.18)}
+button.jg-pel{appearance:none;-webkit-appearance:none;background:none;border:0;padding:3px 0 7px;margin:0;font:inherit;color:inherit;cursor:pointer;position:relative;border-radius:8px;transition:opacity .25s ease;-webkit-tap-highlight-color:transparent}
+button.jg-pel:hover{opacity:.9}
+button.jg-pel.act{transform:none}
+button.jg-pel.act svg{transform:scale(1.18)}
+button.jg-pel::after{content:"";position:absolute;left:28%;right:28%;bottom:1px;height:2px;border-radius:2px;background:var(--oro-vivo);opacity:0;transform:scaleX(.4);transition:opacity .25s ease,transform .25s ease}
+button.jg-pel.ver{opacity:1}
+button.jg-pel.ver::after{opacity:.9;transform:none}
+button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.jg-esc-nota{text-align:center;margin-top:8px}
 .jg-lista.mini{gap:4px}
 .jg-lista.sala .jg-fila{grid-template-columns:34px minmax(0,1fr) auto}
 .jg-lista.sala .btn{padding:8px 14px}
@@ -1054,7 +1081,8 @@ html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{a
 .jg-fj-fig .ser-in{max-width:none}
 .jg-fj-fig .fa-luz.on{animation:fa-luz 1.9s ease-in-out infinite}
 .jg-fj-fig .fa-luz.forjada{animation:fa-forja 2.6s cubic-bezier(.2,.7,.2,1) both,fa-luz 2.2s ease-in-out 2.6s infinite}
-@keyframes fa-forja{0%{opacity:0}12%{opacity:1}30%{opacity:.55}46%{opacity:1}100%{opacity:.6}}
+/* (AF10, 21-nov-2026) la forja termina en .35, justo donde empieza el latido de la pieza: antes caía de .6 a .35 de golpe («un 20 % del efecto roto») */
+@keyframes fa-forja{0%{opacity:0}12%{opacity:1}30%{opacity:.55}46%{opacity:1}100%{opacity:.35}}
 .jg-fj-fig.anim .ser-in{animation:fj-entra .9s cubic-bezier(.2,.75,.2,1) both}
 @keyframes fj-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .jg-fj-at{display:flex;justify-content:center;gap:12px;margin:0}
@@ -1256,7 +1284,9 @@ html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis
 html.jg-volviendo #vista .panel.jg{opacity:0}
 .jg-nombre .jg-pais{font:400 .82rem/1.2 var(--f-ui);color:var(--tenue)}
 .jg-relevo{justify-self:start;margin:0 0 6px}
-.jg-premio{bottom:calc(132px + var(--i) * 46px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,#2b2214,#17120b)!important;color:var(--oro-vivo)!important;border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);opacity:0}
+/* (BiEx, 21-nov-2026, AF12) las dracmas y los fragmentos van sobre la experiencia, sin tocarla */
+.jg-premio{bottom:calc(200px + var(--i) * 48px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,#2b2214,#17120b)!important;color:var(--oro-vivo)!important;border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);opacity:0}
+html.jg-con-muelle .jg-premio{bottom:calc(246px + var(--i) * 48px + env(safe-area-inset-bottom,0px))!important}
 .jg-premio b{font-weight:700}.jg-premio.frag{color:#efe1bf!important}
 /* AC12 (15-nov-2026): la figura del premio gira y brilla una vez; el rollo de papiros de Tesoro */
 .jg-premio-fig{display:block;width:34px;height:34px;margin:0 auto 2px;filter:drop-shadow(0 0 8px rgba(255,214,140,.55));animation:jg-fig 1.1s cubic-bezier(.2,.9,.25,1.1) .25s both}
@@ -1324,8 +1354,9 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-pie-i{width:.82rem;height:.82rem;border-radius:50%;border:1.1px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
 .jg-pie-i::after{content:"";width:.3rem;height:.15rem;margin-top:-.08rem;border:solid currentColor;border-width:0 0 1.3px 1.3px;transform:rotate(-45deg);opacity:.6;transition:opacity .2s}
 .jg-pie.espera .jg-pie-v .jg-pie-i::after{opacity:.28}
-.jg-pie.hecho .jg-pie-i{background:var(--oro-vivo)}
-.jg-pie.hecho .jg-pie-i::after{border-color:var(--hoja);opacity:1}
+/* (BiEx, 21-nov-2026, AF51) la marca se enciende solo en el botón tocado: «Leído» no enciende la perícopa */
+.jg-pie.hecho-p .jg-pie-i,.jg-pie.hecho-v .jg-pie-v .jg-pie-i{background:var(--oro-vivo)}
+.jg-pie.hecho-p .jg-pie-i::after,.jg-pie.hecho-v .jg-pie-v .jg-pie-i::after{border-color:var(--hoja);opacity:1}
 .jg-lb-i{width:1.12rem;height:1.12rem;border-radius:50%;border:1.3px solid currentColor;display:grid;place-items:center;flex:none;transition:background .2s}
 .jg-lb-i::after{content:"";width:.4rem;height:.2rem;margin-top:-.1rem;border:solid currentColor;border-width:0 0 1.5px 1.5px;transform:rotate(-45deg);opacity:.5;transition:opacity .2s}
 .jg-lb.hecho .jg-lb-i,.jg-lbp.hecho .jg-lb-i{background:var(--oro-vivo)}
@@ -1372,6 +1403,19 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-ah.marcado .fa,.jg-ah.marcado .na{opacity:1}
 .jg-ah.marcado .fo,.jg-ah.marcado .no{opacity:0}
 .jg-ah .f,.jg-ah .n{animation:jg-ah 3.4s ease-in-out infinite}
+/* (BiEx, 21-nov-2026, AF40) aunque se desplace rápido, cada verso que cruza la franja de lectura enciende su hilo de luz: animación
+   ligada al desplazamiento (animation-timeline: view()), sola en el compositor y sin JavaScript; al detenerse, el resplandor del
+   verso elegido sigue como siempre */
+@supports (animation-timeline:view()){
+.hoja.jg-pies .vl{position:relative}
+.hoja.jg-pies .vl::before{content:"";position:absolute;left:-1px;top:4px;bottom:4px;width:2px;border-radius:2px;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent,var(--oro-vivo) 16%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 84%,transparent);
+  box-shadow:0 0 10px 1px color-mix(in srgb,var(--oro) 35%,transparent)}
+html.desplazando .hoja.jg-pies .vl::before{animation:jg-paso linear both;animation-timeline:view();animation-range:cover}
+@keyframes jg-paso{0%,33%{opacity:0}46%{opacity:.75}58%,100%{opacity:0}}
+html[data-mov="no"] .hoja.jg-pies .vl::before{display:none}
+@media (prefers-reduced-motion:reduce){.hoja.jg-pies .vl::before{display:none}}
+}
 /* AC17 (15-nov-2026): la clasificación y el prestigio, desplegados en su tarjeta */
 .jg-cl2{display:grid;gap:10px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
 .jg-cl2-z{display:grid;gap:8px;min-width:0}
@@ -1918,8 +1962,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", {}, h("b", { text: fmt(Math.floor((y.hoy.mr || y.hoy.ms || 0) / MIN)) }), h("span", { text: "minutos" })),
       h("div", {}, h("b", { text: fmt(y.hoy.xp) }), h("span", { text: "experiencia" }))),
       y.pers > 0 ? h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Perseverancia: ", h("b", { text: plural(y.pers, "día", "días") }), " · tu mejor marca: " + plural(y.persMejor, "día", "días") +
-        " · descansos guardados: " + y.desc + " de 3. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.")
-        : h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Tu perseverancia empieza con el primer verso de hoy." + (y.persMejor ? " Tu mejor marca: " + plural(y.persMejor, "día", "días") + "." : "") + " Cada 7 días seguidos ganas un descanso que cubre un día sin lectura."));
+        " · descansos guardados: " + y.desc + " de 3. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).")
+        : h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Tu perseverancia empieza con el primer verso de hoy." + (y.persMejor ? " Tu mejor marca: " + plural(y.persMejor, "día", "días") + "." : "") + " Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas)."));
   }
   // Lectura por confirmar (BiEx, 10-nov-2026): reparto 60/40, lista desplegable de los versos y fórmula de corrección
   function tarjetaPorConfirmar(y, enHoy) {
@@ -2024,13 +2068,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     lanzamiento: (a) => "¡Escudriña abrió! " + (a.p ? "Conservaste el " + String(a.p).replace(".", ",") + " % de tu avance de práctica y, por inscribirte antes, recibiste " + a.h + " horas de experiencia doble." : "Por inscribirte antes recibiste " + a.h + " horas de experiencia doble."),
     micro: (a) => a.a + " confirmó su lugar en tu " + (a.g === 2 ? "segunda" : "tercera") + " generación" + (a.via ? " (llegó por " + a.via + ")" : "") + ": +" + a.min + " min de experiencia doble.",
     adoptados: (a) => (a.n === 1 ? "1 persona que llegó con lo que compartiste antes de tener cuenta ya está en tu árbol de la siembra." : fmt(a.n) + " personas que llegaron con lo que compartiste antes de tener cuenta ya están en tu árbol de la siembra."), propuesta: (a) => "Tu propuesta se hizo realidad: +" + a.h + " h de experiencia doble. ¡Gracias por construir Escudriña!",
-    nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", libroInv: (a) => a.a + " terminó su primer libro: +" + a.xp + ".", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + ".",
+    nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", reparo: (a) => "Te devolvimos " + plural(a.pts | 0, "punto de atributo", "puntos de atributo") + (a.compras ? " (los " + a.compras + " que compraste por " + fmt(a.dr | 0) + " dracmas y los de tus niveles nuevos)" : " de tus niveles nuevos") + " que no se veían por un fallo. Ya puedes repartirlos.",
+    libroInv: (a) => a.a + " terminó su primer libro" + (a.lib ? ", " + nombreLibro(a.lib) + "," : "") + " y tú recibes +" + fmt(a.xp) + " de experiencia.", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + ".",
     liga: (a) => "Semana de liga cerrada: puesto " + a.pos + " de " + a.n + (a.nvNuevo > a.nv ? "; ¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
     compania: (a) => "¡«" + a.nombre + "» logró su meta común de la semana! +" + a.h + " h de experiencia doble.",
     renuevo: (a) => "¡Renuevo cumplido! Recuperaste " + plural(a.p, "día", "días") + " de perseverancia: ahora llevas " + plural(a.pers, "día", "días") + ".",
     renuevo_vence: (a) => "Tu Renuevo venció sin completar sus misiones; tus " + plural(a.p, "día", "días") + " de perseverancia siguen esperando otro Renuevo.",
     fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
-    mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble." };
+    mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") + ".",
+    renMedia: (a) => (a.m % 2 ? "Siete días seguidos de perseverancia: ganaste un descanso y media pieza de Renuevo (te falta otra media para un Renuevo sin dracmas)." : "Siete días seguidos de perseverancia: ganaste un descanso y completaste una pieza de Renuevo: tu próximo Renuevo sale sin dracmas.") };
   // Hora de cada novedad, en la zona horaria de quien lee (BiEx, 13-nov-2026): «Hace 5 min · 6:35 a. m.», «Hoy · 6:40 a. m.»,
   // «Ayer · 9:12 p. m.» o «12 nov. · 9:12 p. m.»; lo reciente se actualiza solo cada minuto mientras la tarjeta está a la vista
   const LOC_ES = /^es\b/i.test(navigator.language || "") ? navigator.language : "es"; // «5:09 p. m.» o «17:09», según el país de quien lee
@@ -2143,18 +2189,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
         h("ul", { class: "jg-ren-l" }, c.mis.map(([k, meta, hecho]) => { const [a, b] = REN_MIS[k] || ["", k]; const ok = hecho >= meta;
           return h("li", { class: ok ? "ok" : "" }, h("span", { text: a + " " + fmt(meta) + " " + b }), h("em", { text: ok ? "✓" : fmt(hecho) + " / " + fmt(meta) }), h("i", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * hecho) / Math.max(1, meta)).toFixed(1) + "%" }))); })));
     }
-    const t = y.renHasta && y.renHasta > Date.now() ? " El próximo Renuevo se puede comprar desde el " + new Date(y.renHasta).toLocaleDateString(LOC_ES, { day: "numeric", month: "long" }) + "." : " Cómpralo en la tienda del Árbol: aparecen de 2 a 5 misiones para cumplir en una semana.";
+    const t = y.renHasta && y.renHasta > Date.now() ? " El próximo Renuevo se puede comprar desde el " + new Date(y.renHasta).toLocaleDateString(LOC_ES, { day: "numeric", month: "long" }) + "." : (y.renMed | 0) >= 2 ? " Tienes una pieza completa de Renuevo: ábrelo sin dracmas en la tienda del Árbol (aparecen de 2 a 5 misiones para cumplir en una semana)." : " Cómpralo en la tienda del Árbol: aparecen de 2 a 5 misiones para cumplir en una semana.";
     return h("p", { class: "jg-mini jg-ren-esp" }, h("span", { class: "jg-ren-i", "aria-hidden": "true" }, A.svg(ICO_USO.renuevo)), "Perseverancias que un Renuevo puede recuperar: " + rup.slice().sort((a, b) => b[1] - a[1]).slice(0, 4).map(([f, p]) => plural(p, "día", "días") + " (hasta el " + fechaR(f) + ")").join(", ") + "." + t);
   }
+  // medias piezas de Renuevo (AF45): «1½», «2», «½»…
+  const piezasRenuevo = (m) => { m = m | 0; const e = Math.floor(m / 2), med = m % 2; return (e ? String(e) : med ? "" : "0") + (med ? "½" : ""); };
   function tarjetaPotencias(y) {
     const extra = [];
     if (y.dob > 0) extra.push("Experiencia doble: " + horas(y.dob) + " de lectura (no vence).");
     if (y.imp && y.imp.ms > 0) extra.push("Impulso ×" + String(y.imp.f).replace(".", ",") + ": " + horas(y.imp.ms) + " de lectura.");
-    extra.push("Tu mejor marca de perseverancia: " + plural(y.persMejor || 0, "día", "días") + ". Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.");
+    extra.push("Tu mejor marca de perseverancia: " + plural(y.persMejor || 0, "día", "días") + ". Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).");
     return tarjeta("Tus reservas", ico("llama"), h("div", { class: "jg-cifras" },
       h("div", {}, cifra(y.dr), h("span", { text: "dracmas" })),
       h("div", {}, cifra(y.pers), h("span", { text: y.pers === 1 ? "día de perseverancia" : "días de perseverancia" })),
-      h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" }))),
+      h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" })),
+      h("div", {}, h("b", { text: piezasRenuevo(y.renMed) }), h("span", { text: "piezas de Renuevo" }))),
       h("p", { class: "jg-mini", text: extra.join(" ") }), bloqueRenuevo(y));
   }
   // AC17 (BiEx, 15-nov-2026): las posiciones ya desplegadas en la tarjeta, con dos vistas que se intercambian en el mismo lugar
@@ -2260,7 +2309,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     ["Lee de verdad", "Abre cualquier capítulo de la Nueva Voluntad y lee a tu ritmo. Cada verso que lees te da el 30 % de su experiencia; al terminarlo, toca «Leído» (abajo, al centro: brilla el número del verso que marcas) y suma el 70 % restante, con la posibilidad de hallar fragmentos de papiro y dracmas. Solo cuentan como leídos los versos que marcas, el capítulo que marcas al final cuando lo leíste con calma y las preguntas de la prueba bien respondidas.", "versos"],
     ["Misiones pequeñas cada día", "Cada día recibes de 2 a 5 misiones sencillas, como leer unos versos o completar un capítulo. Sin prisa y sin culpa: si un día no puedes, tu avance sigue ahí.", "misiones"],
     ["Hallazgos", "Muy de vez en cuando, un verso revela una de las doce piedras del fundamento o un lauro trenzado incorruptible. Solo aparecen leyendo.", "hallazgos"],
-    ["Perseverancia", "Cada día que lees suma a tu perseverancia. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura.", "perseverancia"],
+    ["Perseverancia", "Cada día que lees suma a tu perseverancia. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).", "perseverancia"],
     ["Nunca a solas", "Entra en la liga de la semana, aporta a la misión mundial, forma una compañía de 2 a 24 personas o abre una sala para leer en compañía.", "juntos"],
     ["Tu siembra", "Comparte tu enlace. Quien llega contigo empieza con 3 horas de experiencia doble, y tu árbol de la siembra crece generación tras generación.", "siembra"],
     // BiEx (10-nov-2026): el menú cambió (seis botones, con el Árbol): el paso 7 lo dice tal como es
@@ -2579,7 +2628,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const ini = "M" + (488 + i * 5) + " 800C" + f1(470 + (x - 500) * 0.25) + " " + (880 + rnd() * 30).toFixed(0) + " " + f1(x + (500 - x) * 0.25) + " " + (900 + rnd() * 30).toFixed(0) + " ";
       const d = ini + x + " " + (yy - 12), dS = ini + x + " " + (yy - 46);
       raices += '<path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w + 10) + '" opacity=".14" fill="none" stroke-linecap="round"/><path d="' + d + '" stroke="' + col + '" stroke-width="' + f1(w) + '" opacity="' + op + '" fill="none" stroke-linecap="round"/>';
-      raizD.push([dS, col, val]);
+      raizD.push([d, col, val, x, yy]); // (AF28, 21-nov-2026) la savia sigue la MISMA curva dibujada (dS, con otro final, se apartaba de ella)
       med += '<g class="ap-med" style="color:' + col + '"><circle cx="' + x + '" cy="' + yy + '" r="44" fill="#0d0b08" stroke="' + col + '" stroke-width="3" stroke-opacity="' + op + '"/><circle cx="' + x + '" cy="' + yy + '" r="38" fill="' + col + '" opacity=".1"/>' +
         '<g transform="translate(' + (x - 15) + " " + (yy - 30) + ') scale(1.25)">' + ATR_ICO[k] + '</g><text x="' + x + '" y="' + (yy + 25) + '" text-anchor="middle" font-size="25" font-weight="600" fill="currentColor" style="font-family:var(--f-ui)">' + val + '</text>' +
         '<text x="' + x + '" y="' + (yy + 76) + '" text-anchor="middle" font-size="' + (k === "r" ? 19 : 22) + '" fill="var(--tinta-2)" style="font-family:var(--f-ui);letter-spacing:.04em">' + nombres[k] + "</text></g>";
@@ -2630,9 +2679,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const savia = h("div", { class: "ap-savia", "aria-hidden": "true" }), saviaA = [];
     try {
       const ns = "http://www.w3.org/2000/svg", sv = document.createElementNS(ns, "svg"); sv.setAttribute("style", "position:absolute;width:0;height:0;overflow:hidden"); document.body.append(sv);
-      raizD.forEach(([d, col, val], i) => {
+      raizD.forEach(([d, col, val, mx, my], i) => {
         const pa = document.createElementNS(ns, "path"); pa.setAttribute("d", d); sv.append(pa);
-        const L = pa.getTotalLength(), pts = []; for (let q = 0; q <= 18; q++) { const pt = pa.getPointAtLength(L * (1 - q / 18)); pts.push([pt.x, pt.y]); }
+        // nace en el borde del medallón (radio 44) sobre la raíz dibujada y sube por ella hasta el tronco
+        const L = pa.getTotalLength(), fuera = (l) => { const p = pa.getPointAtLength(l); return Math.hypot(p.x - mx, p.y - my) >= 44; };
+        let a = 0, z = L; for (let it = 0; it < 22; it++) { const m = (a + z) / 2; if (fuera(m)) a = m; else z = m; }
+        const L0 = a, pts = []; for (let q = 0; q <= 18; q++) { const pt = pa.getPointAtLength(L0 * (1 - q / 18)); pts.push([pt.x, pt.y]); }
         const n = 1 + Math.min(2, Math.floor(val / 10)), dur = Math.max(2.2, 4.8 - val * 0.06) * 1000;
         for (let k = 0; k < n; k++) for (const [tam, op, lag] of [[16, 1, 0], [10, 0.45, 70]]) {
           const el = h("i", { class: "ap-sv", style: "--c:" + col + ";--s:" + tam + "px" }); savia.append(el);
@@ -2649,8 +2701,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     caja._anims = saviaA;
     if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting && !document.documentElement.classList.contains("desplazando")) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
-    // (15-nov-2026) también en pausa mientras se desplaza la página
-    if (!caja._desp) { caja._desp = (e) => { if (!caja.isConnected) { document.removeEventListener("biex:desplaza", caja._desp); return; } for (const a of caja._anims || []) { try { if (e.detail || caja._vis === false) a.pause(); else a.play(); } catch (er) { /* nada */ } } }; document.addEventListener("biex:desplaza", caja._desp); }
+    // (BiEx, 21-nov-2026, AF5) la savia corre también mientras se desplaza la página (solo se detiene fuera de la pantalla)
     return caja;
   }
   // Z1 · El ser interior (BiEx, 13 y 14-nov-2026: «Presencia velada», «vivo y sereno»): realista y sin sexo (es espíritu: el
@@ -2795,11 +2846,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const ausente = () => { if (caja.isConnected) { fuera = 0; return false; } if (++fuera > 20) { parar(); return true; } t1 = setTimeout(respira, 1500); return true; };
     function respira() {
       clearTimeout(t1); if (ausente()) return; if (!vivo()) return;
-      const T = al(4200, 6200), k = al(0.035, 0.05), pico = al(0.4, 0.52);
-      const a = (fig || torso).animate([{ transform: "scale(1)" }, { transform: "scale(" + (1 + k).toFixed(4) + ")", offset: pico }, { transform: "scale(1)" }], { duration: T, easing: "ease-in-out" });
+      // (BiEx, 21-nov-2026, AF10) la mitad de evidente y nunca igual: hondura de 1,4 a 2,5 % (antes 3,5–5 %), ciclo de 3,6 a 7,4 s,
+      // inhalación y exhalación de largo distinto, a veces una más corta y somera, y pausas de 0,2 a 2,2 s
+      const somera = Math.random() < 0.22, T = somera ? al(2600, 3800) : al(3600, 7400), k = somera ? al(0.009, 0.015) : al(0.014, 0.025), pico = al(0.34, 0.58);
+      const curva = ["ease-in-out", "cubic-bezier(.42,0,.5,1)", "cubic-bezier(.36,.06,.6,1)", "cubic-bezier(.5,0,.4,1)"][Math.floor(Math.random() * 4)];
+      const a = (fig || torso).animate([{ transform: "scale(1)" }, { transform: "scale(" + (1 + k).toFixed(4) + ")", offset: pico }, { transform: "scale(1)" }], { duration: T, easing: curva });
       if (fondo) fondo.animate([{ opacity: 0.86 }, { opacity: 1, offset: pico }, { opacity: 0.86 }], { duration: T, easing: "ease-in-out" });
       pecho.animate([{ opacity: 0.55 }, { opacity: 0.55 + k * 7, offset: pico }, { opacity: 0.55 }], { duration: T, easing: "ease-in-out" });
-      a.onfinish = () => { t1 = setTimeout(respira, al(120, 1100)); };
+      a.onfinish = () => { t1 = setTimeout(respira, al(200, 2200)); };
     }
     const GESTOS = [
       () => cabeza.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + al(-0.9, 0.9).toFixed(2) + "px," + (-al(1.4, 2.6)).toFixed(2) + "px,0)", offset: al(0.3, 0.5) }, { transform: "translate3d(0,0,0)" }], { duration: al(2600, 4800), easing: "cubic-bezier(.4,0,.2,1)" }),
@@ -2817,7 +2871,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (n > (ant.f === f ? ant.n | 0 : 0)) { A.store.set("jg:siV", { f, n }); setTimeout(() => { if (!vivo()) return; pecho.animate([{ opacity: 0.55 }, { opacity: 1 }, { opacity: 0.55 }], { duration: 2600, easing: "ease-in-out" }); alma.animate([{ opacity: 0.38 }, { opacity: 0.85 }, { opacity: 0.38 }], { duration: 2800, easing: "ease-in-out" }); }, 900); } } catch (e) { /* sin datos */ }
     respira(); gesto();
   }
-  const errPoder = (r) => r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
+  const errPoder = (r) => r.error === "tope_atributo" ? "Ese atributo ya llega a su tope (60)" + (r.cabe ? ": le caben " + plural(r.cabe, "punto", "puntos") : "") + ". Reparte en otro" : r.error === "compra_revertida" ? "La compra no se pudo completar y tus " + fmt(r.dr | 0) + " dracmas volvieron intactas" : r.error === "sin_dracmas" ? "Te faltan " + fmt(r.falta || 0) + " dracmas: cada perícopa leída te acerca" : r.error === "sin_cantos" ? "Te faltan " + plural(r.falta || 1, "canto", "cantos") + " para esa forja: aparecen al leer" : r.error === "sin_puntos" ? "No tienes tantos puntos por repartir" : r.error === "tope" ? "Ya llegaste al tope" : r.error === "ya_tienes" ? "Ya lo tienes" : mensaje(r);
   async function accionPoder(ruta, cuerpo, ok, son) {
     const r = await pedir(ruta, { metodo: "POST", cuerpo: cuerpo || {} });
     if (r.error) { A.avisar(errPoder(r)); return null; }
@@ -2890,7 +2944,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => { desc.replaceChildren(h("b", { text: "Poder " + fmt(av.poder) + ": " }), "suma tus atributos (×10), tus accesorios (×25), tu nivel (×15) y los niveles del fruto del espíritu (×6). Crece leyendo, forjando y con todo lo que hace crecer el fruto."); for (const x of lista.children) x.classList.remove("sel"); })),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
-        h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo"); if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
+        h("button", { class: "btn", type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
         // (un lector, 14-nov-2026: «se me borraron todos los puntos») antes de reasignar se explica qué pasa y se confirma
         av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => {
           const rep = av.tot - av.pts;
@@ -3295,6 +3349,25 @@ html[data-mov="no"] .ap-savia{display:none!important}
     pintar();
     return tarjeta("Tu avance", ico("arbol"), seg, zona);
   }
+  // AD2 (BiEx, 15-nov-2026): lecturas completas de la Nueva Voluntad sin cifras infladas (cada verso leído al menos K veces),
+  // el avance hacia la siguiente y cuántas veces se marcó cada verso
+  function tarjetaLecturas(y) {
+    const L = y && y.lk; if (!L || !L.total) return null;
+    const hechos = L.total - L.faltan, fr = hechos / L.total, C = 2 * Math.PI * 34, u = "lk" + Math.random().toString(36).slice(2, 7);
+    const anillo = A.svg('<defs><linearGradient id="' + u + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3cc"/><stop offset=".5" stop-color="#e8cf94"/><stop offset="1" stop-color="#b8892f"/></linearGradient></defs>' +
+      '<circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,240,200,.13)" stroke-width="4.5"/>' +
+      '<circle cx="40" cy="40" r="34" fill="none" stroke="url(#' + u + ')" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - fr)).toFixed(2) + '" transform="rotate(-90 40 40)"/>', "0 0 80 80");
+    const sig = L.k + 1, H = L.h || [];
+    const cel = [["sin marcar", H[0]], ["1 vez", H[1]], ["2 veces", H[2]], ["3 veces", H[3]], ["4 o más", H[4]]];
+    return tarjeta("Lecturas completas", ico("libro"),
+      h("div", { class: "lk-z" },
+        h("div", { class: "jg-qz-med lk-med", role: "img", "aria-label": plural(L.k, "lectura completa", "lecturas completas") }, anillo, h("b", { text: String(L.k) }), h("small", { text: L.k === 1 ? "lectura" : "lecturas" })),
+        h("div", { class: "lk-tx" },
+          h("p", { class: "lk-t" }, L.k ? "Has leído la Nueva Voluntad completa " + (L.k === 1 ? "una vez" : L.k + " veces") + ", verso a verso." : "Tu primera lectura completa de la Nueva Voluntad, verso a verso."),
+          h("p", { class: "jg-mini" }, "Para la lectura n.º " + sig + ": " + fmt(hechos) + " de " + fmt(L.total) + " versos · faltan " + fmt(L.faltan) + "."),
+          L.k ? h("p", { class: "jg-mini" }, "Al completarse una lectura, cada marca baja un nivel: la doble queda sencilla y la sencilla se vacía para la lectura nueva. Cada cuenta queda aquí.") : null)),
+      h("ul", { class: "av-cif lk-h", "aria-label": "Cuántas veces se marcó cada verso" }, cel.map(([t, n]) => h("li", {}, h("b", { text: fmt(n | 0) }), h("small", { text: t })))));
+  }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
   const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
   // Armadura: la figura y las seis piezas en rejilla (2 × 3) con su grado en cinco cuentas; la pieza elegida muestra abajo
@@ -3380,7 +3453,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const av = P.av, d = P.def;
     const comprar = async (e, item, ok, fx) => { const b = e.currentTarget; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item }, ok); if (r) { if (fx) chispas(fx); rehacer(); } else b.disabled = false; };
     const fila = (ic, n, ds, boton) => h("li", {}, h("span", { class: "ap-ui", "aria-hidden": "true" }, A.svg(ICO_USO[ic])), h("span", { class: "ap-n" }, h("b", { text: n }), h("small", { text: ds })), boton);
-    const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, ds, h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: pr + " dr." })))),
+    const conPieza = (id) => id === "renuevo" && (y.renMed | 0) >= 2;
+    const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, conPieza(id) ? ds + " · con tu pieza de Renuevo, sin dracmas" : ds, h("button", { class: "btn chico" + (P.dr >= pr || conPieza(id) ? " oro" : ""), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: conPieza(id) ? "Pieza" : pr + " dr." })))),
       fila("apodo", "Cambio de apodo", "Una vez cada 3 semanas", h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, h("span", { text: ((y.apodoCambio && y.apodoCambio.precio) || 120) + " dr." }))));
     const NOM = { aura: "Auras", manto: "Mantos", corona: "Lauros", sello: "Sellos" };
     // Qué da cada accesorio (BiEx, 12-nov-2026): +25 de poder al tenerlo (cifra de tu ser interior), se luce en el emblema y en
@@ -3486,7 +3560,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
     const lienzo = lienzoV && lienzoV.dataset.sig === sigA ? lienzoV : h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos));
     const heroe = h("section", { class: "ap-heroe" }, lienzo, datos);
-    const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
+    const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P), tarjetaLecturas(yy)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
     FIG_PREV = null;
     if (suave) {
       // sin entrada de nuevo: se dan por vistas antes de ponerlas
@@ -4399,10 +4473,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const LB = { el: null, ah: null, v: 0, io: null, ioB: null, zona: new Set(), bajo: new Set(), ok: new Set(), t: 0 };
   const LD = LB; // (nombre anterior)
   const numeroDe = (el) => el && (el.querySelector(":scope > .vn") || el.querySelector(":scope > sup"));
+  // AD2 (BiEx, 15-nov-2026, versión exacta): «jg:cf» guarda por capítulo cuántas veces se marcó cada verso (un carácter en
+  // base 36, como en el servidor); la marca que se ve es la cuenta menos las lecturas completas (K): 1 sencilla, 2 o más doble
+  const B36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const vecesCar = (ch) => { if (!ch || ch === "0") return 0; const i = B36.indexOf(ch); return i < 0 ? 1 : i; };
   const cfDe = (lc) => (A.store.get("jg:cf", null) || {})[lc] || "";
-  function guardarCf(lc, s) { if (typeof s !== "string") return; const o = A.store.get("jg:cf", null) || {}; if (s.includes("1")) o[lc] = s; else delete o[lc]; A.store.set("jg:cf", o); }
+  const lecturasK = () => (S.yo && S.yo.lk && S.yo.lk.k) | 0;
+  const vecesDe = (lc, v) => vecesCar(cfDe(lc)[v - 1]);
+  const nivelMarca = (lc, v) => Math.max(0, Math.min(2, vecesDe(lc, v) - lecturasK()));
+  // exacto: la cuenta del servidor (cns) manda; si llega solo 0/1 (cfs, lectores anteriores), se suma sin bajar ninguna cuenta
+  function guardarCf(lc, s, exacto) {
+    if (typeof s !== "string") return; const o = A.store.get("jg:cf", null) || {}; let x = s;
+    if (!exacto) { const y = o[lc] || ""; x = ""; for (let i = 0; i < Math.max(s.length, y.length); i++) x += s[i] === "1" && vecesCar(y[i]) === 0 ? "1" : y[i] || "0"; }
+    if (/[^0]/.test(x)) o[lc] = x; else delete o[lc]; A.store.set("jg:cf", o);
+  }
+  const guardarMarcas = (r) => { if (!r) return; if (r.cns) for (const [k, x] of Object.entries(r.cns)) guardarCf(k, x, true); else for (const [k, x] of Object.entries(r.cfs || {})) guardarCf(k, x); };
   const yaLeido = (v) => LB.ok.has(R.lib + "." + R.cap + "." + v);
-  const marcadoAntes = (lc, v) => cfDe(lc)[v - 1] === "1";
+  const marcadoAntes = (lc, v) => nivelMarca(lc, v) >= 1;
   const marcable = (v) => (R.pal[v - 1] || 0) > 0 && !yaLeido(v) && !R.quiere.has(v);
   function sellos() {
     for (const s of document.querySelectorAll(".jg-sello, .jg-ld")) s.remove();
@@ -4669,7 +4756,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (bv.querySelector(".jg-pie-t").textContent !== et) bv.querySelector(".jg-pie-t").textContent = et;
     if (bv.querySelector(".jg-pie-n").textContent !== nn) bv.querySelector(".jg-pie-n").textContent = nn;
     bv.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + v + " como leído"));
-    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho");
+    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho-v", "hecho-p");
     const vuelve = P.hidden; if (vuelve) P.hidden = false;
     const pw = P.offsetWidth || 90, ph = P.offsetHeight || 18, cabe = rb.right - der - ult.right >= pw + 12;
     const x = rb.right - der - pw - rh.left, y = (cabe ? ult.top + (ult.height - ph) / 2 : ult.bottom + 3) - rh.top;
@@ -4685,8 +4772,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     for (const x of pe.marc) tocarLeido(x, null, true);
     if (desde) chispas(16, desde, ["aro", "polvo"]);
     A.avisar("Perícopa " + pe.a + "–" + pe.b + ": " + plural(pe.marc.length, "verso marcado", "versos marcados") + " como leídos.");
-    if (LB.pie) LB.pie.classList.add("hecho");
-    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; elegirLB(); }, 480);
+    if (LB.pie) LB.pie.classList.add("hecho-p");
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.pie) LB.pie.classList.remove("hecho-p", "hecho-v"); LB.v = 0; elegirLB(); }, 480);
   }
   // el halo detrás de las cifras del número (sin el § de la perícopa); solo si el número se ve (nunca medio tapado por las barras).
   // Tamaño fijo (40 px) estirado con scale: se mueve y se ajusta solo con transformaciones (15-nov-2026, fluidez)
@@ -4705,8 +4792,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const vs = LB.mm && LB.mm.length ? LB.mm : LB.m ? [LB.m] : []; if (!vs.length || !R.lib) return;
     const b = desde || LB.el;
     vs.forEach((x, k) => tocarLeido(x, k ? null : b, k > 0));
-    LB.el.classList.add("hecho"); if (LB.pie) LB.pie.classList.add("hecho");
-    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho"); LB.v = 0; LB.m = 0; elegirLB(); }, 480);
+    LB.el.classList.add("hecho"); if (LB.pie) LB.pie.classList.add("hecho-v");
+    clearTimeout(LB.t); LB.t = setTimeout(() => { if (LB.el) LB.el.classList.remove("hecho"); if (LB.pie) LB.pie.classList.remove("hecho-v", "hecho-p"); LB.v = 0; LB.m = 0; elegirLB(); }, 480);
   }
   // los versos ya marcados (en este u otro dispositivo) llevan su número en oro
   function pintarMarcados() {
@@ -4714,7 +4801,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const lc = R.lib + "." + R.cap, cf = cfDe(lc);
     for (const el of R.els) {
       const v = +el.id.slice(1), num = numeroDe(el); if (!num) continue;
-      num.classList.toggle("jg-leido", cf[v - 1] === "1" || yaLeido(v) || !!(A.leido && A.leido(R.lib, R.cap, v)));
+      num.classList.toggle("jg-leido", vecesCar(cf[v - 1]) > lecturasK() || yaLeido(v) || (lecturasK() === 0 && !!(A.leido && A.leido(R.lib, R.cap, v))));
       num.classList.toggle("jg-repaso", esRepaso(R.lib, R.cap, v));
       num.classList.toggle("jg-quiere", R.quiere.has(v));
     }
@@ -4732,7 +4819,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const num = numeroDe(document.getElementById("v" + v));
     if (num) { num.classList.remove("jg-quiere"); num.classList.add("jg-leido"); num.classList.toggle("jg-repaso", esRepaso(R.lib, R.cap, v)); }
     if (A.marcarLeido) A.marcarLeido(R.lib, R.cap, [v]);
-    const cf = cfDe(lc); if (cf[v - 1] !== "1") guardarCf(lc, pon(cf, v - 1, "1"));
+    const cf = cfDe(lc); guardarCf(lc, pon(cf, v - 1, B36[Math.min(35, vecesCar(cf[v - 1]) + 1)]), true);
   }
   // AA9 (BiEx, 14-nov-2026): los versos repasados (ya marcados otro día y marcados de nuevo) llevan una marca doble
   const diaRep = () => new Date().toISOString().slice(0, 10);
@@ -4740,7 +4827,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // AC10 (BiEx, 15-nov-2026): la marca doble de un verso releído (otro día) se conserva siempre, no solo el día del repaso:
   // «jg:rp» guarda por capítulo qué versos se repasaron alguna vez (como «jg:cf»); «jg:rep» sigue siendo lo de hoy
   const rpDe = (lc) => (A.store.get("jg:rp", null) || {})[lc] || "";
-  const esRepaso = (lib, cap, v) => rpDe(lib + "." + cap)[v - 1] === "1" || repasos().includes(lib + "." + cap + "." + v);
+  const esRepaso = (lib, cap, v) => nivelMarca(lib + "." + cap, v) >= 2 || (lecturasK() === 0 && (rpDe(lib + "." + cap)[v - 1] === "1" || repasos().includes(lib + "." + cap + "." + v)));
   function anotarRepaso(v) {
     const lc = R.lib + "." + R.cap, k = lc + "." + v, l = repasos(); if (!l.includes(k)) { l.push(k); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); }
     const o = A.store.get("jg:rp", null) || {}, x = o[lc] || ""; if (x[v - 1] !== "1") { o[lc] = pon(x, v - 1, "1"); A.store.set("jg:rp", o); }
@@ -4763,22 +4850,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (LB.el && LB.v) { LB.forzar = true; pedirLB(); }
     finCapJuego();
   }
-  // Marcar el capítulo entero (P20): el botón del final del capítulo se habilita cuando lo leído con su tiempo y lo ya
-  // marcado cubren el 90 % del capítulo y el tiempo de lectura activo alcanza 0,85 s por palabra griega de lo que falta
+  // AF29 (BiEx, 21-nov-2026): el capítulo cuenta como leído solo si quien lee lo marca, y el botón del final se habilita únicamente
+  // cuando todas sus perícopas ya se marcaron a mano (cada verso con su marca de esta lectura o de hoy) y su tiempo de lectura
+  // activo alcanza 0,85 s por palabra griega. Si no se habilita, la nota dice por qué.
   let tFin = 0;
+  const selladoHoy = (lc) => !!(S.yo && S.yo.hoy && Array.isArray(S.yo.hoy.ccL) && S.yo.hoy.ccL.includes(lc));
   function estadoCap() {
-    const lc = R.lib + "." + R.cap, cf = cfDe(lc), ms = (S.cfg && S.cfg.msCap) || 850;
-    let total = 0, cub = 0, pal = 0, hechos = 0, pend = 0, repart = 0;
+    const lc = R.lib + "." + R.cap, cf = cfDe(lc), ms = (S.cfg && S.cfg.msCap) || 850, K = lecturasK();
+    let total = 0, pal = 0, hechos = 0;
     for (let i = 0; i < R.pal.length; i++) {
-      const w = R.pal[i] || 0, v = i + 1; if (!w) continue; total++;
-      const marc = cf[i] === "1" || yaLeido(v);
-      if (R.pend.has(v)) { cub++; pal += w; pend++; if (((R.dw && R.dw.get(v)) || 0) >= 0.35 * ms * w) repart++; } else if (marc) cub++;
-      if (marc) hechos++;
+      const w = R.pal[i] || 0, v = i + 1; if (!w) continue; total++; pal += w;
+      if (vecesCar(cf[i]) > K || yaLeido(v)) hechos++;
     }
-    // X17: el tiempo debe estar repartido por el capítulo (no concentrado en unos pocos versos)
-    const faltaRep = Math.max(0, Math.ceil(0.85 * pend) - repart);
-    const t = (R.tlc[lc] || 0) + (R.tl[lc] || 0), req = Math.round(pal * ms);
-    return { total, cub, falta: Math.max(0, Math.ceil(0.9 * total) - cub), pal, t, req, hechos, faltaRep, listo: total > 0 && pal > 0 && cub >= Math.ceil(0.9 * total) && t >= req && !faltaRep };
+    const t = (R.tlc[lc] || 0) + (R.tl[lc] || 0), req = Math.round(pal * ms), falta = Math.max(0, total - hechos);
+    return { total, hechos, falta, pal, t, req, sellado: selladoHoy(lc), listo: total > 0 && !falta && t >= req && !selladoHoy(lc) };
   }
   function finCapJuego() {
     clearTimeout(tFin); tFin = setTimeout(pintarFinCap, 120);
@@ -4788,9 +4873,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (!caja || !S.token || !R.lib || !R.pal.length) return;
     const E = estadoCap(), lc = R.lib + "." + R.cap;
     let firma;
-    if (E.total && E.hechos >= E.total) firma = "hecho";
+    if (E.sellado) firma = "hecho";
     else if (E.listo) firma = "listo";
-    else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal + ":" + E.faltaRep;
+    else firma = "falta:" + E.falta + ":" + Math.ceil(Math.max(0, E.req - E.t) / 60000) + ":" + E.pal;
     if (caja.dataset.jg === firma) return;
     caja.dataset.jg = firma; caja.classList.add("jg-fin"); caja.classList.toggle("hecho", firma === "hecho");
     if (firma === "hecho") { caja._fin = null; return caja.replaceChildren(A.svg(ICO_JG.marca || ICO_JG.llama, "0 0 24 24"), h("span", { text: "Capítulo leído" })); }
@@ -4803,12 +4888,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
       caja.replaceChildren(btn, F.nota);
     }
     F.btn.classList.toggle("oro", !!E.listo); F.btn.disabled = !E.listo;
-    const tb = E.hechos ? "Marcar como leídos los versos que faltan" : "Marcar el capítulo como leído"; if (F.t.textContent !== tb) F.t.textContent = tb;
+    const tb = "Marcar el capítulo como leído"; if (F.t.textContent !== tb) F.t.textContent = tb;
     let nota;
-    if (E.listo) nota = "Cuentan los versos que leíste con su tiempo de lectura.";
-    else if (E.falta > 0) nota = "Se habilita cuando leas con calma " + (E.falta === 1 ? "1 verso más" : E.falta + " versos más") + " de este capítulo, o márcalos uno por uno con «Leído».";
-    else if (E.faltaRep > 0) nota = "Se habilita cuando cada parte del capítulo tenga su tiempo de lectura: " + (E.faltaRep === 1 ? "falta 1 verso" : "faltan " + E.faltaRep + " versos") + " por leer con calma.";
-    else nota = "Se habilita con unos " + plural(Math.max(1, Math.ceil((E.req - E.t) / 60000)), "minuto", "minutos") + " más de lectura en este capítulo (0,85 s por palabra griega).";
+    if (E.listo) nota = "Todas sus perícopas ya están marcadas a mano: márcalo como leído.";
+    else if (E.falta > 0) nota = "Se habilita cuando marques a mano todas sus perícopas (con el botón de cada perícopa o con «Leído» en cada verso): " + (E.falta === 1 ? "falta 1 verso" : "faltan " + E.falta + " versos") + " por marcar.";
+    else nota = "Ya marcaste sus perícopas; se habilita con unos " + plural(Math.max(1, Math.ceil((E.req - E.t) / 60000)), "minuto", "minutos") + " más de lectura en este capítulo (0,85 s por palabra griega).";
     if (F.nota.textContent !== nota) F.nota.textContent = nota;
   }
   async function marcarCapitulo(btn) {
@@ -4820,7 +4904,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (r.error) {
       btn.disabled = false;
       if (typeof r.t === "number") R.tlc[lc] = r.t;
-      A.avisar(r.error === "faltan" ? "Aún faltan " + plural(r.faltan || 1, "verso", "versos") + " por leer con calma en este capítulo."
+      A.avisar(r.error === "pericopas" ? "Primero marca a mano todas sus perícopas: " + (r.faltan === 1 ? "falta 1 verso" : "faltan " + plural(r.faltan || 1, "verso", "versos")) + " por marcar."
+        : r.error === "ya_sellado" ? "Este capítulo ya quedó marcado como leído hoy."
+        : r.error === "faltan" ? "Aún faltan " + plural(r.faltan || 1, "verso", "versos") + " por leer con calma en este capítulo."
         : r.error === "tiempo" ? "Aún falta un poco de lectura en este capítulo (0,85 s por palabra griega)."
         : r.error === "nada" ? "No hay versos leídos con su tiempo por marcar en este capítulo." : mensaje(r));
       const c = document.querySelector(".hoja .fin-leido"); if (c) delete c.dataset.jg; finCapJuego();
@@ -4828,7 +4914,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     for (const v of r.cf || []) { R.pend.delete(v); R.hechos.add(v); marcarLeidoV(v); }
     guardarPend();
-    for (const [k, x] of Object.entries(r.cfs || {})) guardarCf(k, x);
+    guardarMarcas(r);
     if (typeof r.tlc === "number") R.tlc[lc] = r.tlc; // (el servidor ya descontó el tiempo usado)
     vibrar([14, 40, 18]); sonar("chispa");
     actualizarYo(r.yo); R.pred = null; pintarMedidor();
@@ -4926,7 +5012,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (R.lib + "." + R.cap === lc) R.hoy = x.d;
     }
     // P20: el lector marca como leídos solo los versos marcados a mano (en este u otro dispositivo)
-    for (const [lc, s] of Object.entries(r.cfs || {})) guardarCf(lc, s);
+    guardarMarcas(r);
     for (const [lc, vs] of Object.entries(r.cf || {})) { const [lib, cap] = lc.split("."); if (A.marcarLeido && vs.length) A.marcarLeido(lib, +cap, vs); }
     for (const [lc, ms] of Object.entries(r.tlc || {})) R.tlc[lc] = ms;
     if (R.lib) pintarMarcados();
@@ -5138,9 +5224,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const fig = FIG_PREMIO[clase] ? h("span", { class: "jg-premio-fig", "aria-hidden": "true" }, A.svg(FIG_PREMIO[clase])) : null;
     const el = h("div", { class: "jg-pop jg-premio " + (clase || ""), role: "status", style: "--i:" + (i || 0) }, fig, h("b", { text: "+0" }), h("small", { text: txt }));
     document.body.append(el); contarRapido(el.firstChild, n, 900, "+");
-    if (sinAnim() || !el.animate) { setTimeout(() => el.remove(), 2200); return; }
-    el.animate([{ opacity: 0, transform: "translate(-50%,12px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.15 }, { opacity: 1, transform: "translate(-50%,-8px)", offset: 0.82 }, { opacity: 0, transform: "translate(-50%,-18px)" }],
-      { duration: 2300, delay: 260 + (i || 0) * 380, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
+    if (sinAnim() || !el.animate) { setTimeout(() => el.remove(), 3200); return; }
+    // (AF12) un segundo más a la vista: 3,3 s
+    el.animate([{ opacity: 0, transform: "translate(-50%,12px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.11 }, { opacity: 1, transform: "translate(-50%,-8px)", offset: 0.87 }, { opacity: 0, transform: "translate(-50%,-18px)" }],
+      { duration: 3300, delay: 260 + (i || 0) * 380, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
   }
   function celebrar(r) {
     if (document.hidden) { if (CEL_PEND.length < 6) CEL_PEND.push(r); return; }
@@ -5163,6 +5250,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       else if (x.tipo === "piedra" && (!grande || grande.tipo !== "lauro")) grande = x;
       else if (x.tipo === "dracma") avisos.push("Hallaste " + x.dr + " dracmas");
       else if (x.tipo === "libro") premios.push({ t: "¡Libro terminado!", d: nombreLibro(x.lib), xp: 200, dr: 20, ico: "libro" });
+      else if (x.tipo === "lectura") premios.push({ t: "¡Lectura completa n.º " + x.n + "!", d: "Toda la Nueva Voluntad, verso a verso", xp: 500, dr: 50, ico: "libro" });
     }
     if (premios.length) setTimeout(() => recibir(premios), grande ? 2600 : 500);
     if (r.subio) { if (r.subio.rango && !grande) grande = { tipo: "rango", nivel: r.subio.nivel, rango: r.subio.rango }; else avisos.push("Subiste al nivel " + r.subio.nivel); sonar("nivel"); }
@@ -5344,7 +5432,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           if (x.error) { A.avisar(mensaje(x)); bt.classList.remove("enviando"); pintarListo(); return; }
           resultado = x; actualizarYo(x.yo); quitarPrueba(); if (x.cofre) COFRE.pend = x.cofre; { const e2 = espejo(); e2.p = e2.p.filter((k) => k !== lib + "." + cap); A.store.set("jg:hoy", e2); }
           // P20: cada pregunta bien respondida marca su verso como leído
-          for (const [k, sx] of Object.entries(x.cfs || {})) guardarCf(k, sx);
+          guardarMarcas(x);
           if ((x.cf || []).length) { if (A.marcarLeido) A.marcarLeido(lib, cap, x.cf); if (R.lib === lib && R.cap === cap) { for (const v of x.cf) LB.ok.add(lib + "." + cap + "." + v); pintarMarcados(); elegirLB(); finCapJuego(); } }
           if (x.aciertos === n) sonar("nivel"); else if (x.aciertos) sonar("chispa");
           for (const m of x.misiones || []) A.avisar("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
@@ -5606,9 +5694,25 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     return d ? d + " d " + hs + " h" : hs ? hs + " h " + m + " min" : m + " min";
   }
   const PREMIOS_LIGA = "Premios de la semana: 1.º, 3 h de experiencia doble y 30 dracmas · 2.º, 2 h y 20 · 3.º, 1 h 30 min y 15 · 4.º a 7.º, 1 h y 10 · quien lee algo, 15 min y 3. Los 7 primeros suben de fundamento; nadie baja: lo ganado se queda.";
-  function escaleraPiedras(nv) {
-    return h("div", { class: "jg-escalera-p", role: "img", "aria-label": "Liga " + ligaNombre(nv) + ": " + ORDF[nv - 1] + " fundamento de 12" },
+  // La escalera de las doce piedras; con «alTocar» (BiEx, 21-nov-2026) cada piedra es un botón que muestra a quienes leen esta
+  // semana en ese fundamento
+  function escaleraPiedras(nv, alTocar) {
+    if (!alTocar) return h("div", { class: "jg-escalera-p", role: "img", "aria-label": "Liga " + ligaNombre(nv) + ": " + ORDF[nv - 1] + " fundamento de 12" },
       PIEDRAS.map((p, i) => h("span", { class: "jg-pel" + (i + 1 === nv ? " act" : i + 1 < nv ? " ya" : "") , title: "Liga " + ligaNombre(i + 1) }, gema(i, i + 1 <= nv))));
+    return h("div", { class: "jg-escalera-p", role: "group", "aria-label": "Las doce ligas: toca una piedra para ver quiénes leen en ese fundamento" },
+      PIEDRAS.map((p, i) => h("button", { type: "button", class: "jg-pel" + (i + 1 === nv ? " act ver" : i + 1 < nv ? " ya" : ""), "aria-pressed": i + 1 === nv ? "true" : "false",
+        "aria-label": "Liga " + ligaNombre(i + 1) + ", " + ORDF[i] + " fundamento" + (i + 1 === nv ? " (la tuya)" : ""), title: "Liga " + ligaNombre(i + 1),
+        onclick: (e) => { const yo = e.currentTarget; for (const b of yo.parentNode.children) { const sel = b === yo; b.classList.toggle("ver", sel); b.setAttribute("aria-pressed", sel ? "true" : "false"); } alTocar(i + 1); } }, gema(i, i + 1 <= nv))));
+  }
+  // Quienes leen esta semana en otro fundamento: los 40 de más experiencia de toda la liga
+  function tarjetaFundamento(k, v) {
+    const cab = h("p", { class: "jg-mini" }, h("span", { lang: "grc", text: PIEDRAS[k - 1][0] }), " · " + ORDF[k - 1] + " fundamento de 12");
+    if (v.error) return tarjeta("Liga " + ligaNombre(k), null, cab, h("p", { text: mensaje(v) }));
+    if (!v.n) return tarjeta("Liga " + ligaNombre(k), null, cab, h("p", { class: "jg-mini", text: "Nadie lee todavía esta semana en este fundamento." }));
+    return tarjeta("Liga " + ligaNombre(k), null, cab,
+      h("p", { class: "jg-total" }, cifra(v.n), " " + (v.n === 1 ? "lector" : "lectores") + " esta semana · " + plural(v.grupos, "grupo", "grupos")),
+      h("ol", { class: "jg-lista jg-lista-liga" }, v.lista.map((x) => filaLiga(x, 0))),
+      h("p", { class: "jg-mini", text: (v.n > v.lista.length ? "Se ven los " + v.lista.length + " de más experiencia de la semana en toda la liga. " : "") + "Para subir cuenta el puesto dentro de cada grupo de hasta " + (v.tam || 30) + " personas." }));
   }
   function filaLiga(x, suben) {
     const [l, c] = embDe(x.emb);
@@ -5646,10 +5750,21 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const r = await pedir("/liga");
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
+    const nv = r.nv || 1;
+    const propio = r.enGrupo ? tarjeta("Tu grupo", null, h("ol", { class: "jg-lista jg-lista-liga" }, r.lista.map((x, i) => [filaLiga(x, r.suben), i + 1 === r.suben && r.lista.length > r.suben ? h("li", { class: "jg-corte", "aria-hidden": "true" }, h("span", { text: "▲ suben de fundamento" })) : null]).flat().filter(Boolean)),
+      h("p", { class: "jg-mini", text: "La experiencia de la semana se actualiza cada media hora mientras lees, y al cerrar la lectura." })) : null;
+    const verZona = h("div", { class: "jg-ver-fund", "aria-live": "polite" }, propio); let viendo = nv;
+    const verFundamento = async (k) => {
+      viendo = k;
+      if (k === nv) { verZona.replaceChildren(...(propio ? [propio] : [])); return; }
+      verZona.replaceChildren(tarjeta("Liga " + ligaNombre(k), null, h("p", { class: "jg-mini", text: "Cargando a los lectores de este fundamento…" })));
+      const v = await pedir("/liga/ver?nv=" + k, { guardable: true });
+      if (viendo !== k || !verZona.isConnected) return;
+      verZona.replaceChildren(tarjetaFundamento(k, v)); animarCifras(verZona);
+    };
     zona.replaceChildren(
-      h("section", { class: "jg-tarjeta jg-heroe" }, resumenLiga(r, false), escaleraPiedras(r.nv || 1)),
-      r.enGrupo ? tarjeta("Tu grupo", null, h("ol", { class: "jg-lista jg-lista-liga" }, r.lista.map((x, i) => [filaLiga(x, r.suben), i + 1 === r.suben && r.lista.length > r.suben ? h("li", { class: "jg-corte", "aria-hidden": "true" }, h("span", { text: "▲ suben de fundamento" })) : null]).flat().filter(Boolean)),
-        h("p", { class: "jg-mini", text: "La experiencia de la semana se actualiza cada media hora mientras lees, y al cerrar la lectura." })) : null,
+      h("section", { class: "jg-tarjeta jg-heroe" }, resumenLiga(r, false), escaleraPiedras(nv, verFundamento), h("p", { class: "jg-mini jg-esc-nota", text: "Toca una piedra para ver quiénes leen en ese fundamento esta semana." })),
+      verZona,
       tarjeta("Premios", null, h("p", { class: "jg-mini", text: PREMIOS_LIGA })));
     animarCifras(zona);
   }
@@ -5785,7 +5900,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         h("p", { class: "jg-mini" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
         h("p", { class: "jg-mini" }, relojCiudades(m.fin, "Termina el")),
-        h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble en cuanto se logra, y 15 min si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
+        h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble y 4 dracmas en cuanto se logra, y 15 min y 1 dracma si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
         v.proxMision ? h("p", { class: "jg-mini" }, relojCiudades(v.proxMision, "La siguiente empieza el")) : "");
       animarCifras(zona);
     };
@@ -6045,7 +6160,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
     retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; if (S.cont && S.cont.isConnected) repintar(); },
     // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
-    estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v) } : null),
+    estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v), veces: vecesDe(c + "." + cap, v), k: lecturasK() } : null),
     // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista (14-nov-2026)
     versoActivo: () => (R.lib && (LB.v || R.vf)) || 0,
     // V22 · benignidad: compartir un verso o un capítulo hace crecer ese aspecto del fruto (cuenta una vez al día por pasaje)

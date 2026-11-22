@@ -252,6 +252,19 @@
     lectura(m[1]).catch(() => {});
     if (m[2]) { analisis(m[1]).catch(() => {}); tablas().catch(() => {}); }
   })();
+  // (BiEx, 21-nov-2026, AF2) copiar el texto griego de un verso, de su perícopa o del capítulo, con su cita y el crédito de los datos
+  async function copiarGriego(b, cap, desde, hasta, que) {
+    try {
+      const [A] = await Promise.all([analisis(b.c), tablas()]);
+      const vs = (A.caps[cap] || []).filter(([v]) => v >= desde && v <= hasta);
+      if (!vs.length) throw new Error("vacio");
+      const uno = vs.length === 1;
+      const cuerpo = vs.map(([v, toks]) => (uno ? "" : v + " ") + toks.map((t) => T.F[t[0]] + punt(t[4])).join(" ")).join("\n");
+      const cita = nombreLibro(b) + " " + cap + (que === "capitulo" ? "" : ":" + (uno ? vs[0][0] : vs[0][0] + "–" + vs[vs.length - 1][0]));
+      await navigator.clipboard.writeText(cita + " · texto griego\n" + cuerpo + "\n\nTexto griego: Center for New Testament Restoration [Centro para la Restauración del Nuevo Testamento], CC BY-SA 4.0 · BiEx – Biblia Exacta");
+      avisar(que === "capitulo" ? "Copiado el griego del capítulo " + cap : que === "pericopa" ? "Copiado el griego de la perícopa" : "Copiado el griego del verso");
+    } catch (e) { avisar("No se pudo copiar el griego"); }
+  }
   async function versoTokens(c, cap, v) {
     const [A] = await Promise.all([analisis(c), tablas()]);
     const x = (A.caps[cap] || []).find((e) => e[0] === v);
@@ -500,33 +513,132 @@
   // núcleo (sin lo que va entre [ ] ni los superíndices); y una palabra que quede sola sin hallar entre dos halladas toma el
   // hueco que dejan (antes la palabra tocada caía en la palabra griega anterior: Yôḥānā́n 1:41).
   const nucleoPieza = (s) => { let x = s, y; do { y = x; x = x.replace(/\s*\[[^\[\]]*\]/g, ""); } while (x !== y); return x.replace(/[ⁿᵐᶠ]/g, "").trim(); };
+  // (21-nov-2026) La lectura organizada no solo cambia el orden de las piezas: quita la marca de caso delante («a visión
+  // ocular» → «visión ocular»), rota las alternativas entre [ ] («en lo [quien] [el]» → «en el [lo] [quien]»), contrae («de el
+  // [lo]» → «del [de lo]»), suelta los paréntesis y las palabras de ampliación con * («a los (quienes)*» → «los», «si* alguna
+  // vez» → «alguna vez») y a veces deja solo la preposición («para lo [quien] [el]» → «para»). Si ni la pieza ni su núcleo
+  // están, se prueban esas variantes (como palabras sueltas; las cortas, solo hacia delante) y, al final, su primera palabra con
+  // contenido. Antes no se hallaban 9529 piezas en 6981 versos organizados y el hueco entre dos halladas se daba a ciegas a la
+  // que faltaba: en Lc 1:22 el hueco «visión ocular en el [lo] [quien]» caía en el artículo, y tocar «visión ocular» abría otra
+  // palabra. Ahora el hueco solo se da si comparte alguna palabra con la pieza o si es una sola palabra.
+  const RX_ALT = /^([^\[\]]+?)((?:\s*\[[^\[\]]+\])+)([ⁿᵐᶠ]*)$/;
+  const rotarAlt = (s, pre) => {
+    const m = RX_ALT.exec(s), r = []; if (!m) return r;
+    const it = [m[1].trim(), ...[...m[2].matchAll(/\[([^\[\]]+)\]/g)].map((x) => x[1])];
+    for (let k = 1; k < it.length; k++) r.push(pre + it[k] + " " + it.filter((_, i) => i !== k).map((x) => "[" + x + "]").join(" ") + m[3]);
+    return r;
+  };
+  const sinMarcaCaso = (s) => s.replace(/^(a|al)\s+(?=\S)/, "");
+  function variantesPieza(tr) {
+    const out = [], sm = sinMarcaCaso(tr), pm = /^(para|de|a|en|por)\s+(.+)$/.exec(tr);
+    if (sm !== tr) out.push(sm);
+    for (const b of pm ? [tr, sm, pm[2]] : [tr, sm]) out.push(...rotarAlt(b, ""));
+    if (pm) out.push(...rotarAlt(pm[2], pm[1] + " "), pm[2]);
+    out.push(nucleoPieza(sm));
+    for (const [p, c] of [["de", "del"], ["a", "al"]]) {
+      const m = new RegExp("^" + p + " el((?:\\s*\\[[^\\[\\]]+\\])*)([ⁿᵐᶠ]*)(.*)$").exec(tr);
+      if (m) out.push(c + m[1].replace(/\[([^\[\]]+)\]/g, "[" + p + " $1]") + m[2] + m[3], c + m[3]);
+      // «de el [lo]» → «de lo [del]»
+      const r = new RegExp("^" + p + " el\\s*\\[([^\\[\\]]+)\\]([ⁿᵐᶠ]*)$").exec(tr);
+      if (r) out.push(p + " " + r[1] + " [" + c + "]" + r[2]);
+    }
+    const sinPar = tr.replace(/\(([^()]*)\)\*?/g, "$1").replace(/\*/g, "").replace(/\s+/g, " ").trim();
+    const sinPar2 = tr.replace(/\s*\([^()]*\)\*?/g, "").replace(/\*/g, "").trim();
+    const sinAst = tr.replace(/(^|\s)[^\s()\[\]]+\*(?=\s|$)/g, " ").replace(/\s+/g, " ").trim();
+    for (const x of [sinPar, sinPar2, sinAst]) if (x !== tr) out.push(x, nucleoPieza(x), sinMarcaCaso(x), sinMarcaCaso(nucleoPieza(x)));
+    const limpio = nucleoPieza(tr).replace(/<[^<>]*>/g, "").replace(/[¿?¡!*]/g, "").replace(/\s+/g, " ").trim();
+    if (limpio) out.push(limpio);
+    return [...new Set(out)].filter((x) => x && x !== tr && x.length >= 2);
+  }
+  const VACIAS_AL = new Set("de del el la lo los las a al para por en y e o u que con sin un una unos unas su sus se le les me te nos os mi tu".split(" "));
+  const palabrasPieza = (tr) => nucleoPieza(tr).replace(/<[^<>]*>|\([^()]*\)/g, " ").match(/[\p{L}\p{M}ʿʾ]+/gu) || [];
+  const letraAl = (ch) => !!ch && /[\p{L}\p{M}]/u.test(ch) && !/[ⁿᵐᶠ]/.test(ch);
+  const AUX_AL = new Set("ha han he has hemos habéis había habían habiendo haber siendo estando estaba estaban estar ser es son fue fueron era eran sea sean está están".split(" "));
+  const clavePieza = (tr) => palabrasPieza(tr).filter((w) => w.length >= 3 && !VACIAS_AL.has(w) && !AUX_AL.has(w)).sort((x, y) => y.length - x.length)[0] || "";
   function alinearTokens(L, toks) {
     const raw = crudoVerso(L), bajo = raw.toLowerCase(), out = [];
     let cur = 0;
-    const buscar = (tr) => {
-      let a = -1;
-      if (L.g) { a = bajo.indexOf(tr, cur); if (a < 0) a = bajo.indexOf(tr); }
-      else if (tr.length >= 3) { const p = bajo.indexOf(tr); if (p >= 0 && bajo.indexOf(tr, p + 1) < 0) a = p; }
-      return a;
+    // textos del autor: solo vale una coincidencia única (no hay alineación palabra por palabra)
+    const unica = (tr) => { if (tr.length < 3) return -1; const p = bajo.indexOf(tr); return p >= 0 && bajo.indexOf(tr, p + 1) < 0 ? p : -1; };
+    // texto base: cada candidata se busca como palabra suelta (no «la» dentro de «adelante», ni «a él» dentro de «encima él»),
+    // primero hacia delante; hacia atrás (una pospositiva movida al comienzo) solo sin pisar una palabra ya hallada
+    // ni dentro de las alternativas [ ] de otra pieza («lo» dentro de «en el [lo] [quien]»)
+    // (solo los pares [ ] cerrados: un «[» suelto en los datos no deja el resto del verso «dentro»)
+    const prof = new Int16Array(raw.length + 1), pila = [];
+    for (let i = 0; i < raw.length; i++) if (raw[i] === "[") pila.push(i); else if (raw[i] === "]" && pila.length) { const o = pila.pop(); prof[o + 1]++; prof[i]--; }
+    for (let i = 1; i <= raw.length; i++) prof[i] += prof[i - 1];
+    const suelta = (p, w) => !prof[p] && !letraAl(bajo[p - 1]) && !letraAl(bajo[p + w.length]);
+    const libre = (p, n) => !out.some((r) => r && r[0] < p + n && r[1] > p);
+    const delante = (w, desde = cur) => { let p = bajo.indexOf(w, desde); while (p >= 0 && !suelta(p, w)) p = bajo.indexOf(w, p + 1); return p; };
+    const atras = (w) => { let p = bajo.indexOf(w); while (p >= 0 && p < cur && !(suelta(p, w) && libre(p, w.length))) p = bajo.indexOf(w, p + 1); return p >= 0 && p < cur ? p : -1; };
+    // una variante no toma el tramo que la pieza exacta de una de las palabras siguientes halla hacia delante (el artículo que
+    // falta no se queda con el de la palabra de al lado)
+    // candidatas de cada palabra: la pieza, luego su núcleo, luego las variantes de la más larga (la más precisa) a la más corta
+    const fijasDe = [], otrasDe = [];
+    if (L.g) toks.forEach((t, k) => {
+      const s = String(T.TR[t[3] || 0] || "").toLowerCase(), nu = s ? nucleoPieza(s) : "", f = s ? [s] : [];
+      if (nu && nu !== s && nu.length >= 2) f.push(nu);
+      fijasDe[k] = f;
+      otrasDe[k] = s ? [...new Set([...variantesPieza(s), clavePieza(s), (/^(para|de|en|por)\s/.exec(s) || [])[1]])].filter((w) => w && !f.includes(w)).sort((x, y) => y.length - x.length) : [];
+    });
+    const ajena = (j, p, n) => {
+      for (let k = j + 1; k < toks.length; k++) for (const w of fijasDe[k]) { const q = delante(w); if (q >= 0 && q < p + n && q + w.length > p) return true; }
+      return false;
     };
-    for (const t of toks) {
+    // una coincidencia que salta por encima de dos o más de las palabras siguientes y cuya pieza se repite más adelante es de
+    // esa otra palabra (la propia está cambiada en su sitio: «de יֵשׁוּעַ [YēshŪ́aʿ] […]» en la primera aparición, o se movió
+    // al comienzo: «Pero discurseo…»); saltar una sola es un reorden («Pero he sumergido»)
+    const salta = (j, p, w) => {
+      let n = 0;
+      for (let k = j + 1; k < toks.length && k <= j + 3; k++) if ([...fijasDe[k], ...otrasDe[k]].some((x) => { const q = delante(x); return q >= cur && q < p; })) n++;
+      return n >= 2 && fijasDe.some((f, k) => k > j && (f.includes(w) || otrasDe[k].includes(w)));
+    };
+    const debil = new Uint8Array(toks.length); // hallada por una variante: puede tomar el hueco entero entre sus vecinas
+    for (let j = 0; j < toks.length; j++) { const t = toks[j];
       let tr = String(T.TR[t[3] || 0] || "").toLowerCase();
       let a = -1, z = -1;
-      if (tr) {
-        a = buscar(tr);
-        if (a < 0) { const nu = nucleoPieza(tr); if (nu && nu !== tr && nu.length >= 2) { a = buscar(nu); if (a >= 0) tr = nu; } }
+      if (tr && !L.g) {
+        a = unica(tr);
+        if (a < 0) { const nu = nucleoPieza(tr); if (nu && nu !== tr) { a = unica(nu); if (a >= 0) tr = nu; } }
+        if (a >= 0) z = a + tr.length;
+      } else if (tr) {
+        // hacia delante la pieza y su núcleo, y si no las variantes; luego hacia atrás la pieza y su núcleo (aunque sean cortos:
+        // «pero», «pues») y las variantes de más de 4 letras
+        const fijas = fijasDe[j], otras = otrasDe[j];
+        for (const w of fijas) { const p = delante(w); if (p >= 0 && !salta(j, p, w)) { a = p; tr = w; break; } }
+        if (a < 0) for (const w of otras) { const p = delante(w); if (p >= 0 && !ajena(j, p, w.length) && !salta(j, p, w)) { a = p; tr = w; debil[j] = 1; break; } }
+        if (a < 0) for (const w of fijas) { a = atras(w); if (a >= 0) { tr = w; break; } }
+        if (a < 0) for (const w of otras) { if (w.length <= 4) continue; a = atras(w); if (a >= 0) { tr = w; debil[j] = 1; break; } }
         if (a >= 0) z = a + tr.length;
       } else if (L.g) { a = raw.indexOf("⟪", cur); const e = a >= 0 ? raw.indexOf("⟫", a) : -1; z = e > 0 ? e + 1 : -1; }
       if (a >= 0 && z > a) { out.push([a, z]); if (a >= cur) cur = z; } else out.push(null);
     }
+    // lo que sigue pegado a lo hallado es de la misma pieza: sus alternativas [ ], < >, * y superíndices («no» + « [no]* <¿no?>»)
+    // y la forma de presentación hebrea («de» + «יֵשׁוּעַ [YēshŪ́aʿ] [Salvado-Salvador de YHVH]»)
+    const pisaOtra = (j, a, z) => out.some((q, k) => k !== j && q && q[0] < z && q[1] > a);
+    if (L.g) out.forEach((r, j) => {
+      if (!r) return; const c = /^(?:\s*(?:\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]|<[^<>]*>|\*|[ⁿᵐᶠ]+))+/.exec(raw.slice(r[1]));
+      if (c && !pisaOtra(j, r[1], r[1] + c[0].length)) r[1] += c[0].length;
+    });
+    if (L.g) out.forEach((r, j) => {
+      if (!r) return; const m = /^\s*[\u0590-\u05FF]+(?:\s*\[[^\[\]]*\])*/.exec(raw.slice(r[1]));
+      if (!m || !/[\u0590-\u05FF]/.test(m[0])) return;
+      const suyas = palabrasPieza(String(T.TR[toks[j][3] || 0] || "").toLowerCase()), ahi = m[0].toLowerCase().split(/[^\p{L}\p{M}ʿʾ]+/u);
+      const z = r[1] + m[0].length;
+      if (suyas.some((w) => w.length >= 3 && ahi.includes(w)) && !pisaOtra(j, r[1], z)) r[1] = z;
+    });
     if (L.g) for (let j = 0; j < out.length; j++) {
-      if (out[j]) continue;
+      if (out[j] && !debil[j]) continue;
       const ant = j > 0 ? out[j - 1] : [0, 0], sig = j + 1 < out.length ? out[j + 1] : [raw.length, raw.length];
       if (!ant || !sig) continue; // dos o más seguidas sin hallar: no se adivina
       let a = ant[1], z = sig[0];
       while (a < z && /[\s,.;:·¡!¿?«»“”‘’()]/.test(raw[a])) a++;
       while (z > a && /[\s,.;:·¡!¿?«»“”‘’()]/.test(raw[z - 1])) z--;
-      if (z > a && /\p{L}/u.test(raw.slice(a, z))) out[j] = [a, z];
+      if (!(z > a)) continue;
+      if (out[j] && !(a <= out[j][0] && out[j][1] <= z)) continue; // la variante hallada fuera del hueco (reordenada) se queda como está
+      const hueco = raw.slice(a, z).toLowerCase(), suyas = palabrasPieza(String(T.TR[toks[j][3] || 0] || "").toLowerCase());
+      const una = !/\s/.test(hueco), comparte = suyas.some((w) => w.length >= 2 && hueco.split(/[^\p{L}\p{M}ʿʾ]+/u).includes(w));
+      if (/\p{L}/u.test(hueco) && !pisaOtra(j, a, z) && (una || comparte)) out[j] = [a, z];
     }
     return out;
   }
@@ -630,7 +742,21 @@
     if (esLista(RP.actual)) MEMLIB = { h: RP.actual, y, k: RP.clave };
     persistirPos();
     anotarUltimo();
+    anotarVista(y, a, inm);
   }
+  // (BiEx, 21-nov-2026: «al volver tras un rato se recarga todo y no me deja en la misma vista») la última vista de cualquier
+  // sección (no solo de un capítulo) queda en «vista»: si el sistema cierra la app o la pestaña en segundo plano, «#/seguir»
+  // vuelve a esa misma sección y a su posición exacta (como mucho una escritura por segundo, y siempre al ocultarse la página)
+  let tVista = 0;
+  function anotarVista(y, a, inm, ya) {
+    const hh = RP.actual || location.hash || "#/"; // RP.actual: la vista que se ve (al cambiar de dirección aún es la anterior)
+    if (/^#\/(seguir|escudrina\/i\/)/.test(hh) || (!ya && performance.now() - tVista < 1000)) return;
+    tVista = performance.now();
+    store.set("vista", { h: hh, y: y | 0, a: a && !a.tope ? a : null, i: inm ? 1 : 0, t: Date.now() });
+  }
+  const anotarVistaYa = () => { if (!RP.guardar || !D) return; const y = Math.round(window.scrollY), a = document.querySelector("#vista .vl, #vista .vs, #vista .av") ? capturarAncla(true) : null; anotarVista(y, a, document.documentElement.classList.contains("inmersivo"), true); };
+  document.addEventListener("visibilitychange", () => { if (document.hidden) anotarVistaYa(); });
+  window.addEventListener("pagehide", anotarVistaYa);
   // El verso que se lee queda en «ultimo» (como mucho una vez por segundo): si el sistema recarga la página o la app
   // (Android las cierra en segundo plano), «#/seguir» vuelve exactamente a él
   let tUlt = 0;
@@ -646,6 +772,13 @@
   function resolverSeguir() {
     if (!/^#\/seguir\/?$/.test(location.hash || "")) return false;
     const u = store.get("ultimo", null), b = u && D && libroDe(u.c);
+    // la última vista de cualquier sección, si es tan reciente como el último punto de lectura (o más)
+    const V = store.get("vista", null);
+    if (V && typeof V.h === "string" && /^#\//.test(V.h) && !/^#\/seguir/.test(V.h) && V.h.length < 300 && (+V.t || 0) >= ((u && +u.t) || 0) - 2000) {
+      try { history.replaceState(history.state, "", urlHash(V.h)); } catch (e) { location.replace(urlHash(V.h)); return true; }
+      if (V.a && V.a.v != null) RP.anclaSig = V.a; else if (V.y > 0) RP.forzar = V.y;
+      return true;
+    }
     const cap = b ? Math.max(1, Math.min(b.caps.length, +u.cap || 1)) : 0;
     const destino = b ? "#/" + b.c + "/" + cap + (u.m === "a" ? "/a" : "") : "#/";
     try { history.replaceState(history.state, "", urlHash(destino)); } catch (e) { location.replace(urlHash(destino)); return true; }
@@ -1042,6 +1175,12 @@
     M.nav = null; M.navV = null;
     if (modal.open) guardarScrollM();
     modal.replaceChildren(fn());
+    // «Adelante» dentro de la ventana: el mismo botón de abajo a la izquierda de las páginas, encima del pie de la ventana si lo hay
+    if (M.fwd.length) {
+      const ad = h("button", { class: "adelante vis m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, h("span", { text: "Adelante" }), svg(ICO.der));
+      modal.append(ad);
+      const pie = $(".m-pie", modal); if (pie && pie.offsetHeight) ad.style.bottom = "calc(" + (pie.offsetHeight + 10) + "px + env(safe-area-inset-bottom, 0px))";
+    }
     const c = $(".m-cuerpo", modal); if (c) c.scrollTop = 0;
     restaurarScrollM();
     if (fn.alMostrar) requestAnimationFrame(fn.alMostrar);
@@ -1105,7 +1244,7 @@
     return h("div", { class: "m-cab" },
       // AC13: el lugar de «Volver» se reserva siempre, para que el título no se corra ni la cabecera cambie de alto al aparecer
       M.pila.length > 1 ? h("button", { class: "btn-icono m-atras", type: "button", "aria-label": "Volver", title: "Volver", onclick: volver }, svg(ICO.atras)) : h("span", { class: "btn-icono m-atras m-atras-res", "aria-hidden": "true" }),
-      M.fwd.length ? h("button", { class: "btn-icono m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, svg(ICO.adelante)) : null,
+      // (BiEx, 21-nov-2026, AF1) sin flecha «Adelante» en la cabecera: va abajo a la izquierda, como en las páginas (pintarModal)
       h("div", { class: "m-tit" }, h("b", { text: tit }), sub ? h("small", { text: sub }) : null),
       nav ? h("button", { class: "btn-icono", type: "button", "aria-label": nav.etiqueta[0], title: nav.etiqueta[0], disabled: !nav.prev, onclick: () => nav.prev && nav.prev() }, svg(ICO.izq)) : null,
       nav ? h("button", { class: "btn-icono", type: "button", "aria-label": nav.etiqueta[1], title: nav.etiqueta[1], disabled: !nav.next, onclick: () => nav.next && nav.next() }, svg(ICO.der)) : null,
@@ -1238,7 +1377,9 @@
           fila("Paréntesis ( )", null, grupo("par", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Signos < >", null, grupo("ang", [[true, "Mostrar"], [false, "Ocultar"]])),
           fila("Letras voladas y asteriscos (ᵐ ⁿ ᶠ *)", null, grupo("sup", [[true, "Mostrar"], [false, "Ocultar"]])),
-          h("div", { class: "ap-pie" }, h("button", { class: "btn chico", type: "button", onclick: () => { Object.assign(prefs, OPC0); cambio(); pintarModal(); } }, "Restablecer")), esc.libro && esc.cap ? h("div", { class: "ap-exp" }, h("button", { class: "btn chico", type: "button", onclick: () => abrirExportar("cap") }, svg(ICO.descargar), h("span", { text: "Exportar este capítulo a Obsidian (.md)" }))) : null));
+          h("div", { class: "ap-pie" }, h("button", { class: "btn chico", type: "button", onclick: () => { Object.assign(prefs, OPC0); cambio(); pintarModal(); } }, "Restablecer")), esc.libro && esc.cap ? h("div", { class: "ap-exp" }, h("button", { class: "btn chico", type: "button", onclick: () => abrirExportar("cap") }, svg(ICO.descargar), h("span", { text: "Exportar este capítulo a Obsidian (.md)" })),
+            // AF2 (BiEx, 21-nov-2026): el griego del capítulo entero, listo para pegar
+            h("button", { class: "btn chico", type: "button", onclick: () => copiarGriego(libroDe(esc.libro), esc.cap, 1, 1e4, "capitulo") }, svg(ICO.copiar), h("span", { text: "Copiar el griego de este capítulo" }))) : null));
     };
   }
   const abrirOpciones = () => abrirModal(vistaOpciones());
@@ -1261,7 +1402,7 @@
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
     ] : [];
     // Fondo vivo: luces muy tenues que se desplazan despacio y motas de luz que suben (se detiene con «Sin animaciones»)
-    const motas = Array.from({ length: 16 }, (_, i) => h("i", { style: "--x:" + ((i * 61 + 7) % 100) + "%;--d:" + (34 + (i * 13) % 30) + "s;--r:-" + ((i * 7.3) % 40).toFixed(1) + "s;--s:" + (1.4 + (i % 4) * 0.5) + "px;--w:" + (((i * 37) % 9) - 4) + "vw" }));
+    const motas = Array.from({ length: 16 }, (_, i) => h("i", { style: "--x:" + ((i * 61 + 7) % 100) + "%;--d:" + (34 + (i * 13) % 30) + "s;--r:-" + ((i * 7.3) % 40).toFixed(1) + "s;--s:" + (1.4 + (i % 4) * 0.5) + "px", class: "m" + ((i * 37) % 9) })); // (21-nov-2026) deriva fija por clase: con var() en los fotogramas la animación no iba por el compositor
     const lienzoLuces = h("canvas", { class: "vivo-luces" });
     setTimeout(() => lucesVivas(lienzoLuces), 0);
     const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, lienzoLuces, h("div", { class: "vivo-motas" }, motas));
@@ -1280,6 +1421,9 @@
           h("span", { text: "Traducción, transliteración y análisis:" }),
           h("strong", { text: "BiEx – Biblia Exacta ©™." }),
           h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" }))),
+        // AF23 (BiEx, 21-nov-2026): cuenta atrás misteriosa hasta el 16 de julio de 2027 (sin explicación), discreta, solo en la
+        // pantalla principal y al leer un capítulo (Análisis, Lectura y Textual)
+        h("div", { class: "cuenta-m", id: "cuenta-m", "aria-hidden": "true" }),
         // Créditos de los datos (BiEx, 13-nov-2026, 18:26): desplegados en el pie de la pantalla principal; en las ventanas
         // (Manuscritos, la ficha de la palabra, las referencias) van plegados (credPleg)
         // (BiEx, 13-nov-2026, 20:32): en el pie, siempre a la vista, sin pliegue (también al pie de «Más» en Escudriña)
@@ -1455,19 +1599,21 @@
           h("span", { class: "eyebrow", text: "Nueva Voluntad · griego koiné → español" }),
           h("h1", {}, "Del griego al español, ", h("em", { text: "palabra por palabra" }), "."),
           h("p", { text: "Lee cada libro en su estado actual de traducción y abre cualquier palabra para ver su forma, su transliteración, su lema, su análisis morfológico completo y todas las veces que aparece." })),
-        h("div", { class: "codice" },
-          h("div", { class: "codice-cab" },
-            h("span", { class: "ref" }, h("b", { text: (lb.t || lb.n) + " " + P.cap + ":" + P.v }), " [" + lb.n + "]"),
-            h("div", { class: "seg seg-hero", role: "group", "aria-label": "Escritura del griego" }, cajaBtn("may", "ΑΒΓ", "Mayúsculas, como los códices unciales"), cajaBtn("min", "αβγ", "Minúsculas con acentos y espíritus"))),
-          h("div", { class: "interlineal" }, botones),
-          h("p", { class: "pista", text: "Toca una palabra, en griego o en español, para abrir su análisis" })),
+        // BiEx (21-nov-2026, con la propuesta de Neon): las acciones antes del códice, para que «Leer» o «Seguir leyendo» se vean
+        // sin desplazar (a 1440 × 900 quedaban debajo del pliegue)
         h("div", { class: "acciones" },
           // BiEx (10-nov-2026): «Seguir leyendo» en dos renglones centrados (el libro ya no se parte de forma asimétrica)
           ub ? h("a", { class: "btn oro seguir", href: "#/" + ub.c + "/" + ult.cap + (ult.m === "a" ? "/a" + (ult.v ? "/" + ult.v : "") : (ult.v ? "/l/" + ult.v : "")) }, h("span", { class: "seg-t" }, h("small", {}, svg(ICO.seguir), "Seguir leyendo"), h("span", { class: "seg-l" }, etLibro(ub, ult.cap + (ult.v ? ":" + ult.v : ""))))) : null,
           h("a", { class: "btn" + (ub ? "" : " oro"), href: "#/" + P.c + "/" + P.cap + "/l/" + P.v }, svg(ICO.libro), h("span", {}, "Leer ", etLibro(lb, String(P.cap)))),
           h("a", { class: "btn", href: "#/" + P.c + "/" + P.cap + "/a/" + P.v }, svg(ICO.lupa), "Analizar palabra por palabra"),
           h("a", { class: "btn", href: "#/libros" }, svg(ICO.rejilla), "Los 27 libros"),
-          h("a", { class: "btn", href: "#/escudrina" }, svg(ICO.juego), "Escudriña · el juego")))),
+          h("a", { class: "btn", href: "#/escudrina" }, svg(ICO.juego), "Escudriña · el juego")),
+        h("div", { class: "codice" },
+          h("div", { class: "codice-cab" },
+            h("span", { class: "ref" }, h("b", { text: (lb.t || lb.n) + " " + P.cap + ":" + P.v }), " [" + lb.n + "]"),
+            h("div", { class: "seg seg-hero", role: "group", "aria-label": "Escritura del griego" }, cajaBtn("may", "ΑΒΓ", "Mayúsculas, como los códices unciales"), cajaBtn("min", "αβγ", "Minúsculas con acentos y espíritus"))),
+          h("div", { class: "interlineal" }, botones),
+          h("p", { class: "pista", text: "Toca una palabra, en griego o en español, para abrir su análisis" })))),
       h("section", { class: "cifras" }, h("div", { class: "in" },
         h("div", { class: "c" }, h("b", { text: pct(D.palabras) }), h("span", { text: "de las palabras ya traducidas en el texto base (preliminar, en revisión)" })),
         h("div", { class: "c" }, h("b", { text: fmt(D.palabrasTotal) }), h("span", { text: "palabras griegas analizadas" })),
@@ -1542,16 +1688,16 @@
           hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias"),
           hr(ICO.podio, "Ranking de traducciones", "Las 16 ediciones bíblicas menos mal traducidas al español, según la comparación de BiEx con los textos más antiguos.", "Ver el ranking", "#/ranking"),
           hr(ICO.sinopsis, "La fuente Q", "Mattáy, Μᾶrκος y Lουκᾶς comparados palabra por palabra en griego: la hipótesis de la fuente Q, sus argumentos y su historia.", "Explorar", "#/fuente-q"),
-          (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
           hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
+          hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
+          hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
+          hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
+          hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar"),
           hr(ICO.juego, "Escudriña · el juego", "Cada verso que lees de verdad te da experiencia: misiones pequeñas cada día, hallazgos raros, clasificaciones por ciudad, departamento o estado y país, y tu árbol de la siembra. Se entra con un apodo.", "Jugar", "#/escudrina"),
           (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
           hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
+          (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
           hr(ICO.nube, "Instalar y leer sin conexión", "BiEx como aplicación con su propio ícono y todo su contenido guardado en tu dispositivo para usarlo sin internet.", "Abrir", "#/app"),
-          hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
-          hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
-          hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar"),
-          hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
           hr(ICO.guia, "Guía animada", "Todo lo que puedes hacer, en pocos pasos, con imágenes en movimiento y textos breves que se pueden escuchar.", "Ver la guía", "#/guia")), redesBiex()]));
   }
   // Historial: las últimas 24 citas consultadas; tocar una lleva a ella (y «Atrás» vuelve a esta lista)
@@ -1683,7 +1829,8 @@
     const caps = h("div", { class: "caps", role: "group", "aria-label": "Capítulos" }, b.caps.map((C) => h("a", {
       class: "cap", href: "#/" + b.c + "/" + C.c + (esc.modo === "a" ? "/a" : ""), "aria-current": C.c === cap ? "true" : "false",
       title: "Capítulo " + C.c + (C.pal != null ? ": palabras traducidas " + pctEnt(C.pal) + " · revisión " + pctEnt(C.pct) : ": " + pct(C.pct) + " de avance"),
-      onclick: otro && C.total > 1 ? (e) => { e.preventDefault(); empujar(vistaNavegador(b, C.c, "num")); } : alElegir || null }, String(C.c),
+      // (BiEx, 21-nov-2026, AF31) en el Análisis, tocar otro capítulo también muestra sus versos para elegir el verso
+      onclick: (otro || (esc.modo === "a" && C.c !== cap)) && C.total > 1 ? (e) => { e.preventDefault(); empujar(vistaNavegador(b, C.c, "num")); } : alElegir || null }, String(C.c),
       C.pal != null ? h("i", { class: "cap-pal", style: "width:" + Math.min(100, C.pal) + "%" }) : null, h("i", { style: "width:" + Math.min(100, C.pct) + "%" }))));
     if (versos === "num" && cap) {
       const C = b.caps[cap - 1] || {}, ir = (v) => { if (alElegir) alElegir(); location.hash = "#/" + b.c + "/" + cap + "/" + (esc.modo === "a" ? "a" : "l") + (v ? "/" + v : ""); };
@@ -1692,7 +1839,7 @@
         h("div", {}, h("p", { class: "rotulo", text: "Versos del capítulo " + cap }),
           h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, Array.from({ length: C.total || 0 }, (_, i) => h("button", {
             type: "button", class: "tesela n-x", title: cap + ":" + (i + 1), "aria-label": "Verso " + (i + 1), onclick: () => ir(i + 1) }, String(i + 1))))),
-        h("div", { class: "nav-ir" }, h("button", { class: "btn oro", type: "button", onclick: () => ir(0) }, h("span", { text: "Leer el capítulo " + cap })))];
+        h("div", { class: "nav-ir" }, h("button", { class: "btn oro", type: "button", onclick: () => ir(0) }, h("span", { text: (esc.modo === "a" ? "Analizar el capítulo " : "Leer el capítulo ") + cap })))];
     }
     const teselas = versos ? h("div", { class: "teselas", role: "group", "aria-label": "Versos del capítulo " + cap }, versos.map((x) => aplicarMarca(h("button", {
       type: "button", class: "tesela n-" + x.n + (esc.modo !== "a" && prefs.nivel && !pasaFiltro(x, prefs.nivel) ? " fuera" : ""), "data-v": x.v, title: cap + ":" + x.v + " · " + estadoEt(x.n), "aria-label": "Verso " + x.v + ", " + estadoEt(x.n),
@@ -1812,7 +1959,9 @@
     return h("div", { class: "encab" },
       flecha(cap > 1 ? cap - 1 : 0, ICO.izq, "Capítulo anterior"),
       h("div", { class: "encab-c" },
-        C.h ? h("div", { class: "h" }, h("span", { lang: "he", text: partes[0] }), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
+        // (21-nov-2026, AC11/AC21: el brillo del título hebreo movía su fondo en el hilo principal en cada cuadro, ~6 % de CPU en reposo)
+        // ahora el brillo son siete luces quietas sobre el texto que se encienden en secuencia: solo opacidad, por el compositor
+        C.h ? h("div", { class: "h" }, h("span", { lang: "he", class: "he-br" }, partes[0], ...Array.from({ length: 7 }, (_, k) => h("span", { class: "he-luz", "aria-hidden": "true", style: "--hk:" + k, text: partes[0] }))), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
         h("div", { class: "s", text: "Capítulo " + cap + " de " + b.caps.length }), cifrasCap(C)),
       flecha(cap < b.caps.length ? cap + 1 : 0, ICO.der, "Capítulo siguiente"));
   }
@@ -2241,7 +2390,12 @@
     prop: ["Nombres propios", (m) => !!m.propio],
     var: ["Palabras que faltan en alguna edición", (m, t) => !!(t[6])],
     sin: ["Palabras aún sin traducción fijada", (m, t) => !t[3]],
+    raras: ["Palabras casi exóticas (3 veces o menos)", (m, t) => esRara(t)],
   };
+  // AF6 (BiEx, 21-nov-2026: «las palabras casi exóticas en toda la Biblia llevan un color único»): lemas que aparecen 3 veces o
+  // menos en la Nueva Voluntad (ἐφημερία, 2: Lc 1:5 y 1:8). Por ahora con los datos de la Nueva Voluntad.
+  const RARA_MAX = 3;
+  const esRara = (t) => !!(T && T.LN && T.LN[t[1]] > 0 && T.LN[t[1]] <= RARA_MAX);
   // Tarjeta de una palabra: griego, transliteración, traducción y morfología abreviada
   function tarjetaPalabra(t, alTocar, extra) {
     const m = T.P[t[2]], cl = T.MC[t[2]], tr = T.TR[t[3] || 0];
@@ -2252,6 +2406,7 @@
       h("span", { class: "tr" + (tr ? "" : " sin"), text: tr || "·" }),
       h("span", { class: "mo", text: abreviar(m, cl, t[8], t[7]) }));
     btn._t = t; btn._m = m; btn._cl = cl;
+    if (esRara(t)) { btn.classList.add("rara"); btn.title = "Palabra casi exótica: su lema aparece " + (T.LN[t[1]] === 1 ? "una sola vez" : T.LN[t[1]] + " veces") + " en la Nueva Voluntad"; }
     const k = (COLOR[prefs.color] || COLOR.clase)(m, cl);
     if (k) btn.style.setProperty("--k", k);
     return btn;
@@ -3091,7 +3246,16 @@
           avisoAnadido(b, cap, ctx.v, anadido(b.c, cap, ctx.v), true),
           L ? h("div", { class: "chip-estado n-" + L.n }, h("i"), estadoEt(L.n) + (L.n === "base" ? " · " + L.k + " % de las palabras ya traducidas" : "")) : null,
           L ? h("p", { class: "fv-es" + (anadido(b.c, cap, ctx.v) ? " an-ventana" : "") }, txtVerso(L)) : null,
-          h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona),
+          h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona,
+            (() => {
+              // AF2: la perícopa del verso (los mismos inicios que la lectura) y el capítulo entero
+              const ini = versos.length ? iniciosPericopa(versos) : new Set(); let a = ctx.v, z = ctx.v;
+              for (const x of versos) { if (x.v <= ctx.v && ini.has(x.v)) a = x.v; }
+              for (const x of versos) { if (x.v > ctx.v && ini.has(x.v)) { break; } if (x.v >= ctx.v) z = x.v; }
+              const op = (t, d, hh, que) => h("button", { type: "button", class: "fv-cg-b", onclick: () => copiarGriego(b, cap, d, hh, que) }, t);
+              return h("p", { class: "fv-cg" }, svg(ICO.copiar), h("span", { text: "Copiar el griego:" }), op("verso", ctx.v, ctx.v, "verso"),
+                a !== z ? op("perícopa " + a + "–" + z, a, z, "pericopa") : null, op("capítulo " + cap, 1, 1e4, "capitulo"));
+            })()),
           bloqueRefs(b, cap, ctx.v),
           bloqueEstudio(b, cap, ctx.v),
           h("div", { class: "bloque" }, h("h4", { text: "En los manuscritos antiguos" }), resumenManuscritos({ b, cap, v: ctx.v }, () => empujar(vistaManuscritos(ctx)))),
@@ -3103,7 +3267,7 @@
             if (ej && (ej.antes || ej.repaso)) {
               const hecho = ej.hoy;
               return h("button", { class: "btn chico btn-leido repaso" + (hecho ? " si" : ""), type: "button", "aria-pressed": String(hecho), title: hecho ? "Repasado hoy" : "Marcar este verso como repasado",
-                onclick: () => { if (hecho) return; if (window.BiExJuego.marcarVerso(b.c, cap, ctx.v)) { reemplazar(vistaVerso(ctx)); avisar("Verso repasado"); } } }, svg(ICO.repaso), hecho ? "Repasado" : "Marcar como repasado");
+                onclick: () => { if (hecho) return; if (window.BiExJuego.marcarVerso(b.c, cap, ctx.v)) { reemplazar(vistaVerso(ctx)); avisar("Verso repasado"); } } }, svg(ICO.repaso), (hecho ? "Repasado" : "Marcar como repasado") + (ej.veces >= 2 ? " · " + ej.veces + " veces" : ""));
             }
             const si = LEI.es(b.c, cap, ctx.v); return h("button", { class: "btn chico btn-leido" + (si ? " si" : ""), type: "button", "aria-pressed": String(si), title: si ? "Quitar la marca de leído" : "Marcar este verso como leído",
             onclick: () => {
@@ -3117,7 +3281,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "b473c9aef1", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "daf75bcbf4", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5774,9 +5938,9 @@
     function lanzar() {
       const W = window.innerWidth, A = window.innerHeight, mov = W < 700;
       if (capa.childElementCount >= (mov ? 2 : 3)) return;
-      const he = Math.random() < 0.45, L = he ? HE : GR, s = ((mov ? 25 : 30) + Math.random() * (mov ? 13 : 20)) * 0.65;
+      const he = Math.random() < 0.45, L = he ? HE : GR, s = ((mov ? 25 : 30) + Math.random() * (mov ? 13 : 20)) * 0.65 * 1.05; // (BiEx, 21-nov-2026, AF11) un 5 % más grandes
       const ang = Math.random() * Math.PI * 2, dx = Math.cos(ang), dy = Math.sin(ang);
-      const v0 = ((mov ? 170 : 240) + Math.random() * 150) * 0.5, a = v0 * 0.16;
+      const v0 = ((mov ? 170 : 240) + Math.random() * 150) * 0.5 * 0.85, a = v0 * 0.16; // (AF11) un 15 % más lentos (velocidad y aceleración)
       // nace en cualquier punto de la pantalla (con un fundido) y recorre un trecho hasta desvanecerse (pedido de BiEx, 31-oct-2026)
       const x0 = W * (0.08 + Math.random() * 0.84), y0 = A * (0.08 + Math.random() * 0.84), D = Math.hypot(W, A) * (0.35 + Math.random() * 0.3);
       const T = (-v0 + Math.sqrt(v0 * v0 + 2 * a * D)) / a, al = (v0 * T) / D;
@@ -5817,11 +5981,40 @@
   // ------------------------------------------------------------------ rutas
   // rutaVista: la última dirección pintada como página (las ventanas de búsqueda y de guía se abren encima de ella)
   let rutaVista = null;
+  // AF23: la cuenta atrás del pie (16-jul-2027, 00:00 UTC). Late cada segundo solo mientras se ve; fuera de la vista no gasta nada
+  const CUENTA_FIN = Date.UTC(2027, 6, 16, 0, 0, 0);
+  let cuentaT = 0, cuentaVis = false;
+  function pintarCuenta() {
+    const el = document.getElementById("cuenta-m"); if (!el) return;
+    let ms = Math.max(0, CUENTA_FIN - Date.now()); const d = Math.floor(ms / 864e5); ms -= d * 864e5;
+    const hh = Math.floor(ms / 36e5); ms -= hh * 36e5; const mm = Math.floor(ms / 6e4), ss = Math.floor((ms - mm * 6e4) / 1000), dos = (x) => String(x).padStart(2, "0");
+    if (!el.firstChild) {
+      el.append(h("i", { class: "cm-reloj" }, svg('<path d="M7 3.5h10M7 20.5h10M8 3.5c0 4.5 4 5.6 4 8.5s-4 4-4 8.5M16 3.5c0 4.5-4 5.6-4 8.5s4 4 4 8.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 18.6c.6-1.1 1.2-1.6 2-1.9.8.3 1.4.8 2 1.9z" fill="currentColor" opacity=".55"/>')));
+      for (const t of ["d", "h", "m", "s"]) el.append(h("span", { class: "cm-u" }, h("b", { "data-k": t }), h("small", { text: t === "d" ? "días" : t === "h" ? "horas" : t === "m" ? "min" : "s" })));
+    }
+    const pon = (k, v) => { const b = el.querySelector('b[data-k="' + k + '"]'); if (b && b.textContent !== v) b.textContent = v; };
+    pon("d", String(d)); pon("h", dos(hh)); pon("m", dos(mm)); pon("s", dos(ss));
+  }
+  function ajustarCuenta() {
+    const hh = location.hash || "#/", ver = /^#\/?$/.test(hh) || /^#\/[1-3A-Z]{3}\/\d+/.test(hh);
+    const r = document.documentElement; if (r.classList.contains("ver-cuenta") !== ver) r.classList.toggle("ver-cuenta", ver);
+    const el = document.getElementById("cuenta-m"); if (!el) return;
+    if (!ajustarCuenta.io && "IntersectionObserver" in window) { ajustarCuenta.io = new IntersectionObserver((es) => { cuentaVis = es.some((e) => e.isIntersecting); latirCuenta(); }); ajustarCuenta.io.observe(el); }
+    pintarCuenta(); latirCuenta();
+  }
+  function latirCuenta() {
+    clearInterval(cuentaT); cuentaT = 0;
+    if (cuentaVis && !document.hidden && document.documentElement.classList.contains("ver-cuenta")) { pintarCuenta(); cuentaT = setInterval(pintarCuenta, 1000); }
+  }
+  document.addEventListener("visibilitychange", () => latirCuenta());
   function enrutar() {
     if (!D) return;
+    // (BiEx, 21-nov-2026, AF32) si la ventana de una palabra se cierra por un enlace, su palabra no queda marcada en el análisis
+    for (const x of document.querySelectorAll('.analisis .pal[aria-pressed="true"]')) x.setAttribute("aria-pressed", "false");
     M.alCerrar = null;
     if (modal.open && !(performance.now() - (M.reabierta || -1e9) < 600)) { guardarScrollM(); M.porRuta = true; cerrarModal(); }
     mostrarRuta();
+    ajustarCuenta();
   }
   function refrescarVista() {
     if (!rutaVista) return;
@@ -6039,7 +6232,7 @@
       if (sr && performance.now() < sr.hasta && location.href === sr.url) return;
       pasosApp++; resolverSeguir(); prepararPos(); enrutar();
     });
-    if (enApp() && !EMBED && !(location.hash || "").replace(/^#\/?/, "")) { const u = store.get("ultimo", null); if (u && u.c && (!u.t || Date.now() - u.t < 60 * 864e5)) ponerHash("#/seguir"); }
+    if (enApp() && !EMBED && !(location.hash || "").replace(/^#\/?/, "")) { const u = store.get("ultimo", null), V = store.get("vista", null); if ((u && u.c && (!u.t || Date.now() - u.t < 60 * 864e5)) || (V && V.h && Date.now() - (+V.t || 0) < 60 * 864e5)) ponerHash("#/seguir"); }
     resolverSeguir();
     prepararPos();
     enrutar();

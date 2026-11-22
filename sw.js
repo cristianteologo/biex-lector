@@ -150,7 +150,8 @@ self.addEventListener("activate", (e) => {
 // conexión a medias (la red del teléfono despertando, un wifi sin salida) una petición puede quedarse colgada minutos y,
 // con ella, la página y el gesto de recargar. Si hay copia guardada, la red tiene un plazo: pasado ese plazo se responde con
 // la copia y la respuesta de la red, cuando llegue, se guarda igual para la próxima vez. Sin copia, se espera a la red.
-const PLAZO_NAV = 3500, PLAZO_RED = 4500;
+// (21-nov-2026: «al volver tras un rato se recarga y se pierde tiempo») con la red lenta, la copia guardada entra antes; la red sigue y pone al día la copia
+const PLAZO_NAV = 1500, PLAZO_RED = 2200;
 async function redPrimero(e, req, r, esNavegacion) {
   const c = await caches.open(CACHE);
   // los archivos de otros sitios se piden con CORS para poder guardarlos completos (no opacos)

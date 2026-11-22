@@ -14,6 +14,9 @@
       if (navigator.webdriver || /bot|crawl|spider|slurp|lighthouse|headless|prerender|preview|facebookexternalhit|embedly|whatsapp|telegram/i.test(navigator.userAgent)) return;
       if (sessionStorage.getItem("biex:intro:visita")) return;
       sessionStorage.setItem("biex:intro:visita", "1");
+      // (BiEx, 21-nov-2026) en la app instalada, si se leía hace menos de 3 horas, se vuelve directo a la lectura
+      var app = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true, vu = JSON.parse(localStorage.getItem("biex:vista") || "null");
+      if (app && vu && n - (+vu.t || 0) < 108e5) return;
       var r = JSON.parse(localStorage.getItem("biex:intro:registro") || "{}"), hoy = new Date().toDateString();
       if (r.d !== hoy) { r.d = hoy; r.c = 0; r.b = 0; }
       var inicio = /^\/(index\.html)?$/.test(location.pathname) && /^#?\/?$/.test(location.hash);
@@ -30,11 +33,16 @@
     c.id = "biex-cortina";
     c.style.cssText = "position:fixed;inset:0;z-index:2147483600;background:#030308;box-shadow:0 0 0 100vmax #030308;transition:opacity .5s";
     document.documentElement.appendChild(c);
-    var quitar = function () { if (c.parentNode) { c.style.opacity = "0"; setTimeout(function () { c.remove(); }, 550); } };
+    // (BiEx, 21-nov-2026, AF3) ninguna barra de desplazamiento mientras se prepara la presentación (asomaba medio segundo a la derecha)
+    var sb = document.createElement("style"); sb.id = "biex-sin-barras";
+    sb.textContent = "html,body{overflow:hidden!important;scrollbar-width:none!important}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}";
+    document.documentElement.appendChild(sb);
+    var quitar = function () { if (c.parentNode) { c.style.opacity = "0"; setTimeout(function () { c.remove(); if (!window.__biexIntro && sb.parentNode) sb.remove(); }, 550); } };
     setTimeout(function () { if (!window.__biexIntro) quitar(); }, 4500);
     setTimeout(quitar, 30000);
+    setTimeout(function () { if (sb.parentNode) sb.remove(); }, 60000); // salvaguarda: la página nunca queda sin desplazamiento
     var s = document.createElement("script");
-    s.src = "intro.js?v=367b1fa5bb";
+    s.src = "intro.js?v=0b4f8d3df5";
     s.async = true;
     s.setAttribute("data-modo", modo);
     s.onerror = quitar;

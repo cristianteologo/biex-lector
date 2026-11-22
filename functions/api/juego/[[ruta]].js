@@ -33,5 +33,23 @@ export async function onRequest({ request, env }) {
       return responder({ ok: false, enlace, servidor: { error: String(e && e.message || e).slice(0, 200) } });
     }
   }
+  // Prueba del capítulo (AF14 y AF26, 21-nov-2026): las preguntas salen de los archivos de ESTA publicación (env.ASSETS),
+  // sin que el servidor del juego tenga que volver a pedirlas a bibliaexacta.pages.dev (esa vuelta fallaba en producción:
+  // «Algo no salió bien»). El cuerpo se rehace aquí: lo que mande el navegador en «filas» nunca llega al servidor.
+  const ruta = new URL(request.url).pathname.replace(/^\/api\/juego(?=\/|$)/, "");
+  if (ruta === "/prueba/pedir" && request.method === "POST" && env.ASSETS) {
+    let b = null; try { b = await request.clone().json(); } catch (e) { b = null; }
+    const lib = b && typeof b.lib === "string" && /^[0-9A-Z]{3}$/.test(b.lib) ? b.lib : "", cap = b ? Number(b.cap) : NaN;
+    if (lib && Number.isInteger(cap) && cap > 0) {
+      try {
+        const r = await env.ASSETS.fetch(new URL("/datos/juego/" + lib + ".json", request.url));
+        const d = r.ok ? await r.json() : null, filas = d && d.c ? d.c[String(cap)] || [] : null;
+        if (Array.isArray(filas)) {
+          h.set("x-biex-filas", "1"); h.set("content-type", "application/json"); h.delete("content-length");
+          return env.JUEGO.fetch(new Request(request.url, { method: "POST", headers: h, body: JSON.stringify({ lib, cap, filas }), redirect: "manual" }));
+        }
+      } catch (e) { /* sin los archivos: el servidor del juego los busca por su cuenta */ }
+    }
+  }
   return env.JUEGO.fetch(new Request(request, { headers: h, redirect: "manual" }));
 }

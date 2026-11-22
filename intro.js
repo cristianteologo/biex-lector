@@ -176,6 +176,7 @@
   window.addEventListener("scroll", fijar, true);
   function soltarDesplazamiento() {
     BLOQ.forEach((b) => { if (b.v) b.el.style.setProperty("overflow", b.v, b.p); else b.el.style.removeProperty("overflow"); });
+    const sb = document.getElementById("biex-sin-barras"); if (sb) sb.remove(); // (AF3) la puso el cargador mientras se preparaba
     window.removeEventListener("wheel", quieto, { capture: true });
     window.removeEventListener("touchmove", quieto, { capture: true });
     document.removeEventListener("scroll", fijar, true);
@@ -308,19 +309,32 @@
   const t0 = new Float32Array(NP), du = new Float32Array(NP), cu = new Float32Array(NP), ta = new Float32Array(NP);
   const sz = new Float32Array(NP), al = new Float32Array(NP), alO = new Float32Array(NP), ph = new Float32Array(NP);
   const th = new Float32Array(NP), rr = new Float32Array(NP), rO = new Float32Array(NP), om = new Float32Array(NP);
-  const md = new Uint8Array(NP), col = new Uint8Array(NP), et = new Int16Array(NP);
+  const md = new Uint8Array(NP), col = new Uint8Array(NP), et = new Int16Array(NP), ni = new Uint8Array(NP); // ni: luz nítida (AF24)
   // modos: 0 deriva · 1 viaja a un destino · 2 fijada al destino · 3 suelta · 4 en órbita
   let brillos = [];
-  const hacerBrillos = () => P.chispas.map((c) => {
-    const s = document.createElement("canvas"), n = 128; s.width = s.height = n;
-    const g = s.getContext("2d"), gr = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
-    gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.12, c); gr.addColorStop(0.35, c + "55"); gr.addColorStop(1, c + "00");
-    g.fillStyle = gr; g.fillRect(0, 0, n, n); return s;
-  });
+  // (BiEx, 21-nov-2026, AF24: «las luces del fondo hacen que parezca borroso») además de las luces suaves (bokeh), luces nítidas:
+  // núcleo blanco de borde definido, anillo del color y un halo corto; casi la mitad de las luces son nítidas. Mismo costo de dibujo
+  // (un sprite por luz), sprites de 128 px dibujados a menor tamaño: nunca se amplían
+  const hacerBrillos = () => {
+    const suaves = P.chispas.map((c) => {
+      const s = document.createElement("canvas"), n = 128; s.width = s.height = n;
+      const g = s.getContext("2d"), gr = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+      gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.12, c); gr.addColorStop(0.35, c + "55"); gr.addColorStop(1, c + "00");
+      g.fillStyle = gr; g.fillRect(0, 0, n, n); return s;
+    });
+    const nitidas = P.chispas.map((c) => {
+      const s = document.createElement("canvas"), n = 128; s.width = s.height = n;
+      const g = s.getContext("2d"), gr = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+      gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.13, "rgba(255,255,255,1)"); gr.addColorStop(0.17, c); gr.addColorStop(0.24, c + "99");
+      gr.addColorStop(0.36, c + "26"); gr.addColorStop(1, c + "00");
+      g.fillStyle = gr; g.fillRect(0, 0, n, n); return s;
+    });
+    return suaves.concat(nitidas);
+  };
   function sembrar() {
     const cxm = W / 2, cym = H / 2;
     for (let i = 0; i < NP; i++) {
-      ph[i] = Math.random() * 6.283; col[i] = Math.random() < 0.7 ? 0 : Math.random() < 0.6 ? 1 : 2;
+      ph[i] = Math.random() * 6.283; col[i] = Math.random() < 0.7 ? 0 : Math.random() < 0.6 ? 1 : 2; ni[i] = Math.random() < 0.45 ? 1 : 0;
       sz[i] = rnd(1.1, 2.6) * (MOVIL ? 0.9 : 1); al[i] = 0; alO[i] = rnd(0.25, 0.7); et[i] = -1; md[i] = 0;
       if (CORO === "remolino") {
         md[i] = 4; th[i] = Math.random() * 6.283; rr[i] = rnd(0.25, 0.75) * Math.hypot(W, H) * 0.5; rO[i] = rr[i] * rnd(0.85, 1.05); om[i] = rnd(0.05, 0.16);
@@ -396,7 +410,7 @@
       if (a < 0.01) continue;
       const s = sz[i] * (md[i] === 1 ? 1.5 : md[i] === 4 ? 1.25 : 1) * (1 + brilloExtra) * 3.2;
       cx.globalAlpha = Math.min(1, a);
-      cx.drawImage(brillos[col[i]], px[i] - s, py[i] - s, s * 2, s * 2);
+      const sn = ni[i] ? s * 0.8 : s; cx.drawImage(brillos[col[i] + (ni[i] ? P.chispas.length : 0)] || brillos[col[i]], px[i] - sn, py[i] - sn, sn * 2, sn * 2);
     }
     cx.globalCompositeOperation = "source-over";
     cx.globalAlpha = 1;
@@ -574,10 +588,46 @@
     comp.threshold.value = -16; comp.knee.value = 14; comp.ratio.value = 3.2; comp.attack.value = 0.008; comp.release.value = 0.35;
     const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 42; hp.Q.value = 0.7;
     maestro.connect(hp); hp.connect(comp); comp.connect(salidaFinal);
-    const sr = ctx.sampleRate, nR = Math.floor(sr * 4.6), imp = ctx.createBuffer(2, nR, sr);
-    for (let c = 0; c < 2; c++) { const d = imp.getChannelData(c); for (let i = Math.floor(sr * 0.018); i < nR; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / nR, 2.7) * 0.55; }
-    const rev = ctx.createConvolver(); rev.buffer = imp;
-    const envio = ctx.createGain(); envio.gain.value = 0.85; envio.connect(rev); rev.connect(maestro);
+    // AC8 (21-nov-2026, entrecortes del primer segundo y medio): la reverberación por convolución era el 70 % del costo del sonido.
+    // Ahora: (1) convolución en mono, la mitad de trabajo, con la cola abierta en estéreo por decorrelación (un lado con 11 ms de
+    // retardo y otro matiz), la misma sala de 4,6 s; (2) mientras la página termina de cargar (los primeros 1,6 s), la sala la da
+    // una reverberación ligera de cuatro líneas de retardo realimentadas (Hadamard, con amortiguación) que se funde en la
+    // convolución: el hilo del audio no se ahoga en el arranque y la música entra limpia.
+    const sr = ctx.sampleRate, nR = Math.floor(sr * 4.6), imp = ctx.createBuffer(1, nR, sr);
+    { const d = imp.getChannelData(0); for (let i = Math.floor(sr * 0.018); i < nR; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / nR, 2.7) * 0.55; }
+    const rev = ctx.createConvolver(); rev.normalize = true; rev.buffer = imp; rev.channelCount = 1; rev.channelCountMode = "explicit"; rev.channelInterpretation = "speakers";
+    const rvL = ctx.createGain(), rvR = ctx.createDelay(0.05), rvRf = ctx.createBiquadFilter();
+    rvR.delayTime.value = 0.011; rvRf.type = "highshelf"; rvRf.frequency.value = 3200; rvRf.gain.value = -2.2;
+    const mez = ctx.createChannelMerger(2);
+    // con un solo canal, la normalización del motor deja la sala √2 más fuerte que con dos: se compensa (mismo nivel que antes)
+    const rvG = ctx.createGain(); rvG.gain.value = Math.SQRT1_2;
+    rev.connect(rvL); rvL.connect(mez, 0, 0); rev.connect(rvR); rvR.connect(rvRf); rvRf.connect(mez, 0, 1); mez.connect(rvG); rvG.connect(maestro);
+    const envio = ctx.createGain(); envio.gain.value = 0.85;
+    const T_CONV = 1.6, t0s = ctx.currentTime;
+    // reverberación ligera del arranque: ocho filtros peine realimentados con amortiguación (Schroeder), alternados a izquierda y
+    // derecha; cuesta casi nada (una red de retardos cruzados se volvía inestable en el motor de audio: medido el 21-nov-2026)
+    const fdnIn = ctx.createGain(), fdnOut = ctx.createGain(); fdnIn.channelCount = 1; fdnIn.channelCountMode = "explicit";
+    const salL = ctx.createGain(), salR = ctx.createGain(), mezF = ctx.createChannelMerger(2);
+    [0.0297, 0.0371, 0.0411, 0.0437, 0.0491, 0.0533, 0.0577, 0.0617].forEach((t, i) => {
+      const d = ctx.createDelay(0.1); d.delayTime.value = t;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 4200; lp.Q.value = -3;
+      const g = ctx.createGain(); g.gain.value = Math.pow(10, (-3 * t) / 3.6);
+      fdnIn.connect(d); d.connect(lp); lp.connect(g); g.connect(d); lp.connect(i % 2 ? salR : salL);
+    });
+    salL.connect(mezF, 0, 0); salR.connect(mezF, 0, 1); mezF.connect(fdnOut); fdnOut.connect(maestro);
+    const enFdn = ctx.createGain(); envio.connect(enFdn); enFdn.connect(fdnIn);
+    enFdn.gain.setValueAtTime(1, t0s); enFdn.gain.setValueAtTime(1, t0s + T_CONV + 0.5); enFdn.gain.linearRampToValueAtTime(0.0001, t0s + T_CONV + 2.6); // se queda mientras crece la cola de la convolución
+    fdnOut.gain.setValueAtTime(0.1, t0s); // nivel igualado a la convolución (energía de la cola, 0,05–1,5 s)
+    // la convolución se conecta pasado el arranque (antes, aunque recibiera silencio, igual consumía); su entrada sube con un fundido
+    const enConv = ctx.createGain(); enConv.gain.value = 0.0001; enConv.connect(rev);
+    let convOk = false;
+    const conectarConv = () => {
+      if (convOk) return; convOk = true;
+      const t = Math.max(ctx.currentTime, t0s + T_CONV - 0.05);
+      envio.connect(enConv); enConv.gain.setValueAtTime(0.0001, t); enConv.gain.linearRampToValueAtTime(1.8, t + 0.4); enConv.gain.linearRampToValueAtTime(1, t + 2.6); // un empujón mientras su cola se llena
+    };
+    if (ctx instanceof (window.OfflineAudioContext || function () {})) conectarConv(); // ensayo sin tiempo real: todo desde el inicio
+    else setTimeout(conectarConv, T_CONV * 1000 - 60);
     const seco = ctx.createGain(); seco.gain.value = 0.7; seco.connect(maestro);
     const ruido = ctx.createBuffer(1, sr * 2, sr); { const d = ruido.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
     const vivos = [];
