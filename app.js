@@ -1180,7 +1180,7 @@
     if (modal.open) guardarScrollM();
     modal.replaceChildren(fn());
     // AH (BiEx, 22-nov-2026): las ventanas breves del juego (celebraciones, piezas, hallazgos) flotan centradas, no a pantalla completa
-    modal.classList.toggle("flot", !!modal.querySelector(":scope > .m-caja > .m-cuerpo > .jg-cel"));
+    modal.classList.toggle("flot", !!modal.querySelector(":scope > .m-caja > .m-cuerpo > :is(.jg-cel, .flot-cel)"));
     // «Adelante» dentro de la ventana: el mismo botón de abajo a la izquierda de las páginas, encima del pie de la ventana si lo hay
     if (M.fwd.length) {
       const ad = h("button", { class: "adelante vis m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, h("span", { text: "Adelante" }), svg(ICO.der));
@@ -1922,7 +1922,9 @@
       h("div", { class: "bh-franja" },
         h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
         titulo,
-        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der))));
+        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der)),
+        // (BiEx, 22-nov-2026, 15:59) la perícopa del verso que se lee, en la traducción de Jünemann (Lectura y Textual)
+        modo !== "a" ? h("button", { class: "btn-icono bh-jnm", type: "button", "aria-label": "Ver esta perícopa en la traducción de Jünemann", title: "La perícopa en Jünemann", onclick: (e) => { e.stopPropagation(); verPericopaJnm(b, cap, versos); } }, svg(ICO.info)) : null));
   }
   function vistaNavegador(b, cap, versos) {
     const sub = cap ? "Capítulo " + cap + " de " + b.caps.length : b.caps.length + (b.caps.length === 1 ? " capítulo" : " capítulos") + " · elige uno";
@@ -2089,7 +2091,7 @@
     // AH (22-nov-2026): esa cifra va junto a la revisión y el texto que explica cómo leer, en la ventanita de información.
     // AF6 (22-nov-2026): las palabras casi exóticas llevan su color en Textual y un subrayado punteado sutil en la Lectura.
     const hayRara = todos.some((v) => (prefs.lorg && v.o ? v.or : v.r));
-    const rara = hayRara ? h("p", {}, "Palabras casi exóticas (3 veces o menos en la Nueva Voluntad): ", prefs.lorg ? h("span", { class: "rara-l", text: "con un subrayado punteado" }) : h("span", { class: "rara-t", text: "en su propio color" }), ".") : null;
+    const rara = hayRara ? h("p", {}, "Palabras casi exóticas (3 veces o menos en la Nueva Voluntad): ", h("span", { class: prefs.lorg ? "rara-l" : "rara-t", text: "con un subrayado de punto y raya" }), ".") : null;
     const dorado = hayBase ? h("p", {}, "En ", h("span", { class: "gr", text: "dorado" }), ", el griego que aún no tiene traducción fijada.") : null;
     const tocar = h("p", { text: "Toca cualquier verso para abrir su griego palabra por palabra." });
     const info = () => prefs.lorg
@@ -3184,6 +3186,39 @@
   const libroListo = (c) => !!cache["datos/libros/" + c + ".json"];
   const AVC = {};
   const cargarAV = (cod) => AVC[cod] || (AVC[cod] = cargar("datos/av/jnm/" + cod + ".json").catch((e) => { delete AVC[cod]; throw e; }));
+  // (BiEx, 22-nov-2026, 15:59) la perícopa del verso que se está leyendo, en la Nueva Voluntad de Jünemann, para comparar: ventana flotante
+  // desde el ícono de la franja del libro. Texto íntegro de su edición (corpus paralelo GIL-UNAM, CC0); la única modificación de BiEx es el
+  // Nombre que es sobre todo nombre y el título original (tools/av/junemann_nv.py.txt del Taller)
+  const JNMC = {};
+  const cargarJNM = (cod) => JNMC[cod] || (JNMC[cod] = cargar("datos/nv/jnm/" + cod + ".json").catch((e) => { delete JNMC[cod]; throw e; }));
+  // el verso que cruza la línea de lectura (40 % del alto de la ventana) o, si ninguno la cruza, el más cercano a ella
+  function versoEnPantalla() {
+    const y = innerHeight * 0.4; let mejor = null, d = 1e9;
+    for (const el of document.querySelectorAll("#vista [id^='v']")) {
+      if (!/^v\d+$/.test(el.id)) continue;
+      const r = el.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) continue;
+      const dd = r.top <= y && r.bottom >= y ? 0 : Math.min(Math.abs(r.top - y), Math.abs(r.bottom - y));
+      if (dd < d) { d = dd; mejor = +el.id.slice(1); }
+    }
+    return mejor;
+  }
+  function verPericopaJnm(b, cap, versos) {
+    const v = versoEnPantalla() || 1, ini = versos && versos.length ? iniciosPericopa(versos) : new Set();
+    let a = v, z = v;
+    for (const x of versos || []) { if (x.v <= v && ini.has(x.v)) a = x.v; }
+    for (const x of versos || []) { if (x.v > v && ini.has(x.v)) break; if (x.v >= v) z = x.v; }
+    const cuerpo = h("div", { class: "flot-cel jnm" }, h("p", { class: "nota-ui", text: "Cargando la traducción de Jünemann…" }));
+    const lib = (c) => { const x = libroDe(c); return x ? nombreLibro(x) : c; };
+    const pie = h("p", { class: "jnm-pie" }, "Traducción íntegra de la edición de Wilhelm [Guillermo] Jünemann Beckschäfer (dominio público), con la única modificación de BiEx de usar el Nombre que es sobre todo nombre y el título original (",
+      h("a", { href: "#/ACT/4/l/12", text: lib("ACT") + " 4:12" }), "; ", h("a", { href: "#/PHP/2/l/9", text: lib("PHP") + " 2:9-10" }), ").",
+      h("small", { text: " Texto digital: corpus paralelo GIL-UNAM (CC0)." }));
+    abrirModal(() => cajaModal(cabModal("La perícopa en Jünemann", nombreLibro(b) + " " + cap + ":" + (a === z ? a : a + "–" + z)), cuerpo));
+    cargarJNM(b.c).then((d) => {
+      const vs = (d.c || {})[cap] || [], lista = [];
+      for (let i = a; i <= z; i++) if (vs[i - 1]) lista.push(h("p", { class: "jnm-v" + (i === v ? " act" : "") }, h("sup", { text: String(i) }), " ", vs[i - 1]));
+      cuerpo.replaceChildren(lista.length ? h("div", { class: "jnm-tx", lang: "es" }, lista) : h("p", { class: "nota-ui", text: "Esta edición no trae estos versos." }), pie);
+    }).catch(() => cuerpo.replaceChildren(h("p", { class: "nota-ui", text: "No se pudo cargar la traducción de Jünemann; inténtalo de nuevo en un momento." }), pie));
+  }
   // el pasaje citado (un verso, un tramo o de un capítulo a otro), con el número de cada verso y de dónde viene el texto
   function textoAV(d, r) {
     const [, c1, v1, fin] = r, c2 = fin < 0 ? Math.floor(-fin / 1000) : c1, v2 = fin < 0 ? -fin % 1000 : fin > 0 ? fin : v1, piezas = [];
@@ -3304,8 +3339,8 @@
               for (const x of versos) { if (x.v <= ctx.v && ini.has(x.v)) a = x.v; }
               for (const x of versos) { if (x.v > ctx.v && ini.has(x.v)) { break; } if (x.v >= ctx.v) z = x.v; }
               const op = (t, d, hh, que) => h("button", { type: "button", class: "fv-cg-b", onclick: () => copiarGriego(b, cap, d, hh, que) }, t);
-              return h("p", { class: "fv-cg" }, svg(ICO.copiar), h("span", { text: "Copiar el griego:" }), op("verso", ctx.v, ctx.v, "verso"),
-                a !== z ? op("perícopa " + a + "–" + z, a, z, "pericopa") : null, op("capítulo " + cap, 1, 1e4, "capitulo"));
+              const ops = [op("verso", ctx.v, ctx.v, "verso"), a !== z ? op("perícopa " + a + "–" + z, a, z, "pericopa") : null, op("capítulo " + cap, 1, 1e4, "capitulo")].filter(Boolean);
+              return h("div", { class: "fv-cg" }, h("p", { class: "fv-cg-t" }, svg(ICO.copiar), h("span", { text: "Copiar el griego" })), h("div", { class: "fv-cg-op", style: "--n:" + ops.length }, ops));
             })()),
           bloqueRefs(b, cap, ctx.v),
           bloqueEstudio(b, cap, ctx.v),
@@ -3332,7 +3367,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "ffb64051a6", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "56f3c52330", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3497,6 +3532,13 @@
     const grupos = [];
     const grupo = (tit, ...kids) => h("section", { class: "bq-g" }, h("h3", {}, tit), kids);
     const abrirRes = (ruta) => (e) => { recordarBusqueda(q, ruta); };
+    // P17 (BiEx, 11-nov-2026; 22-nov): una tarjeta responde al clic en toda su superficie, no solo en su título; los enlaces
+    // y botones de dentro (citas, «Leer», «Analizar») siguen haciendo lo suyo y seleccionar texto no abre nada
+    const tarjetaEntera = (el, principal) => {
+      el.classList.add("tarj-clic");
+      el.addEventListener("click", (e) => { if (e.target.closest("a, button, input, select, textarea") || String(getSelection && getSelection() || "").trim()) return; principal.click(); });
+      return el;
+    };
     // respuesta de ayuda
     if (r.ayuda.length) grupos.push(grupo("Respuesta", r.ayuda.map(({ it }) => h("div", { class: "res-ayuda" }, h("h4", { text: it.p }), h("p", { text: it.r }), accionAyuda(it.a, elegir)))));
     // cita
@@ -3507,10 +3549,11 @@
         const vs = (Lc.caps[cap] || []).filter((x) => x.v >= v && x.v <= (hasta || v)).slice(0, 6);
         snip.replaceChildren(...vs.map((x) => h("p", {}, h("sup", { text: x.v }), " ", txtVerso(x))));
       }).catch(() => {});
-      grupos.push(grupo("Cita", h("div", { class: "res-cita" },
+      const leer = h("a", { class: "btn chico oro", href: ruta, onclick: abrirRes(ruta) }, svg(ICO.libro), "Leer");
+      grupos.push(grupo("Cita", tarjetaEntera(h("div", { class: "res-cita" },
         h("div", { class: "rc-cab" }, h("b", { text: nombreLibro(b) + " " + cap + (v ? ":" + v + (hasta ? "-" + hasta : "") : "") }),
-          h("span", { class: "rc-acc" }, h("a", { class: "btn chico oro", href: ruta, onclick: abrirRes(ruta) }, svg(ICO.libro), "Leer"), h("a", { class: "btn chico", href: "#/" + b.c + "/" + cap + "/a" + (v ? "/" + v : "") }, svg(ICO.lupa), "Analizar"))),
-        snip)));
+          h("span", { class: "rc-acc" }, leer, h("a", { class: "btn chico", href: "#/" + b.c + "/" + cap + "/a" + (v ? "/" + v : "") }, svg(ICO.lupa), "Analizar"))),
+        snip), leer)));
     }
     // libros
     const libros = []; for (const b of [r.cita && !r.cita.cap ? r.cita.b : null, ...r.libros]) if (b && !libros.includes(b)) libros.push(b);
@@ -3523,9 +3566,9 @@
     // escenas
     if (r.escenas.length) grupos.push(grupo("Escenas", h("div", { class: "res-escenas" }, r.escenas.map(({ it }) => {
       const rs = it._r || X.BQ.rangos(it.r);
-      return h("div", { class: "res-escena" },
-        h("a", { class: "re-t", href: refRuta(rs[0]), onclick: abrirRes(refRuta(rs[0])) }, h("b", { text: it.t }), h("small", { text: it.s })),
-        h("div", { class: "re-refs" }, rs.slice(0, 5).map((x) => h("a", { href: refRuta(x), onclick: abrirRes(refRuta(x)), text: refTexto(x) }))));
+      const tit = h("a", { class: "re-t", href: refRuta(rs[0]), onclick: abrirRes(refRuta(rs[0])) }, h("b", { text: it.t }), h("small", { text: it.s }));
+      return tarjetaEntera(h("div", { class: "res-escena" }, tit,
+        h("div", { class: "re-refs" }, rs.slice(0, 5).map((x) => h("a", { href: refRuta(x), onclick: abrirRes(refRuta(x)), text: refTexto(x) })))), tit);
     }))));
     // en los textos de BiEx (estudios y línea del tiempo): cuando la consulta coincide en buena parte con una sección
     const ts = new Set(X.BQ.terminosEs(q)), hallS = ts.size ? X.BQ.puntuarListas(q, secc, ["t", "k"]).filter((x) => x.n / ts.size >= (ts.size > 2 ? 0.6 : 1)).slice(0, 6) : [];
@@ -5548,6 +5591,27 @@
     caja.addEventListener("mouseleave", mostrar);
     caja.addEventListener("focusout", mostrar);
   })();
+
+  // ------------------------------------------------------------------ copiar con la autoría
+  // (BiEx, 22-nov-2026, 15:59) al copiar un tramo de la Lectura o de la Textual con la copia del navegador, el texto pegado lleva la
+  // referencia (libro, capítulo en hebreo y en romano, versos) y la autoría de Biblia Exacta, y el enlace al pasaje en el sitio oficial
+  document.addEventListener("copy", (e) => {
+    try {
+      const sel = getSelection(), vistaE = document.getElementById("vista");
+      if (!sel || sel.isCollapsed || !e.clipboardData || !vistaE || !esc.libro || !esc.cap || esc.modo === "a") return;
+      const rg = sel.getRangeAt(0); if (!vistaE.contains(rg.commonAncestorContainer)) return;
+      const b = libroDe(esc.libro); if (!b) return;
+      const vs = [...vistaE.querySelectorAll("[id^='v']")].filter((el) => /^v\d+$/.test(el.id) && sel.containsNode(el, true)).map((el) => +el.id.slice(1));
+      const texto = sel.toString().replace(/\u00a0/g, " ").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(); if (!texto) return;
+      const capH = String((b.caps[esc.cap - 1] || {}).h || "").match(/^(.*?)\s*\[[^\]]*\]\s*(\S+)?\s*$/);
+      const he = capH ? capH[1] : "", rom = capH && capH[2] ? capH[2] : String(esc.cap);
+      const tramo = vs.length ? (vs[0] === vs[vs.length - 1] ? String(vs[0]) : vs[0] + "–" + vs[vs.length - 1]) : "";
+      const ref = (b.t || b.n) + (b.t ? " «" + b.n + "»" : "") + " " + (he ? he + " " : "") + rom + (tramo ? ", " + tramo : "");
+      const enlace = mdEnlace("#/" + b.c + "/" + esc.cap + "/" + (esc.modo === "o" || prefs.lorg ? "o" : "l") + (vs.length ? "/" + vs[0] : ""));
+      e.clipboardData.setData("text/plain", ref + "\nBiEx - Biblia Exacta ©:\n" + texto + "\n" + enlace);
+      e.preventDefault();
+    } catch (err) { /* si algo falla, queda la copia normal del navegador */ }
+  });
 
   // ------------------------------------------------------------------ lectura inmersiva
   // En teléfonos, el primer toque pide pantalla completa (dentro del sitio oficial se lo pide a la página que lo aloja);

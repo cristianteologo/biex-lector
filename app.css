@@ -440,8 +440,12 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 /* verso en la ventana */
 .fv { display: grid; gap: 20px; }
 /* (BiEx, 21-nov-2026, AF2) copiar el griego: verso, perícopa o capítulo (discreto, bajo el palabra por palabra) */
-.fv-cg { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; margin: 12px 0 0; font: 500 .8rem/1.3 var(--f-ui); color: var(--tenue); }
-.fv-cg > svg { width: 14px; height: 14px; color: var(--oro); }
+.fv-cg { display: grid; justify-items: center; gap: 8px; margin: 14px 0 0; font: 500 .8rem/1.3 var(--f-ui); color: var(--tenue); }
+/* (BiEx, 22-nov-2026) el rótulo centrado arriba y los botones en una fila de anchos iguales: simétrico en cualquier ancho */
+.fv-cg-t { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+.fv-cg-t > svg { width: 14px; height: 14px; color: var(--oro); }
+.fv-cg-op { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 8px; width: min(100%, 440px); }
+.fv-cg-op .fv-cg-b { text-align: center; padding: 5px 8px; line-height: 1.2; }
 .fv-cg-b { appearance: none; border: 1px solid color-mix(in srgb, var(--oro) 28%, transparent); background: color-mix(in srgb, var(--oro) 6%, transparent); color: var(--tinta); font: inherit; padding: 5px 11px; border-radius: 999px; cursor: pointer; min-height: 30px; }
 .fv-cg-b:hover { border-color: var(--oro); }
 .fv-cg-b:focus-visible { outline: 2px solid var(--oro-vivo); outline-offset: 2px; }
@@ -698,6 +702,12 @@ html:not(.ed) .ley-ed { opacity: .45; }
 
 /* ===================================================================== buscador */
 .bq-campo { position: sticky; top: -1px; z-index: 2; background: var(--hoja); }
+/* P17 (22-nov-2026): el campo fijo cubre también la franja de margen que queda sobre él al desplazar (antes los resultados
+   se asomaban entre la cabecera y el campo); el margen interior del cuerpo de la ventana vive en --m-pt */
+.m-cuerpo { --m-pt: clamp(18px, 3vw, 30px); }
+.modal.flot .m-cuerpo { --m-pt: 20px; }
+.bq-campo::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: calc(var(--m-pt) + 2px); background: var(--hoja); pointer-events: none; }
+.tarj-clic { cursor: pointer; }
 .bq-borrar { width: 34px; height: 34px; flex: none; }
 .bq-estado { margin: -8px 0 0; font-family: var(--f-ui); font-size: .84rem; color: var(--tenue); min-height: 1.2em; }
 .bq-res { display: grid; gap: 22px; transition: opacity .2s; }
@@ -2479,13 +2489,13 @@ html[data-mov="no"] .he-luz { animation: none; opacity: 0; }
 .anim-fuera, .anim-fuera::before, .anim-fuera::after { animation-play-state: paused !important; }
 
 /* AF23 (BiEx, 21-nov-2026) cuenta atrás misteriosa del pie: sin explicación, discreta; solo en la pantalla principal y en los capítulos */
-.cuenta-m { display: none; align-items: baseline; justify-content: center; gap: 0 .9rem; flex-wrap: wrap; margin: 14px auto 4px; color: color-mix(in srgb, var(--oro) 78%, var(--tenue)); font-family: var(--f-ui); opacity: .82; }
+.cuenta-m { display: none; align-items: baseline; justify-content: center; gap: 0 .72rem; flex-wrap: wrap; margin: 14px auto 4px; color: color-mix(in srgb, var(--oro) 78%, var(--tenue)); font-family: var(--f-ui); opacity: .82; }
 html.ver-cuenta .cuenta-m { display: flex; }
-.cuenta-m .cm-reloj { display: inline-flex; align-self: center; width: 15px; height: 15px; color: var(--oro); opacity: .8; }
+.cuenta-m .cm-reloj { display: inline-flex; align-self: center; width: 12px; height: 12px; color: var(--oro); opacity: .8; }
 .cuenta-m .cm-reloj svg { width: 100%; height: 100%; }
 .cuenta-m .cm-u { display: inline-flex; align-items: baseline; gap: .22rem; }
-.cuenta-m b { font: 500 1.02rem/1 var(--f-titulo, var(--f-ui)); letter-spacing: .04em; font-variant-numeric: lining-nums tabular-nums; color: var(--oro-vivo, var(--oro)); text-shadow: 0 0 12px color-mix(in srgb, var(--oro) 30%, transparent); }
-.cuenta-m small { font-size: .64rem; letter-spacing: .16em; text-transform: uppercase; color: var(--tenue); }
+.cuenta-m b { font: 500 .82rem/1 var(--f-titulo, var(--f-ui)); letter-spacing: .04em; font-variant-numeric: lining-nums tabular-nums; color: var(--oro-vivo, var(--oro)); text-shadow: 0 0 12px color-mix(in srgb, var(--oro) 30%, transparent); }
+.cuenta-m small { font-size: .51rem; letter-spacing: .16em; text-transform: uppercase; color: var(--tenue); }
 
 /* AF49 (BiEx, 21-nov-2026) en las filas de capítulos y de versos, los números pares van un poco más arriba que los impares
    (propiedad translate, independiente de las transformaciones de cada tesela) */
@@ -2513,10 +2523,12 @@ html.ver-cuenta .cuenta-m { display: flex; }
 html[data-mov="no"] .cc-pop { transition: none; }
 /* AF6: palabras casi exóticas — Textual con su color; Lectura con un subrayado punteado sutil del mismo tono. Los colores de la
    edición (palabras del Mashíaḥ, citas) y los textos añadidos mandan; ahí la palabra casi exótica lleva el subrayado */
-.rara-t { color: var(--rara); }
-.rara-t.tk { color: color-mix(in srgb, var(--rara) 55%, var(--tenue)); }
-.rara-l, html.ed .tm.rara-t, html.ed .tc.rara-t { text-decoration-line: underline; text-decoration-style: dotted; text-decoration-color: color-mix(in srgb, var(--rara) 66%, transparent); text-decoration-thickness: max(1px, .06em); text-underline-offset: .26em; }
-.rara-l.tk { text-decoration-line: none; }
+/* (BiEx, 22-nov-2026, 15:59) palabras casi exóticas: en Lectura y en Textual, un subrayado de punto y raya (· — ·), con un 20 % más
+   de contraste que el punteado anterior y sin teñir la palabra; dibujado con un degradado (nítido a cualquier densidad) y repetido en
+   cada renglón si la palabra se parte */
+:root { --rara-sub: color-mix(in srgb, var(--rara) 80%, transparent); }
+.rara-l, .rara-t { text-decoration: none; background-image: linear-gradient(90deg, var(--rara-sub) 0 14%, transparent 14% 32%, var(--rara-sub) 32% 82%, transparent 82%); background-repeat: repeat-x; background-size: .86em max(1.25px, .072em); background-position: 0 calc(100% - .04em); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.rara-l.tk, .rara-t.tk { background-image: none; }
 /* AF43: Herramientas en cuatro categorías; una tarjeta impar al final de su categoría ocupa las dos columnas */
 .herr-cat + .herr-cat, .herr-cat + .herr-redes { margin-top: 20px; }
 .herr-cat-t { margin: 0 2px 10px; color: var(--oro); }
@@ -2528,3 +2540,24 @@ html[data-mov="no"] .cc-pop { transition: none; }
 /* AH: en las ventanas flotantes el título va centrado entre «Volver» (su lugar reservado) y «Cerrar», en una sola línea si cabe */
 .modal.flot .m-cab .m-tit { text-align: center; justify-items: center; }
 .modal.flot .m-cab .m-tit b { font-size: 1rem; letter-spacing: .08em; text-wrap: balance; }
+
+/* ------------------------------------------------------------------ 22-nov-2026 (23.ª conversación) */
+/* O45: en el teléfono, los saltos rápidos (a la derecha) y «Adelante» (a la izquierda) ya no tapan los créditos del pie:
+   los créditos van centrados con el mismo margen a cada lado (simetría) y el pie deja aire bajo su última línea */
+@media (max-width: 760px) {
+  .pie .creditos-det, .pie .creditos { text-align: center; }
+  .pie .creditos-det { padding-inline: 46px; }
+  .pie .in { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* (BiEx, 22-nov-2026, 15:59) la perícopa en Jünemann: el ícono va al final de la franja del libro (fuera del flujo: el título sigue
+   centrado) y la ventana flota centrada */
+.bh-jnm { position: absolute; right: 8px; top: 50%; translate: 0 -50%; width: 28px; height: 28px; border-color: color-mix(in srgb, var(--oro) 34%, transparent); color: var(--oro); }
+.bh-jnm svg { width: 15px; height: 15px; }
+@media (min-width: 1024px) { .bh-jnm { right: 52px; } }
+.jnm-tx { display: grid; gap: 10px; }
+.jnm-v { margin: 0; font-family: var(--f-texto); font-size: 1.02rem; line-height: 1.7; color: var(--tinta); }
+.jnm-v sup { font: 600 .62em/1 var(--f-ui); color: var(--oro); margin-right: 2px; }
+.jnm-v.act { background: color-mix(in srgb, var(--oro) 7%, transparent); border-radius: 10px; padding: 4px 8px; margin-inline: -8px; }
+.jnm-pie { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--linea-2); font: 400 .74rem/1.55 var(--f-ui); color: var(--tenue); text-align: center; }
+.jnm-pie small { display: block; margin-top: 4px; font-size: .9em; opacity: .85; }

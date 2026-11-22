@@ -1427,6 +1427,9 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
   background:linear-gradient(180deg,transparent,var(--oro-vivo) 16%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 84%,transparent);
   box-shadow:0 0 10px 1px color-mix(in srgb,var(--oro) 35%,transparent)}
 html.desplazando .hoja.jg-pies .vl::before{animation:jg-paso linear both;animation-timeline:view();animation-range:cover}
+/* (BiEx, 22-nov-2026: «doble efecto de marca al lado izquierdo») mientras se desplaza, la luz de paso de cada verso (AF40) es la única marca:
+   el hilo del verso que se lee se funde y vuelve al detenerse (solo donde existe la luz de paso) */
+@supports (animation-timeline:view()){.hoja.jg-pies .jg-ah{transition:opacity .32s ease} html.desplazando .hoja.jg-pies .jg-ah{opacity:0;transition-duration:.12s}}
 @keyframes jg-paso{0%,33%{opacity:0}46%{opacity:.75}58%,100%{opacity:0}}
 html[data-mov="no"] .hoja.jg-pies .vl::before{display:none}
 @media (prefers-reduced-motion:reduce){.hoja.jg-pies .vl::before{display:none}}
@@ -2679,7 +2682,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       (foto ? '<clipPath id="' + id + '"><circle cx="500" cy="640" r="68"/></clipPath><image href="' + esc(foto) + '" x="432" y="572" width="136" height="136" clip-path="url(#' + id + ')" preserveAspectRatio="xMidYMid slice"/>'
         : '<text x="500" y="' + (/[֐-׿]/.test(e.l || "") ? 664 : 670) + '" text-anchor="middle" font-size="78" fill="' + col + '" style="font-family:' + (/[֐-׿]/.test(e.l || "") ? "'Frank Ruhl Libre'," : "") + "'BiEx Texto','Gentium Book Plus',serif\">" + esc(e.l || "α") + "</text>") +
       '<circle cx="500" cy="640" r="86" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/><circle class="ap-aro" cx="500" cy="640" r="86" fill="none" stroke="url(#ap-oro)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="' + (p * 100).toFixed(1) + ' 100" transform="rotate(-90 500 640)"/>' +
-      '<g transform="translate(500 752)"><rect x="-62" y="-20" width="124" height="40" rx="20" fill="url(#ap-oro)"/><text y="9" text-anchor="middle" font-size="25" font-weight="700" fill="#16120b" style="font-family:var(--f-ui);letter-spacing:.06em">NIVEL ' + nivel + "</text></g>";
+      '<g transform="translate(500 752)"><rect x="' + (-(134 + 15.5 * String(nivel).length) / 2).toFixed(1) + '" y="-20" width="' + (134 + 15.5 * String(nivel).length).toFixed(1) + '" height="40" rx="20" fill="url(#ap-oro)"/><text y="9" text-anchor="middle" font-size="25" font-weight="700" fill="#16120b" style="font-family:var(--f-ui);letter-spacing:.06em">NIVEL ' + nivel + "</text></g>";
+    // P25 (22-nov-2026): el botoncito de «NIVEL n» se ensancha con el número (medido: «NIVEL 12» ocupaba 123 de 124 px)
     // Vida del árbol fuera del SVG (BiEx, 10-nov-2026: «está borroso»): el dibujo queda quieto y se rasteriza una sola vez a la
     // densidad real; los destellos de la copa, los frutos y las motas son capas pequeñas que solo cambian opacidad y posición
     // (las mueve el compositor, sin volver a pintar el árbol) y se detienen cuando el árbol sale de la pantalla.
@@ -5192,11 +5196,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
     '<path d="M29 .5C31.6 3.5 32.5 5.6 32.5 7.3 32.5 9.3 31 10.6 29 10.6S25.5 9.3 25.5 7.3C25.5 5.6 26.4 3.5 29 .5Z" style="fill:var(--m1)"/><path d="M29 5C30 6.4 30.4 7.3 30.4 8 30.4 8.9 29.8 9.4 29 9.4S27.6 8.9 27.6 8C27.6 7.3 28 6.4 29 5Z" fill="#fff" fill-opacity=".55"/>' +
     '<g clip-path="url(#jgm-c)"><g transform="skewX(-18)"><rect class="barrido" x="-34" y="0" width="20" height="70" fill="url(#jgm-b)"/></g></g>';
   // Lo que hoy multiplica la experiencia de la lectura (el servidor decide; esto solo lo muestra)
+  const bonoSalaVivo = () => !!(SL.cod && SL.ws && SL.ws.readyState === 1 && R.lib && SL.miembros.some((x) => x.j !== SL.yo6 && x.lc === R.lib + "." + R.cap));
   function bonosActivos(y) {
     const out = [], coma = (n) => String(n).replace(".", ",");
     if (y.dob > 0) out.push(["×2", "Experiencia doble: " + horas(y.dob) + " de lectura (se gasta solo mientras lees)", "dob"]);
     if (y.imp && y.imp.ms > 0) out.push(["×" + coma(y.imp.f), "Impulso por tu hallazgo: " + horas(y.imp.ms) + " de lectura", "imp"]);
-    if (SL.cod && SL.ws && SL.ws.readyState === 1) out.push(["×1,25", "Leer en compañía: experiencia ×1,25 mientras estás en la sala", "sala"]);
+    // (BiEx, 22-nov-2026) el bono de la sala solo se muestra cuando de verdad corre: otra persona de la sala lee ahora el mismo capítulo
+    // (el servidor lo exige igual: Sala.presentes cuenta a los demás en ese capítulo durante los últimos 3 minutos); crear la sala no basta
+    if (bonoSalaVivo()) out.push(["×1,25", "Leer en compañía: experiencia ×1,25 mientras alguien más de la sala lee contigo el mismo capítulo", "sala"]);
     if (y.nivel < 20) out.push([y.nivel < 10 ? "+50 %" : "+25 %", "Primeros pasos: experiencia " + (y.nivel < 10 ? "+50 % hasta el nivel 10" : "+25 % hasta el nivel 20"), "ini"]);
     if (y.lauros && y.lauros.doce) out.push(["+5 %", "Las doce piedras del fundamento: experiencia +5 % para siempre", "doce"]);
     return out;
@@ -6010,11 +6017,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (m.abierta !== undefined) SL.pub = !!m.abierta;
       SL.miembros = m.miembros || []; SL.anf = m.anf || ""; if (m.yo) SL.yo6 = m.yo;
       const yo = SL.miembros.find((x) => x.j === SL.yo6); SL.guia = !!(yo && yo.guia);
-      pintarSalaPildora(); pintarMarcas();
+      pintarSalaPildora(); pintarMarcas(); if (S.yo) pintarMedidor();
       if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } }
     } else if (m.t === "pos") {
-      const x = SL.miembros.find((y) => y.j === m.j); if (x) { x.lc = m.lc; x.v = m.v; x.guia = !!m.guia; }
-      pintarMarcas();
+      const x = SL.miembros.find((y) => y.j === m.j); const antes = bonoSalaVivo(); if (x) { x.lc = m.lc; x.v = m.v; x.guia = !!m.guia; }
+      pintarMarcas(); if (S.yo && antes !== bonoSalaVivo()) pintarMedidor();
       if (SL.seguir && x && x.guia && x.lc) seguirA(x);
     } else if (m.t === "luz") {
       const [lib, cap] = (m.lc || "").split(".");
@@ -6077,7 +6084,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = anf && anf.j === SL.yo6;
       return A.cajaModal(A.cabModal("Sala " + SL.cod, "Lectura en compañía"), h("div", { class: "jg" },
-        h("p", { class: "jg-mini", text: "Mientras lean el mismo capítulo con alguien de la sala, cada verso te da un 25 % más de experiencia." }), lista,
+        h("p", { class: "jg-mini", text: "Cuando al menos dos personas de la sala leen el mismo capítulo, cada verso les da un 25 % más de experiencia (crear la sala no basta)." }), lista,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.pub !== false, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "abierta", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Sala abierta: aparece en la lista de Juntos y cualquiera puede entrar" })) : null,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.guia, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "guia", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Guiar la lectura (quien te siga irá contigo)" }))
           : anf && anf.guia ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.seguir, onchange: (e) => { SL.seguir = e.currentTarget.checked; if (SL.seguir && anf.lc) seguirA(anf); } }), h("span", { text: "Seguir a " + anf.apodo })) : null,
