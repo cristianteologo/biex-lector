@@ -972,7 +972,7 @@
     if (si && !antes) veloDesde = performance.now();
     r.classList.toggle("volviendo", !!si);
     if (si) tVelo = setTimeout(() => velar(false), 900);
-    else if (antes && performance.now() - veloDesde > 90) { r.classList.add("aparece"); setTimeout(() => r.classList.remove("aparece"), 280); }
+    else if (antes && performance.now() - veloDesde > 90 && !modal.open && !(performance.now() - (M.reabierta || -1e9) < 800)) { r.classList.add("aparece"); setTimeout(() => r.classList.remove("aparece"), 280); }
   }
   const restaurando = () => RP.objetivo != null;
   // arriba del todo, salvo que se esté volviendo a una posición guardada
@@ -1125,11 +1125,12 @@
       if (g) {
         M.pila = g.pila.slice(); M.estados = g.estados; M.fwd = (g.fwd || []).slice(); M.vid = e.state.vid; M.reabierta = performance.now();
         pintarModal();
-        // AL10 (BiEx, 22-nov-2026, 18:53): al volver atrás a una ventana (p. ej., Herramientas tras abrir «Lectura») la ventana ya estaba
-        // ahí: aparece sin su entrada (fundido de 0,28 s), que dejaba ver por un instante el texto de fondo mientras la vista cambiaba
+        // AL10 + Neon (23-nov-2026): al volver atrás a una ventana (p. ej., Buscar o Herramientas) aparece ya puesta sin
+        // animación ni transición @supports(overlay:auto) para eliminar por completo el doble parpadeo
         modal.classList.add("sin-entrada");
         try { modal.showModal(); } catch (er) { modal.setAttribute("open", ""); }
-        setTimeout(() => modal.classList.remove("sin-entrada"), 400);
+        void modal.offsetWidth;
+        setTimeout(() => modal.classList.remove("sin-entrada"), 260);
         document.documentElement.classList.add("con-modal");
         return;
       }
@@ -3393,7 +3394,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "846cfa7c35", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "a4ddd2fe39", juego: "ce5ab4fffc", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -3640,28 +3641,34 @@
     cont.replaceChildren(...grupos);
   }
   function abrirBusqueda(q0) {
-    const st = { q: q0 || "" };
+    const st = { q: q0 || "", bq: null, inp: null };
     prepararBuscador().catch(() => {});
-    abrirModal(() => {
-      const inp = h("input", { type: "search", value: st.q, placeholder: "Una escena, una cita, un nombre, una palabra…", "aria-label": "Buscar", enterkeyhint: "search", autocomplete: "off", spellcheck: "false" });
-      const res = h("div", { class: "bq-res" });
-      const estado = h("p", { class: "bq-estado", role: "status" });
-      let t = 0;
-      const buscarYa = () => pintarResultados(st.q, res, estado, elegir);
-      const borrar = h("button", { class: "btn-icono bq-borrar", type: "button", "aria-label": "Borrar la búsqueda", title: "Borrar", hidden: !st.q, onclick: () => { elegir(""); inp.focus(); } }, svg(ICO.cerrar));
-      function elegir(x) { inp.value = st.q = x; borrar.hidden = !x; buscarYa(); }
-      inp.addEventListener("input", () => { st.q = inp.value; borrar.hidden = !inp.value; clearTimeout(t); t = setTimeout(buscarYa, 160); });
-      inp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") { e.preventDefault(); clearTimeout(t); buscarYa(); inp.blur(); }
-        else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cerrarModal(); } // Esc siempre sale del buscador
-      });
-      setTimeout(() => { if (!st.q) inp.focus(); buscarYa(); }, 30);
+    const vistaBq = () => {
+      if (!st.bq) {
+        const inp = h("input", { type: "search", value: st.q, placeholder: "Una escena, una cita, un nombre, una palabra…", "aria-label": "Buscar", enterkeyhint: "search", autocomplete: "off", spellcheck: "false" });
+        const res = h("div", { class: "bq-res" });
+        const estado = h("p", { class: "bq-estado", role: "status" });
+        let t = 0;
+        const buscarYa = () => pintarResultados(st.q, res, estado, elegir);
+        const borrar = h("button", { class: "btn-icono bq-borrar", type: "button", "aria-label": "Borrar la búsqueda", title: "Borrar", hidden: !st.q, onclick: () => { elegir(""); inp.focus(); } }, svg(ICO.cerrar));
+        function elegir(x) { inp.value = st.q = x; borrar.hidden = !x; buscarYa(); }
+        inp.addEventListener("input", () => { st.q = inp.value; borrar.hidden = !inp.value; clearTimeout(t); t = setTimeout(buscarYa, 160); });
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") { e.preventDefault(); clearTimeout(t); buscarYa(); inp.blur(); }
+          else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cerrarModal(); } // Esc siempre sale del buscador
+        });
+        st.inp = inp;
+        st.bq = h("div", { class: "bq" }, h("label", { class: "bq-campo" }, svg(ICO.buscar), inp, borrar, h("span", { class: "bq-linea", "aria-hidden": "true" })), estado, res);
+        buscarYa();
+      }
       return cajaModal(cabModal("Buscar", "Escenas, nombres, citas, palabras, griego o preguntas"),
-        h("div", { class: "bq" }, h("label", { class: "bq-campo" }, svg(ICO.buscar), inp, borrar, h("span", { class: "bq-linea", "aria-hidden": "true" })), estado, res),
+        st.bq,
         h("div", { class: "m-pie m-pie-bq" },
           h("button", { class: "btn chico", type: "button", onclick: cerrarModal }, svg(ICO.atras), "Volver"),
           h("a", { class: "btn chico", href: "#/buscar" }, svg(ICO.filtros), "Búsqueda morfológica")));
-    });
+    };
+    vistaBq.alMostrar = () => { if (!st.q && st.inp) st.inp.focus({ preventScroll: true }); };
+    abrirModal(vistaBq);
   }
   // «Volver»: un paso atrás dentro del lector o, si se entró directamente, al inicio
   let pasosApp = 0;
@@ -6163,7 +6170,7 @@
     // (BiEx, 21-nov-2026, AF32) si la ventana de una palabra se cierra por un enlace, su palabra no queda marcada en el análisis
     for (const x of document.querySelectorAll('.analisis .pal[aria-pressed="true"]')) x.setAttribute("aria-pressed", "false");
     M.alCerrar = null;
-    if (modal.open && !(performance.now() - (M.reabierta || -1e9) < 600)) { guardarScrollM(); M.porRuta = true; cerrarModal(); }
+    if (modal.open && !(performance.now() - (M.reabierta || -1e9) < 600)) { guardarScrollM(); M.porRuta = true; modal.classList.add("sin-entrada"); cerrarModal(); setTimeout(() => modal.classList.remove("sin-entrada"), 80); }
     mostrarRuta();
     ajustarCuenta();
   }
@@ -6391,6 +6398,24 @@
     setTimeout(() => revisarVersion(0), 5000);
     setTimeout(() => { MET = meteoros($(".meteoros")); window.__biexMet = MET; }, 1500); // __biexMet: para las pruebas
     window.__biexDsl = { mostrar: async () => dslMostrar(await dslMensaje()), estado: dslEst, espera: () => dslEspera(dslEst()) }; // para las pruebas
-    if (!navigator.webdriver && !/[?&]sin-avisos/.test(location.search)) dslCiclo(DSL_CALMA); // nunca en navegadores automatizados
+    // Aviso de lanzamiento de El Coloso de la Tradición (BiEx, 23-nov-2026): sábado 28-nov-2026 18:00 UTC, como máximo 2 veces al día (separadas >= 6 h)
+    const COLOSO_MS = Date.UTC(2026, 10, 28, 18, 0, 0);
+    function avisoColoso() {
+      const falta = COLOSO_MS - Date.now();
+      if (falta <= 0 || !dslLibre()) return;
+      const hoy = dslHoy(), st = store.get("colosoAv", null) || {};
+      const n = st.d === hoy ? (st.n | 0) : 0, ult = st.d === hoy ? (+st.t || 0) : 0;
+      if (n >= 2 || (ult && Date.now() - ult < 6 * 36e5)) return;
+      const d = Math.floor(falta / 864e5), hh = Math.floor((falta % 864e5) / 36e5), mm = Math.floor((falta % 36e5) / 6e4);
+      const tTxt = d > 0 ? (d === 1 ? "1 día" : d + " días") + (hh ? " y " + (hh === 1 ? "1 hora" : hh + " horas") : "") : (hh > 0 ? (hh === 1 ? "1 hora" : hh + " horas") + (mm ? " y " + mm + " min" : "") : Math.max(1, mm) + " min");
+      const horaLoc = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }).format(new Date(COLOSO_MS));
+      if (dslMostrar(["coloso:" + hoy + ":" + (n + 1), [h("b", { text: "El Coloso de la Tradición" }), " llega en ", h("b", { text: tTxt }), " (" + horaLoc + "). Prepara tu ser interior en Escudriña."], "Ver cuenta atrás", "#/escudrina/mundo", ICO.juego])) {
+        store.set("colosoAv", { d: hoy, n: n + 1, t: Date.now() });
+      }
+    }
+    if (!navigator.webdriver && !/[?&]sin-avisos/.test(location.search)) {
+      dslCiclo(DSL_CALMA); // nunca en navegadores automatizados
+      setTimeout(avisoColoso, 4500);
+    }
   }).catch((er) => { console.error(er); vista().replaceChildren(fallo("No se pudo cargar el avance.")); });
 })();
