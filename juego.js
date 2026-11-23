@@ -492,22 +492,60 @@ html[data-mov="no"] .av-pozo i{animation:none}
 :root[data-theme="light"] .ap-pd-gema{background:radial-gradient(circle at 38% 30%,#2c2418,#120f0b 76%);border-color:rgba(138,106,43,.7)}
 @media (prefers-reduced-motion:reduce){.ap-pd-gema-luz,.ap-pd-brillo{animation:none}.ap-pd-brillo{opacity:0}}
 html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:none}html[data-mov="no"] .ap-pd-brillo{opacity:0}
-/* AF33 · Ventana del poder (cámara horológica, etapas, pilares y estadísticas del ser interior) */
-.ap-vp{--vp-c1:#e8cf94;--vp-c2:#6ea8e0;--vp-c3:#e84866;--vp-c4:#4db9ae;display:grid;gap:14px;text-align:left;width:100%;min-width:0}
-:root[data-theme="light"] .ap-vp{--vp-c1:#8a6418;--vp-c2:#275e96;--vp-c3:#a81834;--vp-c4:#1d786b}
-.ap-vp-reloj{position:relative;width:min(248px,70vw);aspect-ratio:1;margin:2px auto 0;display:grid;place-items:center;filter:drop-shadow(0 12px 24px rgba(0,0,0,.55))}
-:root[data-theme="light"] .ap-vp-reloj{filter:drop-shadow(0 10px 20px rgba(45,32,12,.22))}
-.ap-vp-reloj>svg{position:relative;z-index:1;display:block;width:100%;height:100%}
-.ap-vp-pulso{position:absolute;inset:14%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--vp-et,#e8cf94) 24%,transparent),rgba(170,215,255,.12) 48%,transparent 76%);animation:ap-vp-lat 5.6s ease-in-out infinite;will-change:opacity,transform}
-@keyframes ap-vp-lat{0%,100%{opacity:.34;transform:scale(.96)}50%{opacity:.82;transform:scale(1.04)}}
-.ap-vp-rayos{position:absolute;inset:-6%;z-index:2;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(165,215,255,.85));will-change:opacity}
+/* AF33 v2 · Cámara Orbital del Poder (Neon, 23-nov-2026): esfera orbital 3D inspirada en filamentos de oro entrelazados,
+   períodos coprimos que nunca se repiten mecánicamente, inclinación táctil/puntero por compositor, pilares resonantes y
+   medallones vivos de estadísticas; cero animaciones dentro del SVG, cero cruces ni estrellas */
+.ap-vp{--vp-c1:#e8cf94;--vp-c2:#6ea8e0;--vp-c3:#e84866;--vp-c4:#4db9ae;--vp-c5:#e8be63;--vp-c6:#c59bf0;--vp-luz:#e8cf94;display:grid;gap:14px;text-align:left;width:100%;min-width:0}
+:root[data-theme="light"] .ap-vp{--vp-c1:#8a6418;--vp-c2:#275e96;--vp-c3:#a81834;--vp-c4:#1d786b;--vp-c5:#926311;--vp-c6:#6a3ea1}
+.ap-vp-marco{display:grid;justify-items:center;gap:6px;width:100%}
+.ap-vp-reloj{position:relative;width:min(294px,82vw);aspect-ratio:1;margin:0 auto;perspective:860px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.ap-vp-reloj:active{cursor:grabbing}
+.ap-vp-escena{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));will-change:transform}
+.ap-vp-cam{position:absolute;inset:2px;border-radius:50%;overflow:hidden;border:1.5px solid transparent;
+  background:radial-gradient(circle at 46% 35%,#20170a 0%,#0b0805 42%,#040405 78%,#000 100%) padding-box,
+    linear-gradient(135deg,#fff5cf,#d7a645 22%,#593a0e 49%,#e6c06a 76%,#fff1c2) border-box;
+  box-shadow:inset 0 0 28px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.32),inset 0 -1px 0 rgba(201,168,101,.22),0 18px 34px -16px rgba(0,0,0,.88),0 0 28px -10px color-mix(in srgb,var(--vp-luz) 38%,transparent)}
+:root[data-theme="light"] .ap-vp-cam{box-shadow:inset 0 0 28px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.38),0 0 0 3px rgba(138,106,43,.14),0 16px 28px -14px rgba(45,32,12,.45)}
+.ap-vp-luz{position:absolute;inset:8%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--vp-luz) 30%,transparent),color-mix(in srgb,var(--vp-et,#e8cf94) 12%,transparent) 50%,transparent 78%);
+  animation:ap-vp-lat 7.3s ease-in-out infinite;will-change:opacity,transform}
+@keyframes ap-vp-lat{0%,100%{opacity:.42;transform:scale(.95)}50%{opacity:.92;transform:scale(1.05)}}
+.ap-vp-orb{position:absolute;inset:-4%;pointer-events:none;transform-style:preserve-3d}
+.ap-vp-orb.o1{transform:translateZ(-8px) rotateX(22deg) rotateY(-14deg)}
+.ap-vp-orb.o2{transform:translateZ(-2px) rotateX(-24deg) rotateY(18deg)}
+.ap-vp-orb.o3{transform:translateZ(6px) rotateX(15deg) rotateY(22deg)}
+.ap-vp-orb.o4{transform:translateZ(12px) rotateX(-18deg) rotateY(-20deg)}
+.ap-vp-orb.o5{transform:translateZ(16px)}
+.ap-vp-gira{position:absolute;inset:0;will-change:transform;animation:ap-vp-rot var(--vt,47s) linear infinite}
+.ap-vp-gira.inv{animation-direction:reverse}
+.ap-vp-gira svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes ap-vp-rot{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.ap-vp-dest{position:absolute;inset:12%;pointer-events:none;will-change:transform;animation:ap-vp-rot var(--dt,23s) linear infinite}
+.ap-vp-dest.inv{animation-direction:reverse}
+.ap-vp-dest i{position:absolute;left:var(--dx,50%);top:var(--dy,8%);width:var(--ds,16px);height:var(--ds,16px);margin:calc(var(--ds,16px) * -.5) 0 0 calc(var(--ds,16px) * -.5);border-radius:50%;
+  background:radial-gradient(closest-side,#fffdf4 0,rgba(255,232,165,.92) 24%,rgba(224,173,72,.35) 54%,transparent 80%);
+  animation:ap-vp-gl var(--pt,6.1s) ease-in-out var(--pd,0s) infinite;will-change:opacity,transform}
+@keyframes ap-vp-gl{0%,100%{opacity:.22;transform:scale(.68)}46%{opacity:1;transform:scale(1.18)}72%{opacity:.5;transform:scale(.88)}}
+.ap-vp-anillo{position:absolute;inset:2px;pointer-events:none;transform:translateZ(18px)}
+.ap-vp-anillo svg,.ap-vp-parc svg{display:block;width:100%;height:100%;overflow:visible}
+.ap-vp-parcs{position:absolute;inset:2px;pointer-events:none;transform:translateZ(20px)}
+.ap-vp-parc{position:absolute;inset:0;opacity:.62;transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.2,1);will-change:opacity,transform}
+.ap-vp-parc.act{opacity:1;transform:scale(1.016)}
+.ap-vp-parc.ten{opacity:.28}
+.ap-vp-rayos{position:absolute;inset:-4%;pointer-events:none;opacity:0;transform:translateZ(24px);filter:drop-shadow(0 0 3px rgba(255,230,162,.85));will-change:opacity}
 .ap-vp-rayos svg{display:block;width:100%;height:100%;overflow:visible}
-.ap-vp-centro{position:absolute;inset:25%;z-index:2;display:grid;place-content:center;justify-items:center;text-align:center;gap:2px;pointer-events:none}
-.ap-vp-rot{font:600 .58rem/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#c9a865}
-.ap-vp-val{font:500 clamp(1.85rem,6vw,2.35rem)/1 var(--f-display);letter-spacing:.01em;font-variant-numeric:lining-nums tabular-nums;
-  background:linear-gradient(180deg,#fffdf5,#f4d482 54%,#b8872c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.ap-vp-et{font:600 .62rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--vp-et,#ffe39a);margin-top:2px}
-.ap-vp-falta{font:400 .66rem/1.25 var(--f-ui);color:#bdb5a4;max-width:14ch;margin-top:2px}
+.ap-vp-velo{position:absolute;inset:21%;border-radius:50%;pointer-events:none;transform:translateZ(25px);
+  background:radial-gradient(closest-side,rgba(5,4,3,.88) 0,rgba(7,6,4,.72) 64%,rgba(7,6,4,0) 100%)}
+.ap-vp-centro{position:absolute;inset:20%;display:grid;place-content:center;justify-items:center;text-align:center;gap:3px;pointer-events:none;transform:translateZ(32px)}
+.ap-vp-rot{font:600 .6rem/1 var(--f-ui);letter-spacing:.26em;text-transform:uppercase;color:#d6b267;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+.ap-vp-val{position:relative;font:500 clamp(2.15rem,7vw,2.75rem)/1 var(--f-display);letter-spacing:.015em;font-variant-numeric:lining-nums tabular-nums;
+  background:linear-gradient(180deg,#fffef8 0%,#fce29c 36%,#d49e3c 72%,#8c5e14 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.95)) drop-shadow(0 0 14px rgba(235,190,94,.28))}
+.ap-vp-et{font:600 .61rem/1.15 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--vp-et,#ffe39a);margin-top:3px;padding:3px 9px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--vp-et,#ffe39a) 44%,transparent);background:rgba(12,9,5,.78);box-shadow:0 2px 10px rgba(0,0,0,.6)}
+.ap-vp-falta{font:400 .66rem/1.25 var(--f-ui);color:#cbc2b1;max-width:16ch;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.95)}
+.ap-vp-pista{margin:0;text-align:center;font:500 .64rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);opacity:.78;transition:opacity .4s ease}
+.ap-vp-pista.visto{opacity:.38}
 .ap-vp-banda{display:grid;gap:8px;padding:12px 13px;border-radius:16px;border:1px solid color-mix(in srgb,var(--vp-et,var(--oro)) 34%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--vp-et,var(--oro)) 8%,var(--hoja-2)),color-mix(in srgb,var(--hoja) 92%,transparent))}
 .ap-vp-bcab{display:flex;justify-content:space-between;align-items:baseline;gap:6px 10px;flex-wrap:wrap;font:500 .75rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .ap-vp-bcab b{color:var(--oro-vivo);font-weight:600;font-variant-numeric:tabular-nums}
@@ -527,31 +565,55 @@ html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:
 .ap-vp-etapas small{font:400 .58rem/1 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .ap-vp-sec{font:600 .68rem/1.2 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro);margin:2px 0 -4px}
 .ap-vp-pilares{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.ap-vp-pbtn{all:unset;box-sizing:border-box;width:100%;display:grid;gap:5px;padding:10px 11px;border-radius:14px;cursor:pointer;border:1px solid color-mix(in srgb,var(--pc) 28%,var(--linea-2));
-  background:radial-gradient(120% 95% at 0% 0%,color-mix(in srgb,var(--pc) 11%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 78%,transparent);transition:border-color .18s,box-shadow .18s;-webkit-tap-highlight-color:transparent}
+.ap-vp-pbtn{all:unset;position:relative;overflow:hidden;box-sizing:border-box;width:100%;display:grid;gap:5px;padding:10px 11px;border-radius:14px;cursor:pointer;border:1px solid color-mix(in srgb,var(--pc) 30%,var(--linea-2));
+  background:radial-gradient(125% 95% at 0% 0%,color-mix(in srgb,var(--pc) 13%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 82%,transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .22s;-webkit-tap-highlight-color:transparent}
+.ap-vp-pbtn:hover{transform:translateY(-1.5px);border-color:color-mix(in srgb,var(--pc) 58%,transparent)}
+.ap-vp-pbtn:active{transform:scale(.98)}
 .ap-vp-pbtn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
-.ap-vp-pbtn.sel{border-color:color-mix(in srgb,var(--pc) 78%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc) 24%,transparent),0 8px 20px -14px color-mix(in srgb,var(--pc) 70%,transparent)}
+.ap-vp-pbtn.sel{border-color:color-mix(in srgb,var(--pc) 82%,transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.18),inset 0 0 0 1px color-mix(in srgb,var(--pc) 26%,transparent),0 10px 22px -14px color-mix(in srgb,var(--pc) 75%,transparent)}
 .ap-vp-ptop{display:flex;align-items:center;justify-content:space-between;gap:6px;font:600 .72rem/1.2 var(--f-ui);color:var(--tinta)}
 .ap-vp-pnom{display:inline-flex;align-items:center;gap:6px;min-width:0}
-.ap-vp-pnom i{width:7px;height:7px;border-radius:1.5px;transform:rotate(45deg);background:var(--pc);flex:none}
+.ap-vp-pnom i{width:7px;height:7px;border-radius:1.5px;transform:rotate(45deg);background:var(--pc);box-shadow:0 0 8px color-mix(in srgb,var(--pc) 65%,transparent);flex:none}
 .ap-vp-ppct{font:500 .66rem/1 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .ap-vp-pnum{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap}
-.ap-vp-pnum b{font:600 1.25rem/1 var(--f-display);color:var(--pc);font-variant-numeric:lining-nums tabular-nums}
+.ap-vp-pnum b{font:600 1.28rem/1 var(--f-display);color:var(--pc);font-variant-numeric:lining-nums tabular-nums}
 .ap-vp-pnum small{font:400 .66rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
-.ap-vp-pbar{height:3px;border-radius:99px;background:color-mix(in srgb,var(--tinta) 10%,transparent);overflow:hidden}
-.ap-vp-pbar i{display:block;height:100%;border-radius:inherit;background:var(--pc);width:var(--w,0%)}
-.ap-vp-foco{margin:0;padding:10px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 55%,transparent);font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2)}
+.ap-vp-pbar{position:relative;height:3.5px;border-radius:99px;background:color-mix(in srgb,var(--tinta) 10%,transparent);overflow:hidden}
+.ap-vp-pbar i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 72%,var(--oro-2)),var(--pc));transform:translate3d(calc(var(--w,0) * 1% - 100%),0,0);will-change:transform}
+.ap-vp-foco{margin:0;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--vp-luz) 30%,var(--linea-2));background:linear-gradient(110deg,color-mix(in srgb,var(--vp-luz) 8%,transparent),color-mix(in srgb,var(--hoja-2) 62%,transparent) 70%);font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2);transition:border-color .25s ease}
 .ap-vp-foco b{color:var(--oro-vivo);font-weight:600}
-.ap-vp-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.ap-vp-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 @media (min-width:440px){.ap-vp-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.ap-vp-stats li{display:grid;justify-items:center;align-content:center;gap:2px;padding:9px 6px;border-radius:12px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 7%,transparent),transparent);text-align:center;min-width:0}
-.ap-vp-stats b{font:600 .98rem/1.15 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
-.ap-vp-stats span{font:500 .68rem/1.2 var(--f-ui);color:var(--tinta)}
-.ap-vp-stats small{font:400 .62rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
-.ap-vp-pie{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 10px;padding-top:4px;font:400 .78rem/1.45 var(--f-ui);color:var(--tinta-2);text-align:center}
+.ap-vp-stats li{display:grid;min-width:0}
+.ap-vp-stbtn{all:unset;position:relative;overflow:hidden;box-sizing:border-box;width:100%;display:grid;justify-items:center;align-content:center;gap:3px;padding:11px 7px 10px;border-radius:14px;cursor:pointer;text-align:center;min-width:0;
+  border:1px solid color-mix(in srgb,var(--sc,var(--oro)) 26%,var(--linea-2));
+  background:radial-gradient(120% 90% at 50% -15%,color-mix(in srgb,var(--sc,var(--oro)) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 86%,transparent),color-mix(in srgb,var(--hoja) 78%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.12),0 6px 14px -12px rgba(0,0,0,.6);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .22s;-webkit-tap-highlight-color:transparent}
+.ap-vp-stbtn::after{content:"";position:absolute;top:-35%;bottom:-35%;left:0;width:42%;pointer-events:none;opacity:.34;
+  background:linear-gradient(108deg,transparent 15%,color-mix(in srgb,var(--sc,#ffe8a8) 38%,#fff) 50%,transparent 85%);
+  transform:translate3d(-170%,0,0);animation:ap-vp-sheen var(--st,17.3s) cubic-bezier(.4,0,.2,1) var(--sd,-3s) infinite;will-change:transform}
+@keyframes ap-vp-sheen{0%,78%{transform:translate3d(-170%,0,0)}100%{transform:translate3d(380%,0,0)}}
+.ap-vp-stbtn:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--sc,var(--oro)) 62%,transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.22),0 10px 20px -14px color-mix(in srgb,var(--sc,var(--oro)) 68%,transparent)}
+.ap-vp-stbtn:active{transform:scale(.97)}
+.ap-vp-stbtn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.ap-vp-stbtn.sel{border-color:color-mix(in srgb,var(--sc,var(--oro)) 80%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sc,var(--oro)) 26%,transparent),0 10px 22px -14px color-mix(in srgb,var(--sc,var(--oro)) 72%,transparent)}
+.ap-vp-sttop{display:inline-flex;align-items:center;gap:5px}
+.ap-vp-sttop i{width:5.5px;height:5.5px;border-radius:1.2px;transform:rotate(45deg);background:var(--sc,var(--oro));box-shadow:0 0 6px color-mix(in srgb,var(--sc,var(--oro)) 65%,transparent);flex:none}
+.ap-vp-stbtn b{font:600 1.08rem/1.1 var(--f-display);color:var(--sc,var(--oro-vivo));font-variant-numeric:lining-nums tabular-nums}
+.ap-vp-stbtn span{font:600 .67rem/1.2 var(--f-ui);color:var(--tinta);letter-spacing:.02em}
+.ap-vp-stbtn small{font:400 .61rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+:root[data-theme="light"] .ap-vp-stbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -12px rgba(45,32,12,.22)}
+.ap-vp-stnota{margin:0;padding:8px 11px;border-radius:11px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--oro) 6%,var(--hoja-2));font:400 .76rem/1.44 var(--f-ui);color:var(--tinta-2)}
+.ap-vp-stnota b{color:var(--oro-vivo);font-weight:600}
+.ap-vp-pie{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;padding-top:4px;font:400 .76rem/1.45 var(--f-ui);color:var(--tinta-2);text-align:center}
+.ap-vp-pie .ap-cita{font:600 .76rem/1.3 var(--f-ui);color:var(--oro-vivo);display:inline-flex;align-items:center;gap:.28em;padding:2px 7px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,transparent);background:color-mix(in srgb,var(--oro) 8%,transparent)}
+.ap-vp.pausa .ap-vp-luz,.ap-vp.pausa .ap-vp-gira,.ap-vp.pausa .ap-vp-dest,.ap-vp.pausa .ap-vp-dest i,.ap-vp.pausa .ap-vp-stbtn::after{animation-play-state:paused}
 @media (max-width:340px){.ap-vp-pilares{grid-template-columns:1fr}.ap-vp-etapas b{font-size:.54rem}}
-@media (prefers-reduced-motion:reduce){.ap-vp-pulso{animation:none}}
-html[data-mov="no"] .ap-vp-pulso{animation:none}
+@media (prefers-reduced-motion:reduce){.ap-vp-luz,.ap-vp-gira,.ap-vp-dest,.ap-vp-dest i,.ap-vp-stbtn::after{animation:none}.ap-vp-stbtn::after{opacity:0}}
+html[data-mov="no"] .ap-vp-luz,html[data-mov="no"] .ap-vp-gira,html[data-mov="no"] .ap-vp-dest,html[data-mov="no"] .ap-vp-dest i,html[data-mov="no"] .ap-vp-stbtn::after{animation:none}
+html[data-mov="no"] .ap-vp-stbtn::after{opacity:0}
 .ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
 .ap-atr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ap-atr li{display:grid;justify-items:center;gap:7px;padding:10px 6px 9px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 26%,var(--linea-2));background:radial-gradient(120% 85% at 50% 0%,color-mix(in srgb,var(--ac) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
@@ -1412,23 +1474,57 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .jg-pp-c{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:4px;margin:0}
 .jg-pp-c b{font:500 1.6rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
 .jg-pp-c small{flex-basis:100%;text-align:center;font:400 .78rem/1.3 var(--f-ui);color:var(--tenue)}
-.ap-vitrina li.raro{position:relative}.ap-vitrina li.raro::before{content:"Raro";position:absolute;top:6px;left:8px;font:700 .58rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#ffcf7a}
-.ap-vitrina li.cerrado .ap-mu{opacity:.38;filter:grayscale(.6)}
+/* Vitrina por escalón de rareza y coste (Neon, 23-nov-2026): t1 estándar, t2 fino, t3 selecto, t4 raro (relicario prismático);
+   las piezas raras cerradas conservan su esplendor bajo velo de oro con barra de papiros en vez de apagarse en gris */
+.ap-vitrina li.raro{position:relative}.ap-vitrina li.raro.cerrado::before{content:"Raro";position:absolute;top:8px;right:12px;font:700 .56rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:#ffe49e;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,214,122,.45);background:linear-gradient(180deg,rgba(44,30,10,.88),rgba(20,14,6,.92));box-shadow:0 2px 10px rgba(0,0,0,.45)}
+.ap-rtag{display:inline-flex;align-items:center;margin-left:6px;vertical-align:middle;font:700 .54rem/1 var(--f-ui);font-style:normal;letter-spacing:.13em;text-transform:uppercase;color:#ffe49e;padding:2.5px 6px;border-radius:999px;border:1px solid rgba(255,214,122,.45);background:linear-gradient(180deg,rgba(44,30,10,.88),rgba(20,14,6,.92))}
+:root[data-theme="light"] .ap-vitrina li.raro.cerrado::before,:root[data-theme="light"] .ap-rtag{color:#6a480d;border-color:rgba(138,106,43,.45);background:linear-gradient(180deg,#fff7df,#efe1be)}
 /* X3 (BiEx, 13-nov-2026): simetría en PC. Escudriña en una columna central (el Árbol ya no queda en 760 px por la clase .ap
    del lector); la armadura y la tienda una debajo de otra; la vitrina en filas (muestra, nombre, precio y lo que da),
    en dos columnas en pantallas anchas: sin columnas largas ni huecos */
 @media (min-width:1100px){.panel.jg{max-width:1080px;margin-inline:auto;width:100%}}
 .panel.jg > .ap{max-width:none;width:100%}
 .jg-dos.ap-dos{grid-template-columns:minmax(0,1fr)!important}
-.ap-vitrina{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px}
-.ap-vitrina li{display:grid;grid-template-columns:48px minmax(0,1fr) auto;grid-template-areas:"mu mn bt" "mu da da";justify-items:start;align-items:center;column-gap:12px;row-gap:3px;padding:10px 12px;text-align:left}
-.ap-vitrina li .ap-mu{grid-area:mu;width:48px;height:48px;align-self:center}
-.ap-vitrina li .ap-mn{grid-area:mn;place-items:start;font:600 .86rem/1.25 var(--f-ui)}
+.ap-vitrina{display:grid!important;grid-template-columns:minmax(0,1fr);gap:9px}
+.ap-vitrina li{position:relative;overflow:hidden;display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"mu mn bt" "mu da da";justify-items:start;align-items:center;column-gap:12px;row-gap:3px;padding:11px 12px;text-align:left;transition:border-color .2s,box-shadow .22s}
+.ap-vitrina li .ap-mu{position:relative;overflow:hidden;grid-area:mu;width:52px;height:52px;border-radius:14px;align-self:center;display:grid;place-items:center;
+  background:radial-gradient(circle at 42% 32%,color-mix(in srgb,var(--ac-c,#d4a84a) 22%,#1a150e),#090807 78%);
+  border:1px solid color-mix(in srgb,var(--ac-c,#c9a865) 34%,var(--linea-2));
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.18),0 6px 14px -10px rgba(0,0,0,.8)}
+.ap-vitrina li .ap-mu svg{position:relative;z-index:1;width:46px;height:46px;display:block}
+.ap-vitrina li.ap-acc-t2{border-color:color-mix(in srgb,var(--ac-c,var(--oro)) 34%,var(--linea-2));
+  background:radial-gradient(115% 80% at 8% 0%,color-mix(in srgb,var(--ac-c,var(--oro)) 12%,transparent),transparent 66%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 5%,transparent),transparent)}
+.ap-vitrina li.ap-acc-t2 .ap-mu{border-color:color-mix(in srgb,var(--ac-c,#e6bf67) 58%,transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.28),0 0 14px -6px color-mix(in srgb,var(--ac-c,#e6bf67) 55%,transparent)}
+.ap-vitrina li.ap-acc-t3{border-color:color-mix(in srgb,var(--ac-c,var(--oro-vivo)) 48%,var(--linea-2));
+  background:radial-gradient(120% 90% at 8% 0%,color-mix(in srgb,var(--ac-c,var(--oro)) 16%,transparent),transparent 68%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 8%,transparent),transparent);
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.14),0 10px 22px -18px color-mix(in srgb,var(--ac-c,var(--oro)) 65%,transparent)}
+.ap-vitrina li.ap-acc-t3 .ap-mu{border:1.25px solid transparent;
+  background:radial-gradient(circle at 42% 30%,color-mix(in srgb,var(--ac-c,#f2c65e) 30%,#1b150c),#080706 78%) padding-box,linear-gradient(135deg,#fff5cf,var(--ac-c,#e3b756) 45%,#5e3f10 75%,#ffeeb8) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.36),0 0 18px -5px color-mix(in srgb,var(--ac-c,#f2c65e) 68%,transparent)}
+.ap-vitrina li.ap-acc-t4{border:1.2px solid transparent;
+  background:radial-gradient(130% 105% at 0% 0%,color-mix(in srgb,var(--ac-c,#f5c64e) 18%,transparent),transparent 64%) padding-box,
+    radial-gradient(110% 90% at 100% 100%,rgba(140,185,255,.09),transparent 62%) padding-box,
+    linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent)) padding-box,
+    linear-gradient(135deg,rgba(255,244,205,.65),color-mix(in srgb,var(--ac-c,#f5c64e) 68%,transparent) 38%,rgba(128,176,255,.45) 72%,rgba(255,232,168,.58)) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.22),0 14px 26px -18px rgba(0,0,0,.85),0 0 22px -12px color-mix(in srgb,var(--ac-c,#f5c64e) 55%,transparent)}
+.ap-vitrina li.ap-acc-t4 .ap-mu{border:1.4px solid transparent;border-radius:15px;
+  background:radial-gradient(circle at 42% 28%,color-mix(in srgb,var(--ac-c,#f5c64e) 34%,#21180d),#070606 78%) padding-box,
+    linear-gradient(135deg,#fff8de,var(--ac-c,#f5c64e) 32%,#8bbcff 66%,#ffe9a8) border-box;
+  box-shadow:inset 0 1px 1px rgba(255,250,232,.4),0 0 20px -4px color-mix(in srgb,var(--ac-c,#f5c64e) 76%,transparent)}
+.ap-vitrina li.ap-acc-t3 .ap-mu::after,.ap-vitrina li.ap-acc-t4 .ap-mu::after{content:"";position:absolute;top:-35%;bottom:-35%;left:0;width:54%;pointer-events:none;opacity:.46;
+  background:linear-gradient(112deg,transparent 14%,rgba(255,248,224,.42) 45%,rgba(175,218,255,.32) 56%,transparent 86%);
+  transform:translate3d(-175%,0,0);animation:ap-vp-sheen var(--at,11.3s) cubic-bezier(.4,0,.2,1) var(--ad,-2s) infinite;will-change:transform}
+.ap-vitrina li.cerrado .ap-mu{opacity:.9;box-shadow:inset 0 0 0 1px rgba(255,232,168,.26),0 0 16px -6px color-mix(in srgb,var(--ac-c,#f5c64e) 58%,transparent)}
+.ap-vitrina li.puesto{border-color:color-mix(in srgb,var(--oro-vivo) 72%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 15%,transparent),inset 0 1px 0 rgba(255,248,224,.24)}
+.ap-vitrina li .ap-mn{grid-area:mn;display:block;font:600 .86rem/1.25 var(--f-ui)}
 .ap-vitrina li .ap-da,.ap-vitrina li .ap-raro{font:400 .78rem/1.42 var(--f-ui);color:var(--tinta-2);text-align:left;justify-self:start}
 .ap-vitrina li .ap-da,.ap-vitrina li .ap-raro{grid-column:2/-1}
+.ap-vitrina li .ap-raro{display:grid;gap:4px;width:100%;max-width:260px;color:var(--oro-vivo);font-weight:500}
+.ap-raro-bar{display:block;position:relative;height:4px;border-radius:99px;background:color-mix(in srgb,var(--tinta) 12%,transparent);overflow:hidden}
+.ap-raro-bar i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--ac-c,var(--oro-vivo)) 72%,#fff4cf);transform:translate3d(calc(var(--rp,0) * 1% - 100%),0,0)}
 .ap-vitrina li .btn{grid-area:bt;justify-self:end}
-.ap-vitrina li.raro::before{left:auto;right:12px;top:8px}
 .ap-vitrina li.raro.cerrado{grid-template-areas:"mu mn mn" "mu da da"}
+.ap-vitrina li.raro.cerrado .ap-mn{padding-right:52px}
 .ap-vitrina li .ap-da .ap-cita{font:inherit;font-weight:600;color:var(--oro-vivo);display:inline-flex;align-items:center;gap:.28em;padding:0;vertical-align:baseline}
 .ap-cita-fl{font-size:.8em;opacity:.8;transition:transform .2s}.ap-cita[aria-expanded="true"] .ap-cita-fl{transform:rotate(180deg)}
 .ap-versos{margin:.45rem 0 .1rem;padding:.55rem .7rem;border-left:2px solid color-mix(in srgb,var(--oro) 55%,transparent);border-radius:0 10px 10px 0;background:color-mix(in srgb,var(--oro) 7%,transparent)}
@@ -1436,6 +1532,8 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 .ap-versos sup{font:600 .62rem/1 var(--f-ui);color:var(--oro);margin-right:.15em}
 .ap-versos .rx-av-f{font:400 .68rem/1.4 var(--f-ui);color:var(--tenue);margin-top:.35rem}
 @media (min-width:900px){.ap-vitrina{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-uso{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
+@media (prefers-reduced-motion:reduce){.ap-vitrina li .ap-mu::after{animation:none;opacity:0}}
+html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
 .jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:.42rem;min-height:1.62rem;padding:.2rem .82rem .2rem .22rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
@@ -2797,9 +2895,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
       vida.append(h("i", { class: "ap-gl", style: pc(x, yy) + ";--s:" + (1.6 + r / 7).toFixed(2) + ";--d:" + dl.toFixed(2) + "s;--t:" + (4.6 + (i % 5) * 0.7).toFixed(1) + "s" })); }
     frutXY.slice(0, 8).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
     for (let i = 0; i < 8; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
-    // V22: la granada del fruto del espíritu en la copa (sus cámaras se iluminan con los niveles)
-    const GR_X = 500, GR_Y = 236, gr = granadaSVG(av.fr || {}, 68);
-    const ramita = "";
+    // V22 + Neon (23-nov-2026): la granada del fruto del espíritu anidada más abajo en el corazón de la copa, sostenida por su
+    // tallo al ramaje central y abrazada por brotes dorados en primer plano sin tapar ninguna de las nueve cámaras
+    const GR_X = 500, GR_Y = 316, gr = granadaSVG(av.fr || {}, 66);
+    const ramita = '<ellipse cx="500" cy="322" rx="75" ry="70" fill="#120a03" opacity=".48"/>' +
+      '<path d="M500 374C498 398 494 422 496 446" fill="none" stroke="url(#ap-tronco)" stroke-width="7.5" stroke-linecap="round"/>' +
+      '<path d="M501 376C500 398 496 420 498 442" fill="none" stroke="#f5d37a" stroke-opacity=".38" stroke-width="1.5" stroke-linecap="round"/>';
+    const ramasFrente = '<g class="ap-gr-frente" pointer-events="none">' +
+      '<path d="M406 394C428 376 448 368 474 376" fill="none" stroke="url(#ap-tronco)" stroke-width="5.6" stroke-linecap="round"/>' +
+      '<path d="M408 392C429 375 448 368 472 375" fill="none" stroke="#f7dc8e" stroke-opacity=".38" stroke-width="1.2" stroke-linecap="round"/>' +
+      '<path d="M432 374C427 359 437 348 450 356C445 366 439 371 432 374Z" fill="url(#ap-oro)" stroke="#4a3210" stroke-opacity=".65" stroke-width=".95"/>' +
+      '<path d="M451 372C453 358 466 353 475 363C467 369 459 372 451 372Z" fill="#e5ba54" stroke="#4a3210" stroke-opacity=".65" stroke-width=".95"/>' +
+      '<path d="M445 376C456 385 468 388 477 380C468 374 456 372 445 376Z" fill="#c79434" stroke="#4a3210" stroke-opacity=".62" stroke-width=".9"/>' +
+      '<path d="M594 260C574 269 558 269 540 258" fill="none" stroke="url(#ap-tronco)" stroke-width="4.6" stroke-linecap="round"/>' +
+      '<path d="M592 259C574 267 558 267 542 258" fill="none" stroke="#f7dc8e" stroke-opacity=".36" stroke-width="1" stroke-linecap="round"/>' +
+      '<path d="M570 265C566 252 552 248 547 257C556 263 564 266 570 265Z" fill="url(#ap-oro)" stroke="#4a3210" stroke-opacity=".65" stroke-width=".9"/>' +
+      '<path d="M558 266C564 278 576 280 583 271C574 265 566 264 558 266Z" fill="#d6a540" stroke="#4a3210" stroke-opacity=".62" stroke-width=".9"/>' +
+      '</g>';
     vida.append(h("i", { class: "ap-gr-v", style: pc(GR_X, GR_Y) + ";--o:" + Math.min(1, 0.35 + gr.tot / 40).toFixed(2) }));
     const el = A.svg('<defs>' + gr.defs + '<radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="ap-halo2"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#f5c64e" stop-opacity="0"/></radialGradient>' +
@@ -2813,7 +2925,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<path d="M488 790C476 700 478 600 490 500M512 792C524 700 522 600 510 500M500 800V520" fill="none" stroke="#2a1d0a" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>' +
       '<path d="M430 818C462 796 478 786 500 776 522 786 538 796 570 818Z" fill="#3b2a10"/><ellipse cx="500" cy="818" rx="300" ry="26" fill="url(#ap-halo2)" opacity=".55"/>' +
       '<g class="ap-ramas" fill="none" stroke="url(#ap-tronco)" stroke-linecap="round">' + ramas + "</g>" + '<g class="ap-hojas" fill="#f7d77c">' + luces + "</g>" + frut +
-      ramita + '<g class="ap-granada" transform="translate(' + GR_X + " " + GR_Y + ')">' + gr.cuerpo + "</g>" +
+      ramita + '<g class="ap-granada" transform="translate(' + GR_X + " " + GR_Y + ')">' + gr.cuerpo + "</g>" + ramasFrente +
       '<line x1="40" y1="812" x2="960" y2="812" stroke="url(#ap-oro)" stroke-opacity=".35" stroke-width="2"/>' + raices + med + corazon, "0 0 1000 1110");
     el.setAttribute("class", "ap-svg"); el.setAttribute("role", "img");
     el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : "") + "; en la copa, la granada del fruto del espíritu con " + plural(gr.tot, "nivel", "niveles"));
@@ -3467,9 +3579,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     t = setTimeout(descarga, al(900, 2200));
     return chip;
   }
-  // AF33 · Ventana del poder (Neon, 22-nov-2026): ventana flotante en el Árbol con instrumento horológico vectorial (pintado
-  // una sola vez, sin animaciones dentro del SVG), etapa inicial y avance hasta la siguiente, desglose interactivo de los
-  // cuatro pilares y estadísticas que ya llegan del servidor (sin pedir datos nuevos). Cierra con ×, Esc y el gesto de atrás.
+  // AF33 v2 · Ventana del poder (Neon, 23-nov-2026): cámara orbital 3D inspirada en filamentos de oro entrelazados, períodos
+  // coprimos que nunca se repiten mecánicamente, inclinación táctil/puntero/sensor con reposo a 0 % CPU, pilares resonantes,
+  // medallones vivos de estadísticas y citas in-situ (2 Κοrίndsιοι 4:7 y Ἐfέsιοι 3:16). Cierra con ×, Esc y el gesto atrás.
   let VP_N = 0;
   function abrirVentanaPoder(y, P) {
     const yy = S.yo || y || {}, av = (P && P.av) || yy.av || {}, poder = av.poder | 0;
@@ -3488,58 +3600,90 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const pAt = sumAt * 10, pNv = niv * 15, pFr = sumFr * 6, pAc = nInv * 25;
     const totP = Math.max(1, pAt + pNv + pFr + pAc);
     const pct = (v) => ((100 * v) / totP).toFixed(1).replace(".", ",") + " %";
-    const u = "vp" + (++VP_N) + "-", C1 = 2 * Math.PI * 100, C2 = 2 * Math.PI * 82;
+    const u = "vp" + (++VP_N) + "-", C1 = 2 * Math.PI * 119, C2 = 2 * Math.PI * 130;
     const PILARES = [
-      { k: "at", n: "Atributos", v: pAt, col: "var(--vp-c1)", g: [u + "g1", "#fff2c4", "#c89432"], fm: fmt(sumAt) + " pts × 10",
-        det: "Tus seis raíces suman " + fmt(sumAt) + " puntos efectivos (" + plural(grArm * 2, "punto", "puntos") + " vienen de los " + grArm + " grados de tu armadura forjada y " + fmt(Math.max(0, sumAt - grArm * 2)) + " de tus puntos repartidos)." },
-      { k: "nv", n: "Nivel", v: pNv, col: "var(--vp-c2)", g: [u + "g2", "#bce0ff", "#3b76b8"], fm: "Nivel " + fmt(niv) + " × 15",
-        det: yy.enTope ? "Estás en el nivel tope de este mes (" + yy.tope + "). Tu reserva (" + fmt(yy.reserva) + ") sube contigo al abrirse niveles nuevos."
-          : "Nivel " + fmt(niv) + " (" + fmt(yy.xpNivel) + " de " + fmt(yy.xpSig) + " hacia el nivel " + fmt(niv + 1) + "). Cada nivel suma 15 de poder y " + ((P && P.def && P.def.ptsNivel) || 3) + " puntos libres." },
-      { k: "fr", n: "Fruto", v: pFr, col: "var(--vp-c3)", g: [u + "g3", "#ff9aab", "#b81d3b"], fm: fmt(sumFr) + " niv. × 6",
+      { k: "at", n: "Atributos", v: pAt, col: "var(--vp-c1)", luz: "#f0c86a", g: [u + "g1", "#fff4cd", "#c79230"], fm: fmt(sumAt) + " pts × 10",
+        det: "Tus seis raíces suman " + fmt(sumAt) + " puntos efectivos (" + plural(grArm * 2, "punto", "puntos") + " de los " + grArm + " grados de armadura forjada y " + fmt(Math.max(0, sumAt - grArm * 2)) + " repartidos). Cada punto nuevo añade +10 al poder." },
+      { k: "nv", n: "Nivel", v: pNv, col: "var(--vp-c2)", luz: "#7cb8f2", g: [u + "g2", "#cde7ff", "#3c78ba"], fm: "Nivel " + fmt(niv) + " × 15",
+        det: yy.enTope ? "En el nivel tope de este mes (" + yy.tope + "). La reserva (" + fmt(yy.reserva) + ") sube contigo al abrirse niveles nuevos."
+          : "Nivel " + fmt(niv) + " (" + fmt(yy.xpNivel) + " de " + fmt(yy.xpSig) + " hacia el nivel " + fmt(niv + 1) + "). Cada nivel suma +15 de poder y " + ((P && P.def && P.def.ptsNivel) || 3) + " puntos libres." },
+      { k: "fr", n: "Fruto", v: pFr, col: "var(--vp-c3)", luz: "#f05c78", g: [u + "g3", "#ffa4b4", "#b81d3b"], fm: fmt(sumFr) + " niv. × 6",
         det: "Las nueve cámaras del fruto del espíritu suman " + plural(sumFr, "nivel", "niveles") + " (Gαlάται 5:22-23). Crece leyendo con constancia, acompañando y sembrando; lo ganado nunca se pierde." },
-      { k: "ac", n: "Accesorios", v: pAc, col: "var(--vp-c4)", g: [u + "g4", "#a5f0e3", "#2b877d"], fm: fmt(nInv) + " × 25",
-        det: "Tienes " + plural(nInv, "accesorio", "accesorios") + " en tu tesoro (" + plural(nEqAcc, "equipado", "equipados") + " en tu ser interior). Cada uno suma 25 de poder." },
+      { k: "ac", n: "Accesorios", v: pAc, col: "var(--vp-c4)", luz: "#55ccb9", g: [u + "g4", "#b0f5e8", "#2b877d"], fm: fmt(nInv) + " × 25",
+        det: plural(nInv, "accesorio", "accesorios") + " en tu vitrina (" + plural(nEqAcc, "equipado", "equipados") + " en el ser interior). Cada accesorio obtenido suma +25 de poder." },
     ];
-    // Instrumento horológico en SVG quieto (se pinta una sola vez a la densidad real; sin animaciones dentro del SVG)
-    const pt = (r, a) => (130 + r * Math.cos(a)).toFixed(2) + " " + (130 + r * Math.sin(a)).toFixed(2);
-    let marcas = "", rayas = "", arcos = "", acum = 0;
+    // 5 planos orbitales estáticos en SVG (filamentos excéntricos de oro fundido, cero animaciones dentro del SVG)
+    const arco = (cx, cy, r, a1, a2) => {
+      const p1 = [(cx + r * Math.cos(a1)).toFixed(1), (cy + r * Math.sin(a1)).toFixed(1)];
+      const p2 = [(cx + r * Math.cos(a2)).toFixed(1), (cy + r * Math.sin(a2)).toFixed(1)];
+      const lg = Math.abs(a2 - a1) > Math.PI ? 1 : 0;
+      return "M" + p1[0] + " " + p1[1] + "A" + r + " " + r + " 0 " + lg + " 1 " + p2[0] + " " + p2[1];
+    };
+    const oroG = (id, x1, y1, x2, y2, op) => '<linearGradient id="' + u + id + '" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '">' +
+      '<stop offset="0" stop-color="#a87620" stop-opacity="0"/><stop offset=".24" stop-color="#d49e3a" stop-opacity="' + (op * 0.72).toFixed(2) + '"/>' +
+      '<stop offset=".52" stop-color="#fff4ce" stop-opacity="' + op + '"/><stop offset=".78" stop-color="#c9902e" stop-opacity="' + (op * 0.65).toFixed(2) + '"/>' +
+      '<stop offset="1" stop-color="#7a5111" stop-opacity="0"/></linearGradient>';
+    const hilo = (d, gid, w, glow) => (glow ? '<path d="' + d + '" fill="none" stroke="url(#' + u + gid + ')" stroke-width="' + (w * 3.4).toFixed(1) + '" stroke-linecap="round" opacity=".2"/>' : "") +
+      '<path d="' + d + '" fill="none" stroke="url(#' + u + gid + ')" stroke-width="' + w + '" stroke-linecap="round"/>';
+    const orb1 = A.svg("<defs>" + oroG("oa1", 0, 0, 1, 1, 0.92) + oroG("oa2", 1, 0, 0, 1, 0.74) + "</defs>" +
+      hilo(arco(114, 122, 108, -0.75, 2.35), "oa1", 1.35, 1) +
+      hilo(arco(196, 178, 94, 1.35, 4.45), "oa2", 1.05, 1), "0 0 300 300");
+    const orb2 = A.svg("<defs>" + oroG("ob1", 1, 0, 0, 1, 0.9) + oroG("ob2", 0, 1, 1, 0, 0.72) + "</defs>" +
+      hilo(arco(186, 112, 112, 0.55, 3.65), "ob1", 1.35, 1) +
+      hilo(arco(118, 196, 86, -2.3, 0.78), "ob2", 1.1, 1), "0 0 300 300");
+    const orb3 = A.svg("<defs>" + oroG("oc1", 0, 0.2, 1, 0.8, 0.86) + oroG("oc2", 1, 1, 0, 0, 0.65) + "</defs>" +
+      '<g transform="rotate(-24 150 150)"><ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oc1)" stroke-width="4.2" opacity=".17"/>' +
+      '<ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oc1)" stroke-width="1.2"/></g>' +
+      hilo(arco(156, 166, 70, -0.9, 2.15), "oc2", 0.95, 0), "0 0 300 300");
+    const orb4 = A.svg("<defs>" + oroG("od1", 0.2, 1, 0.8, 0, 0.84) + oroG("od2", 0, 0, 1, 1, 0.66) + "</defs>" +
+      '<g transform="rotate(34 150 150)"><ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'od1)" stroke-width="3.8" opacity=".16"/>' +
+      '<ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'od1)" stroke-width="1.15"/></g>' +
+      hilo(arco(132, 110, 88, 2.35, 5.4), "od2", 0.9, 0), "0 0 300 300");
+    let marcas = "";
     for (let i = 0; i < 60; i++) {
       const a = (i / 60) * Math.PI * 2, m = i % 5 === 0;
-      marcas += '<line x1="' + (130 + (m ? 109 : 112) * Math.cos(a)).toFixed(1) + '" y1="' + (130 + (m ? 109 : 112) * Math.sin(a)).toFixed(1) + '" x2="' + (130 + 116 * Math.cos(a)).toFixed(1) + '" y2="' + (130 + 116 * Math.sin(a)).toFixed(1) + '" stroke="' + (m ? "#f2d48a" : "#b59046") + '" stroke-opacity="' + (m ? ".78" : ".36") + '" stroke-width="' + (m ? "1.35" : ".7") + '" stroke-linecap="round"/>';
+      marcas += '<line x1="' + (150 + (m ? 133 : 136) * Math.cos(a)).toFixed(1) + '" y1="' + (150 + (m ? 133 : 136) * Math.sin(a)).toFixed(1) + '" x2="' + (150 + 140 * Math.cos(a)).toFixed(1) + '" y2="' + (150 + 140 * Math.sin(a)).toFixed(1) + '" stroke="' + (m ? "#f5d78e" : "#a88339") + '" stroke-opacity="' + (m ? ".52" : ".22") + '" stroke-width="' + (m ? "1.1" : ".6") + '" stroke-linecap="round"/>';
     }
-    for (let i = 0; i < 36; i++) {
-      const a = (i / 36) * Math.PI * 2;
-      rayas += '<line x1="' + (130 + 62 * Math.cos(a)).toFixed(1) + '" y1="' + (130 + 62 * Math.sin(a)).toFixed(1) + '" x2="' + (130 + 116 * Math.cos(a)).toFixed(1) + '" y2="' + (130 + 116 * Math.sin(a)).toFixed(1) + '" stroke="#ffffff" stroke-opacity=".022" stroke-width="1.8"/>';
-    }
+    const orb5 = A.svg(marcas + '<circle cx="150" cy="150" r="141" fill="none" stroke="#e5bd66" stroke-opacity=".14" stroke-width=".7"/>', "0 0 300 300");
+    const plano = (cls, svg, vt, inv) => h("span", { class: "ap-vp-orb " + cls, "aria-hidden": "true" }, h("span", { class: "ap-vp-gira" + (inv ? " inv" : ""), style: "--vt:" + vt }, svg));
+    // 4 destellos ópticos circulares (sin cruces ni estrellas) en períodos coprimos donde cruzan las órbitas
+    const destellos = [
+      ["13.7s", 0, "50%", "7%", "18px", "4.3s", "-1.1s"],
+      ["19.3s", 1, "86%", "34%", "14px", "6.1s", "-2.8s"],
+      ["27.1s", 0, "24%", "82%", "16px", "7.9s", "-4.5s"],
+      ["37.9s", 1, "14%", "30%", "12px", "9.7s", "-6.2s"],
+    ].map(([dt, inv, dx, dy, ds, pt, pd]) => h("span", { class: "ap-vp-dest" + (inv ? " inv" : ""), "aria-hidden": "true", style: "--dt:" + dt },
+      h("i", { style: "--dx:" + dx + ";--dy:" + dy + ";--ds:" + ds + ";--pt:" + pt + ";--pd:" + pd })));
+    // Anillo perimetral de etapa + gema diamante de avance
+    const angTip = -Math.PI / 2 + fracEt * Math.PI * 2, tx = 150 + 130 * Math.cos(angTip), ty = 150 + 130 * Math.sin(angTip);
+    const anillo = h("span", { class: "ap-vp-anillo", "aria-hidden": "true" }, A.svg(
+      '<circle cx="150" cy="150" r="130" fill="none" stroke="rgba(255,244,210,.09)" stroke-width="1.6"/>' +
+      '<circle cx="150" cy="150" r="130" fill="none" stroke="' + cur[5] + '" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="' + C2.toFixed(1) + '" stroke-dashoffset="' + (C2 * (1 - fracEt)).toFixed(1) + '" transform="rotate(-90 150 150)"/>' +
+      '<g transform="translate(' + tx.toFixed(1) + " " + ty.toFixed(1) + ') rotate(45)"><rect x="-3.8" y="-3.8" width="7.6" height="7.6" rx="1.4" fill="#fffaf0" stroke="' + cur[5] + '" stroke-width="1.3"/></g>', "0 0 300 300"));
+    // 4 arcos independientes de pilares (capa HTML por pilar: resaltar uno al tocarlo cuesta cero repintado SVG)
+    const parcs = h("span", { class: "ap-vp-parcs", "aria-hidden": "true" });
+    const mapaArc = new Map();
+    let acum = 0;
     for (const p of PILARES) {
-      const len = (p.v / totP) * C1, gap = len > 6 ? 3.5 : 0;
-      if (len > 0.5) arcos += '<circle cx="130" cy="130" r="100" fill="none" stroke="url(#' + p.g[0] + ')" stroke-width="10" stroke-dasharray="' + Math.max(0, len - gap).toFixed(1) + " " + C1.toFixed(1) + '" stroke-dashoffset="' + (-acum).toFixed(1) + '"/>';
-      acum += len;
+      const len = (p.v / totP) * C1, gap = len > 7 ? 4.5 : 0;
+      const svgP = A.svg('<defs><linearGradient id="' + p.g[0] + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + p.g[1] + '"/><stop offset="1" stop-color="' + p.g[2] + '"/></linearGradient></defs>' +
+        (len > 0.5 ? '<g transform="rotate(-90 150 150)"><circle cx="150" cy="150" r="119" fill="none" stroke="url(#' + p.g[0] + ')" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="' + Math.max(0, len - gap).toFixed(1) + " " + C1.toFixed(1) + '" stroke-dashoffset="' + (-acum).toFixed(1) + '"/></g>' : ""), "0 0 300 300");
+      const wrap = h("span", { class: "ap-vp-parc" }, svgP);
+      mapaArc.set(p.k, wrap); parcs.append(wrap); acum += len;
     }
-    const angTip = -Math.PI / 2 + fracEt * Math.PI * 2, tx = 130 + 82 * Math.cos(angTip), ty = 130 + 82 * Math.sin(angTip);
-    const relojSVG = A.svg('<defs>' +
-      '<linearGradient id="' + u + 'bis" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff5cf"/><stop offset=".26" stop-color="#dca948"/><stop offset=".52" stop-color="#694612"/><stop offset=".78" stop-color="#e3bc66"/><stop offset="1" stop-color="#4e320b"/></linearGradient>' +
-      '<radialGradient id="' + u + 'esf" cx=".46" cy=".38" r=".65"><stop offset="0" stop-color="#251d12"/><stop offset=".58" stop-color="#111013"/><stop offset="1" stop-color="#060608"/></radialGradient>' +
-      '<linearGradient id="' + u + 'cri" x1="0" y1="0" x2=".25" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".16"/><stop offset=".42" stop-color="#ffffff" stop-opacity=".03"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
-      PILARES.map((p) => '<linearGradient id="' + p.g[0] + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + p.g[1] + '"/><stop offset="1" stop-color="' + p.g[2] + '"/></linearGradient>').join("") + '</defs>' +
-      '<circle cx="130" cy="130" r="125" fill="none" stroke="url(#' + u + 'bis)" stroke-width="3.2"/>' +
-      '<circle cx="130" cy="130" r="120" fill="url(#' + u + 'esf)" stroke="rgba(255,244,210,.2)" stroke-width=".8"/>' + rayas + marcas +
-      '<circle cx="130" cy="130" r="100" fill="none" stroke="rgba(255,244,210,.07)" stroke-width="10"/>' +
-      '<g transform="rotate(-90 130 130)">' + arcos + '</g>' +
-      '<circle cx="130" cy="130" r="82" fill="none" stroke="rgba(255,244,210,.1)" stroke-width="3"/>' +
-      '<circle cx="130" cy="130" r="82" fill="none" stroke="' + cur[5] + '" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="' + C2.toFixed(1) + '" stroke-dashoffset="' + (C2 * (1 - fracEt)).toFixed(1) + '" transform="rotate(-90 130 130)"/>' +
-      '<g transform="translate(' + tx.toFixed(1) + " " + ty.toFixed(1) + ') rotate(45)"><rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.2" fill="#fff9e2" stroke="' + cur[5] + '" stroke-width="1.2"/></g>' +
-      '<circle cx="130" cy="130" r="71" fill="rgba(9,9,11,.9)" stroke="rgba(201,168,101,.32)" stroke-width=".9"/>' +
-      '<path d="M' + pt(118, Math.PI * 1.08) + "A118 118 0 0 1 " + pt(118, Math.PI * 1.92) + 'Q130 74 ' + pt(118, Math.PI * 1.08) + 'Z" fill="url(#' + u + 'cri)"/>', "0 0 260 260");
-    relojSVG.setAttribute("role", "img");
-    relojSVG.setAttribute("aria-label", "Poder " + fmt(poder) + ", Etapa " + cur[1] + " " + cur[2] + ": Atributos " + fmt(pAt) + ", Nivel " + fmt(pNv) + ", Fruto " + fmt(pFr) + ", Accesorios " + fmt(pAc));
     const capaRay = h("span", { class: "ap-vp-rayos", "aria-hidden": "true" });
-    const reloj = h("div", { class: "ap-vp-reloj" }, h("span", { class: "ap-vp-pulso", "aria-hidden": "true" }), relojSVG, capaRay,
+    const valPoder = h("b", { class: "ap-vp-val", text: fmt(poder) });
+    const camara = h("div", { class: "ap-vp-cam" }, h("span", { class: "ap-vp-luz", "aria-hidden": "true" }),
+      plano("o1", orb1, "31.7s", 0), plano("o2", orb2, "47.3s", 1), plano("o3", orb3, "61.9s", 0), plano("o4", orb4, "79.1s", 1), plano("o5", orb5, "103.3s", 0), ...destellos);
+    const escena = h("div", { class: "ap-vp-escena" }, camara, anillo, parcs, capaRay, h("span", { class: "ap-vp-velo", "aria-hidden": "true" }),
       h("div", { class: "ap-vp-centro" },
         h("span", { class: "ap-vp-rot", text: "Poder" }),
-        h("b", { class: "ap-vp-val", text: fmt(poder) }),
+        valPoder,
         h("span", { class: "ap-vp-et", text: "Etapa " + cur[1] + " · " + cur[2] }),
         h("span", { class: "ap-vp-falta", text: sig ? "Faltan " + fmt(Math.max(0, meta - poder)) + " para " + sig[2] : "+" + fmt(Math.max(0, poder - 2400)) + " sobre 2.400" })));
+    const reloj = h("div", { class: "ap-vp-reloj", role: "img", "aria-label": "Poder " + fmt(poder) + ", Etapa " + cur[1] + " " + cur[2] + ": Atributos " + fmt(pAt) + ", Nivel " + fmt(pNv) + ", Fruto " + fmt(pFr) + ", Accesorios " + fmt(pAc) }, escena);
+    const pista = h("p", { class: "ap-vp-pista", text: "Desliza la esfera para explorar su relieve" });
+    const marco = h("div", { class: "ap-vp-marco" }, reloj, pista);
     // Banda de etapas (del nivel inicial 0 hasta la siguiente etapa)
     const barraEt = h("i");
     const banda = h("div", { class: "ap-vp-banda" },
@@ -3549,71 +3693,151 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "ap-vp-tramo", role: "progressbar", "aria-valuemin": String(inicio), "aria-valuemax": String(meta || poder || 2400), "aria-valuenow": String(poder), "aria-label": "Avance de poder hacia la siguiente etapa", style: "--p:" + (fracEt * 100).toFixed(1) }, barraEt),
       h("ol", { class: "ap-vp-etapas", "aria-label": "Etapas del poder" }, ET.map(([n, rom, nom, ini, , col]) =>
         h("li", { class: n < cur[0] ? "ok" : n === cur[0] ? "act" : "", style: "--ec:" + col }, h("em", { text: rom }), h("i", { "aria-hidden": "true" }), h("b", { text: nom }), h("small", { text: fmt(ini) })))));
-    // Pilares interactivos (2 × 2 simétrico)
+    // Pilares interactivos resonantes con la esfera 3D (2 × 2 simétrico)
     const foco = h("p", { class: "ap-vp-foco", "aria-live": "polite" });
     const ulPil = h("ul", { class: "ap-vp-pilares" });
-    const verP = (p, bt) => {
+    const pilBars = [], pilNums = [];
+    let cuerpo = null;
+    const verP = (p, bt, usuario) => {
       for (const b of ulPil.querySelectorAll(".ap-vp-pbtn")) b.classList.toggle("sel", b === bt);
+      for (const [k, el] of mapaArc) { el.classList.toggle("act", k === p.k); el.classList.toggle("ten", k !== p.k); }
+      if (cuerpo) cuerpo.style.setProperty("--vp-luz", p.luz);
       foco.replaceChildren(h("b", { text: p.n + " (+" + fmt(p.v) + " · " + pct(p.v) + "): " }), p.det);
+      if (usuario) vibrar(6);
     };
     PILARES.forEach((p, idx) => {
-      const bt = h("button", { class: "ap-vp-pbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--pc:" + p.col, onclick: () => verP(p, bt) },
+      const pctP = Math.max(2, (100 * p.v) / totP), barI = h("i", { style: "--w:" + pctP.toFixed(1) }), numB = h("b", { text: "+" + fmt(p.v) });
+      pilBars.push([barI, pctP]); pilNums.push([numB, p.v]);
+      const bt = h("button", { class: "ap-vp-pbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--pc:" + p.col, onclick: () => verP(p, bt, 1) },
         h("span", { class: "ap-vp-ptop" }, h("span", { class: "ap-vp-pnom" }, h("i", { "aria-hidden": "true" }), p.n), h("span", { class: "ap-vp-ppct", text: pct(p.v) })),
-        h("span", { class: "ap-vp-pnum" }, h("b", { text: "+" + fmt(p.v) }), h("small", { text: p.fm })),
-        h("span", { class: "ap-vp-pbar", "aria-hidden": "true" }, h("i", { style: "--w:" + Math.max(2, (100 * p.v) / totP).toFixed(1) + "%" })));
+        h("span", { class: "ap-vp-pnum" }, numB, h("small", { text: p.fm })),
+        h("span", { class: "ap-vp-pbar", "aria-hidden": "true" }, barI));
       ulPil.append(h("li", {}, bt));
-      if (idx === 0) verP(p, bt);
+      if (idx === 0) verP(p, bt, 0);
     });
-    // Estadísticas del ser interior (ya llegan del servidor, sin peticiones nuevas)
-    const stats = h("ul", { class: "ap-vp-stats" },
-      h("li", {}, h("b", { text: "Nivel " + fmt(niv) }), h("span", { text: yy.rangoNombre || "Lector" }), h("small", { text: yy.enTope ? "tope del mes" : fmt(yy.xpNivel) + " / " + fmt(yy.xpSig) })),
-      h("li", {}, h("b", { text: grArm + " / 30" }), h("span", { text: "Armadura" }), h("small", { text: "+" + fmt(grArm * 2) + " a atributos" })),
-      h("li", {}, h("b", { text: fmt(sumFr) }), h("span", { text: "Fruto" }), h("small", { text: "en 9 cámaras" })),
-      h("li", {}, h("b", { text: fmt(nInv) }), h("span", { text: "Accesorios" }), h("small", { text: plural(nEqAcc, "equipado", "equipados") })),
-      h("li", {}, h("b", { text: fmt(yy.vc || 0) }), h("span", { text: "Versos leídos" }), h("small", { text: yy.lk && yy.lk.k ? plural(yy.lk.k, "lectura plena", "lecturas plenas") : fmt(yy.xp || 0) + " XP total" })),
-      h("li", {}, h("b", { text: fmt(cantos) }), h("span", { text: "Cantos" }), h("small", { text: fmt(dr) + " dr." })));
-    // Verso desplegable in-situ (Ἐfέsιοι 3:16 en formato de la Lectura, sin cerrar la ventana del poder)
-    const panelV = h("div", { class: "ap-versos", hidden: true }), citaE = A.nombreLibro("EPH") + " 3:16";
-    const btCita = h("button", { class: "ap-cita", type: "button", "aria-expanded": "false", title: "Ver lo que dice", onclick: async () => {
-      const ab = panelV.hidden; panelV.hidden = !ab; btCita.setAttribute("aria-expanded", String(ab));
-      if (!ab || panelV.dataset.listo) return;
-      panelV.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
-      try {
-        const l = await A.versos("EPH", 3, 16, 16);
-        panelV.replaceChildren(...l.map(([v, nodo]) => h("p", {}, nodo)),
-          h("a", { class: "jg-vl-ref", href: "#/EPH/3/l/16", onclick: () => A.cerrarModal() }, "Leer en el capítulo", A.svg(A.ICO.der)));
-        panelV.dataset.listo = "1";
-      } catch (e) { panelV.replaceChildren(h("p", { class: "jg-mini", text: "No se pudo cargar el verso." })); }
-    } }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaE, h("span", { class: "ap-cita-fl", "aria-hidden": "true", text: "▾" }));
-    const cuerpo = h("div", { class: "flot-cel ap-vp", style: "--vp-et:" + cur[5] },
-      reloj, banda,
+    // Estadísticas vivas del ser interior (medallones interactivos con destello asíncrono coprimo y nota al tocar)
+    const STATS = [
+      { k: "nv", sc: "var(--vp-c2)", st: "13.1s", sd: "-2.3s", val: "Nivel " + fmt(niv), cnt: null, nom: yy.rangoNombre || "Lector", sub: yy.enTope ? "tope del mes" : fmt(yy.xpNivel) + " / " + fmt(yy.xpSig),
+        nota: yy.enTope ? "Has alcanzado el tope mensual (" + yy.tope + "). Tu experiencia sigue acumulándose en reserva (" + fmt(yy.reserva) + ")." : "Te faltan " + fmt(Math.max(0, (yy.xpSig | 0) - (yy.xpNivel | 0))) + " XP para ascender al nivel " + fmt(niv + 1) + " (+15 poder)." },
+      { k: "ar", sc: "var(--vp-c1)", st: "17.3s", sd: "-6.7s", val: grArm + " / 30", cnt: null, nom: "Armadura", sub: "+" + fmt(grArm * 2) + " a atributos",
+        nota: grArm >= 30 ? "Armadura forjada al grado máximo (30/30): aporta +60 puntos efectivos (+600 de poder)." : "Faltan " + fmt(30 - grArm) + " grados de forja por completar; cada grado suma +2 a su atributo (+20 de poder)." },
+      { k: "fr", sc: "var(--vp-c3)", st: "21.7s", sd: "-11.4s", val: fmt(sumFr), cnt: sumFr, nom: "Fruto", sub: "en 9 cámaras",
+        nota: "Las nueve cámaras del fruto del espíritu (Gαlάται 5:22-23) suman " + fmt(sumFr) + " niveles y aportan +" + fmt(pFr) + " al poder total." },
+      { k: "ac", sc: "var(--vp-c4)", st: "25.9s", sd: "-4.9s", val: fmt(nInv), cnt: nInv, nom: "Accesorios", sub: plural(nEqAcc, "equipado", "equipados"),
+        nota: "Cada aura, manto, lauro o sello que guardas en tu tesoro suma +25 de poder aunque no lo lleves equipado en este momento." },
+      { k: "vc", sc: "var(--vp-c5)", st: "19.1s", sd: "-9.2s", val: fmt(yy.vc || 0), cnt: yy.vc || 0, nom: "Versos leídos", sub: yy.lk && yy.lk.k ? plural(yy.lk.k, "lectura plena", "lecturas plenas") : fmt(yy.xp || 0) + " XP total",
+        nota: "Solo cuentan los versos confirmados en BiEx («Leído», capítulo marcado o prueba respondida): lectura real, sin atajos." },
+      { k: "cn", sc: "var(--vp-c6)", st: "29.3s", sd: "-15.1s", val: fmt(cantos), cnt: cantos, nom: "Cantos", sub: fmt(dr) + " dr.",
+        nota: "Tienes " + plural(cantos, "canto", "cantos") + " para forjar grados altos de la armadura y " + fmt(dr) + " dracmas ganadas leyendo." },
+    ];
+    const stNota = h("p", { class: "ap-vp-stnota", "aria-live": "polite" });
+    const ulStats = h("ul", { class: "ap-vp-stats" });
+    const stNums = [];
+    const verSt = (st, bt, usuario) => {
+      for (const b of ulStats.querySelectorAll(".ap-vp-stbtn")) b.classList.toggle("sel", b === bt);
+      stNota.replaceChildren(h("b", { text: st.nom + ": " }), st.nota);
+      if (usuario) vibrar(5);
+    };
+    STATS.forEach((st, idx) => {
+      const bNum = h("b", { text: st.val });
+      if (st.cnt != null && st.cnt > 0) stNums.push([bNum, st.cnt]);
+      const bt = h("button", { class: "ap-vp-stbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--sc:" + st.sc + ";--st:" + st.st + ";--sd:" + st.sd, onclick: () => verSt(st, bt, 1) },
+        h("span", { class: "ap-vp-sttop" }, h("i", { "aria-hidden": "true" }), bNum),
+        h("span", { text: st.nom }),
+        h("small", { text: st.sub }));
+      ulStats.append(h("li", {}, bt));
+      if (idx === 0) verSt(st, bt, 0);
+    });
+    // Citas desplegables in-situ en formato de Lectura BiEx (2 Κοrίndsιοι 4:7 y Ἐfέsιοι 3:16)
+    const panelV = h("div", { class: "ap-versos", hidden: true });
+    let citaAct = "";
+    const mkCita = (cod, cap, v) => {
+      const ref = A.nombreLibro(cod) + " " + cap + ":" + v, idC = cod + cap + ":" + v;
+      const bt = h("button", { class: "ap-cita", type: "button", "aria-expanded": "false", title: "Ver lo que dice", onclick: async () => {
+        const mismo = citaAct === idC && !panelV.hidden;
+        for (const x of pie.querySelectorAll(".ap-cita")) x.setAttribute("aria-expanded", "false");
+        if (mismo) { panelV.hidden = true; citaAct = ""; return; }
+        citaAct = idC; panelV.hidden = false; bt.setAttribute("aria-expanded", "true");
+        panelV.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
+        try {
+          const l = await A.versos(cod, cap, v, v);
+          panelV.replaceChildren(...l.map(([vv, nodo]) => h("p", {}, nodo)),
+            h("a", { class: "jg-vl-ref", href: "#/" + cod + "/" + cap + "/l/" + v, onclick: () => A.cerrarModal() }, "Leer en el capítulo", A.svg(A.ICO.der)));
+        } catch (e) { panelV.replaceChildren(h("p", { class: "jg-mini", text: "No se pudo cargar el verso." })); }
+      } }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref, h("span", { class: "ap-cita-fl", "aria-hidden": "true", text: "▾" }));
+      return bt;
+    };
+    const pie = h("div", { class: "ap-vp-pie" }, "Potencia de ʾĔlōhî́m en el ser interior · ", mkCita("2CO", 4, 7), mkCita("EPH", 3, 16));
+    cuerpo = h("div", { class: "flot-cel ap-vp", style: "--vp-et:" + cur[5] + ";--vp-luz:" + PILARES[0].luz },
+      marco, banda,
       h("p", { class: "ap-vp-sec", text: "Composición del poder" }), ulPil, foco,
-      h("p", { class: "ap-vp-sec", text: "Estadísticas del ser interior" }), stats,
-      h("div", { class: "ap-vp-pie" }, "Fortalecido en el ser interior · ", btCita), panelV);
-    // Descargas eléctricas sutiles en la capa HTML del instrumento (solo opacidad; se detienen al cerrar la ventana)
+      h("p", { class: "ap-vp-sec", text: "Estadísticas del ser interior" }), ulStats, stNota,
+      pie, panelV);
+    // Inclinación 3D interactiva por dedo, puntero o inclinación suave del dispositivo (reposa a 0 % CPU al detenerse)
+    let rx = 0, ry = 0, trx = 0, tryy = 0, raf = 0, arrastra = false;
+    const animar3D = () => {
+      raf = 0; if (!cuerpo.isConnected) return;
+      rx += (trx - rx) * 0.16; ry += (tryy - ry) * 0.16;
+      escena.style.setProperty("--rx", rx.toFixed(2) + "deg");
+      escena.style.setProperty("--ry", ry.toFixed(2) + "deg");
+      if (Math.abs(trx - rx) > 0.04 || Math.abs(tryy - ry) > 0.04) raf = requestAnimationFrame(animar3D);
+    };
+    const mover3D = (nx, ny) => {
+      if (sinAnim()) return;
+      trx = Math.max(-16, Math.min(16, -ny * 16));
+      tryy = Math.max(-16, Math.min(16, nx * 16));
+      if (!raf) raf = requestAnimationFrame(animar3D);
+    };
+    const desdeEvento = (e) => {
+      const r = reloj.getBoundingClientRect(); if (!r.width || !r.height) return;
+      mover3D(((e.clientX - r.left) / r.width - 0.5) * 2, ((e.clientY - r.top) / r.height - 0.5) * 2);
+    };
+    const onDown = (e) => { if (sinAnim()) return; arrastra = true; pista.classList.add("visto"); try { reloj.setPointerCapture(e.pointerId); } catch (er) { /* nada */ } desdeEvento(e); };
+    const onMove = (e) => { if (sinAnim()) return; if (arrastra || e.pointerType === "mouse") { if (arrastra) pista.classList.add("visto"); desdeEvento(e); } };
+    const onUp = () => { arrastra = false; mover3D(0, 0); };
+    const onOri = (e) => { if (arrastra || sinAnim() || document.hidden || e.beta == null || e.gamma == null) return; mover3D(Math.max(-0.55, Math.min(0.55, e.gamma / 42)), Math.max(-0.55, Math.min(0.55, (e.beta - 42) / 48))); };
+    const onVis = () => { cuerpo.classList.toggle("pausa", document.hidden); };
+    reloj.addEventListener("pointerdown", onDown);
+    reloj.addEventListener("pointermove", onMove);
+    reloj.addEventListener("pointerup", onUp);
+    reloj.addEventListener("pointercancel", onUp);
+    reloj.addEventListener("pointerleave", onUp);
+    document.addEventListener("visibilitychange", onVis);
+    if ("DeviceOrientationEvent" in window) window.addEventListener("deviceorientation", onOri, { passive: true });
+    // Filamentos dorados sutiles en la capa HTML (solo opacidad; nunca se repiten; se detienen al cerrar la ventana)
     let tRay = 0;
     const al = (a, b) => a + Math.random() * (b - a);
     const chispa = () => {
       clearTimeout(tRay); if (!cuerpo.isConnected) return;
       if (!document.hidden && !sinAnim() && capaRay.animate) {
-        let d = ""; const n = 2 + Math.floor(Math.random() * 2);
+        let d = ""; const n = 1 + Math.floor(Math.random() * 2);
         for (let i = 0; i < n; i++) {
-          const ang = al(0, Math.PI * 2); let x = 130 + 84 * Math.cos(ang), y0 = 130 + 84 * Math.sin(ang);
-          const dx = Math.cos(ang), dy = Math.sin(ang); d += "M" + x.toFixed(1) + " " + y0.toFixed(1);
-          for (let k = 0; k < 4; k++) { x += dx * al(3.5, 6.5) + al(-3.2, 3.2); y0 += dy * al(3.5, 6.5) + al(-3.2, 3.2); d += "L" + x.toFixed(1) + " " + y0.toFixed(1); }
+          const ang = al(0, Math.PI * 2); let x = 150 + 114 * Math.cos(ang), y0 = 150 + 114 * Math.sin(ang);
+          const dx = Math.cos(ang + al(-0.5, 0.5)), dy = Math.sin(ang + al(-0.5, 0.5)); d += "M" + x.toFixed(1) + " " + y0.toFixed(1);
+          for (let k = 0; k < 4; k++) { x += dx * al(4, 7.5) + al(-3.6, 3.6); y0 += dy * al(4, 7.5) + al(-3.6, 3.6); d += "L" + x.toFixed(1) + " " + y0.toFixed(1); }
         }
-        capaRay.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".45" stroke-linejoin="round"/>', "0 0 260 260"));
-        const dur = al(320, 660);
-        capaRay.animate([{ opacity: 0 }, { opacity: 0.92, offset: 0.08 }, { opacity: 0.16, offset: 0.2 }, { opacity: 0.78, offset: 0.32 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+        capaRay.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#f5d584" stroke-width="1.05" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fffef6" stroke-width=".42" stroke-linejoin="round"/>', "0 0 300 300"));
+        const dur = al(340, 720);
+        capaRay.animate([{ opacity: 0 }, { opacity: 0.88, offset: 0.08 }, { opacity: 0.14, offset: 0.2 }, { opacity: 0.72, offset: 0.34 }, { opacity: 0 }], { duration: dur, easing: "linear" });
       }
-      tRay = setTimeout(chispa, al(3400, 7400));
+      tRay = setTimeout(chispa, al(3900, 8600));
     };
-    const vista = () => A.cajaModal(A.cabModal("Tu poder", "Tu ser interior"), cuerpo);
+    const vista = () => A.cajaModal(A.cabModal("Poder", "En el ser interior"), cuerpo);
     vista.alMostrar = () => {
-      if (!sinAnim() && barraEt.animate) barraEt.animate([{ transform: "translate3d(-100%,0,0)" }, { transform: "translate3d(" + (fracEt * 100 - 100).toFixed(1) + "%,0,0)" }], { duration: 900, easing: "cubic-bezier(.2,.8,.2,1)" });
-      tRay = setTimeout(chispa, 600);
+      if (!sinAnim()) {
+        if (poder > 0) contarRapido(valPoder, poder, 950);
+        if (barraEt.animate) barraEt.animate([{ transform: "translate3d(-100%,0,0)" }, { transform: "translate3d(" + (fracEt * 100 - 100).toFixed(1) + "%,0,0)" }], { duration: 920, easing: "cubic-bezier(.2,.8,.2,1)" });
+        pilBars.forEach(([el, w], i) => { if (el.animate) el.animate([{ transform: "translate3d(-100%,0,0)" }, { transform: "translate3d(" + (w - 100).toFixed(1) + "%,0,0)" }], { duration: 760 + i * 95, easing: "cubic-bezier(.2,.8,.2,1)" }); });
+        pilNums.forEach(([el, v], i) => { if (v > 0) setTimeout(() => contarRapido(el, v, 680, "+"), 80 + i * 70); });
+        stNums.forEach(([el, v], i) => setTimeout(() => contarRapido(el, v, 720), 160 + i * 65));
+        tRay = setTimeout(chispa, 900);
+      }
     };
-    A.abrirModal(vista, () => { clearTimeout(tRay); tRay = 0; });
+    A.abrirModal(vista, () => {
+      clearTimeout(tRay); tRay = 0; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      document.removeEventListener("visibilitychange", onVis);
+      if ("DeviceOrientationEvent" in window) window.removeEventListener("deviceorientation", onOri);
+    });
   }
   // V21 (BiEx, 12-nov-2026): estadísticas del día, la semana y el mes, espectaculares. Lo de ahora frente a lo anterior (solo
   // se celebra lo que crece: nunca una flecha de pérdida) y las barras de los últimos días, semanas o meses, que suben al
@@ -3719,25 +3943,104 @@ html[data-mov="no"] .ap-savia{display:none!important}
     ["sello-rollo", "sello", "Sello del rollo de siete sellos", "Ἀpοκάlυpsις 5:1"], ["aura-nube", "aura", "Aura de la columna de nube", "Éxodo 13:21"], ["sello-candelero", "sello", "Sello del candelero de oro", "Ἀpοκάlυpsις 1:12"]];
   const AURA_C = { "aura-oro": "#f5c64e", "aura-zafiro": "#5b8cff", "aura-esmeralda": "#3ccf8e", "aura-amatista": "#b07cff", "aura-alba": "#ffb38a", "aura-columna": "#ff8a3d", "aura-nube": "#e3ecf8" };
   const MANTO_C = { "manto-lino": ["#efe7cf", "#9c9172"], "manto-escarlata": ["#d0454b", "#5e1418"], "manto-azul": ["#4a7fe0", "#14275a"], "manto-purpura": ["#9a48b3", "#2f0c3b"] };
-  // sellos raros (vitrina y pecho de la figura): el rollo con sus siete sellos y el candelero de siete brazos
+  // Sellos raros (vitrina y pecho de la figura, 48 × 48 sin ids para repetirse): rollo de siete sellos y candelero de siete brazos
   const SELLO_RARO = {
-    "sello-rollo": '<rect x="14" y="16" width="20" height="16" rx="2" fill="#fff3d0" stroke="#7a5212"/><rect x="12" y="14.5" width="24" height="3.4" rx="1.7" fill="#c9a865" stroke="#7a5212" stroke-width=".8"/><rect x="12" y="30.2" width="24" height="3.4" rx="1.7" fill="#c9a865" stroke="#7a5212" stroke-width=".8"/>' +
-      [16.5, 20.2, 23.9, 27.6, 31.3].map((x) => '<circle cx="' + x + '" cy="24" r="1.45" fill="#b0302c"/>').join("") + '<circle cx="18.4" cy="27.8" r="1.25" fill="#b0302c"/><circle cx="29.6" cy="27.8" r="1.25" fill="#b0302c"/>',
-    "sello-candelero": '<path d="M24 34V17M17 20c0 6 3 9 7 9s7-3 7-9M13.5 19c0 9 4.6 13.4 10.5 13.4S34.5 28 34.5 19M20.5 21.5c0 3 1.4 4.6 3.5 4.6s3.5-1.6 3.5-4.6" fill="none" stroke="#7a5212" stroke-width="1.5" stroke-linecap="round"/><path d="M19 37h10" stroke="#7a5212" stroke-width="1.8" stroke-linecap="round"/>' +
-      [13.5, 17, 20.5, 24, 27.5, 31, 34.5].map((x) => '<path d="M' + x + ' 18.2c-1.3-1.3-1-2.8 0-4.3 1 1.5 1.3 3 0 4.3z" fill="#ffb347"/>').join(""),
+    "sello-rollo": '<circle cx="24" cy="24" r="16.2" fill="#231214" stroke="#8f6318" stroke-width=".9"/>' +
+      '<rect x="13.8" y="16.4" width="20.4" height="15.2" rx="1.8" fill="#f7e6bd" stroke="#6d460e" stroke-width=".9"/>' +
+      '<path d="M16.2 19.6h15.6M16.2 22h11.2M16.2 28.4h15.6" stroke="#b9985a" stroke-width=".65" opacity=".75" stroke-linecap="round"/>' +
+      '<rect x="11.4" y="14.2" width="25.2" height="3.6" rx="1.8" fill="#e7be62" stroke="#5e3a0a" stroke-width=".8"/>' +
+      '<rect x="11.4" y="30.2" width="25.2" height="3.6" rx="1.8" fill="#e7be62" stroke="#5e3a0a" stroke-width=".8"/>' +
+      '<circle cx="12.6" cy="16" r="1" fill="#fff4cf"/><circle cx="35.4" cy="16" r="1" fill="#fff4cf"/><circle cx="12.6" cy="32" r="1" fill="#fff4cf"/><circle cx="35.4" cy="32" r="1" fill="#fff4cf"/>' +
+      [16.2, 20.1, 24, 27.9, 31.8].map((x) => '<circle cx="' + x + '" cy="24.2" r="1.55" fill="#b32428" stroke="#5a0d12" stroke-width=".4"/><circle cx="' + (x - 0.4) + '" cy="23.7" r=".42" fill="#ffd9d4"/>').join("") +
+      '<circle cx="19.2" cy="27.9" r="1.35" fill="#b32428" stroke="#5a0d12" stroke-width=".4"/><circle cx="18.8" cy="27.5" r=".36" fill="#ffd9d4"/>' +
+      '<circle cx="28.8" cy="27.9" r="1.35" fill="#b32428" stroke="#5a0d12" stroke-width=".4"/><circle cx="28.4" cy="27.5" r=".36" fill="#ffd9d4"/>',
+    "sello-candelero": '<circle cx="24" cy="24" r="16.2" fill="#14110b" stroke="#8f6318" stroke-width=".9"/>' +
+      '<path d="M24 34.4V17.4M17.4 20.4c0 5.6 2.8 8.6 6.6 8.6s6.6-3 6.6-8.6M13.8 19.6c0 8.5 4.4 12.6 10.2 12.6s10.2-4.1 10.2-12.6M20.7 21.8c0 2.9 1.3 4.3 3.3 4.3s3.3-1.4 3.3-4.3" fill="none" stroke="#f0c45c" stroke-width="1.45" stroke-linecap="round"/>' +
+      '<path d="M20.2 35.2h7.6M18.2 37.2h11.6" stroke="#f0c45c" stroke-width="1.65" stroke-linecap="round"/>' +
+      [13.8, 17.4, 20.7, 24, 27.3, 30.6, 34.2].map((x) => '<circle cx="' + x + '" cy="18.6" r="1.15" fill="#c9922c"/>' +
+        '<path d="M' + x + ' 18.2c-1.35-1.4-1.05-3.1 0-4.7 1.05 1.6 1.35 3.3 0 4.7z" fill="#ffae3d"/>' +
+        '<path d="M' + x + ' 17.6c-.55-.7-.45-1.5 0-2.4.45.9.55 1.7 0 2.4z" fill="#fff8de"/>').join(""),
   };
-  function muestraAcc(id, ran) {
-    if (ran === "aura") { const c = AURA_C[id] || "#f5c64e";
-      return '<circle cx="24" cy="24" r="22" fill="' + c + '" opacity=".08"/><circle cx="24" cy="24" r="17" fill="' + c + '" opacity=".14"/><circle cx="24" cy="24" r="11.5" fill="' + c + '" opacity=".32"/><circle cx="24" cy="24" r="6.5" fill="' + c + '" opacity=".75"/><circle cx="24" cy="24" r="3" fill="#fff" opacity=".9"/>'; }
-    if (ran === "manto") { const [a, b] = MANTO_C[id] || ["#2f3a47", "#0b1015"];
-      return '<path d="M17 9Q24 6 31 9L41 42Q24 46 7 42Z" fill="' + b + '"/><path d="M17 9Q24 6 31 9L36 41Q24 44 12 41Z" fill="' + a + '" opacity=".92"/><path d="M20 14L17 40M28 14L31 40M24 13V42" stroke="rgba(0,0,0,.22)" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="24" cy="10.5" r="3" fill="#f2c14e" stroke="#7a5212"/>'; }
-    if (ran === "sello" && SELLO_RARO[id]) return '<circle cx="24" cy="24" r="19" fill="#f2c14e" stroke="#7a5212" stroke-width="1.5"/>' + SELLO_RARO[id];
-    if (ran === "corona") { const v = id === "corona-laurel" ? "#5f9a4c" : id === "corona-palmas" ? "#a9c94a" : "#8fbf6a"; let s = "";
-      for (let i = 0; i < 7; i++) for (const lado of [-1, 1]) { const g = (lado < 0 ? 200 - i * 24 : -20 + i * 24) * Math.PI / 180, x = 24 + 15 * Math.cos(g), y = 26 + 15 * Math.sin(g);
-        s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (id === "corona-palmas" ? "6.2" : "4.6") + '" ry="' + (id === "corona-palmas" ? "1.3" : "2") + '" transform="rotate(' + ((g * 180) / Math.PI + 90 + lado * 32).toFixed(0) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + v + '"/>'; }
-      return s + '<path d="M20 41.5c2.6 1.4 5.4 1.4 8 0" fill="none" stroke="#f2c14e" stroke-width="1.6" stroke-linecap="round"/>' + (id === "corona-olivo" ? '<circle cx="15" cy="17" r="1.8" fill="#4b6b2a"/><circle cx="33" cy="17" r="1.8" fill="#4b6b2a"/>' : '<circle cx="11.5" cy="24" r="1.3" fill="#fffaf0"/><circle cx="36.5" cy="24" r="1.3" fill="#fffaf0"/><circle cx="16" cy="13.6" r="1.1" fill="#fffaf0"/><circle cx="32" cy="13.6" r="1.1" fill="#fffaf0"/>'); }
-    return '<circle cx="24" cy="24" r="17" fill="#f2c14e" stroke="#7a5212" stroke-width="1.5"/><circle cx="24" cy="24" r="13" fill="none" stroke="#7a5212" stroke-width="1" stroke-dasharray="2 2"/>' +
-      (id === "sello-estrella" ? '<path d="M13.5 29.5h21" stroke="#7a5212" stroke-width="1.9" stroke-linecap="round"/><path d="M17 33.6h14" stroke="#7a5212" stroke-width="1.3" stroke-linecap="round" opacity=".7"/><circle cx="24" cy="22.4" r="6.6" fill="#fff6d6" opacity=".4"/><circle cx="24" cy="22.4" r="3.4" fill="#fffaf0"/>' : '<path d="M17 29h14l-2.2 4h-9.6zM20.5 29c0-5 3.5-9 3.5-9s3.5 4 3.5 9" fill="#7a5212"/><path d="M24 14.5c1.6 1.8 1.6 3.6 0 5-1.6-1.4-1.6-3.2 0-5z" fill="#fff6d6"/>');
+  // Muestra de cada accesorio (48 × 48, sin ids para repetirse): arte multicapa escalado según rareza y coste; cero cruces ni estrellas
+  function muestraAcc(id, ran, tier) {
+    const t = tier || 1;
+    if (ran === "aura") {
+      if (id === "aura-columna") {
+        return '<circle cx="24" cy="24" r="21" fill="#ff7324" opacity=".12"/><circle cx="24" cy="24" r="15" fill="#ff8e38" opacity=".18"/>' +
+          '<ellipse cx="24" cy="25" rx="19" ry="9.5" fill="none" stroke="#ffbe5c" stroke-width=".95" opacity=".68" transform="rotate(-28 24 25)"/>' +
+          '<ellipse cx="24" cy="24" rx="18" ry="8.5" fill="none" stroke="#ffe7a8" stroke-width=".8" opacity=".55" transform="rotate(30 24 24)"/>' +
+          '<path d="M24 7C29 14 32 21 30 30C29 35 27 39 24 41C21 39 19 35 18 30C16 21 19 14 24 7Z" fill="#d94414" opacity=".88"/>' +
+          '<path d="M24 11C27.8 17 29.5 23 28 30.5C27.2 34.5 25.8 37.5 24 39.2C22.2 37.5 20.8 34.5 20 30.5C18.5 23 20.2 17 24 11Z" fill="#ff8d2e"/>' +
+          '<path d="M24 15.5C26.4 20 27.2 25 26.2 30.5C25.6 33.4 24.8 35.5 24 37C23.2 35.5 22.4 33.4 21.8 30.5C20.8 25 21.6 20 24 15.5Z" fill="#ffe188"/>' +
+          '<path d="M24 20.5C25.3 23.8 25.6 27.6 24 34C22.4 27.6 22.7 23.8 24 20.5Z" fill="#fffdf2"/>' +
+          '<circle cx="15" cy="15" r="1.1" fill="#ffd98a"/><circle cx="33.5" cy="18" r="1.2" fill="#ffe8b0"/><circle cx="16.5" cy="33" r=".95" fill="#ff9e4a"/><circle cx="32" cy="31" r="1" fill="#ffd178"/>';
+      }
+      if (id === "aura-nube") {
+        return '<circle cx="24" cy="24" r="21" fill="#dce8fa" opacity=".11"/><ellipse cx="24" cy="25" rx="19" ry="9" fill="none" stroke="#dbe9ff" stroke-width=".9" opacity=".56" transform="rotate(-24 24 25)"/>' +
+          '<ellipse cx="24" cy="23" rx="17.5" ry="8" fill="none" stroke="#ffe8b5" stroke-width=".7" opacity=".46" transform="rotate(28 24 23)"/>' +
+          '<path d="M12 37Q24 34 36 37" fill="none" stroke="#c9a865" stroke-width="1.2" stroke-linecap="round" opacity=".75"/>' +
+          '<path d="M18 35.5C15 34.5 14 31 16.5 28.8C14.8 26 16.8 22.2 20 21.8C19.5 17.6 22 13.8 25.5 13.5C29.4 13.2 31.8 16.8 30.8 20.5C33.8 21.2 35 25.2 32.8 28C34.8 30.4 33.4 34.6 30 35.5Z" fill="#a8bed9" opacity=".72"/>' +
+          '<path d="M19.5 34.5C17 33.5 16.5 30.5 18.6 28.6C17.2 26 19 22.8 21.8 22.5C21.6 18.8 23.6 16 26.2 16C28.8 16 30.2 18.8 29.4 21.6C31.6 22.4 32.2 25.5 30.4 27.8C32 29.8 30.8 33.5 28.4 34.5Z" fill="#eef5ff" opacity=".95"/>' +
+          '<circle cx="25.2" cy="19.2" r="3.4" fill="#ffffff" opacity=".88"/><circle cx="21.5" cy="26.2" r="3" fill="#ffffff" opacity=".68"/>' +
+          '<circle cx="15" cy="14" r=".95" fill="#fff8e0" opacity=".8"/><circle cx="34" cy="16" r="1.1" fill="#e6f0ff" opacity=".85"/>';
+      }
+      const c = AURA_C[id] || "#f5c64e";
+      if (id === "aura-esmeralda") {
+        return '<circle cx="24" cy="24" r="20" fill="' + c + '" opacity=".1"/><path d="M9.5 30A15.5 15.5 0 0 1 38.5 30" fill="none" stroke="#8df7cc" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>' +
+          '<path d="M12.5 31A12.5 12.5 0 0 1 35.5 31" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>' +
+          '<ellipse cx="24" cy="25" rx="18" ry="8.5" fill="none" stroke="#f2cf78" stroke-width=".8" opacity=".48" transform="rotate(-18 24 25)"/>' +
+          '<path d="M24 14L31 24L24 34L17 24Z" fill="#135e40" stroke="#9bf5ce" stroke-width="1"/><path d="M24 14L31 24L24 24Z" fill="#63e6af"/><path d="M24 14L17 24L24 24Z" fill="#d8fff0"/><circle cx="24" cy="24" r="2.6" fill="#fff" opacity=".85"/>';
+      }
+      if (id === "aura-zafiro" || id === "aura-amatista") {
+        const hi = id === "aura-zafiro" ? "#cfe4ff" : "#ebd8ff", dk = id === "aura-zafiro" ? "#163578" : "#441c78";
+        return '<circle cx="24" cy="24" r="20" fill="' + c + '" opacity=".12"/><ellipse cx="24" cy="24" rx="19" ry="9" fill="none" stroke="' + hi + '" stroke-width=".9" opacity=".6" transform="rotate(-26 24 24)"/>' +
+          '<ellipse cx="24" cy="24" rx="18" ry="8.5" fill="none" stroke="#f2cf78" stroke-width=".75" opacity=".46" transform="rotate(32 24 24)"/>' +
+          '<path d="M24 11L33 24L24 37L15 24Z" fill="' + dk + '" stroke="' + hi + '" stroke-width="1"/><path d="M24 11L33 24L24 24Z" fill="' + c + '"/><path d="M24 11L15 24L24 24Z" fill="' + hi + '"/><path d="M24 17.5L28 24L24 30.5L20 24Z" fill="#fff" opacity=".42"/>' +
+          '<circle cx="13" cy="16" r="1" fill="' + hi + '"/><circle cx="35" cy="31" r="1.1" fill="#ffeab8"/>';
+      }
+      if (id === "aura-alba") {
+        return '<circle cx="24" cy="24" r="20" fill="#ffb38a" opacity=".12"/><circle cx="24" cy="28" r="13" fill="#ff9868" opacity=".28"/><circle cx="24" cy="28" r="8.5" fill="#ffd49e" opacity=".62"/><circle cx="24" cy="28" r="4.5" fill="#fffdf4"/>' +
+          '<path d="M8 32Q24 28.5 40 32" fill="none" stroke="#e3b659" stroke-width="1.35" stroke-linecap="round"/><path d="M12 35.5Q24 33 36 35.5" fill="none" stroke="#ffb38a" stroke-width=".9" opacity=".6" stroke-linecap="round"/>' +
+          '<ellipse cx="24" cy="24" rx="18.5" ry="9" fill="none" stroke="#ffe5b4" stroke-width=".8" opacity=".52" transform="rotate(-16 24 24)"/>';
+      }
+      return '<circle cx="24" cy="24" r="20" fill="' + c + '" opacity=".12"/><circle cx="24" cy="24" r="14.5" fill="' + c + '" opacity=".2"/>' +
+        '<ellipse cx="24" cy="24" rx="18.5" ry="9" fill="none" stroke="' + c + '" stroke-width=".95" opacity=".72" transform="rotate(-24 24 24)"/>' +
+        (t >= 2 ? '<ellipse cx="24" cy="24" rx="17" ry="8" fill="none" stroke="#fff2c9" stroke-width=".75" opacity=".52" transform="rotate(34 24 24)"/>' : "") +
+        '<circle cx="24" cy="24" r="7.5" fill="' + c + '" opacity=".78"/><circle cx="24" cy="24" r="4" fill="#fffef4"/><circle cx="14.5" cy="15.5" r="1" fill="#fff3cc"/>';
+    }
+    if (ran === "manto") {
+      const [a, b] = MANTO_C[id] || ["#2f3a47", "#0b1015"], raro = id === "manto-purpura", azul = id === "manto-azul", escM = id === "manto-escarlata";
+      const orla = raro || escM ? '<path d="M9.5 39.2Q24 43.2 38.5 39.2" fill="none" stroke="#f4cd68" stroke-width="1.6" stroke-linecap="round"/><path d="M10.5 37.2Q24 41 37.5 37.2" fill="none" stroke="#fff2c4" stroke-width=".65" stroke-dasharray="1.6 1.8" opacity=".8"/>' : "";
+      const flec = azul ? [12, 16, 20, 24, 28, 32, 36].map((x, i) => '<path d="M' + x + ' 41.2v3.6" stroke="' + (i % 2 ? "#5998ff" : "#f4ecdc") + '" stroke-width="1.15" stroke-linecap="round"/>').join("") : "";
+      const broche = raro ? '<path d="M24 7.5L28 11.2L24 14.8L20 11.2Z" fill="#f5cc64" stroke="#5e3a0a" stroke-width=".8"/><circle cx="24" cy="11.2" r="1.4" fill="#e59eff"/>' : '<circle cx="24" cy="11" r="3" fill="#f2c14e" stroke="#6b440e" stroke-width=".9"/><circle cx="23.2" cy="10.2" r=".85" fill="#fff8de"/>';
+      return '<path d="M16 9.5Q24 6.2 32 9.5L41.5 41.2Q24 45.8 6.5 41.2Z" fill="' + b + '" stroke="rgba(255,235,180,.28)" stroke-width=".7"/>' +
+        '<path d="M17 9.8Q24 7 31 9.8L37.2 40.4Q24 44 10.8 40.4Z" fill="' + a + '"/>' +
+        '<path d="M20.2 12.2L17.4 40.2M27.8 12.2L30.6 40.2M24 12.5V41.5" stroke="rgba(0,0,0,.28)" stroke-width="1.45" fill="none" stroke-linecap="round"/>' +
+        '<path d="M21.8 13.5L20 38.5M26.4 13.5L28.2 38.5" stroke="rgba(255,250,235,.22)" stroke-width=".8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M16.4 10.4Q24 14.4 31.6 10.4" fill="none" stroke="#f0c55e" stroke-width="1.2" opacity=".85"/>' + orla + flec + broche;
+    }
+    if (ran === "sello" && SELLO_RARO[id]) {
+      return '<circle cx="24" cy="24" r="20.2" fill="#d9a538" stroke="#5e3a0a" stroke-width="1.2"/><circle cx="24" cy="24" r="18.2" fill="none" stroke="#fff4cb" stroke-width=".9" stroke-dasharray="1.6 1.8" opacity=".82"/>' + SELLO_RARO[id];
+    }
+    if (ran === "corona") {
+      const pal = id === "corona-palmas", mir = id === "corona-laurel";
+      const v1 = mir ? "#487f3d" : pal ? "#84ab38" : "#6c9952", v2 = mir ? "#78be64" : pal ? "#d8ea72" : "#a8d17f";
+      let s = '<path d="M13 38.5A15.5 15.5 0 0 1 13.5 11.5M35 38.5A15.5 15.5 0 0 0 34.5 11.5" fill="none" stroke="' + (pal ? "#e8bd56" : "#8e6b2a") + '" stroke-width="1.2" stroke-linecap="round"/>';
+      for (let i = 0; i < 7; i++) for (const lado of [-1, 1]) {
+        const g = (lado < 0 ? 204 - i * 24 : -24 + i * 24) * Math.PI / 180, x = 24 + 15.2 * Math.cos(g), y = 25.5 + 15.2 * Math.sin(g);
+        const rot = ((g * 180) / Math.PI + 90 + lado * 30).toFixed(0);
+        s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (pal ? "6.6" : "4.8") + '" ry="' + (pal ? "1.45" : "2.15") + '" transform="rotate(' + rot + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + v1 + '"/>' +
+          '<ellipse cx="' + (x - lado * 0.4).toFixed(1) + '" cy="' + (y - 0.5).toFixed(1) + '" rx="' + (pal ? "4.6" : "3.1") + '" ry="' + (pal ? ".75" : "1.05") + '" transform="rotate(' + rot + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + v2 + '"/>';
+      }
+      const ad = id === "corona-olivo" ? '<circle cx="15" cy="17.5" r="2" fill="#3a5220" stroke="#9ec46a" stroke-width=".45"/><circle cx="33" cy="17.5" r="2" fill="#3a5220" stroke="#9ec46a" stroke-width=".45"/><circle cx="11.5" cy="29" r="1.7" fill="#3a5220"/>'
+        : pal ? '<circle cx="11.5" cy="24" r="1.5" fill="#fff5d0"/><circle cx="36.5" cy="24" r="1.5" fill="#fff5d0"/><circle cx="16.2" cy="13.2" r="1.4" fill="#ffe48f"/><circle cx="31.8" cy="13.2" r="1.4" fill="#ffe48f"/><path d="M24 38.4L27.2 41L24 43.4L20.8 41Z" fill="#f7d272" stroke="#6d460e" stroke-width=".7"/>'
+        : '<circle cx="11.5" cy="24.5" r="1.5" fill="#fffaf0"/><circle cx="36.5" cy="24.5" r="1.5" fill="#fffaf0"/><circle cx="16" cy="13.8" r="1.35" fill="#fffaf0"/><circle cx="32" cy="13.8" r="1.35" fill="#fffaf0"/>';
+      return s + '<path d="M18.5 40.8c3.2 1.8 7.8 1.8 11 0" fill="none" stroke="#f5cb62" stroke-width="1.9" stroke-linecap="round"/>' + ad;
+    }
+    return '<circle cx="24" cy="24" r="19" fill="#d9a538" stroke="#5e3a0a" stroke-width="1.2"/><circle cx="24" cy="24" r="16.2" fill="none" stroke="#fff3c8" stroke-width=".85" stroke-dasharray="1.8 2" opacity=".75"/>' +
+      (id === "sello-estrella"
+        ? '<circle cx="24" cy="24" r="14.4" fill="#121c36" stroke="#7a5212" stroke-width=".8"/><path d="M12.5 30.2Q24 27 35.5 30.2" fill="none" stroke="#f2c866" stroke-width="1.5" stroke-linecap="round"/><path d="M16.5 33.6Q24 31.6 31.5 33.6" fill="none" stroke="#f2c866" stroke-width=".9" opacity=".6" stroke-linecap="round"/><circle cx="24" cy="21.5" r="7.2" fill="#ffe8a8" opacity=".24"/><circle cx="24" cy="21.5" r="4.5" fill="#ffeeb8" opacity=".65"/><circle cx="24" cy="21.5" r="2.6" fill="#fffef8"/>'
+        : '<circle cx="24" cy="24" r="14.4" fill="#22170a" stroke="#7a5212" stroke-width=".8"/><path d="M15.8 29.2h16.4l-2.8 4.4h-10.8z" fill="#e6b74c" stroke="#5e3a0a" stroke-width=".7"/><path d="M19.6 29.2c.4-4.2 2.4-7.4 4.4-7.4s4 3.2 4.4 7.4z" fill="#c9922c"/><path d="M24 13.8c2 2.2 2 4.6 0 6.4-2-1.8-2-4.2 0-6.4z" fill="#ffae3d"/><path d="M24 15.8c.9 1.1.9 2.3 0 3.3-.9-1-.9-2.2 0-3.3z" fill="#fffbe6"/>');
   }
   const ICO_USO = {
     pergamino: '<path d="M7 4.5h9.5a2.5 2.5 0 0 1 0 5H9v9.5a2 2 0 0 1-4 0V6.5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9.5h8.5V18a2 2 0 0 1-2 2H7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 13h3.5M11.5 16h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
@@ -3788,16 +4091,32 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const vitrina = h("ul", { class: "ap-vitrina", "aria-live": "polite" });
     const pestanas = h("div", { class: "jg-seg fila", role: "group", "aria-label": "Accesorios" }, d.ranuras.map((r) => h("button", { type: "button", "aria-pressed": String(r === ran), onclick: (e) => {
       ran = r; A.store.set("jg:tiendaRan", r); for (const b of pestanas.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintarV(); vibrar(6); } }, NOM[r] || r)));
+    const colorAcc = (id, r) => r === "aura" ? AURA_C[id] || "#f5c64e" : r === "manto" ? (MANTO_C[id] || ["#d4a84a"])[0] : r === "corona" ? (id === "corona-palmas" ? "#c2e058" : id === "corona-laurel" ? "#6eb85e" : "#9bc46a") : id === "sello-rollo" ? "#e55b5b" : id === "sello-estrella" ? "#8bb8ff" : "#f5c64e";
     function pintarV() {
-      // los raros (70 fragmentos de papiro marcando «Leído») se ven en su vitrina: con candado mientras no se abren
+      // los raros (70 fragmentos de papiro marcando «Leído») se muestran en su relicario con barra de avance hacia los 70 papiros
       const raros = (d.raros || RAROS_C).filter((x) => x[1] === ran).map((x) => [x[0], x[1], x[2], null, x[3]]), frag = y.frag || { c: 0, meta: 70 };
-      vitrina.replaceChildren(...d.acc.filter((x) => x[1] === ran).concat(raros).map(([id, , n, pr, cita]) => { const tiene = av.inv.includes(id), puesto = av.acc[ran] === id;
-        if (pr == null && !tiene) return h("li", { class: "raro cerrado" }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }),
-          h("small", { class: "ap-raro", text: "Raro · se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }), h("div", { class: "ap-da" }, ...daAcc(id, cita)));
-        return h("li", { class: puesto ? "puesto" : "", title: tituloAcc(id, cita) }, h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran), "0 0 48 48")), h("span", { class: "ap-mn", text: n }), h("div", { class: "ap-da" }, ...daAcc(id, cita)),
+      const rp = Math.max(0, Math.min(100, (100 * (frag.c || 0)) / Math.max(1, frag.meta || 70)));
+      const PER = ["11.3s", "14.9s", "17.7s", "21.1s", "13.1s", "19.3s"];
+      vitrina.replaceChildren(...d.acc.filter((x) => x[1] === ran).concat(raros).map(([id, , n, pr, cita], idx) => {
+        const tiene = av.inv.includes(id), puesto = av.acc[ran] === id, esRaro = pr == null;
+        const tier = esRaro ? 4 : pr >= 180 ? 3 : pr >= 100 ? 2 : 1;
+        const sty = "--ac-c:" + colorAcc(id, ran) + ";--at:" + PER[idx % PER.length] + ";--ad:-" + (1.7 + idx * 2.9).toFixed(1) + "s";
+        if (esRaro && !tiene) return h("li", { class: "raro cerrado ap-acc-t4", style: sty },
+          h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran, 4), "0 0 48 48")),
+          h("span", { class: "ap-mn", text: n }),
+          h("small", { class: "ap-raro" },
+            h("span", { text: "Se abre con 70 fragmentos de papiro (" + (frag.c || 0) + " de " + (frag.meta || 70) + ")" }),
+            h("span", { class: "ap-raro-bar", "aria-hidden": "true" }, h("i", { style: "--rp:" + rp.toFixed(1) }))),
+          h("div", { class: "ap-da" }, ...daAcc(id, cita)));
+        const cls = "ap-acc-t" + tier + (esRaro ? " raro" : "") + (puesto ? " puesto" : "");
+        return h("li", { class: cls, style: sty, title: tituloAcc(id, cita) },
+          h("span", { class: "ap-mu", "aria-hidden": "true" }, A.svg(muestraAcc(id, ran, tier), "0 0 48 48")),
+          h("span", { class: "ap-mn" }, n, esRaro ? h("em", { class: "ap-rtag", text: "Raro" }) : null),
+          h("div", { class: "ap-da" }, ...daAcc(id, cita)),
           tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
             const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); else b.disabled = false; } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
-            : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." }))); }));
+            : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." })));
+      }));
     }
     pintarV();
     return tarjeta("Tienda de dracmas", ico("dracma"), h("div", { class: "ap-tienda-cab" }, h("p", { class: "jg-mini", text: "Se ganan leyendo: misiones, hallazgos y versos marcados «Leído». Nada se compra con dinero." }),
