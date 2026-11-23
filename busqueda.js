@@ -534,6 +534,159 @@
     return out;
   };
 
+  // ---------------------------------------------------------------- síntesis comparativa y dseológica automática (Argon, 23-nov-2026)
+  const AUTORES_CORPUS = [
+    { id: "pablo", t: "Pαῦlος [Pablo]", k: ["pablo", "paulos", "saulo", "paulina", "paulino", "paulinas"], libs: ["ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM"] },
+    { id: "juan", t: "YÔḥānā́n [Juan]", k: ["juan", "yohanan", "joanico", "joanica"], libs: ["JHN", "1JN", "2JN", "3JN", "REV"] },
+    { id: "pedro", t: "Kêfáʾ — Pέτrος [Pedro]", k: ["pedro", "kefa", "cefas", "petros", "simon pedro"], libs: ["1PE", "2PE"] },
+    { id: "jacobo", t: "Yaʿăqṓḇ [Jacobo]", k: ["jacobo", "santiago", "yaaqob"], libs: ["JAS"] },
+    { id: "lucas", t: "Lουκᾶς [Lucas]", k: ["lucas", "loukas"], libs: ["LUK", "ACT"] },
+    { id: "mateo", t: "Mattáy [Mateo]", k: ["mateo", "mattay", "matias"], libs: ["MAT"] },
+    { id: "marcos", t: "Μᾶrκος [Marcos]", k: ["marcos", "markos"], libs: ["MRK"] },
+    { id: "hebreos", t: "ʿIḇrî́m [Hebreos]", k: ["hebreos", "ibrim"], libs: ["HEB"] },
+    { id: "judas", t: "Yᵉhūḏā́h [Judas]", k: ["judas", "yehudah"], libs: ["JUD"] },
+    { id: "sinopticos", t: "Sinópticos (Mattáy, Μᾶrκος, Lουκᾶς)", k: ["sinopticos", "sinoptico"], libs: ["MAT", "MRK", "LUK"] }
+  ];
+  const VERBOS_COMP = new Set(["compara", "comparar", "comparacion", "diferencia", "diferencias", "distincion", "contraste", "contrasta", "ensena", "ensenan", "ensenanza", "dice", "dicen", "habla", "hablan", "sobre", "acerca", "entre", "frente", "contra", "versus", "vs", "segun", "perspectiva", "dseologia", "doctrina", "postura", "vision"]);
+  BQ.comparar = function (R, q, ctx) {
+    ctx = ctx || {};
+    const limpio = String(q || "").replace(/\s+/g, " ").trim();
+    if (!limpio || BQ.palabras(limpio).length < 3) return null;
+    const nq = BQ.norm(limpio);
+    const esCompExplicita = /\b(compara\w*|diferencia\w*|distincion\w*|contrast\w*|frente a|versus|vs)\b/.test(nq);
+    const esEnsenanza = /\b(ensen\w*|dice\w*|doctrina|dseologi\w*|segun|perspectiva|postura|pensamiento)\b/.test(nq);
+    if (!esCompExplicita && !esEnsenanza) return null;
+    const T = ctx.T;
+    const glosaDe = (li) => {
+      if (!T || !T.LP || !T.TR) return "";
+      const trs = (T.LP[li] || []).map((x) => x[3]).filter(Boolean);
+      if (!trs.length || !T.TR[trs[0]]) return "";
+      return String(T.TR[trs[0]]).replace(/\s*\[[^\]]*\]/g, "").replace(/\s*\([^)]*\)/g, "").split(/[,;]/)[0].trim();
+    };
+    const docsLema = (li) => {
+      const posts = BQ.postingsDe(R, "g", li) || [];
+      const s = new Map();
+      for (const [d, tf] of posts) s.set(d, tf);
+      return s;
+    };
+    const lemasParaDocs = (candLemas, docSet, qTema) => {
+      if (!T) return [];
+      const cands = Array.isArray(candLemas) ? candLemas.slice() : [];
+      const ws = qTema ? BQ.palabras(qTema).filter((w) => !BQ.griego(w) && !VACIAS_ES.has(w) && w.length >= 3) : [];
+      if (cands.length < 4 && (T.TRk || T.TR) && T.TL && ws.length) {
+        const trk = T.TRk || (T.TRk = (T.TR || []).map(BQ.norm));
+        const re = new RegExp("(^|[^a-zñ])(" + ws.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")([^a-zñ]|$)");
+        trk.forEach((x, ti) => { if (ti && re.test(x)) for (const li of T.TL[ti] || []) if (!cands.includes(li)) cands.push(li); });
+      }
+      if (!cands.length) return [];
+      const out = [];
+      for (const li of cands) {
+        const dm = docsLema(li);
+        let n = 0;
+        for (const d of docSet) n += dm.get(d) || 0;
+        if (n > 0) out.push({ li, n, glosa: glosaDe(li) });
+      }
+      out.sort((a, b) => b.n - a.n);
+      return out.slice(0, 4);
+    };
+    const buscarEstudios = (consulta) => {
+      if (!ctx.secciones || !ctx.secciones.length) return [];
+      const ts = new Set(BQ.terminosEs(consulta));
+      if (!ts.size) return [];
+      return BQ.puntuarListas(consulta, ctx.secciones, ["t", "k"]).slice(0, 2).map(({ it }) => {
+        const oracion = it.k.split(/(?<=[.!?»])\s+/).find((f) => BQ.terminosEs(f).some((t2) => ts.has(t2))) || it.k;
+        return { t: it.s + " › " + it.t, ruta: it.ruta, extracto: oracion.length > 220 ? oracion.slice(0, 217) + "…" : oracion };
+      });
+    };
+    // 1. Detectar si hay autores/corpus involucrados
+    const autoresHallados = [];
+    const tokensAutor = new Set();
+    for (const au of AUTORES_CORPUS) {
+      for (const kw of au.k) {
+        const re = new RegExp("(^|[^a-z])" + kw + "([^a-z]|$)");
+        if (re.test(nq)) {
+          if (!autoresHallados.includes(au)) autoresHallados.push(au);
+          for (const p of kw.split(" ")) tokensAutor.add(p);
+        }
+      }
+    }
+    const palabrasTema = BQ.palabras(limpio).filter((w) => !VACIAS_ES.has(w) && !VERBOS_COMP.has(w) && !tokensAutor.has(w));
+    // Caso A: 1 o más autores + un tema doctrinal
+    if (autoresHallados.length >= 1 && palabrasTema.length >= 1) {
+      const temaQ = palabrasTema.join(" ");
+      const vTema = BQ.versos(R, temaQ, { conceptos: ctx.conceptos, latin: ctx.griego && ctx.griego.latin, vocab: ctx._vocab });
+      if (!vTema.res.length) return null;
+      const polos = [];
+      const usados = new Set();
+      for (const au of autoresHallados.slice(0, 3)) {
+        const setLibs = new Set(au.libs);
+        for (const l of au.libs) usados.add(l);
+        const filtrados = vTema.res.filter((x) => setLibs.has(R.versos[x.d][0]));
+        const docSet = new Set(filtrados.map((x) => x.d));
+        polos.push({
+          titulo: au.t,
+          total: filtrados.length,
+          lemas: lemasParaDocs(vTema.lemas, docSet, temaQ),
+          versos: filtrados.slice(0, 3)
+        });
+      }
+      if (autoresHallados.length === 1) {
+        const resto = vTema.res.filter((x) => !usados.has(R.versos[x.d][0]));
+        if (resto.length) {
+          const docSet = new Set(resto.map((x) => x.d));
+          polos.push({
+            titulo: "Resto de la Nueva Voluntad",
+            total: resto.length,
+            lemas: lemasParaDocs(vTema.lemas, docSet, temaQ),
+            versos: resto.slice(0, 3)
+          });
+        }
+      }
+      if (!polos.some((p) => p.total > 0)) return null;
+      const nomAutores = autoresHallados.slice(0, 3).map((a) => a.t).join(" y ");
+      return {
+        titulo: nomAutores + " sobre «" + temaQ + "»",
+        etiqueta: autoresHallados.length > 1 ? "Comparación de autores" : "Enseñanza en la Nueva Voluntad",
+        resumen: "Contraste léxico y textual en la traducción de BiEx a partir de los lemas griegos y pasajes de cada corpus.",
+        estudios: buscarEstudios(temaQ + " " + autoresHallados.map((a) => a.k[0]).join(" ")),
+        polos
+      };
+    }
+    // Caso B: Comparación entre dos conceptos («diferencia entre alma y espíritu», «compara fe y obras»)
+    if (esCompExplicita) {
+      const m = nq.match(/(?:compara\w*|diferencia\w*|distincion\w*|contrast\w*)\s+(?:entre\s+|de\s+|la\s+|el\s+|los\s+|las\s+)*(.+?)\s+(?:y|e|frente a|contra|versus|vs)\s+(.+)$/) ||
+                nq.match(/^(.+?)\s+(?:frente a|versus|vs)\s+(.+)$/);
+      if (m) {
+        const limpPolo = (s) => BQ.palabras(s).filter((w) => !VACIAS_ES.has(w) && !VERBOS_COMP.has(w)).join(" ");
+        const c1 = limpPolo(m[1]), c2 = limpPolo(m[2]);
+        if (c1 && c2 && c1 !== c2) {
+          const v1 = BQ.versos(R, c1, { conceptos: ctx.conceptos, latin: ctx.griego && ctx.griego.latin, vocab: ctx._vocab });
+          const v2 = BQ.versos(R, c2, { conceptos: ctx.conceptos, latin: ctx.griego && ctx.griego.latin, vocab: ctx._vocab });
+          if (v1.res.length && v2.res.length) {
+            const d1 = new Map(v1.res.map((x) => [x.d, x.s])), d2 = new Map(v2.res.map((x) => [x.d, x.s]));
+            const inter = [];
+            for (const [d, s1] of d1) if (d2.has(d)) inter.push({ d, s: s1 + d2.get(d) });
+            inter.sort((a, b) => b.s - a.s);
+            const setInter = new Set(inter.slice(0, 3).map((x) => x.d));
+            return {
+              titulo: "«" + c1 + "» frente a «" + c2 + "»",
+              etiqueta: "Contraste conceptual BiEx",
+              resumen: "Distinción de lemas griegos, frecuencias y pasajes donde cada término se emplea por separado o en conjunto dentro de la Nueva Voluntad.",
+              estudios: buscarEstudios(c1 + " " + c2),
+              polos: [
+                { titulo: "«" + c1 + "»", total: v1.res.length, lemas: lemasParaDocs(v1.lemas, new Set(v1.res.map((x) => x.d)), c1), versos: v1.res.filter((x) => !setInter.has(x.d)).slice(0, 3) },
+                { titulo: "«" + c2 + "»", total: v2.res.length, lemas: lemasParaDocs(v2.lemas, new Set(v2.res.map((x) => x.d)), c2), versos: v2.res.filter((x) => !setInter.has(x.d)).slice(0, 3) }
+              ],
+              interseccion: inter.slice(0, 3),
+              totalInter: inter.length
+            };
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   if (typeof module !== "undefined" && module.exports) module.exports = BQ;
   else raiz.BiExBusqueda = BQ;
 })(typeof window !== "undefined" ? window : globalThis);
