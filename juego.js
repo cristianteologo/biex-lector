@@ -453,32 +453,105 @@ html[data-mov="no"] .av-pozo i{animation:none}
 .ap-prog{text-align:center;margin:0}
 .ap-cifras{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .ap-cifras li{display:grid;justify-items:center;align-content:center;gap:3px;padding:9px 4px;border-radius:13px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 6%,transparent),color-mix(in srgb,var(--tinta) 1.5%,transparent));box-shadow:inset 0 1px 0 rgba(255,255,255,.06);text-align:center}
+.ap-cifras li.ap-cif-p{padding:0;border-color:color-mix(in srgb,var(--oro) 34%,var(--linea-2))}
+.ap-cif-btn{all:unset;box-sizing:border-box;display:grid;justify-items:center;align-content:center;gap:3px;width:100%;height:100%;padding:9px 4px;border-radius:12px;cursor:pointer;transition:background-color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+.ap-cif-btn:hover,.ap-cif-btn:focus-visible{background:color-mix(in srgb,var(--oro) 11%,transparent);outline:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 55%,transparent)}
 .ap-cifras b{font:600 1.05rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .ap-cifras small{font:400 .7rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .ap-foto{justify-content:center}
-.ap-cab{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ap-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .ap-pts{font:500 .88rem/1.2 var(--f-ui);color:var(--tinta)}
 .ap-pts b{font-size:1.2rem;color:var(--oro-vivo);margin-right:2px}
-.ap-poder{--pd-sombra:inset 0 1px 0 rgba(255,246,214,.4),inset 0 -8px 14px -10px rgba(255,214,120,.55),0 8px 20px -12px rgba(0,0,0,.8);position:relative;display:inline-flex;align-items:baseline;gap:6px;padding:6px 13px;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
-  border:1px solid color-mix(in srgb,var(--oro-vivo) 55%,transparent);background:radial-gradient(120% 140% at 50% -40%,rgba(255,246,214,.28),transparent 60%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 6%,var(--hoja)));
-  box-shadow:var(--pd-sombra);font:600 .74rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-2)}
-.ap-poder b{color:var(--oro-vivo);font:600 1.08rem/1 var(--f-titulo,var(--f-ui));letter-spacing:.02em;text-transform:none;text-shadow:0 0 12px rgba(255,214,120,.45)}
-/* (15-nov-2026, adjunto 9) Poder épico: filo de oro labrado, orbe de energía y aura eléctrica (la electricidad se conserva) */
-.ap-poder{align-items:center;gap:7px;padding:7px 15px 7px 9px;border:1px solid transparent;isolation:isolate;
-  background:radial-gradient(120% 140% at 50% -40%,rgba(255,246,214,.3),transparent 60%) padding-box,linear-gradient(180deg,color-mix(in srgb,var(--oro) 24%,var(--hoja)),color-mix(in srgb,var(--oro) 6%,var(--hoja))) padding-box,linear-gradient(135deg,#fff3c4,#c9962e 26%,#6f4a10 50%,#e9c46a 74%,#fff6d6) border-box;
-  box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,214,120,.6),0 0 0 3px color-mix(in srgb,var(--oro) 11%,transparent),0 10px 24px -14px rgba(0,0,0,.85),0 0 22px -8px rgba(150,205,255,.4)}
-.ap-poder b{font-size:1.2rem;background:linear-gradient(180deg,#fffaf0,#f6d27a 52%,#c99a3a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 0 6px rgba(255,214,120,.45))}
-.ap-pd-orbe{position:relative;flex:none;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fff,#d6eeff 30%,#62a9ff 62%,#183a74);box-shadow:0 0 8px 2px rgba(150,205,255,.6),inset 0 0 0 1px rgba(255,255,255,.35)}
-.ap-pd-orbe::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(closest-side,rgba(190,230,255,.55),transparent);animation:ap-orbe 3.4s ease-in-out infinite}
-@keyframes ap-orbe{0%,100%{opacity:.4}50%{opacity:1}}
-.ap-pd-aura{position:absolute;inset:-8px;z-index:-1;border-radius:999px;pointer-events:none;opacity:0;background:radial-gradient(60% 130% at 50% 50%,rgba(170,215,255,.32),transparent 72%);box-shadow:0 0 20px 5px rgba(150,205,255,.42)}
-@media (prefers-reduced-motion:reduce){.ap-pd-orbe::after{animation:none}}
-html[data-mov="no"] .ap-pd-orbe::after{animation:none}
-.ap-poder:focus-visible{outline:2px solid var(--oro);outline-offset:3px}
-/* (BiEx, 21-nov-2026, AF9) el Poder, un 15 % más pequeño: cada medida × 0,85 */
-.ap-poder{gap:6px;padding:6px 13px 6px 8px;font-size:.63rem}.ap-poder b{font-size:1.02rem}.ap-pd-orbe{width:13px;height:13px}.ap-pd-orbe::after{inset:-5px}.ap-pd-aura{inset:-7px}
-.ap-rayos{position:absolute;inset:-12px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(150,205,255,.9))}
+/* AF33 (Neon, 22-nov-2026): medallón de alta relojería para el botón de Poder; gema tallada sin cruz ni estrella, filo de oro labrado, reflejo metálico por compositor y descargas finas */
+.ap-poder{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 8px;border-radius:999px;border:1.25px solid transparent;cursor:pointer;isolation:isolate;-webkit-tap-highlight-color:transparent;
+  background:radial-gradient(120% 150% at 22% -35%,rgba(255,244,210,.22),transparent 58%) padding-box,linear-gradient(180deg,#1a1610,#0d0b08 62%,#16120c) padding-box,linear-gradient(135deg,#fff6d6,#cfa042 24%,#5e3f10 49%,#e6c26e 76%,#fff4cc) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.36),inset 0 -1px 0 rgba(201,168,101,.26),inset 0 -9px 14px -10px rgba(201,168,101,.48),0 0 0 3px color-mix(in srgb,var(--oro) 11%,transparent),0 10px 22px -12px rgba(0,0,0,.88),0 0 18px -6px rgba(155,210,255,.32);
+  font:600 .64rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro);transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease}
+.ap-poder:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,250,230,.5),inset 0 -1px 0 rgba(232,207,148,.38),inset 0 -9px 14px -10px rgba(232,207,148,.62),0 0 0 3px color-mix(in srgb,var(--oro) 18%,transparent),0 12px 24px -12px rgba(0,0,0,.92),0 0 24px -5px rgba(170,220,255,.46)}
+.ap-poder:active{transform:scale(.97)}
+.ap-poder:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:3px}
+.ap-pd-corte{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.ap-pd-brillo{position:absolute;top:-30%;bottom:-30%;left:0;width:44%;opacity:.48;background:linear-gradient(108deg,transparent 12%,rgba(255,246,214,.32) 45%,rgba(191,227,255,.26) 54%,transparent 84%);transform:translate3d(-150%,0,0);animation:ap-pd-sh 7.4s cubic-bezier(.4,0,.2,1) 1.2s infinite;will-change:transform}
+@keyframes ap-pd-sh{0%,66%{transform:translate3d(-150%,0,0)}100%{transform:translate3d(380%,0,0)}}
+.ap-pd-gema{position:relative;flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 38% 30%,#272118,#0b0a08 72%);border:1px solid rgba(232,207,148,.58);box-shadow:inset 0 1px 2px rgba(0,0,0,.85),0 0 8px rgba(150,205,255,.32)}
+.ap-pd-gema svg{position:relative;z-index:1;width:14px;height:14px;display:block}
+.ap-pd-gema-luz{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(182,224,255,.52),rgba(232,207,148,.16) 56%,transparent 75%);animation:ap-orbe 3.8s ease-in-out infinite;will-change:opacity}
+@keyframes ap-orbe{0%,100%{opacity:.34}50%{opacity:.95}}
+.ap-pd-t{position:relative;z-index:1;color:color-mix(in srgb,var(--oro-vivo) 82%,var(--tinta-2))}
+.ap-poder b{position:relative;z-index:1;font:600 1.26rem/1 var(--f-display);letter-spacing:.02em;text-transform:none;font-variant-numeric:lining-nums tabular-nums;
+  background:linear-gradient(180deg,#fffdf4,#f5d685 52%,#be8e33);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 4px rgba(0,0,0,.65))}
+.ap-pd-ir{position:relative;z-index:1;font:500 .9rem/1 var(--f-ui);color:var(--oro);opacity:.78;margin-left:-2px}
+.ap-pd-aura{position:absolute;inset:-8px;z-index:-1;border-radius:999px;pointer-events:none;opacity:0;background:radial-gradient(62% 135% at 50% 50%,rgba(175,220,255,.34),transparent 72%);box-shadow:0 0 22px 4px rgba(150,205,255,.4);will-change:opacity}
+.ap-rayos{position:absolute;inset:-13px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 2.5px rgba(155,210,255,.88));will-change:opacity}
 .ap-rayos svg{display:block;width:100%;height:100%;overflow:visible}
+:root[data-theme="light"] .ap-poder{background:radial-gradient(120% 150% at 22% -35%,rgba(255,252,240,.85),transparent 58%) padding-box,linear-gradient(180deg,#fdf9f0,#ede3cf 64%,#e2d4b8) padding-box,linear-gradient(135deg,#fff8e2,#b88c38 26%,#6e4d14 50%,#c59a45 76%,#f8e8be) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -8px 14px -10px rgba(138,106,43,.32),0 0 0 3px rgba(138,106,43,.1),0 8px 18px -12px rgba(45,32,12,.38)}
+:root[data-theme="light"] .ap-pd-t{color:var(--oro)}
+:root[data-theme="light"] .ap-poder b{background:linear-gradient(180deg,#5b4010,#8c6620 55%,#442e09);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:none}
+:root[data-theme="light"] .ap-pd-gema{background:radial-gradient(circle at 38% 30%,#2c2418,#120f0b 76%);border-color:rgba(138,106,43,.7)}
+@media (prefers-reduced-motion:reduce){.ap-pd-gema-luz,.ap-pd-brillo{animation:none}.ap-pd-brillo{opacity:0}}
+html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:none}html[data-mov="no"] .ap-pd-brillo{opacity:0}
+/* AF33 · Ventana del poder (cámara horológica, etapas, pilares y estadísticas del ser interior) */
+.ap-vp{--vp-c1:#e8cf94;--vp-c2:#6ea8e0;--vp-c3:#e84866;--vp-c4:#4db9ae;display:grid;gap:14px;text-align:left;width:100%;min-width:0}
+:root[data-theme="light"] .ap-vp{--vp-c1:#8a6418;--vp-c2:#275e96;--vp-c3:#a81834;--vp-c4:#1d786b}
+.ap-vp-reloj{position:relative;width:min(248px,70vw);aspect-ratio:1;margin:2px auto 0;display:grid;place-items:center;filter:drop-shadow(0 12px 24px rgba(0,0,0,.55))}
+:root[data-theme="light"] .ap-vp-reloj{filter:drop-shadow(0 10px 20px rgba(45,32,12,.22))}
+.ap-vp-reloj>svg{position:relative;z-index:1;display:block;width:100%;height:100%}
+.ap-vp-pulso{position:absolute;inset:14%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--vp-et,#e8cf94) 24%,transparent),rgba(170,215,255,.12) 48%,transparent 76%);animation:ap-vp-lat 5.6s ease-in-out infinite;will-change:opacity,transform}
+@keyframes ap-vp-lat{0%,100%{opacity:.34;transform:scale(.96)}50%{opacity:.82;transform:scale(1.04)}}
+.ap-vp-rayos{position:absolute;inset:-6%;z-index:2;pointer-events:none;opacity:0;filter:drop-shadow(0 0 3px rgba(165,215,255,.85));will-change:opacity}
+.ap-vp-rayos svg{display:block;width:100%;height:100%;overflow:visible}
+.ap-vp-centro{position:absolute;inset:25%;z-index:2;display:grid;place-content:center;justify-items:center;text-align:center;gap:2px;pointer-events:none}
+.ap-vp-rot{font:600 .58rem/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#c9a865}
+.ap-vp-val{font:500 clamp(1.85rem,6vw,2.35rem)/1 var(--f-display);letter-spacing:.01em;font-variant-numeric:lining-nums tabular-nums;
+  background:linear-gradient(180deg,#fffdf5,#f4d482 54%,#b8872c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.ap-vp-et{font:600 .62rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--vp-et,#ffe39a);margin-top:2px}
+.ap-vp-falta{font:400 .66rem/1.25 var(--f-ui);color:#bdb5a4;max-width:14ch;margin-top:2px}
+.ap-vp-banda{display:grid;gap:8px;padding:12px 13px;border-radius:16px;border:1px solid color-mix(in srgb,var(--vp-et,var(--oro)) 34%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--vp-et,var(--oro)) 8%,var(--hoja-2)),color-mix(in srgb,var(--hoja) 92%,transparent))}
+.ap-vp-bcab{display:flex;justify-content:space-between;align-items:baseline;gap:6px 10px;flex-wrap:wrap;font:500 .75rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.ap-vp-bcab b{color:var(--oro-vivo);font-weight:600;font-variant-numeric:tabular-nums}
+.ap-vp-tramo{position:relative;height:8px;border-radius:99px;background:color-mix(in srgb,var(--hoja-3) 82%,rgba(0,0,0,.4));box-shadow:inset 0 1px 3px rgba(0,0,0,.55),0 0 0 1px color-mix(in srgb,var(--oro) 22%,transparent);overflow:hidden}
+.ap-vp-tramo>i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--vp-et,var(--oro-vivo)) 72%,#fff4cf);transform:translate3d(calc(var(--p,0) * 1% - 100%),0,0);will-change:transform}
+:root[data-theme="light"] .ap-vp-tramo{background:#ddd2be;box-shadow:inset 0 1px 3px rgba(45,32,12,.25)}
+:root[data-theme="light"] .ap-vp-tramo>i{background:linear-gradient(90deg,#6e4e15,#b3852f 68%,#dfb862)}
+.ap-vp-etapas{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.ap-vp-etapas li{display:grid;justify-items:center;align-content:start;gap:2px;padding:5px 2px;border-radius:10px;border:1px solid transparent;text-align:center;opacity:.52}
+.ap-vp-etapas li.ok{opacity:.86}
+.ap-vp-etapas li.act{opacity:1;border-color:color-mix(in srgb,var(--ec) 52%,var(--oro));background:color-mix(in srgb,var(--ec) 12%,transparent)}
+:root[data-theme="light"] .ap-vp-etapas li.act{border-color:var(--oro);background:color-mix(in srgb,var(--oro) 11%,transparent)}
+.ap-vp-etapas em{font:600 .56rem/1 var(--f-ui);font-style:normal;letter-spacing:.08em;color:var(--tenue)}
+.ap-vp-etapas i{width:7px;height:7px;border-radius:1.5px;transform:rotate(45deg);background:var(--ec);box-shadow:0 0 6px color-mix(in srgb,var(--ec) 55%,transparent);margin:1px 0}
+.ap-vp-etapas li:not(.ok):not(.act) i{background:transparent;border:1px solid var(--linea);box-shadow:none}
+.ap-vp-etapas b{font:600 .62rem/1.12 var(--f-ui);color:var(--tinta);text-wrap:balance;max-width:100%}
+.ap-vp-etapas small{font:400 .58rem/1 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+.ap-vp-sec{font:600 .68rem/1.2 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro);margin:2px 0 -4px}
+.ap-vp-pilares{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap-vp-pbtn{all:unset;box-sizing:border-box;width:100%;display:grid;gap:5px;padding:10px 11px;border-radius:14px;cursor:pointer;border:1px solid color-mix(in srgb,var(--pc) 28%,var(--linea-2));
+  background:radial-gradient(120% 95% at 0% 0%,color-mix(in srgb,var(--pc) 11%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 78%,transparent);transition:border-color .18s,box-shadow .18s;-webkit-tap-highlight-color:transparent}
+.ap-vp-pbtn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.ap-vp-pbtn.sel{border-color:color-mix(in srgb,var(--pc) 78%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc) 24%,transparent),0 8px 20px -14px color-mix(in srgb,var(--pc) 70%,transparent)}
+.ap-vp-ptop{display:flex;align-items:center;justify-content:space-between;gap:6px;font:600 .72rem/1.2 var(--f-ui);color:var(--tinta)}
+.ap-vp-pnom{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.ap-vp-pnom i{width:7px;height:7px;border-radius:1.5px;transform:rotate(45deg);background:var(--pc);flex:none}
+.ap-vp-ppct{font:500 .66rem/1 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+.ap-vp-pnum{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.ap-vp-pnum b{font:600 1.25rem/1 var(--f-display);color:var(--pc);font-variant-numeric:lining-nums tabular-nums}
+.ap-vp-pnum small{font:400 .66rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+.ap-vp-pbar{height:3px;border-radius:99px;background:color-mix(in srgb,var(--tinta) 10%,transparent);overflow:hidden}
+.ap-vp-pbar i{display:block;height:100%;border-radius:inherit;background:var(--pc);width:var(--w,0%)}
+.ap-vp-foco{margin:0;padding:10px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 55%,transparent);font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2)}
+.ap-vp-foco b{color:var(--oro-vivo);font-weight:600}
+.ap-vp-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+@media (min-width:440px){.ap-vp-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ap-vp-stats li{display:grid;justify-items:center;align-content:center;gap:2px;padding:9px 6px;border-radius:12px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 7%,transparent),transparent);text-align:center;min-width:0}
+.ap-vp-stats b{font:600 .98rem/1.15 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.ap-vp-stats span{font:500 .68rem/1.2 var(--f-ui);color:var(--tinta)}
+.ap-vp-stats small{font:400 .62rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+.ap-vp-pie{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 10px;padding-top:4px;font:400 .78rem/1.45 var(--f-ui);color:var(--tinta-2);text-align:center}
+@media (max-width:340px){.ap-vp-pilares{grid-template-columns:1fr}.ap-vp-etapas b{font-size:.54rem}}
+@media (prefers-reduced-motion:reduce){.ap-vp-pulso{animation:none}}
+html[data-mov="no"] .ap-vp-pulso{animation:none}
 .ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
 .ap-atr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ap-atr li{display:grid;justify-items:center;gap:7px;padding:10px 6px 9px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 26%,var(--linea-2));background:radial-gradient(120% 85% at 50% 0%,color-mix(in srgb,var(--ac) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
@@ -1056,7 +1129,7 @@ button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px
 .jg-yo .jg-emb{position:relative;isolation:isolate}
 .jg-yo>.jg-mota{position:absolute;bottom:10%;width:3px;height:3px;border-radius:50%;background:var(--et);box-shadow:0 0 6px 1px color-mix(in srgb,var(--et) 70%,transparent);opacity:0;pointer-events:none;will-change:transform,opacity;animation:si-mo var(--t) linear var(--d) infinite}
 .jg-yo.etapa-5{box-shadow:0 0 0 1px color-mix(in srgb,#ff7d93 30%,transparent),0 18px 40px -22px rgba(255,90,120,.55)}
-.jg-epica>.jg-hoy{position:absolute;top:2px;bottom:2px;z-index:1;border-radius:99px;pointer-events:none;background:linear-gradient(90deg,rgba(255,250,230,0),rgba(255,250,230,.55));mix-blend-mode:screen}
+.jg-epica>.jg-hoy{position:absolute;top:1px;bottom:1px;z-index:2;border-radius:99px;pointer-events:none;background:linear-gradient(90deg,rgba(255,250,235,.04),rgba(255,250,235,.34) 82%,rgba(255,255,248,.62));box-shadow:inset -1px 0 0 rgba(255,253,242,.75)}
 .jg-hoy-t{color:var(--oro-vivo);font-weight:600}
 @media (prefers-reduced-motion:reduce){.jg-yo .jg-emb::before,.jg-yo>.jg-mota{animation:none}}
 html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{animation:none}
@@ -1070,15 +1143,34 @@ html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{a
 .jg-nv b{font:600 1.45rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .jg-nv small{font:600 .54rem/1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--tenue);margin-top:3px}
 .jg-yo .jg-barra{height:11px;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
-.jg-yo .jg-barra.jg-epica{position:relative;height:16px;border-radius:99px;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.15)),var(--hoja-3);box-shadow:inset 0 1px 3px rgba(0,0,0,.65),0 0 0 1px color-mix(in srgb,var(--oro) 38%,transparent),0 0 22px -8px color-mix(in srgb,var(--oro) 70%,transparent);overflow:hidden;isolation:isolate}
-.jg-yo .jg-barra.jg-epica>i.jg-relleno{position:absolute;inset:0;display:block;border-radius:inherit;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,0) 48%,rgba(0,0,0,.12)),linear-gradient(90deg,#7a4a0a,var(--oro-2) 35%,var(--oro-vivo) 78%,#fff1bd);transform:translate3d(calc(var(--p) * 1% - 100%),0,0)}
-.jg-yo .jg-barra.jg-epica>i.jg-relleno::after{width:28%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent)}
-.jg-epica .jg-borde{position:absolute;inset:0;z-index:2;pointer-events:none;transform:translate3d(calc(var(--p) * 1% - 100%),0,0)}
-.jg-epica .jg-brasa{position:absolute;right:-7px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:radial-gradient(circle,#fff 0 22%,#ffe39a 42%,rgba(245,198,78,0) 70%);animation:jg-brasa 1.7s ease-in-out infinite}
-.jg-epica .jg-marcas{position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.32) calc(10% - 1px) 10%)}
-.jg-epica.crece{box-shadow:inset 0 1px 3px rgba(0,0,0,.65),0 0 0 1px var(--oro),0 0 26px -4px color-mix(in srgb,var(--oro-vivo) 85%,transparent)}
-.jg-epica.cerca .jg-brasa{animation-duration:1s}
-@keyframes jg-brasa{0%,100%{opacity:.45}50%{opacity:1}}
+/* Barra de nivel horológica en Hoy (Neon, 22-nov-2026): bisel de oro cepillado, canal hondo de obsidiana, graduaciones grabadas al filo, reflejo de cristal de zafiro y prisma facetado en la punta (compositor puro) */
+.jg-epica-bl{display:grid;gap:6px}
+.jg-epica-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:0 2px}
+.jg-epica-rumbo{font:600 .66rem/1 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:var(--oro)}
+.jg-epica-pct{font:600 .92rem/1 var(--f-display);letter-spacing:.03em;color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
+.jg-epica-marco{position:relative;padding:3px;border-radius:99px;border:1px solid transparent;
+  background:linear-gradient(180deg,#120f0b,#090806) padding-box,linear-gradient(180deg,color-mix(in srgb,var(--et,#ffe39a) 78%,#fff6d6),color-mix(in srgb,var(--oro) 58%,#5a3d10) 48%,color-mix(in srgb,var(--oro-2) 60%,#2c1d07)) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,248,220,.2),inset 0 -1px 0 rgba(0,0,0,.7),0 8px 20px -12px rgba(0,0,0,.9),0 0 18px -10px color-mix(in srgb,var(--et,var(--oro)) 70%,transparent)}
+.jg-yo .jg-barra.jg-epica{position:relative;height:14px;border-radius:99px;background:linear-gradient(180deg,#070605,#14110c 58%,#0d0b08);box-shadow:inset 0 2px 5px rgba(0,0,0,.88),inset 0 -1px 0 rgba(255,236,178,.14);overflow:hidden;isolation:isolate}
+.jg-yo .jg-barra.jg-epica>i.jg-relleno{position:absolute;inset:0;display:block;border-radius:inherit;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,253,242,.46) 0,rgba(255,246,214,.08) 44%,rgba(0,0,0,.18) 54%,rgba(0,0,0,.28) 100%),
+    linear-gradient(90deg,#4a2c07,#8c5c17 24%,#c99634 56%,#f0cb72 86%,#fff4cc);
+  box-shadow:inset 0 0 0 1px rgba(255,245,210,.22);transform:translate3d(calc(var(--p) * 1% - 100%),0,0);will-change:transform}
+.jg-yo .jg-barra.jg-epica>i.jg-relleno::before{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;margin-top:-.75px;background:linear-gradient(90deg,transparent,rgba(255,250,224,.32) 32%,rgba(255,252,236,.78) 92%,#fff)}
+.jg-yo .jg-barra.jg-epica>i.jg-relleno::after{content:"";position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(104deg,transparent 10%,rgba(255,252,238,.52) 50%,transparent 90%);transform:translate3d(-120%,0,0);animation:jg-luz 4.4s cubic-bezier(.4,0,.2,1) 1.2s infinite;will-change:transform}
+.jg-epica-vidrio{position:absolute;left:2px;right:2px;top:1px;height:42%;z-index:3;border-radius:99px 99px 40% 40%;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0))}
+.jg-epica .jg-marcas{position:absolute;left:0;right:0;top:0;bottom:0;z-index:3;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(240,214,148,.34) calc(10% - 1px) 10%) top/100% 3px no-repeat,
+    repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(240,214,148,.24) calc(10% - 1px) 10%) bottom/100% 3px no-repeat}
+.jg-epica .jg-borde{position:absolute;inset:0;z-index:4;pointer-events:none;transform:translate3d(calc(var(--p) * 1% - 100%),0,0);will-change:transform}
+.jg-epica .jg-brasa{position:absolute;right:-5px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:2px;transform:rotate(45deg);
+  background:linear-gradient(135deg,#fffef8 0,#ffe59e 46%,#c9922c 100%);border:1px solid rgba(255,255,245,.88);box-shadow:0 0 10px 2px rgba(255,226,140,.85)}
+.jg-epica .jg-brasa::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,242,196,.85),rgba(245,198,78,0));animation:jg-brasa 2.2s ease-in-out infinite;will-change:opacity}
+.jg-epica.crece{box-shadow:inset 0 2px 5px rgba(0,0,0,.85),0 0 18px -2px color-mix(in srgb,var(--oro-vivo) 75%,transparent)}
+.jg-epica.cerca .jg-brasa::after{animation-duration:1.1s}
+:root[data-theme="light"] .jg-epica-marco{background:linear-gradient(180deg,#e9dfcd,#dfd2ba) padding-box,linear-gradient(180deg,#fff7df,#b88c38 48%,#6d4d15) border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px -10px rgba(45,32,12,.35)}
+:root[data-theme="light"] .jg-yo .jg-barra.jg-epica{background:linear-gradient(180deg,#cfc2ab,#dfd5c2 55%,#d5c8b2);box-shadow:inset 0 2px 4px rgba(45,32,12,.28)}
+@keyframes jg-brasa{0%,100%{opacity:.4}50%{opacity:1}}
 .jg-mis-ir{display:block;color:inherit;text-decoration:none;border-radius:10px;margin:-4px -6px;padding:4px 6px}
 .jg-mis-ir:hover,.jg-mis-ir:focus-visible{background:color-mix(in srgb,var(--oro) 9%,transparent);outline:none}
 .jg-mis-ir .jg-mt::after{content:" ›";color:var(--oro)}
@@ -1121,8 +1213,8 @@ html[data-mov="no"] .jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}html[d
 .ap-lumbre{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff6d6 0 30%,#f5c64e 62%,rgba(245,198,78,.2) 100%)}
 .ap-lumbre::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,rgba(245,198,78,.55),rgba(245,198,78,0) 70%);animation:jg-brasa 2.4s ease-in-out infinite}
 .jg-cita-v p{margin:0 0 .6em;line-height:1.6}.jg-cita-v sup{color:var(--oro);font-size:.7em;margin-right:2px}
-.jg-yo .jg-barra>i{position:relative;overflow:hidden}
-.jg-yo .jg-barra>i::after{content:"";position:absolute;top:0;bottom:0;left:0;width:36%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:translate3d(-110%,0,0);animation:jg-luz 3.2s ease-in-out 1.4s infinite}
+.jg-yo .jg-barra:not(.jg-epica)>i{position:relative;overflow:hidden}
+.jg-yo .jg-barra:not(.jg-epica)>i::after{content:"";position:absolute;top:0;bottom:0;left:0;width:36%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:translate3d(-110%,0,0);animation:jg-luz 3.2s ease-in-out 1.4s infinite}
 @media (max-width:380px){.jg-nv{width:52px;height:52px}.jg-nv b{font-size:1.2rem}.jg-yo .jg-perfil .jg-emb{width:64px;height:64px}}
 /* accesos del panel */
 .jg-atajos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1251,8 +1343,8 @@ html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-ins
 .g-menu .luz{position:absolute;left:6px;top:6px;bottom:6px;width:calc((100% - 12px)/6);border-radius:14px;background:color-mix(in srgb,var(--oro) 26%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 46%,transparent);animation:g-menu 7.5s cubic-bezier(.3,1.3,.5,1) infinite}
 @keyframes g-menu{0%,12%{transform:translate3d(0,0,0)}16%,28%{transform:translate3d(100%,0,0)}32%,44%{transform:translate3d(200%,0,0)}48%,60%{transform:translate3d(300%,0,0)}64%,76%{transform:translate3d(400%,0,0)}80%,94%{transform:translate3d(500%,0,0)}100%{transform:translate3d(0,0,0)}}
 .jg-enapp .jg-acciones{margin-top:10px}
-@media (prefers-reduced-motion:reduce){.ap-fig .fa-luz.on{animation:none;opacity:.85}.jg-epica .jg-brasa,.ap-lumbre::after{animation:none}.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
-html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov="no"] .jg-epica .jg-brasa,html[data-mov="no"] .ap-lumbre::after{animation:none}html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
+@media (prefers-reduced-motion:reduce){.ap-fig .fa-luz.on{animation:none;opacity:.85}.jg-epica .jg-brasa,.jg-epica .jg-brasa::after,.ap-lumbre::after{animation:none}.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
+html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov="no"] .jg-epica .jg-brasa,html[data-mov="no"] .jg-epica .jg-brasa::after,html[data-mov="no"] .ap-lumbre::after{animation:none}html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
 /* medidor de avance mientras se lee: nivel y aro que se llena con cada verso validado */
 .jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:46.4px;height:54.4px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 7px 10px rgba(0,0,0,.62));--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
 .jg-med[data-r="0"]{--m1:#f6d2ad;--m2:#bd844c;--m3:#5a381a;--mg:rgba(189,132,76,.5)}
@@ -1895,14 +1987,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function barraEpica(y, pct) {
     const rel = h("i", { class: "jg-relleno" }), borde = h("span", { class: "jg-borde", "aria-hidden": "true" }, h("b", { class: "jg-brasa" }));
     const bar = h("div", { class: "jg-barra jg-epica" + (pct >= 90 ? " cerca" : ""), role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente", style: "--p:" + pct.toFixed(2) },
-      rel, borde, h("span", { class: "jg-marcas", "aria-hidden": "true" }));
-    const visto = A.store.get("jg:xpv", null), desde = visto && visto.n === y.nivel ? visto.p : visto && visto.n < y.nivel ? 0 : null;
+      rel, h("span", { class: "jg-epica-vidrio", "aria-hidden": "true" }), h("span", { class: "jg-marcas", "aria-hidden": "true" }), borde);
+    const cab = h("div", { class: "jg-epica-cab", "aria-hidden": "true" },
+      h("span", { class: "jg-epica-rumbo", text: y.enTope ? "Nivel tope · " + y.tope : "Nivel " + y.nivel + " › " + (y.nivel + 1) }),
+      h("span", { class: "jg-epica-pct", text: Math.round(pct) + " %" }));
+    const visto = A.store.get("jg:xpv", null), desde = visto && visto.n === y.nivel ? visto.p : visto && visto.n < y.nivel ? 0 : 0;
     A.store.set("jg:xpv", { n: y.nivel, p: pct });
-    if (desde != null && desde < pct - 0.3 && !sinAnim() && rel.animate) requestAnimationFrame(() => {
-      for (const el of [rel, borde]) el.animate([{ transform: "translate3d(" + (desde - 100).toFixed(2) + "%,0,0)" }, { transform: "translate3d(" + (pct - 100).toFixed(2) + "%,0,0)" }], { duration: 1400, easing: "cubic-bezier(.2,.8,.2,1)" });
-      bar.classList.add("crece"); setTimeout(() => bar.classList.remove("crece"), 1700);
+    if (desde < pct - 0.3 && !sinAnim() && rel.animate) requestAnimationFrame(() => {
+      for (const el of [rel, borde]) el.animate([{ transform: "translate3d(" + (desde - 100).toFixed(2) + "%,0,0)" }, { transform: "translate3d(" + (pct - 100).toFixed(2) + "%,0,0)" }], { duration: 1250, easing: "cubic-bezier(.2,.8,.2,1)" });
+      bar.classList.add("crece"); setTimeout(() => bar.classList.remove("crece"), 1550);
     });
-    return bar;
+    return h("div", { class: "jg-epica-bl" }, cab, h("div", { class: "jg-epica-marco" }, bar));
   }
   function tarjetaPerfil(y) {
     const [l, c] = [y.emb && y.emb.l, y.emb && y.emb.c];
@@ -2993,7 +3088,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); btnRep.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
-    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => { desc.replaceChildren(h("b", { text: "Poder " + fmt(av.poder) + ": " }), "suma tus atributos (×10), tus accesorios (×25), tu nivel (×15) y los niveles del fruto del espíritu (×6). Crece leyendo, forjando y con todo lo que hace crecer el fruto."); for (const x of lista.children) x.classList.remove("sel"); })),
+    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => abrirVentanaPoder(y, P))),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
         h("button", { class: "btn", type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
@@ -3328,27 +3423,31 @@ html[data-mov="no"] .ap-savia{display:none!important}
     enVivo(sec, 30e3, async () => { if (zona.contains(cesta)) pintar(); });
     return sec;
   }
-  // V16 (BiEx, 12-nov-2026): el poder, épico. Descargas eléctricas que nunca se repiten: cada una con su trazo quebrado, su
-  // número de ramas, su lado y su momento (2,6 a 9 s); solo cambia la opacidad de una capa pequeña. En pausa fuera de la
-  // pantalla, con la pestaña oculta y con «Sin animaciones».
+  // V16 + AF33 (Neon, 22-nov-2026): medallón de alta relojería para el poder: gema facetada (sin cruz ni estrella),
+  // filo de oro labrado, reflejo metálico por compositor y descargas eléctricas finas que nunca se repiten (pausadas fuera
+  // de pantalla, en pestaña oculta y con «Sin animaciones»). Al tocarlo abre la Ventana del poder (AF33).
   function chipPoder(valor, alTocar) {
-    // (BiEx, 15-nov-2026, adjunto 9: «más épico, pero que conserve la electricidad») píldora de joyería: filo de oro labrado,
-    // un orbe de energía que late y un aura eléctrica que destella con cada descarga (solo opacidad, por el compositor)
-    const capa = h("span", { class: "ap-rayos", "aria-hidden": "true" }), aura = h("span", { class: "ap-pd-aura", "aria-hidden": "true" }), orbe = h("span", { class: "ap-pd-orbe", "aria-hidden": "true" });
-    const chip = h("button", { class: "ap-poder", type: "button", title: "Qué es tu poder", onclick: alTocar }, aura, orbe, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), capa);
+    const capa = h("span", { class: "ap-rayos", "aria-hidden": "true" }), aura = h("span", { class: "ap-pd-aura", "aria-hidden": "true" });
+    const gema = h("span", { class: "ap-pd-gema", "aria-hidden": "true" }, h("span", { class: "ap-pd-gema-luz" }),
+      A.svg('<path d="M12 2.4L19.2 12L12 21.6L4.8 12Z" fill="#183a6e" stroke="#efd493" stroke-width="1.2" stroke-linejoin="round"/>' +
+        '<path d="M12 2.4L19.2 12L12 12Z" fill="#7fc2ff" opacity=".88"/><path d="M12 2.4L4.8 12L12 12Z" fill="#d9f0ff"/>' +
+        '<path d="M12 12L19.2 12L12 21.6Z" fill="#2e67ad"/><path d="M12 12L4.8 12L12 21.6Z" fill="#4f93db" opacity=".85"/>' +
+        '<path d="M12 6.8L15.4 12L12 17.2L8.6 12Z" fill="#ffffff" opacity=".48"/>', "0 0 24 24"));
+    const corte = h("span", { class: "ap-pd-corte", "aria-hidden": "true" }, h("i", { class: "ap-pd-brillo" }));
+    const chip = h("button", { class: "ap-poder", type: "button", title: "Abrir la ventana del poder", "aria-label": "Poder " + fmt(valor) + ": abrir detalles y estadísticas", onclick: alTocar },
+      aura, corte, gema, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), h("span", { class: "ap-pd-ir", "aria-hidden": "true", text: "›" }), capa);
     let t = 0, visible = true;
     const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { visible = e.some((x) => x.isIntersecting); }) : null; if (io) io.observe(chip);
     const al = (a, b) => a + Math.random() * (b - a);
     function rayo(W, H) {
-      // nace en un punto del borde de la píldora y salta hacia afuera en zigzag, con una rama a veces
-      const lado = Math.floor(Math.random() * 4), m = 12;
-      let x = lado < 2 ? al(m + 6, W + m - 6) : lado === 2 ? m : W + m, y = lado === 0 ? m : lado === 1 ? H + m : al(m + 4, H + m - 4);
-      const dx = lado === 2 ? -1 : lado === 3 ? 1 : al(-0.6, 0.6), dy = lado === 0 ? -1 : lado === 1 ? 1 : al(-0.5, 0.5);
+      const lado = Math.floor(Math.random() * 4), m = 13;
+      let x = lado < 2 ? al(m + 8, W + m - 8) : lado === 2 ? m : W + m, y = lado === 0 ? m : lado === 1 ? H + m : al(m + 5, H + m - 5);
+      const dx = lado === 2 ? -1 : lado === 3 ? 1 : al(-0.55, 0.55), dy = lado === 0 ? -1 : lado === 1 ? 1 : al(-0.48, 0.48);
       let d = "M" + x.toFixed(1) + " " + y.toFixed(1), ram = "";
       const pasos = 3 + Math.floor(Math.random() * 3);
       for (let i = 0; i < pasos; i++) {
-        x += dx * al(2, 4.5) + al(-2.6, 2.6); y += dy * al(2, 4.5) + al(-2.6, 2.6); d += "L" + x.toFixed(1) + " " + y.toFixed(1);
-        if (!ram && i === 1 && Math.random() < 0.5) ram = "M" + x.toFixed(1) + " " + y.toFixed(1) + "l" + (dx * al(3, 6) + al(-3, 3)).toFixed(1) + " " + (dy * al(3, 6) + al(-3, 3)).toFixed(1);
+        x += dx * al(2.2, 4.6) + al(-2.5, 2.5); y += dy * al(2.2, 4.6) + al(-2.5, 2.5); d += "L" + x.toFixed(1) + " " + y.toFixed(1);
+        if (!ram && i === 1 && Math.random() < 0.52) ram = "M" + x.toFixed(1) + " " + y.toFixed(1) + "l" + (dx * al(3, 6.2) + al(-3, 3)).toFixed(1) + " " + (dy * al(3, 6.2) + al(-3, 3)).toFixed(1);
       }
       return d + ram;
     }
@@ -3357,17 +3456,164 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (visible && !document.hidden && !sinAnim() && capa.animate) {
         const W = chip.offsetWidth, H = chip.offsetHeight, n = 1 + Math.floor(Math.random() * 3);
         let d = ""; for (let i = 0; i < n; i++) d += rayo(W, H);
-        capa.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".5" stroke-linejoin="round"/>', "0 0 " + (W + 24) + " " + (H + 24)));
-        const dur = al(320, 760);
-        const pico = al(0.7, 1);
-        capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.07 }, { opacity: 0.15, offset: 0.17 }, { opacity: pico, offset: 0.27 }, { opacity: 0 }], { duration: dur, easing: "linear" });
-        aura.animate([{ opacity: 0 }, { opacity: 0.95, offset: 0.08 }, { opacity: 0.25, offset: 0.18 }, { opacity: pico * 0.8, offset: 0.28 }, { opacity: 0 }], { duration: dur * 1.25, easing: "linear" });
-        orbe.animate([{ opacity: 1 }, { opacity: 0.55, offset: 0.1 }, { opacity: 1, offset: 0.3 }, { opacity: 1 }], { duration: dur, easing: "linear" });
+        capa.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".42" stroke-linejoin="round"/>', "0 0 " + (W + 26) + " " + (H + 26)));
+        const dur = al(300, 680), pico = al(0.72, 1);
+        capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.07 }, { opacity: 0.14, offset: 0.18 }, { opacity: pico, offset: 0.28 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+        aura.animate([{ opacity: 0 }, { opacity: 0.9, offset: 0.08 }, { opacity: 0.22, offset: 0.19 }, { opacity: pico * 0.78, offset: 0.3 }, { opacity: 0 }], { duration: dur * 1.25, easing: "linear" });
+        gema.animate([{ opacity: 1 }, { opacity: 0.68, offset: 0.11 }, { opacity: 1, offset: 0.32 }, { opacity: 1 }], { duration: dur, easing: "linear" });
       }
-      t = setTimeout(descarga, al(2600, 9000));
+      t = setTimeout(descarga, al(2800, 8200));
     }
-    t = setTimeout(descarga, al(900, 2400));
+    t = setTimeout(descarga, al(900, 2200));
     return chip;
+  }
+  // AF33 · Ventana del poder (Neon, 22-nov-2026): ventana flotante en el Árbol con instrumento horológico vectorial (pintado
+  // una sola vez, sin animaciones dentro del SVG), etapa inicial y avance hasta la siguiente, desglose interactivo de los
+  // cuatro pilares y estadísticas que ya llegan del servidor (sin pedir datos nuevos). Cierra con ×, Esc y el gesto de atrás.
+  let VP_N = 0;
+  function abrirVentanaPoder(y, P) {
+    const yy = S.yo || y || {}, av = (P && P.av) || yy.av || {}, poder = av.poder | 0;
+    const ET = [[1, "I", "Semilla", 0, 250, "#c9813f"], [2, "II", "Brote", 250, 600, "#c3ccd8"], [3, "III", "Raíz honda", 600, 1200, "#f0c04a"], [4, "IV", "Copa", 1200, 2400, "#ffe39a"], [5, "V", "Fruto", 2400, null, "#ff7d93"]];
+    const cur = poder >= 2400 ? ET[4] : poder >= 1200 ? ET[3] : poder >= 600 ? ET[2] : poder >= 250 ? ET[1] : ET[0];
+    const sig = ET[cur[0]] || null, inicio = cur[3], meta = cur[4];
+    const fracEt = meta ? Math.max(0, Math.min(1, (poder - inicio) / (meta - inicio))) : 1;
+    const sumAt = Object.values(av.ef || {}).reduce((a, x) => a + (x | 0), 0);
+    const niv = yy.nivel | 0;
+    const sumFr = Object.values(av.fr || {}).reduce((a, x) => a + ((x && x.n) | 0), 0);
+    const nInv = Array.isArray(av.inv) ? av.inv.length : 0;
+    const grArm = Object.values(av.eq || {}).reduce((a, x) => a + (x | 0), 0);
+    const nEqAcc = Object.values(av.acc || {}).filter(Boolean).length;
+    const cantos = (P && Array.isArray(P.piedras) ? P.piedras : yy.piedras || []).reduce((a, x) => a + (x | 0), 0);
+    const dr = P && P.dr != null ? P.dr : yy.dr | 0;
+    const pAt = sumAt * 10, pNv = niv * 15, pFr = sumFr * 6, pAc = nInv * 25;
+    const totP = Math.max(1, pAt + pNv + pFr + pAc);
+    const pct = (v) => ((100 * v) / totP).toFixed(1).replace(".", ",") + " %";
+    const u = "vp" + (++VP_N) + "-", C1 = 2 * Math.PI * 100, C2 = 2 * Math.PI * 82;
+    const PILARES = [
+      { k: "at", n: "Atributos", v: pAt, col: "var(--vp-c1)", g: [u + "g1", "#fff2c4", "#c89432"], fm: fmt(sumAt) + " pts × 10",
+        det: "Tus seis raíces suman " + fmt(sumAt) + " puntos efectivos (" + plural(grArm * 2, "punto", "puntos") + " vienen de los " + grArm + " grados de tu armadura forjada y " + fmt(Math.max(0, sumAt - grArm * 2)) + " de tus puntos repartidos)." },
+      { k: "nv", n: "Nivel", v: pNv, col: "var(--vp-c2)", g: [u + "g2", "#bce0ff", "#3b76b8"], fm: "Nivel " + fmt(niv) + " × 15",
+        det: yy.enTope ? "Estás en el nivel tope de este mes (" + yy.tope + "). Tu reserva (" + fmt(yy.reserva) + ") sube contigo al abrirse niveles nuevos."
+          : "Nivel " + fmt(niv) + " (" + fmt(yy.xpNivel) + " de " + fmt(yy.xpSig) + " hacia el nivel " + fmt(niv + 1) + "). Cada nivel suma 15 de poder y " + ((P && P.def && P.def.ptsNivel) || 3) + " puntos libres." },
+      { k: "fr", n: "Fruto", v: pFr, col: "var(--vp-c3)", g: [u + "g3", "#ff9aab", "#b81d3b"], fm: fmt(sumFr) + " niv. × 6",
+        det: "Las nueve cámaras del fruto del espíritu suman " + plural(sumFr, "nivel", "niveles") + " (Gαlάται 5:22-23). Crece leyendo con constancia, acompañando y sembrando; lo ganado nunca se pierde." },
+      { k: "ac", n: "Accesorios", v: pAc, col: "var(--vp-c4)", g: [u + "g4", "#a5f0e3", "#2b877d"], fm: fmt(nInv) + " × 25",
+        det: "Tienes " + plural(nInv, "accesorio", "accesorios") + " en tu tesoro (" + plural(nEqAcc, "equipado", "equipados") + " en tu ser interior). Cada uno suma 25 de poder." },
+    ];
+    // Instrumento horológico en SVG quieto (se pinta una sola vez a la densidad real; sin animaciones dentro del SVG)
+    const pt = (r, a) => (130 + r * Math.cos(a)).toFixed(2) + " " + (130 + r * Math.sin(a)).toFixed(2);
+    let marcas = "", rayas = "", arcos = "", acum = 0;
+    for (let i = 0; i < 60; i++) {
+      const a = (i / 60) * Math.PI * 2, m = i % 5 === 0;
+      marcas += '<line x1="' + (130 + (m ? 109 : 112) * Math.cos(a)).toFixed(1) + '" y1="' + (130 + (m ? 109 : 112) * Math.sin(a)).toFixed(1) + '" x2="' + (130 + 116 * Math.cos(a)).toFixed(1) + '" y2="' + (130 + 116 * Math.sin(a)).toFixed(1) + '" stroke="' + (m ? "#f2d48a" : "#b59046") + '" stroke-opacity="' + (m ? ".78" : ".36") + '" stroke-width="' + (m ? "1.35" : ".7") + '" stroke-linecap="round"/>';
+    }
+    for (let i = 0; i < 36; i++) {
+      const a = (i / 36) * Math.PI * 2;
+      rayas += '<line x1="' + (130 + 62 * Math.cos(a)).toFixed(1) + '" y1="' + (130 + 62 * Math.sin(a)).toFixed(1) + '" x2="' + (130 + 116 * Math.cos(a)).toFixed(1) + '" y2="' + (130 + 116 * Math.sin(a)).toFixed(1) + '" stroke="#ffffff" stroke-opacity=".022" stroke-width="1.8"/>';
+    }
+    for (const p of PILARES) {
+      const len = (p.v / totP) * C1, gap = len > 6 ? 3.5 : 0;
+      if (len > 0.5) arcos += '<circle cx="130" cy="130" r="100" fill="none" stroke="url(#' + p.g[0] + ')" stroke-width="10" stroke-dasharray="' + Math.max(0, len - gap).toFixed(1) + " " + C1.toFixed(1) + '" stroke-dashoffset="' + (-acum).toFixed(1) + '"/>';
+      acum += len;
+    }
+    const angTip = -Math.PI / 2 + fracEt * Math.PI * 2, tx = 130 + 82 * Math.cos(angTip), ty = 130 + 82 * Math.sin(angTip);
+    const relojSVG = A.svg('<defs>' +
+      '<linearGradient id="' + u + 'bis" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff5cf"/><stop offset=".26" stop-color="#dca948"/><stop offset=".52" stop-color="#694612"/><stop offset=".78" stop-color="#e3bc66"/><stop offset="1" stop-color="#4e320b"/></linearGradient>' +
+      '<radialGradient id="' + u + 'esf" cx=".46" cy=".38" r=".65"><stop offset="0" stop-color="#251d12"/><stop offset=".58" stop-color="#111013"/><stop offset="1" stop-color="#060608"/></radialGradient>' +
+      '<linearGradient id="' + u + 'cri" x1="0" y1="0" x2=".25" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".16"/><stop offset=".42" stop-color="#ffffff" stop-opacity=".03"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>' +
+      PILARES.map((p) => '<linearGradient id="' + p.g[0] + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + p.g[1] + '"/><stop offset="1" stop-color="' + p.g[2] + '"/></linearGradient>').join("") + '</defs>' +
+      '<circle cx="130" cy="130" r="125" fill="none" stroke="url(#' + u + 'bis)" stroke-width="3.2"/>' +
+      '<circle cx="130" cy="130" r="120" fill="url(#' + u + 'esf)" stroke="rgba(255,244,210,.2)" stroke-width=".8"/>' + rayas + marcas +
+      '<circle cx="130" cy="130" r="100" fill="none" stroke="rgba(255,244,210,.07)" stroke-width="10"/>' +
+      '<g transform="rotate(-90 130 130)">' + arcos + '</g>' +
+      '<circle cx="130" cy="130" r="82" fill="none" stroke="rgba(255,244,210,.1)" stroke-width="3"/>' +
+      '<circle cx="130" cy="130" r="82" fill="none" stroke="' + cur[5] + '" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="' + C2.toFixed(1) + '" stroke-dashoffset="' + (C2 * (1 - fracEt)).toFixed(1) + '" transform="rotate(-90 130 130)"/>' +
+      '<g transform="translate(' + tx.toFixed(1) + " " + ty.toFixed(1) + ') rotate(45)"><rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx="1.2" fill="#fff9e2" stroke="' + cur[5] + '" stroke-width="1.2"/></g>' +
+      '<circle cx="130" cy="130" r="71" fill="rgba(9,9,11,.9)" stroke="rgba(201,168,101,.32)" stroke-width=".9"/>' +
+      '<path d="M' + pt(118, Math.PI * 1.08) + "A118 118 0 0 1 " + pt(118, Math.PI * 1.92) + 'Q130 74 ' + pt(118, Math.PI * 1.08) + 'Z" fill="url(#' + u + 'cri)"/>', "0 0 260 260");
+    relojSVG.setAttribute("role", "img");
+    relojSVG.setAttribute("aria-label", "Poder " + fmt(poder) + ", Etapa " + cur[1] + " " + cur[2] + ": Atributos " + fmt(pAt) + ", Nivel " + fmt(pNv) + ", Fruto " + fmt(pFr) + ", Accesorios " + fmt(pAc));
+    const capaRay = h("span", { class: "ap-vp-rayos", "aria-hidden": "true" });
+    const reloj = h("div", { class: "ap-vp-reloj" }, h("span", { class: "ap-vp-pulso", "aria-hidden": "true" }), relojSVG, capaRay,
+      h("div", { class: "ap-vp-centro" },
+        h("span", { class: "ap-vp-rot", text: "Poder" }),
+        h("b", { class: "ap-vp-val", text: fmt(poder) }),
+        h("span", { class: "ap-vp-et", text: "Etapa " + cur[1] + " · " + cur[2] }),
+        h("span", { class: "ap-vp-falta", text: sig ? "Faltan " + fmt(Math.max(0, meta - poder)) + " para " + sig[2] : "+" + fmt(Math.max(0, poder - 2400)) + " sobre 2.400" })));
+    // Banda de etapas (del nivel inicial 0 hasta la siguiente etapa)
+    const barraEt = h("i");
+    const banda = h("div", { class: "ap-vp-banda" },
+      h("div", { class: "ap-vp-bcab" },
+        h("span", {}, "Desde ", h("b", { text: fmt(inicio) }), " (inicial ", h("b", { text: "0" }), ")"),
+        h("span", {}, sig ? h("b", { text: Math.round(fracEt * 100) + " %" }) : h("b", { text: "Etapa máxima" }), sig ? " hacia " + sig[2] + " (" + fmt(meta) + ")" : "")),
+      h("div", { class: "ap-vp-tramo", role: "progressbar", "aria-valuemin": String(inicio), "aria-valuemax": String(meta || poder || 2400), "aria-valuenow": String(poder), "aria-label": "Avance de poder hacia la siguiente etapa", style: "--p:" + (fracEt * 100).toFixed(1) }, barraEt),
+      h("ol", { class: "ap-vp-etapas", "aria-label": "Etapas del poder" }, ET.map(([n, rom, nom, ini, , col]) =>
+        h("li", { class: n < cur[0] ? "ok" : n === cur[0] ? "act" : "", style: "--ec:" + col }, h("em", { text: rom }), h("i", { "aria-hidden": "true" }), h("b", { text: nom }), h("small", { text: fmt(ini) })))));
+    // Pilares interactivos (2 × 2 simétrico)
+    const foco = h("p", { class: "ap-vp-foco", "aria-live": "polite" });
+    const ulPil = h("ul", { class: "ap-vp-pilares" });
+    const verP = (p, bt) => {
+      for (const b of ulPil.querySelectorAll(".ap-vp-pbtn")) b.classList.toggle("sel", b === bt);
+      foco.replaceChildren(h("b", { text: p.n + " (+" + fmt(p.v) + " · " + pct(p.v) + "): " }), p.det);
+    };
+    PILARES.forEach((p, idx) => {
+      const bt = h("button", { class: "ap-vp-pbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--pc:" + p.col, onclick: () => verP(p, bt) },
+        h("span", { class: "ap-vp-ptop" }, h("span", { class: "ap-vp-pnom" }, h("i", { "aria-hidden": "true" }), p.n), h("span", { class: "ap-vp-ppct", text: pct(p.v) })),
+        h("span", { class: "ap-vp-pnum" }, h("b", { text: "+" + fmt(p.v) }), h("small", { text: p.fm })),
+        h("span", { class: "ap-vp-pbar", "aria-hidden": "true" }, h("i", { style: "--w:" + Math.max(2, (100 * p.v) / totP).toFixed(1) + "%" })));
+      ulPil.append(h("li", {}, bt));
+      if (idx === 0) verP(p, bt);
+    });
+    // Estadísticas del ser interior (ya llegan del servidor, sin peticiones nuevas)
+    const stats = h("ul", { class: "ap-vp-stats" },
+      h("li", {}, h("b", { text: "Nivel " + fmt(niv) }), h("span", { text: yy.rangoNombre || "Lector" }), h("small", { text: yy.enTope ? "tope del mes" : fmt(yy.xpNivel) + " / " + fmt(yy.xpSig) })),
+      h("li", {}, h("b", { text: grArm + " / 30" }), h("span", { text: "Armadura" }), h("small", { text: "+" + fmt(grArm * 2) + " a atributos" })),
+      h("li", {}, h("b", { text: fmt(sumFr) }), h("span", { text: "Fruto" }), h("small", { text: "en 9 cámaras" })),
+      h("li", {}, h("b", { text: fmt(nInv) }), h("span", { text: "Accesorios" }), h("small", { text: plural(nEqAcc, "equipado", "equipados") })),
+      h("li", {}, h("b", { text: fmt(yy.vc || 0) }), h("span", { text: "Versos leídos" }), h("small", { text: yy.lk && yy.lk.k ? plural(yy.lk.k, "lectura plena", "lecturas plenas") : fmt(yy.xp || 0) + " XP total" })),
+      h("li", {}, h("b", { text: fmt(cantos) }), h("span", { text: "Cantos" }), h("small", { text: fmt(dr) + " dr." })));
+    // Verso desplegable in-situ (Ἐfέsιοι 3:16 en formato de la Lectura, sin cerrar la ventana del poder)
+    const panelV = h("div", { class: "ap-versos", hidden: true }), citaE = A.nombreLibro("EPH") + " 3:16";
+    const btCita = h("button", { class: "ap-cita", type: "button", "aria-expanded": "false", title: "Ver lo que dice", onclick: async () => {
+      const ab = panelV.hidden; panelV.hidden = !ab; btCita.setAttribute("aria-expanded", String(ab));
+      if (!ab || panelV.dataset.listo) return;
+      panelV.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
+      try {
+        const l = await A.versos("EPH", 3, 16, 16);
+        panelV.replaceChildren(...l.map(([v, nodo]) => h("p", {}, nodo)),
+          h("a", { class: "jg-vl-ref", href: "#/EPH/3/l/16", onclick: () => A.cerrarModal() }, "Leer en el capítulo", A.svg(A.ICO.der)));
+        panelV.dataset.listo = "1";
+      } catch (e) { panelV.replaceChildren(h("p", { class: "jg-mini", text: "No se pudo cargar el verso." })); }
+    } }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaE, h("span", { class: "ap-cita-fl", "aria-hidden": "true", text: "▾" }));
+    const cuerpo = h("div", { class: "flot-cel ap-vp", style: "--vp-et:" + cur[5] },
+      reloj, banda,
+      h("p", { class: "ap-vp-sec", text: "Composición del poder" }), ulPil, foco,
+      h("p", { class: "ap-vp-sec", text: "Estadísticas del ser interior" }), stats,
+      h("div", { class: "ap-vp-pie" }, "Fortalecido en el ser interior · ", btCita), panelV);
+    // Descargas eléctricas sutiles en la capa HTML del instrumento (solo opacidad; se detienen al cerrar la ventana)
+    let tRay = 0;
+    const al = (a, b) => a + Math.random() * (b - a);
+    const chispa = () => {
+      clearTimeout(tRay); if (!cuerpo.isConnected) return;
+      if (!document.hidden && !sinAnim() && capaRay.animate) {
+        let d = ""; const n = 2 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < n; i++) {
+          const ang = al(0, Math.PI * 2); let x = 130 + 84 * Math.cos(ang), y0 = 130 + 84 * Math.sin(ang);
+          const dx = Math.cos(ang), dy = Math.sin(ang); d += "M" + x.toFixed(1) + " " + y0.toFixed(1);
+          for (let k = 0; k < 4; k++) { x += dx * al(3.5, 6.5) + al(-3.2, 3.2); y0 += dy * al(3.5, 6.5) + al(-3.2, 3.2); d += "L" + x.toFixed(1) + " " + y0.toFixed(1); }
+        }
+        capaRay.replaceChildren(A.svg('<path d="' + d + '" fill="none" stroke="#bfe3ff" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width=".45" stroke-linejoin="round"/>', "0 0 260 260"));
+        const dur = al(320, 660);
+        capaRay.animate([{ opacity: 0 }, { opacity: 0.92, offset: 0.08 }, { opacity: 0.16, offset: 0.2 }, { opacity: 0.78, offset: 0.32 }, { opacity: 0 }], { duration: dur, easing: "linear" });
+      }
+      tRay = setTimeout(chispa, al(3400, 7400));
+    };
+    const vista = () => A.cajaModal(A.cabModal("Tu poder", "Tu ser interior"), cuerpo);
+    vista.alMostrar = () => {
+      if (!sinAnim() && barraEt.animate) barraEt.animate([{ transform: "translate3d(-100%,0,0)" }, { transform: "translate3d(" + (fracEt * 100 - 100).toFixed(1) + "%,0,0)" }], { duration: 900, easing: "cubic-bezier(.2,.8,.2,1)" });
+      tRay = setTimeout(chispa, 600);
+    };
+    A.abrirModal(vista, () => { clearTimeout(tRay); tRay = 0; });
   }
   // V21 (BiEx, 12-nov-2026): estadísticas del día, la semana y el mes, espectaculares. Lo de ahora frente a lo anterior (solo
   // se celebra lo que crece: nunca una flecha de pérdida) y las barras de los últimos días, semanas o meses, que suben al
@@ -3597,7 +3843,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(yy.xpSig), "aria-valuenow": String(yy.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
       h("p", { class: "jg-mini ap-prog", text: fmt(yy.xpNivel) + " de " + fmt(yy.xpSig) + " para el nivel " + (yy.nivel + 1) + " · " + fmt(yy.xp) + " en total" }),
       h("ul", { class: "ap-cifras" },
-        h("li", {}, h("b", { text: fmt(av.poder) }), h("small", { text: "poder" })),
+        h("li", { class: "ap-cif-p" }, h("button", { class: "ap-cif-btn", type: "button", title: "Abrir la ventana del poder", "aria-label": "Poder " + fmt(av.poder) + ": abrir detalles y estadísticas", onclick: () => abrirVentanaPoder(yy, P) }, h("b", { text: fmt(av.poder) }), h("small", { text: "poder ›" }))),
         h("li", {}, h("b", { text: yy.fundador ? "n.º " + fmt(yy.n) : "—" }), h("small", { text: yy.fundador ? "Primicia" : "sin Primicia" })),
         h("li", {}, h("b", { text: fmt(P.dr) }), h("small", { text: "dracmas" })),
         h("li", {}, h("b", { text: String(av.pts) }), h("small", { text: av.pts === 1 ? "punto libre" : "puntos libres" })),
@@ -5633,7 +5879,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (animados.has(t)) continue; animados.add(t);
       t.animate([{ opacity: 0, transform: "translateY(16px) scale(.985)" }, { opacity: 1, transform: "none" }], { duration: 560, delay: Math.min(9, i++) * 70, easing: "cubic-bezier(.2,.75,.2,1)", fill: "backwards" });
     }
-    for (const b of raiz.querySelectorAll(".jg-barra>i, .jg-gen .b i, .jg-meta>i")) {
+    for (const b of raiz.querySelectorAll(".jg-barra:not(.jg-epica)>i, .jg-gen .b i, .jg-meta>i")) {
       if (animados.has(b)) continue; animados.add(b);
       b.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 1150, delay: 200, easing: "cubic-bezier(.16,.84,.3,1)", fill: "backwards" });
     }
