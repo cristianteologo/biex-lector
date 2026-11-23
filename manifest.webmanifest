@@ -76,6 +76,42 @@
      "sizes": "96x96"
     }
    ]
+  },
+  {
+   "name": "Escudriña",
+   "url": "./#/escudrina",
+   "icons": [
+    {
+     "src": "icono/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  }
+ ],
+ "widgets": [
+  {
+   "name": "BiEx · Verso del día",
+   "short_name": "Verso BiEx",
+   "description": "Un pasaje diario de la Nueva Voluntad en griego y en la traducción BiEx, junto con tu avance en Escudriña.",
+   "tag": "biex-diario",
+   "template": "widgets/verso-dia.json",
+   "ms_ac_template": "widgets/verso-dia.json",
+   "data": "widgets/verso-dia-datos.json",
+   "type": "application/json",
+   "auth": false,
+   "update": 43200,
+   "icons": [
+    {
+     "src": "icono/icon-96.png",
+     "sizes": "96x96",
+     "type": "image/png"
+    },
+    {
+     "src": "icono/icon-192.png",
+     "sizes": "192x192",
+     "type": "image/png"
+    }
+   ]
   }
  ]
 }

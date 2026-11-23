@@ -769,15 +769,17 @@
     return new Promise((ok) => setTimeout(() => ok(c.state === "running" && c.currentTime > t0 + 0.02), ms || 300));
   }
   // Tras el toque, si el audio sigue detenido, se rehace (el gesto ya dejó activado el permiso de la página)
+  // Neon (23-nov-2026): margen de 950 ms para que en teléfonos con red lenta o carga inicial el contexto no se reinicie a mitad del arranque
   function asegurarSonido() {
-    avanza(450).then((bien) => {
+    avanza(950).then((bien) => {
       if (bien || fin) return;
+      try { if (SON && SON.ctx.currentTime > 0.01 && SON.ctx.state === "running") return; } catch (e) { /* comprobar abajo */ }
       try { if (SON) SON.ctx.close(); } catch (e) { /* nada */ }
       SON = null; sonando = false;
       const S = prepararSonido();
       if (!S) return;
       try { const r = S.ctx.resume(); if (r && r.then) r.then(arrancar, () => {}); } catch (e) { /* nada */ }
-      setTimeout(arrancar, 120);
+      setTimeout(arrancar, 150);
     });
   }
   // Puerta «Entrar»: el toque abre el sonido y empieza la presentación desde el principio
@@ -801,7 +803,9 @@
   function letrasPuerta() {
     if (puerta.querySelector(".pu-capa")) return;
     try {
-      if (!document.getElementById("biex-letra-hebrea")) {
+      const con = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const redLenta = !navigator.onLine || !!(con && (con.saveData || /(^|-)2g$/i.test(con.effectiveType || "")));
+      if (!redLenta && !document.getElementById("biex-letra-hebrea")) {
         const l = document.createElement("link"); l.id = "biex-letra-hebrea"; l.rel = "stylesheet";
         l.href = "https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500&display=swap&text=" + encodeURIComponent(LETRAS_HE);
         document.head.appendChild(l);

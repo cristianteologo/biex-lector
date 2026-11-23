@@ -88,14 +88,21 @@
   // ------------------------------------------------------------------ red
   async function pedir(ruta, o) {
     o = o || {};
+    if (!navigator.onLine) return { error: "red" };
     const cab = {};
     if (o.cuerpo !== undefined) cab["content-type"] = "application/json";
     const t = S.token; if (t && !o.sin) cab.authorization = "Bearer " + t;
     if (o.cab) Object.assign(cab, o.cab);
-    let r;
+    let r, ctl = null, reloj = 0;
+    const ms = o.timeout || 10000;
+    if (!o.keepalive && typeof AbortController !== "undefined" && ms > 0) {
+      ctl = new AbortController();
+      reloj = setTimeout(() => { try { ctl.abort(); } catch (e) {} }, ms);
+    }
     // «guardable»: el navegador puede reutilizar la respuesta mientras valga (no gasta peticiones del plan gratuito)
-    try { r = await fetch(API + ruta, { method: o.metodo || "GET", headers: cab, body: o.cuerpo !== undefined ? JSON.stringify(o.cuerpo) : undefined, keepalive: !!o.keepalive, credentials: "omit", cache: o.guardable ? "default" : "no-store" }); }
-    catch (e) { return { error: "red" }; }
+    try { r = await fetch(API + ruta, { method: o.metodo || "GET", headers: cab, body: o.cuerpo !== undefined ? JSON.stringify(o.cuerpo) : undefined, keepalive: !!o.keepalive, credentials: "omit", cache: o.guardable ? "default" : "no-store", signal: ctl ? ctl.signal : undefined }); }
+    catch (e) { clearTimeout(reloj); return { error: "red" }; }
+    clearTimeout(reloj);
     let d = null;
     try { d = await r.json(); } catch (e) { d = { error: r.ok ? "datos" : "red" }; }
     if (!d || typeof d !== "object") d = { error: "datos" };
@@ -134,6 +141,11 @@
     if (!yo) return;
     S.yo = yo; A.store.set("jg:yo", yo); R.ld = 0;
     try { document.dispatchEvent(new Event("jg:yo")); } catch (e) {}
+    // AA12: comparte resumen ligero al Service Worker para el widget de escritorio (sin peticiones extra)
+    try {
+      const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (sw) sw.postMessage({ tipo: "widgetDatos", nivel: yo.nivel | 0, rango: yo.rangoNombre || "", pers: yo.perseverancia | 0, hoyV: (yo.hoy && yo.hoy.v) | 0, apodo: yo.apodo || "" });
+    } catch (e) {}
     const ult = Number(A.store.get("jg:avT", 0)) || 0, l = yo.avisos || [];
     if (l.length) {
       A.store.set("jg:avT", Math.max(ult, ...l.map((a) => a.t || 0)));
@@ -835,9 +847,23 @@ html[data-mov="no"] .si-niebla,html[data-mov="no"] .si-mo{animation:none}
 .ap-n small{font:400 .76rem/1.35 var(--f-ui);color:var(--tinta-2)}
 .jg-tarjeta .ap-nota{margin:0;font:400 .72rem/1.45 var(--f-ui);color:var(--tenue);text-align:center}
 .ap-tienda-cab{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
-.ap-saldo{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 16%,transparent),color-mix(in srgb,var(--oro) 6%,transparent));box-shadow:inset 0 1px 0 rgba(255,240,200,.18);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2);white-space:nowrap}
-.ap-saldo b{font:600 1.02rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
-.ap-saldo svg{width:16px;height:16px;color:var(--oro-vivo)}
+/* Dracmas uniformes en Ser interior, Árbol, Atributos y Tienda; botones según si alcanzan (.dr-ok) o faltan (.dr-falta) */
+:root{--dr-oro:#f2c45a;--dr-falta:#e27852}
+:root[data-theme="light"]{--dr-oro:#a16f14;--dr-falta:#b84b2a}
+.ap-saldo{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--dr-oro) 48%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 18%,transparent),color-mix(in srgb,var(--dr-oro) 6%,transparent));box-shadow:inset 0 1px 0 rgba(255,244,208,.2);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2);white-space:nowrap}
+.ap-saldo b{font:600 1.02rem/1 var(--f-ui);color:var(--dr-oro);font-variant-numeric:tabular-nums}
+.ap-saldo svg{width:16px;height:16px;color:var(--dr-oro)}
+.ap-cab-r{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ap-cifras li.ap-cif-dr b{color:var(--dr-oro)}
+.jg .btn.dr-ok{border-color:color-mix(in srgb,var(--dr-oro) 66%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 28%,var(--hoja)),color-mix(in srgb,var(--dr-oro) 13%,var(--hoja)));color:var(--dr-oro);box-shadow:inset 0 1px 0 rgba(255,246,214,.2),0 6px 16px -10px color-mix(in srgb,var(--dr-oro) 60%,transparent)}
+.jg .btn.dr-ok:hover,.jg .btn.dr-ok:focus-visible{border-color:var(--dr-oro);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 36%,var(--hoja)),color-mix(in srgb,var(--dr-oro) 18%,var(--hoja)))}
+.jg .btn.dr-falta{border-color:color-mix(in srgb,var(--dr-falta) 44%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--dr-falta) 11%,var(--hoja)),color-mix(in srgb,var(--dr-falta) 4%,var(--hoja)));color:color-mix(in srgb,var(--dr-falta) 88%,var(--tinta))}
+.jg .btn.dr-falta:hover,.jg .btn.dr-falta:focus-visible{border-color:color-mix(in srgb,var(--dr-falta) 68%,transparent)}
+/* Barra de nivel única del Árbol: conserva exactamente 8 px compactos con engaste botánico en bronce y savia dorada (0 % CPU) */
+.jg-barra.ap-nivel-bar{position:relative;height:8px;border-radius:99px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:repeating-linear-gradient(90deg,transparent 0 24%,rgba(255,234,174,.14) 24% calc(24% + 1px),transparent calc(24% + 1px) 25%),linear-gradient(180deg,color-mix(in srgb,#000 58%,var(--hoja)),color-mix(in srgb,#000 28%,var(--hoja-2)));box-shadow:inset 0 1.5px 3px rgba(0,0,0,.68),0 1px 0 rgba(255,244,212,.1);overflow:visible}
+.jg-barra.ap-nivel-bar>i{position:relative;display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6e5a28 0%,#b88a34 38%,var(--oro-vivo) 82%,#fff3c8 100%);box-shadow:0 0 10px -1px color-mix(in srgb,var(--oro-vivo) 58%,transparent),inset 0 1px 0 rgba(255,252,235,.55)}
+.jg-barra.ap-nivel-bar>i::after{content:"";position:absolute;right:-3px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffbe8 0 38%,var(--oro-vivo) 72%,transparent 100%);box-shadow:0 0 8px 1px color-mix(in srgb,var(--oro-vivo) 80%,transparent);pointer-events:none}
+:root[data-theme="light"] .jg-barra.ap-nivel-bar{background:repeating-linear-gradient(90deg,transparent 0 24%,rgba(120,86,24,.14) 24% calc(24% + 1px),transparent calc(24% + 1px) 25%),linear-gradient(180deg,#d3c5ad,#e5dac5);box-shadow:inset 0 1px 2px rgba(45,32,12,.26)}
 .ap-uso{display:grid;gap:6px}
 .ap-uso li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:13px;border:1px solid var(--linea-2);background:linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4.5%,transparent),transparent)}
 .ap-ui{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 28%,transparent)}
@@ -1422,8 +1448,8 @@ html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{a
 @keyframes fa-luz{0%,100%{opacity:.35}50%{opacity:1}}
 /* (15-nov-2026) dracmas al final de la línea de la forja; celebración de la forja con el ser interior */
 .ap-tienes{white-space:nowrap}
-.ap-forja .ap-tienes b{font:inherit;font-weight:600;color:var(--oro-vivo);letter-spacing:0}
-.ap-forja .ap-tienes.falta b{color:var(--tinta-2)}
+.ap-forja .ap-tienes b{font:inherit;font-weight:600;color:var(--dr-oro);letter-spacing:0}
+.ap-forja .ap-tienes.falta b{color:var(--dr-falta)}
 .jg-fj-fig{width:min(210px,56vw);margin:4px auto 0}
 .jg-fj-fig .ser-in{max-width:none}
 .jg-fj-fig .fa-luz.on{animation:fa-luz 1.9s ease-in-out infinite}
@@ -1476,6 +1502,9 @@ html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0p
 /* AL6 (22-nov-2026): la píldora de la Sala ya no pide espacio extra al final: se acomoda en su hueco del pie */
 html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:0 12px;font-size:.84rem}
 html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+html.jg-con-sala:not(.jg-con-muelle) .aviso-flot{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+html.jg-con-lb:not(.jg-con-muelle) .aviso-flot{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+html.jg-con-lb.jg-con-sala:not(.jg-con-muelle) .aviso-flot{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
 .jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
 .jg-ayuda{display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);text-decoration:none;font:500 .78rem/1 var(--f-ui);letter-spacing:.03em;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .jg-ayuda svg{width:16px;height:16px}
@@ -1578,21 +1607,21 @@ html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-ins
 .jg-enapp .jg-acciones{margin-top:10px}
 @media (prefers-reduced-motion:reduce){.ap-fig .fa-luz.on{animation:none;opacity:.85}.jg-epica .jg-brasa,.jg-epica .jg-brasa::after,.ap-lumbre::after{animation:none}.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
 html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov="no"] .jg-epica .jg-brasa,html[data-mov="no"] .jg-epica .jg-brasa::after,html[data-mov="no"] .ap-lumbre::after{animation:none}html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
-/* N10 (Neon, 23-nov-2026): escudo de nivel con tipografía en px fijos e inmune a --k y a la letra para dislexia:
-   «NIVEL» y las cifras quedan siempre holgados dentro del aro interior (r = 14,2 px) sin tocar el borde ni «Adelante» */
-.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:58.6px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 7px 10px rgba(0,0,0,.62));--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
+/* N10 + Nitidez HD (Neon, 23-nov-2026): sombra aplicada solo al SVG (no al padre) para que NIVEL, cifra y bonos
+   se dibujen nítidos a densidad real sin pasar por capa rasterizada de filtro; tipografía en px fijos inmune a --k */
+.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:59px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
 .jg-med[data-r="0"]{--m1:#f6d2ad;--m2:#bd844c;--m3:#5a381a;--mg:rgba(189,132,76,.5)}
 .jg-med[data-r="1"]{--m1:#f5f7fb;--m2:#b6bfcc;--m3:#535b67;--mg:rgba(182,191,204,.5)}
 .jg-med[data-r="3"]{--m1:#e6fbea;--m2:#56c48c;--m3:#1b5539;--mg:rgba(86,196,140,.5)}
 .jg-med[data-r="4"]{--m1:#fff7d8;--m2:#f5c64e;--m3:#99560f;--mg:rgba(245,198,78,.72)}
-.jg-med svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.jg-med svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 6px 9px rgba(0,0,0,.58));shape-rendering:geometricPrecision}
 .jg-med .arco{transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
 .jg-med .barrido{animation:jg-med-barrido 9s ease-in-out infinite}
 @keyframes jg-med-barrido{0%,62%{transform:translate3d(0,0,0)}100%{transform:translate3d(96px,0,0)}}
-.jg-med .nvk{position:absolute;left:0;right:0;top:20.4px;text-align:center;font:600 5.4px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.7px!important;text-indent:.7px;color:var(--m2);pointer-events:none;white-space:nowrap}
-.jg-med b{position:absolute;left:0;right:0;top:27.4px;text-align:center;font:600 15px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:0!important;font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 10px var(--mg),0 1px 0 rgba(0,0,0,.7);pointer-events:none}
-.jg-med.dos b{font-size:13.5px;top:28.2px}
-.jg-med.tres b{font-size:11px;top:29.6px}
+.jg-med .nvk{position:absolute;left:0;right:0;top:20px;text-align:center;font:600 5.5px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.7px!important;text-indent:.7px;color:var(--m2);pointer-events:none;white-space:nowrap;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+.jg-med b{position:absolute;left:0;right:0;top:27px;text-align:center;font:600 15px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:0!important;font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 8px var(--mg),0 1px 0 rgba(0,0,0,.78);pointer-events:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+.jg-med.dos b{font-size:13.5px;top:28px}
+.jg-med.tres b{font-size:11px;top:29px}
 .jg-med i{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translate3d(-50%,0,0);font:600 12px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;font-style:normal;color:var(--m1);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 0 8px var(--mg),0 1px 6px rgba(0,0,0,.95)}
 .jg-med.pulso{animation:jg-med-p .55s cubic-bezier(.3,1.6,.5,1)}
 @keyframes jg-med-p{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
@@ -1788,24 +1817,10 @@ html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
 .jg-ah.marcado .fa,.jg-ah.marcado .na{opacity:1}
 .jg-ah.marcado .fo,.jg-ah.marcado .no{opacity:0}
 .jg-ah .f,.jg-ah .n{animation:jg-ah 3.4s ease-in-out infinite}
-/* (BiEx, 21-nov-2026, AF40) aunque se desplace rápido, cada verso que cruza la franja de lectura enciende su hilo de luz: animación
-   ligada al desplazamiento (animation-timeline: view()), sola en el compositor y sin JavaScript; al detenerse, el resplandor del
-   verso elegido sigue como siempre */
-@supports (animation-timeline:view()){
+/* Neon (23-nov-2026): en la lectura por versos (.hoja.jg-pies) cada verso lleva UNA sola línea vertical limpia (.vn::after);
+   se omite la línea duplicada del borde (.vl::before / .jg-ah .f), dejando el hilo únicamente en vista continua y el halo suave en el número */
 .hoja.jg-pies .vl{position:relative;contain:layout style}
-/* Neon (23-nov-2026): mantener la línea de tiempo fijada y solo alternar visibility al desplazar evita crear/destruir decenas de animaciones en el primer cuadro */
-.hoja.jg-pies .vl::before{content:"";position:absolute;left:-1px;top:4px;bottom:4px;width:2.5px;border-radius:2px;pointer-events:none;opacity:0;visibility:hidden;
-  background:linear-gradient(180deg,transparent,var(--oro-vivo) 16%,color-mix(in srgb,var(--oro-vivo) 72%,#fff8e6) 50%,var(--oro-vivo) 84%,transparent);
-  animation:jg-paso linear both;animation-timeline:view();animation-range:cover}
-html.desplazando .hoja.jg-pies .vl::before{visibility:visible}
-/* (BiEx, 22-nov-2026: «doble efecto de marca al lado izquierdo») mientras se desplaza, la luz de paso de cada verso (AF40) es la única marca:
-   el hilo del verso que se lee se funde y vuelve al detenerse (solo donde existe la luz de paso) */
-.hoja.jg-pies .jg-ah{transition:opacity .32s ease}
-html.desplazando .hoja.jg-pies .jg-ah{opacity:0;transition-duration:.12s}
-@keyframes jg-paso{0%,33%{opacity:0}46%{opacity:.78}58%,100%{opacity:0}}
-html[data-mov="no"] .hoja.jg-pies .vl::before{display:none;animation:none}
-@media (prefers-reduced-motion:reduce){.hoja.jg-pies .vl::before{display:none;animation:none}}
-}
+.hoja.jg-pies .jg-ah .f{display:none}
 /* AC17 + Neon (23-nov-2026): la clasificación y el prestigio, desplegados con simetría exacta en 4 columnas */
 .jg-cl2{display:grid;gap:11px;padding:12px;border-radius:15px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
 .jg-cl2-seg{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
@@ -1828,7 +1843,7 @@ html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 .vl .vn.jg-leido::before{content:"";position:absolute;left:1px;top:.9em;width:6px;height:3px;border:solid var(--oro-vivo);border-width:0 0 1.6px 1.6px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
 .vs>sup.jg-leido{background:linear-gradient(currentColor,currentColor) 50% 100%/72% 1.5px no-repeat}
 .vl .vn.jg-leido.jg-repaso::before{width:6px;height:3px;border-color:var(--repaso,#8fd0ff);box-shadow:-2.6px 2.6px 0 -.2px transparent;filter:drop-shadow(-3px 1px 0 var(--oro-vivo))}
-.vl .vn.jg-repaso::after{width:6px;background:none;border-left:2px solid var(--e);border-right:2px solid var(--repaso,#8fd0ff);border-radius:1px}
+.vl .vn.jg-repaso::after{width:3px;border:0;background:linear-gradient(180deg,var(--e) 0 48%,var(--repaso,#8fd0ff) 52% 100%);border-radius:2px}
 .vn.jg-repaso,.vs>sup.jg-repaso{text-shadow:0 0 10px color-mix(in srgb,var(--repaso,#8fd0ff) 40%,transparent)}
 .vs>sup.jg-repaso{background:linear-gradient(currentColor,currentColor) 50% calc(100% - 3px)/72% 1.2px no-repeat,linear-gradient(var(--repaso,#8fd0ff),var(--repaso,#8fd0ff)) 50% 100%/72% 1.2px no-repeat}
 :root[data-theme="light"]{--repaso:#1f6fb8}
@@ -1995,13 +2010,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
   let ULT_USO = Date.now();
   for (const ev of ["pointerdown", "keydown", "wheel", "touchstart", "scroll"]) addEventListener(ev, () => { ULT_USO = Date.now(); }, { passive: true, capture: true });
   function enVivo(el, cada, fn) {
-    let vis = !("IntersectionObserver" in window);
+    let vis = !("IntersectionObserver" in window), fallos = 0;
     const io = vis ? null : new IntersectionObserver((e) => { vis = e.some((x) => x.isIntersecting); });
     if (io) io.observe(el);
     const paso = async () => {
       if (!el.isConnected) { if (io) io.disconnect(); return; }
-      if (vis && document.visibilityState === "visible" && Date.now() - ULT_USO < 180e3) { try { await fn(); } catch (e) { /* la próxima vez */ } }
-      setTimeout(paso, cada);
+      if (vis && navigator.onLine && document.visibilityState === "visible" && Date.now() - ULT_USO < 180e3) {
+        try {
+          const r = await fn();
+          fallos = r && r.error ? Math.min(3, fallos + 1) : 0;
+        } catch (e) { fallos = Math.min(3, fallos + 1); }
+      }
+      setTimeout(paso, cada * Math.pow(2, fallos));
     };
     setTimeout(paso, cada);
   }
@@ -3466,12 +3486,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); btnRep.disabled = !n; }
     total();
     const gratis = av.sem !== semanaClave();
-    return tarjeta("Atributos", ico("arbol"), h("div", { class: "ap-cab" }, quedan, chipPoder(av.poder, () => abrirVentanaPoder(y, P))),
+    const saldoDr = h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.");
+    const puedePunto = P.dr >= av.precioPunto, puedeReasig = gratis || P.dr >= 60;
+    return tarjeta("Atributos", ico("arbol"),
+      h("div", { class: "ap-cab" }, quedan, h("div", { class: "ap-cab-r" }, saldoDr, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
-        h("button", { class: "btn", type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
+        h("button", { class: "btn " + (puedePunto ? "dr-ok" : "dr-falta"), type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
         // (un lector, 14-nov-2026: «se me borraron todos los puntos») antes de reasignar se explica qué pasa y se confirma
-        av.tot - av.pts > 0 ? h("button", { class: "btn", type: "button", onclick: async () => {
+        av.tot - av.pts > 0 ? h("button", { class: "btn" + (gratis ? "" : (puedeReasig ? " dr-ok" : " dr-falta")), type: "button", onclick: async () => {
           const rep = av.tot - av.pts;
           if (!(await confirmar("¿Reasignar tus atributos?", "Tus " + plural(rep, "punto ya repartido vuelve", "puntos ya repartidos vuelven") + " a quedar libres y tus atributos bajan a lo que da la armadura hasta que los repartas otra vez. " + (gratis ? "Es gratis una vez por semana." : "Esta semana ya lo hiciste: cuesta 60 dracmas."), gratis ? "Reasignar" : "Reasignar · 60 dr."))) return;
           const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
@@ -4227,9 +4250,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
               h("small", { class: "lk-lib-c", text: fmt(b.l) + " / " + fmt(b.t) + " versos" })));
         }));
       };
+      const sumLoc = lista.reduce((a, b) => a + (b.l || 0), 0);
+      const notaSinc = hechos > sumLoc ? h("p", { class: "jg-mini", style: "margin:8px 0 6px", text: "Tu total exacto (" + fmt(hechos) + " versos) está guardado en tu cuenta en el servidor. El desglose por libro de este dispositivo muestra los capítulos que has abierto o marcado aquí y se completa al visitar cada capítulo." }) : null;
       const det = h("details", { class: "jg-pc lk-libs" },
         h("summary", {}, h("span", { text: L.k ? "Progreso por libro · lectura n.º " + sig : "Progreso por libro" }), h("small", { text: iniciados + " de " + lista.length + " iniciados" })),
-        cont);
+        notaSinc, cont);
       det.addEventListener("toggle", () => { if (det.open && !det.dataset.ok) { det.dataset.ok = "1"; pintarL(); } });
       return det;
     })();
@@ -4262,7 +4287,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         // (BiEx, 15-nov-2026, 19:25) al final de la línea, las dracmas que tiene ahora
         h("small", {}, "Fortalece " + nAt + " (+" + 2 * gr + (sig ? " › +" + 2 * (gr + 1) : "") + ")" + (sig ? " · " + sig.dr + "\u00a0dr." + (sig.cantos ? " + " + plural(sig.cantos, "canto", "cantos") : "") : " · grado máximo"),
           h("span", { class: "ap-tienes" + (sig && P.dr < sig.dr ? " falta" : "") }, " · tienes ", h("b", { text: fmt(P.dr) + " dr." })))),
-        sig ? h("button", { class: "btn chico" + (puede(gr) ? " oro" : ""), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
+        sig ? h("button", { class: "btn chico " + (puede(gr) ? "dr-ok" : "dr-falta"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
           // (BiEx, 15-nov-2026, 19:25: «se actualizó la pantalla y solo vi un mensaje breve») la forja se celebra con el ser interior
           const antes = { poder: av.poder, ef: Object.assign({}, av.ef) };
           const r = await accionPoder("/tienda/comprar", { item: "forja:" + id }, null, "forja"); if (r) celebrarForja(id, n, gr + 1, d.grados[gr + 1], at, nAt, antes, r, rehacer); else b.disabled = false; } },
@@ -4408,8 +4433,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const comprar = async (e, item, ok, fx) => { const b = e.currentTarget; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item }, ok); if (r) { if (fx) chispas(fx); rehacer(); } else b.disabled = false; };
     const fila = (ic, n, ds, boton) => h("li", {}, h("span", { class: "ap-ui", "aria-hidden": "true" }, A.svg(ICO_USO[ic])), h("span", { class: "ap-n" }, h("b", { text: n }), h("small", { text: ds })), boton);
     const conPieza = (id) => id === "renuevo" && (y.renMed | 0) >= 2;
-    const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, conPieza(id) ? ds + " · con tu pieza de Renuevo, sin dracmas" : ds, h("button", { class: "btn chico" + (P.dr >= pr || conPieza(id) ? " oro" : ""), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: conPieza(id) ? "Pieza" : pr + " dr." })))),
-      fila("apodo", "Cambio de apodo", "Una vez cada 3 semanas", h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, h("span", { text: ((y.apodoCambio && y.apodoCambio.precio) || 120) + " dr." }))));
+    const prAp = (y.apodoCambio && y.apodoCambio.precio) || 120;
+    const uso = h("ul", { class: "ap-uso" }, d.uso.map(([id, n, pr, ds]) => fila(id, n, conPieza(id) ? ds + " · con tu pieza de Renuevo, sin dracmas" : ds, h("button", { class: "btn chico " + (P.dr >= pr || conPieza(id) ? "dr-ok" : "dr-falta"), type: "button", onclick: (e) => comprar(e, "uso:" + id, n + ": listo") }, h("span", { text: conPieza(id) ? "Pieza" : pr + " dr." })))),
+      fila("apodo", "Cambio de apodo", "Una vez cada 3 semanas", h("a", { class: "btn chico " + (P.dr >= prAp ? "dr-ok" : "dr-falta"), href: "#/escudrina/cuenta" }, h("span", { text: prAp + " dr." }))));
     const NOM = { aura: "Auras", manto: "Mantos", corona: "Lauros", sello: "Sellos" };
     // Qué da cada accesorio (BiEx, 12-nov-2026): +25 de poder al tenerlo (cifra de tu ser interior), se luce en el emblema y en
     // el Árbol, y cada uno con su enseñanza (tema en palabras de Claude, con la cita para leerla en BiEx)
@@ -4468,7 +4494,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           h("div", { class: "ap-da" }, ...daAcc(id, cita)),
           tiene ? h("button", { class: "btn chico" + (puesto ? "" : " oro"), type: "button", onclick: async (e) => { const b = e.currentTarget; b.disabled = true;
             const r = await accionPoder("/poder/equipar", { ranura: ran, id: puesto ? null : id }, puesto ? "Te lo quitaste" : "Equipado"); if (r) rehacer(); else b.disabled = false; } }, h("span", { text: puesto ? "Quitar" : "Equipar" }))
-            : h("button", { class: "btn chico" + (P.dr >= pr ? " oro" : ""), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." })));
+            : h("button", { class: "btn chico " + (P.dr >= pr ? "dr-ok" : "dr-falta"), type: "button", "aria-label": "Comprar " + n + " por " + pr + " dracmas", onclick: (e) => comprar(e, "acc:" + id, n + ": tuyo y equipado", 14) }, h("span", { text: pr + " dr." })));
       }));
     }
     pintarV();
@@ -4512,12 +4538,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const yy = S.yo || y, av = P.av, pct = yy.xpSig ? Math.max(0, Math.min(100, (100 * yy.xpNivel) / yy.xpSig)) : 0;
     const datos = h("div", { class: "ap-datos" },
       h("p", { class: "ap-ap" }, h("b", { text: yy.apodo }), h("span", { text: yy.rangoNombre + " · nivel " + yy.nivel })),
-      h("div", { class: "jg-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(yy.xpSig), "aria-valuenow": String(yy.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
+      h("div", { class: "jg-barra ap-nivel-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(yy.xpSig), "aria-valuenow": String(yy.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
       h("p", { class: "jg-mini ap-prog", text: fmt(yy.xpNivel) + " de " + fmt(yy.xpSig) + " para el nivel " + (yy.nivel + 1) + " · " + fmt(yy.xp) + " en total" }),
       h("ul", { class: "ap-cifras" },
         h("li", { class: "ap-cif-p" }, h("button", { class: "ap-cif-btn", type: "button", title: "Abrir la ventana del poder", "aria-label": "Poder " + fmt(av.poder) + ": abrir detalles y estadísticas", onclick: () => abrirVentanaPoder(yy, P) }, h("b", { text: fmt(av.poder) }), h("small", { text: "poder ›" }))),
         h("li", {}, h("b", { text: yy.fundador ? "n.º " + fmt(yy.n) : "—" }), h("small", { text: yy.fundador ? "Primicia" : "sin Primicia" })),
-        h("li", {}, h("b", { text: fmt(P.dr) }), h("small", { text: "dracmas" })),
+        h("li", { class: "ap-cif-dr" }, h("b", { text: fmt(P.dr) }), h("small", { text: "dracmas" })),
         h("li", {}, h("b", { text: String(av.pts) }), h("small", { text: av.pts === 1 ? "punto libre" : "puntos libres" })),
         h("li", { title: "Solo cuentan los versos que marcas: «Leído», el capítulo marcado o la prueba bien respondida" }, h("b", { text: fmt(yy.vc || 0) }), h("small", { text: "versos leídos" })),
         h("li", {}, h("b", { text: fmt((yy.invi && yy.invi.unidos) || 0) }), h("small", { text: "frutos de tu siembra" }))),
@@ -5639,7 +5665,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function ponerLB(v, forzar, m, dos) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.mm = []; LB.clave = ""; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } quitarMeta(); return; }
+    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.mm = []; LB.clave = ""; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } document.documentElement.classList.remove("jg-con-lb"); quitarMeta(); return; }
     const el = document.getElementById("v" + v); if (!el) return;
     m = m || 0;
     // m: el verso al que va el «Leído» (0 = nada que marcar); dos: los dos versos que tocan la zona a la vez
@@ -5690,6 +5716,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (LB.el.style.getPropertyValue("--jg-lb-alza") !== alza) LB.el.style.setProperty("--jg-lb-alza", alza);
     if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
     else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
+    document.documentElement.classList.toggle("jg-con-lb", !LB.el.classList.contains("fuera") || !!(LB.pb && !LB.pb.classList.contains("fuera")));
     if (!hoja) return;
     const f = LB.ah.firstChild, antes = LB.ah.hidden, ty = y0 - rh.top;
     const salto = antes || LB.y0 == null || Math.abs(ty - LB.y0) > innerHeight * 0.9;

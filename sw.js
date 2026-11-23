@@ -234,9 +234,118 @@ self.addEventListener("message", (e) => {
       responder({ rutas: ks.map((k) => (k.url.startsWith(pref) ? k.url.slice(pref.length) : null)).filter((x) => x && x !== ESTADO) });
     } else if (d.tipo === "borrar") {
       await caches.delete(CACHE); await caches.delete(FUENTES); EST = null; responder({ ok: true });
+    } else if (d.tipo === "widgetDatos") {
+      await guardarWidgetDatos(d);
+      await actualizarWidget("biex-diario");
+      responder({ ok: true });
     }
   })().catch(() => responder(null)));
 });
 
-// Actualización en segundo plano (Chrome la concede a la app instalada; como mucho, una vez al día)
-self.addEventListener("periodicsync", (e) => { if (e.tag === "biex-actualizar") e.waitUntil(refrescar().catch(() => {})); });
+// ------------------------------------------------------------------ AA12: widget de escritorio (Windows 11 / Edge)
+const WIDGET_TAG = "biex-diario";
+const WIDGET_DATOS = "__widget__.json";
+const WIDGET_FALLBACK = {
+  fecha: "BiEx",
+  griego: "Ἐν ἀρχῇ ἦν ὁ λόγος,",
+  texto: "En iniciación estaba siendo el discurso,",
+  ref: "YÔḥānā́n [Juan] 1:1",
+  ruta: "#/JHN/1/l/1",
+};
+
+async function leerWidgetDatos() {
+  try {
+    const r = await (await caches.open(CACHE)).match(claveDe(WIDGET_DATOS));
+    return r ? await r.json() : null;
+  } catch (e) { return null; }
+}
+async function guardarWidgetDatos(d) {
+  const limpio = {
+    nivel: Number(d.nivel) || 0,
+    rango: String(d.rango || "").slice(0, 40),
+    pers: Number(d.pers) || 0,
+    hoyV: Number(d.hoyV) || 0,
+    apodo: String(d.apodo || "").slice(0, 40),
+    t: Date.now(),
+  };
+  await (await caches.open(CACHE)).put(claveDe(WIDGET_DATOS), new Response(JSON.stringify(limpio), { headers: { "content-type": "application/json" } }));
+  return limpio;
+}
+function glosaSimple(tr) {
+  let s = String(tr || "").trim();
+  if (!s) return "";
+  s = s.replace(/\s*\[[^\]]*\]/g, "").replace(/\s*<[^>]*>/g, "").replace(/[*ᵐᶠⁿᵖ]/g, "").replace(/\s+/g, " ").trim();
+  return s;
+}
+async function obtenerJsonLocal(r) {
+  const c = await caches.open(CACHE);
+  const loc = await c.match(claveDe(r));
+  if (loc) { try { return await loc.json(); } catch (e) { /* reintentar red */ } }
+  try {
+    const resp = await fetch(new Request(new URL(r, ALCANCE).href, { credentials: "same-origin" }));
+    if (resp && resp.ok) {
+      await guardar(c, r, resp.clone());
+      return await resp.json();
+    }
+  } catch (e) { /* sin red */ }
+  return null;
+}
+async function versoDelDia() {
+  const lista = await obtenerJsonLocal("datos/destacados.json");
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString("es", { day: "numeric", month: "short" });
+  if (!Array.isArray(lista) || !lista.length) return Object.assign({}, WIDGET_FALLBACK, { fecha });
+  const dia = Math.floor(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate()) / 864e5);
+  const item = lista[Math.abs(dia) % lista.length] || lista[0];
+  const ps = Array.isArray(item.p) ? item.p : [];
+  const griego = ps.map((w) => String(w.g || "") + String(w.pu || "").replace(/¶/g, "")).join(" ").trim() || WIDGET_FALLBACK.griego;
+  const texto = ps.map((w) => glosaSimple(w.lo || w.tr) + String(w.pu || "").replace(/¶/g, "")).filter(Boolean).join(" ").trim() || WIDGET_FALLBACK.texto;
+  const nom = item.t ? item.t + (item.n ? " [" + item.n + "]" : "") : (item.n || item.c || "");
+  const ref = nom + " " + item.cap + ":" + item.v;
+  return { fecha, griego, texto, ref, ruta: "#/" + item.c + "/" + item.cap + "/l/" + item.v };
+}
+async function actualizarWidget(tag) {
+  if (!self.widgets || !self.widgets.updateByTag) return;
+  const t = tag || WIDGET_TAG;
+  try {
+    const tplObj = await obtenerJsonLocal("widgets/verso-dia.json");
+    if (!tplObj) return;
+    const v = await versoDelDia();
+    const yo = await leerWidgetDatos();
+    const estado = yo && yo.nivel
+      ? "Nivel " + yo.nivel + (yo.rango ? " · " + yo.rango : "") + (yo.apodo ? " (" + yo.apodo + ")" : "")
+      : "Escudriña · Estudio diario";
+    const sub = yo && yo.nivel
+      ? (yo.pers ? "Perseverancia: " + yo.pers + (yo.pers === 1 ? " día" : " días") : "Sigue tu lectura diaria") + (yo.hoyV ? " · Hoy: " + yo.hoyV + (yo.hoyV === 1 ? " verso" : " versos") : "")
+      : "Toca abajo para leer este pasaje y continuar tu avance.";
+    const datos = Object.assign({}, v, { estado, sub });
+    await self.widgets.updateByTag(t, { template: JSON.stringify(tplObj), data: JSON.stringify(datos) });
+  } catch (e) { /* widget no instalado o sin soporte */ }
+}
+self.addEventListener("widgetinstall", (e) => { e.waitUntil(actualizarWidget(e.widget && e.widget.definition && e.widget.definition.tag)); });
+self.addEventListener("widgetresume", (e) => { e.waitUntil(actualizarWidget(e.widget && e.widget.definition && e.widget.definition.tag)); });
+self.addEventListener("widgetuninstall", () => {});
+self.addEventListener("widgetclick", (e) => {
+  e.waitUntil((async () => {
+    const act = e.action || "";
+    const data = (e.data && typeof e.data === "object") ? e.data : {};
+    if (act === "actualizar") { await actualizarWidget(WIDGET_TAG); return; }
+    let rutaIr = typeof data.ruta === "string" && /^#\/[A-Za-z0-9/_-]{1,80}$/.test(data.ruta) ? data.ruta : "";
+    if (!rutaIr) rutaIr = act === "abrir-escudrina" ? "#/escudrina" : (await versoDelDia()).ruta;
+    const url = new URL("./" + rutaIr, ALCANCE).href;
+    const cls = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const cl of cls) {
+      if (cl.url.startsWith(ALCANCE.href) && "focus" in cl) {
+        try { await cl.navigate(url); } catch (er) { /* mantener pestaña */ }
+        await cl.focus();
+        return;
+      }
+    }
+    if (self.clients.openWindow) await self.clients.openWindow(url);
+  })());
+});
+
+// Actualización en segundo plano (Chrome/Edge la concede a la app instalada; como mucho, una vez al día)
+self.addEventListener("periodicsync", (e) => {
+  if (e.tag === "biex-actualizar") e.waitUntil(Promise.all([refrescar().catch(() => {}), actualizarWidget(WIDGET_TAG)]));
+});

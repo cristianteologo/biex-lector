@@ -1,0 +1,115 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "BIBLIA EXACTA · VERSO DEL DÍA",
+              "size": "Small",
+              "weight": "Bolder",
+              "color": "Accent",
+              "isSubtle": false,
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "${fecha}",
+              "size": "Small",
+              "isSubtle": true,
+              "horizontalAlignment": "Right"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "${griego}",
+      "size": "Medium",
+      "weight": "Bolder",
+      "wrap": true,
+      "spacing": "Small"
+    },
+    {
+      "type": "TextBlock",
+      "text": "${texto}",
+      "size": "Default",
+      "wrap": true,
+      "spacing": "Small"
+    },
+    {
+      "type": "TextBlock",
+      "text": "— ${ref}",
+      "size": "Small",
+      "weight": "Bolder",
+      "isSubtle": true,
+      "wrap": true,
+      "spacing": "Small"
+    },
+    {
+      "type": "Container",
+      "separator": true,
+      "spacing": "Medium",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "${estado}",
+                  "size": "Small",
+                  "weight": "Bolder",
+                  "wrap": true
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "${sub}",
+                  "size": "Small",
+                  "isSubtle": true,
+                  "spacing": "None",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Execute",
+      "title": "Leer capítulo",
+      "verb": "abrir-verso",
+      "data": {
+        "ruta": "${ruta}"
+      }
+    },
+    {
+      "type": "Action.Execute",
+      "title": "Escudriña",
+      "verb": "abrir-escudrina",
+      "data": {
+        "ruta": "#/escudrina"
+      }
+    }
+  ]
+}
