@@ -2668,9 +2668,10 @@
       const hueBar = h("div", { class: "mk-cp-hue", role: "slider", tabindex: "0", "aria-label": "Matiz del color", "aria-valuemin": "0", "aria-valuemax": "360" }, thumb);
       const muestraDot = h("span", { class: "mk-cp-chip", "aria-hidden": "true" });
       const hexIn = h("input", { type: "text", class: "mk-cp-hex", maxlength: "7", spellcheck: "false", autocomplete: "off", "aria-label": "Código hexadecimal del color" });
+      const vJn11 = "En iniciación estaba siendo el [lo]ᵐⁿ discurso [cálculo] [razonamiento] [mensaje] [principio racional] [asunto] [tema], y [e] [incluso] [también] el [lo]ᵐⁿ discurso [cálculo] [razonamiento] [mensaje] [principio racional] [asunto] [tema] estaba siendo ante el ʾĔlōhî́m [Dios], y [e] [incluso] [también] divino [(un) dios] estaba siendo el [lo]ᵐⁿ discurso [cálculo] [razonamiento] [mensaje] [principio racional] [asunto] [tema].";
       const muestraVerso = h("div", { class: "mk-cp-prev" },
         h("span", { class: "mk-cp-pv-n", text: "1" }),
-        h("span", { class: "mk-cp-pv-t", text: "En principio era el Lόgος, y el Lόgος era hacia el Dsεός…" }));
+        h("span", { class: "mk-cp-pv-t" }, txtVersoL({ v: 1, t: vJn11, o: vJn11 })));
       const swBtns = PALETA_BIEX.map(([hx, nom]) => h("button", { type: "button", class: "mk-cp-sw", style: "--sw:" + hx, title: nom, "aria-label": nom, "data-hex": hx.toLowerCase(),
         onclick: () => { [H, S, V] = hexAHsv(hx); pintar(true); } }));
       const pintar = (ponerHex) => {
@@ -4060,7 +4061,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "da87aa8dcc", juego: "93e288e3c9", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "f047e7e572", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4075,12 +4076,49 @@
     scripts[nombre] = intentar(baseOk).catch((e) => { delete scripts[nombre]; throw e; });
     return scripts[nombre];
   }
+  // ------------------------------------------------------------------ Fecha y hora de Jerusalén en el calendario hebreo
+  const MESES_HEB = {
+    tishri: "Tishréi", tishrei: "Tishréi",
+    heshvan: "Jeshván", cheshvan: "Jeshván", marheshvan: "Jeshván",
+    kislev: "Kislév",
+    tevet: "Tevét", tebet: "Tevét",
+    shevat: "Shevát", shvat: "Shevát",
+    adar: "Adár", "adar i": "Adár I", "adar 1": "Adár I", "adar ii": "Adár II", "adar 2": "Adár II",
+    nisan: "Nisán", nissan: "Nisán",
+    iyar: "Iyár", iyyar: "Iyár",
+    sivan: "Siván",
+    tamuz: "Tamúz", tammuz: "Tamúz",
+    av: "Av", ab: "Av",
+    elul: "Elúl"
+  };
+  function fechaHoraJerusalen(ms) {
+    const f = ms ? new Date(ms) : new Date();
+    let fecha = "", hora = "";
+    try {
+      const pts = new Intl.DateTimeFormat("en-u-ca-hebrew", { timeZone: "Asia/Jerusalem", day: "numeric", month: "long", year: "numeric" }).formatToParts(f);
+      let d = "", m = "", y = "";
+      for (const p of pts) {
+        if (p.type === "day") d = p.value;
+        else if (p.type === "month") m = p.value;
+        else if (p.type === "year") y = p.value.replace(/\D+/g, "");
+      }
+      const mk = String(m || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const mEs = MESES_HEB[mk] || m;
+      if (d && mEs && y) fecha = d + " de " + mEs + " de " + y;
+    } catch (e) { /* sin calendario hebreo */ }
+    try {
+      hora = new Intl.DateTimeFormat("es", { timeZone: "Asia/Jerusalem", hour: "2-digit", minute: "2-digit", hour12: false }).format(f);
+    } catch (e) { /* sin zona horaria */ }
+    if (fecha && hora) return fecha + " · " + hora;
+    return fecha || hora || "";
+  }
   // ------------------------------------------------------------------ Escudriña, el juego (juego.js, carga diferida)
   let JGX = null;
   function cargarJuego() {
     if (!JGX) JGX = cargarScript("juego").then(() => {
       const J = window.BiExJuego; if (!J) throw new Error("juego");
       J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn),
+        fechaHoraJerusalen,
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
         irA: (hh) => { location.hash = hh; },
@@ -4145,7 +4183,7 @@
         const BQ = window.BiExBusqueda;
         const R = BQ.preparar(I);
         bqListo = true;
-        return { BQ, R, ctx: { libros: D.libros, conceptos: BQ.conceptos(C), griego: BQ.prepararGriego(T), escenas: E, ayuda: A } };
+        return { BQ, R, ctx: { libros: D.libros, conceptos: BQ.conceptos(C), griego: BQ.prepararGriego(T), escenas: E, ayuda: A, T } };
       })
       .catch((e) => { BQX = null; throw e; });
     return BQX;
@@ -4209,7 +4247,7 @@
       ["Con tus palabras", ["bienaventurados los pobres", "Tomás no creyó", "no quedará piedra sobre piedra", "el sembrador salió a sembrar", "amarás a tu prójimo", "el grano de mostaza", "vino nuevo en odres viejos", "el que quiera ser el primero"], 4],
       ["Citas y libros", ["Jn 3:16", "Marcos 4", "1 Co 13:4-7", "Revelación", "Mc 10:45", "Ro 8:28", "Hebreos 11", "Ef 2:8-9", "1 Pe 1:3"], 4],
       ["Griego", ["λόγος", "agape", "pneuma", "χάρις", "πίστις", "kosmos", "ἐκκλησία", "aletheia", "δόξα"], 4],
-      ["Preguntas", EJ_PREG, 3]];
+      ["Preguntas y comparaciones", [...EJ_PREG, "compara Pablo y Jacobo sobre la fe", "diferencia entre alma y espíritu", "qué enseña Juan sobre el discurso"], 3]];
     const chip = (x) => h("button", { type: "button", class: "rota", lang: /[Ͱ-Ͽἀ-῿]/.test(x) ? "grc" : null, onclick: () => elegir(x), text: x });
     const grupos = ej.map(([t, todos, n], gi) => {
       const orden = barajar(todos), caja = h("div", { class: "bq-ej" }, orden.slice(0, n).map(chip));
@@ -4225,7 +4263,7 @@
       return h("div", { class: "bq-grupo-ej" }, h("h4", { text: t }), caja);
     });
     return h("div", { class: "bq-inicio" },
-      h("p", { class: "nota-ui", text: "Escribe como lo recuerdes, aunque no sea con las palabras de BiEx: el buscador entiende escenas, nombres, lugares, citas, palabras griegas y preguntas sobre la página. Para buscar solo en un libro, termina con «en Marcos», «en Romanos»…" }),
+      h("p", { class: "nota-ui", text: "Escribe como lo recuerdes, aunque no sea con las palabras de BiEx: el buscador entiende escenas, nombres, lugares, citas, palabras griegas, comparaciones entre autores o conceptos y preguntas sobre la página. Para buscar solo en un libro, termina con «en Marcos», «en Romanos»…" }),
       grupos);
   }
   let turnoBq = 0;
@@ -4238,9 +4276,11 @@
     try { X = await prepararBuscador(); } catch (e) { if (yo === turnoBq) { estado.textContent = "No se pudo cargar el buscador. Revisa tu conexión e inténtalo de nuevo."; cont.classList.remove("esperando"); } return; }
     if (yo !== turnoBq) return;
     cont.classList.remove("esperando");
-    const r = X.BQ.buscar(X.R, q, X.ctx);
     let secc = []; try { secc = await seccionesBiex(); } catch (e) { /* sin estudios */ }
     if (yo !== turnoBq) return;
+    const ctxCompleto = { ...X.ctx, secciones: secc };
+    const r = X.BQ.buscar(X.R, q, ctxCompleto);
+    const comp = X.BQ.comparar ? X.BQ.comparar(X.R, q, ctxCompleto) : null;
     const grupos = [];
     const grupo = (tit, ...kids) => h("section", { class: "bq-g" }, h("h3", {}, tit), kids);
     const abrirRes = (ruta) => (e) => { recordarBusqueda(q, ruta); };
@@ -4253,6 +4293,33 @@
     };
     // respuesta de ayuda
     if (r.ayuda.length) grupos.push(grupo("Respuesta", r.ayuda.map(({ it }) => h("div", { class: "res-ayuda" }, h("h4", { text: it.p }), h("p", { text: it.r }), accionAyuda(it.a, elegir)))));
+    // síntesis comparativa y dseológica automática de BiEx
+    if (comp) {
+      const pintarCitaComp = (d) => {
+        const [lib, c, v] = X.R.versos[d], b = libroDe(lib), ruta = "#/" + lib + "/" + c + "/l/" + v;
+        const tx = h("span", { text: "…" });
+        lectura(lib).then((Lc) => { const L = (Lc.caps[c] || []).find((y) => y.v === v); tx.replaceChildren(L ? txtVersoL(L) : ""); }).catch(() => { tx.textContent = ""; });
+        return h("a", { class: "rc-cita", href: ruta, onclick: abrirRes(ruta) },
+          h("b", { text: (b ? nombreLibro(b) : lib) + " " + c + ":" + v }), tx);
+      };
+      const cols = (comp.polos || []).map((p) => h("div", { class: "rc-col" },
+        h("div", { class: "rc-col-cab" }, h("b", { text: p.titulo }), h("small", { text: fmt(p.total) + (p.total === 1 ? " verso" : " versos") })),
+        p.lemas && p.lemas.length ? h("div", { class: "rc-lemas" }, p.lemas.map((l) => h("a", { class: "rc-lema", href: "#/lema/" + l.li, onclick: abrirRes("#/lema/" + l.li) },
+          h("span", { lang: "grc", text: T.L[l.li] }), h("small", { text: (l.glosa ? l.glosa + " · " : "") + fmt(l.n) + "×" })))) : null,
+        p.versos && p.versos.length ? h("div", { class: "rc-citas" }, p.versos.map((v) => pintarCitaComp(v.d))) : null));
+      const estNodes = (comp.estudios || []).map((st) => h("div", { class: "rc-est" },
+        h("div", { class: "rc-est-cab" }, h("b", { text: st.t }), h("a", { class: "btn chico oro", href: st.ruta, onclick: abrirRes(st.ruta) }, svg(ICO.seguir), "Ver estudio")),
+        h("p", { text: st.extracto })));
+      const inter = comp.interseccion && comp.interseccion.length ? h("div", { class: "rc-inter" },
+        h("small", { text: "Versos donde convergen ambos términos (" + fmt(comp.totalInter || comp.interseccion.length) + ")" }),
+        h("div", { class: "rc-citas" }, comp.interseccion.map((v) => pintarCitaComp(v.d)))) : null;
+      grupos.push(grupo("Síntesis dseológica BiEx", h("div", { class: "res-comp" },
+        h("div", { class: "res-comp-cab" }, h("h3", { text: comp.titulo }), h("span", { class: "q-orden-pct", text: comp.etiqueta || "Análisis comparativo" })),
+        comp.resumen ? h("p", { class: "res-comp-res", text: comp.resumen }) : null,
+        ...estNodes,
+        cols.length ? h("div", { class: "rc-cols" }, cols) : null,
+        inter)));
+    }
     // cita
     if (r.cita && r.cita.cap) {
       const { b, cap, v, hasta } = r.cita, ruta = "#/" + b.c + "/" + cap + (v ? "/l/" + v : "");
@@ -5435,10 +5502,11 @@
         contPaso.textContent = (idx + 1) + " / " + nMk;
         fichaOrden.replaceChildren(
           h("div", { class: "q-orden-ficha-tx" },
-            h("b", { text: "Paralelo siguiendo a Μᾶrκος · #" + (idx + 1) }),
+            h("div", { class: "q-orden-ficha-cab" },
+              h("b", { text: "Paralelo siguiendo a Μᾶrκος · #" + (idx + 1) }),
+              h("span", { class: "q-orden-pct mk", text: "Sigue a Μᾶrκος" })),
             h("small", { text: "Mattáy cap. " + cMat + " · Lουκᾶς cap. " + cLuk + (dif < 0.08 ? " · mismo orden relativo" : " · ligero desplazamiento narrativo") })),
-          h("div", { class: "q-orden-ficha-acc" },
-            h("span", { class: "q-orden-pct mk", text: "Sigue a Μᾶrκος" }),
+          h("div", { class: "q-orden-ficha-acc par" },
             h("a", { class: "btn chico", href: "#/MAT/" + cMat }, svg(ICO.libro), h("span", { text: "Mattáy " + cMat })),
             h("a", { class: "btn chico", href: "#/LUK/" + cLuk }, svg(ICO.libro), h("span", { text: "Lουκᾶς " + cLuk }))));
         return;
@@ -5452,10 +5520,11 @@
       if (!p) return pintarFichaOrden(null);
       fichaOrden.replaceChildren(
         h("div", { class: "q-orden-ficha-tx" },
-          h("b", { text: p.t }),
+          h("div", { class: "q-orden-ficha-cab" },
+            h("b", { text: p.t }),
+            h("span", { class: "q-orden-pct", text: p.lit + " % literal" })),
           h("small", { text: "Mattáy " + p.mt.replace(/^MAT /, "") + " · Lουκᾶς " + p.lu.replace(/^LUK /, "") })),
         h("div", { class: "q-orden-ficha-acc" },
-          h("span", { class: "q-orden-pct", text: p.lit + " % literal" }),
           h("button", { type: "button", class: "btn chico oro", onclick: () => mostrarPer(p.id, true) }, svg(ICO.sinopsis), h("span", { text: "Ver en columnas" }))));
     };
     const pasoOrden = (dir) => {
@@ -6451,9 +6520,22 @@
     // (el mismo verso activo del brillo luminoso de Escudriña), sin interferir jamás con la selección de texto nativa.
     const leyendoCap = () => !!(esc.libro && esc.cap && esc.modo !== "a" && esc.versos && esc.versos.length);
     const mkPan = h("div", { class: "sr-mk-pan", hidden: true, role: "dialog", "aria-label": "Marcar verso" });
-    let mkV = 1, mkManual = false;
+    // Argon (23-nov-2026): evitar que tocar un botón dentro de mkPan desenfoque mkBtn y dispare focusout -> replaceChildren
+    // a mitad del toque (lo que obligaba a tocar dos veces).
+    mkPan.addEventListener("pointerdown", (e) => { if (e.target.closest && e.target.closest("button")) e.preventDefault(); });
+    let mkV = 1, mkManual = false, mkVPintado = 0, mkColPintado = null, ultToqueMk = 0, ptMk = null;
+    const accionarMkBtn = (e) => {
+      const ahora = performance.now();
+      if (ahora - ultToqueMk < 420) return;
+      ultToqueMk = ahora;
+      if (e) e.stopPropagation();
+      alternarMk();
+      mostrar();
+    };
     const mkBtn = h("button", { type: "button", class: "sr-btn sr-mk", hidden: true, "aria-label": "Marcar el verso actual", title: "Marcar verso", "aria-expanded": "false", "aria-haspopup": "dialog",
-      onclick: (e) => { e.stopPropagation(); alternarMk(); mostrar(); } }, svg(ICO.marcador));
+      onpointerdown: (e) => { if (e.button && e.button !== 0) return; ptMk = { x: e.clientX, y: e.clientY }; },
+      onpointerup: (e) => { if (!ptMk) return; const dx = Math.abs(e.clientX - ptMk.x), dy = Math.abs(e.clientY - ptMk.y); ptMk = null; if (dx < 14 && dy < 14) { e.preventDefault(); accionarMkBtn(e); } },
+      onclick: (e) => accionarMkBtn(e) }, svg(ICO.marcador));
     function actualizarBtnMk() {
       const enCap = leyendoCap();
       mkBtn.hidden = !enCap;
@@ -6465,10 +6547,10 @@
       const ref = b ? (b.t || b.n) + " " + esc.cap + ":" + v : esc.cap + ":" + v;
       mkBtn.title = "Marcar " + ref;
       mkBtn.setAttribute("aria-label", "Marcar " + ref);
-      const m = MK.get(esc.libro, esc.cap, v) || {};
-      mkBtn.classList.toggle("on", !!m.col);
-      if (m.col) mkBtn.style.setProperty("--mkc", "var(--mk-" + m.col + ")"); else mkBtn.style.removeProperty("--mkc");
-      if (!mkPan.hidden && !mkManual) pintarMkPan();
+      const m = MK.get(esc.libro, esc.cap, v) || {}, colAct = m.col || null;
+      mkBtn.classList.toggle("on", !!colAct);
+      if (colAct) mkBtn.style.setProperty("--mkc", "var(--mk-" + colAct + ")"); else mkBtn.style.removeProperty("--mkc");
+      if (!mkPan.hidden && !mkManual && (v !== mkVPintado || colAct !== mkColPintado)) pintarMkPan();
     }
     syncMkRapido = actualizarBtnMk;
     document.addEventListener("biex:verso-activo", (ev) => {
@@ -6489,6 +6571,8 @@
       let idx = vs.findIndex((x) => x.v === mkV);
       if (idx < 0) { idx = 0; mkV = vs[0].v; }
       const x = vs[idx], m = MK.get(b.c, esc.cap, x.v) || {};
+      mkVPintado = x.v;
+      mkColPintado = m.col || null;
       const sub = h("small", { class: m.col ? "mk-" + m.col : "", text: m.col ? MK.nombre(m.col) : "Sin marca" });
       const irPaso = (nuevoV) => {
         mkManual = true; mkV = nuevoV; marcarVerso(mkV);
@@ -6532,7 +6616,7 @@
     }
     function alternarMk(abrir) {
       const ab = abrir != null ? abrir : mkPan.hidden;
-      if (!ab || !leyendoCap()) { mkManual = false; mkPan.hidden = true; mkBtn.setAttribute("aria-expanded", "false"); return; }
+      if (!ab || !leyendoCap()) { mkManual = false; mkVPintado = 0; mkColPintado = null; mkPan.hidden = true; mkBtn.setAttribute("aria-expanded", "false"); return; }
       alternarSecs(false);
       mkManual = false;
       mkV = versoIluminado();
@@ -6588,8 +6672,14 @@
       // AL5: un toque en el pie (créditos, autoría) aparta al instante los saltos rápidos para leer lo que tapaban
       if (caja.classList.contains("vis") && !caja.contains(e.target) && e.target.closest && e.target.closest(".pie")) { clearTimeout(reloj); caja.classList.remove("vis"); alternarSecs(false); alternarMk(false); }
     }, true);
-    caja.addEventListener("mouseleave", mostrar);
-    caja.addEventListener("focusout", mostrar);
+    const alSalirCaja = (e) => {
+      if (e && e.relatedTarget && caja.contains(e.relatedTarget)) return;
+      if (!caja.classList.contains("vis") || !mkPan.hidden) return;
+      clearTimeout(reloj);
+      reloj = setTimeout(ocultarQuieto, !secLista.hidden ? 6000 : caja.classList.contains("en-fin") ? 1200 : 2600);
+    };
+    caja.addEventListener("mouseleave", alSalirCaja);
+    caja.addEventListener("focusout", alSalirCaja);
   })();
 
   // ------------------------------------------------------------------ copiar con la autoría
@@ -7360,16 +7450,14 @@
     const ponerFechaAct = (ms) => { if (act && ms) act.textContent = " · Actualizado el " + new Date(ms).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }) + "."; };
     const ponerFechaJer = () => {
       if (!jer) return;
-      try {
-        const txt = new Intl.DateTimeFormat("es", { timeZone: "Asia/Jerusalem", day: "numeric", month: "long", year: "numeric" }).format(new Date());
-        jer.textContent = "Hoy en Yᵉrūshāláyim [Jerusalén]: " + txt + " " + ERA_D;
-      } catch (e) { /* sin zona horaria */ }
+      const txt = fechaHoraJerusalen();
+      if (txt) jer.textContent = "Yᵉrūshāláyim [Jerusalén]: " + txt;
     };
     let msAct = Math.max(Date.parse(D.generado) || 0, Date.parse(FECHA_ACT) || 0);
     ponerFechaAct(msAct);
     ponerFechaJer();
     document.addEventListener("visibilitychange", () => { if (!document.hidden) ponerFechaJer(); });
-    setInterval(ponerFechaJer, 15 * 60e3);
+    setInterval(ponerFechaJer, 60e3);
     cargar("datos/archivos.json").then((ar) => { const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0; if (f > msAct) { msAct = f; ponerFechaAct(msAct); } }).catch(() => {});
     botonAdelante();
     window.addEventListener("hashchange", () => {

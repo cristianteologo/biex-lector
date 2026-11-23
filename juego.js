@@ -538,34 +538,42 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .co-res{margin:0;display:grid;gap:2px}
 .co-res b{font-size:1.6rem;font-family:var(--f-display,inherit);letter-spacing:.02em;color:#ffd77a}
 .co-res small{font-size:.8rem;color:var(--tinta-2)}
-/* Tablero horológico interactivo «Tu avance» (Neon, 23-nov-2026) */
+/* Tablero horológico interactivo «Tu avance» (Argon, 23-nov-2026: cabecera simétrica en 2 celdas para eliminar vacío a la izquierda) */
 .av-z{display:grid;gap:12px;margin-top:12px}
-.jg-av-cab{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 14px;padding:12px 14px;border-radius:16px;
+.jg-av-cab{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px;padding:12px 14px;border-radius:16px;
   border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));
   background:radial-gradient(120% 110% at 0% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 90%,transparent),color-mix(in srgb,var(--hoja) 94%,transparent));
   box-shadow:inset 0 1px 0 rgba(255,248,224,.14)}
-.jg-av-izq{display:grid;justify-items:start;gap:2px;min-width:0;text-align:left}
-.av-tit{margin:0;font:600 .66rem/1.15 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro-vivo)}
-.av-tot{font:600 clamp(1.7rem,5.2vw,2.25rem)/1.02 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums;text-align:left;justify-self:start;text-shadow:0 0 18px color-mix(in srgb,var(--oro) 28%,transparent)}
-.jg-av-izq small{font:400 .72rem/1.25 var(--f-ui);color:var(--tenue)}
-.jg-av-der{display:grid;justify-items:end;gap:5px}
+.jg-av-izq{display:grid;align-content:space-between;justify-items:start;gap:4px;min-width:0;text-align:left;padding-right:10px;border-right:1px solid color-mix(in srgb,var(--oro) 18%,var(--linea-2))}
+.av-tit{margin:0;font:600 .64rem/1.18 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:var(--oro-vivo)}
+.av-tot{font:600 clamp(1.55rem,4.8vw,2.15rem)/1.04 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums;text-align:left;justify-self:start;text-shadow:0 0 18px color-mix(in srgb,var(--oro) 28%,transparent)}
+.jg-av-izq small{font:400 .72rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-av-der{display:grid;align-content:space-between;justify-items:end;text-align:right;gap:5px;min-width:0}
 .av-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font:600 .66rem/1.1 var(--f-ui);letter-spacing:.04em;color:var(--tinta-2);border:1px solid color-mix(in srgb,var(--oro) 28%,var(--linea-2));background:color-mix(in srgb,var(--oro) 8%,transparent)}
 .av-badge.sube{color:#b7f5ca;border-color:rgba(130,225,165,.48);background:rgba(70,175,112,.16)}
 .av-badge.pico{color:#fff0bc;border-color:rgba(245,198,78,.58);background:rgba(232,184,72,.18)}
-.av-foco-v{font:500 .76rem/1.15 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.av-foco-v{font:600 .8rem/1.2 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.av-meta-r{font:400 .68rem/1.25 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .lk-z{display:flex;align-items:center;gap:16px;margin:4px 0 12px}.lk-med{flex:none;width:104px;height:104px}.lk-med b{font-size:2.3rem}
 .lk-tx{min-width:0}.lk-t{margin:0 0 4px;font:500 1rem/1.4 var(--f-ui);color:var(--tinta)}.lk-h small{font-size:.68rem}
-@media (max-width:420px){.lk-z{flex-direction:column;text-align:center}.jg-av-der{justify-items:start}}
+@media (max-width:420px){.lk-z{flex-direction:column;text-align:center}}
+@media (max-width:350px){.jg-av-cab{grid-template-columns:1fr}.jg-av-izq{padding-right:0;padding-bottom:8px;border-right:0;border-bottom:1px solid color-mix(in srgb,var(--oro) 18%,var(--linea-2))}.jg-av-der{justify-items:start;text-align:left}}
 .lk-libs{margin-top:10px}
-.lk-lib-l{list-style:none;margin:0;padding:8px 10px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr));gap:7px}
-.lk-lib-a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;align-items:baseline;padding:8px 10px;border-radius:11px;text-decoration:none;color:var(--tinta);border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 72%,transparent);transition:border-color .18s}
+.lk-libs summary small{padding:3px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo)!important;font:600 .7rem/1.1 var(--f-ui)!important;font-variant-numeric:tabular-nums}
+.lk-libs-nota{margin:0 10px 4px!important;padding:9px 12px;border-radius:10px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 60%,transparent);text-align:center;text-wrap:balance}
+.lk-lib-l{list-style:none;margin:0;padding:8px 10px 10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lk-lib-l>li:last-child:nth-child(odd){grid-column:1/-1}
+@media (min-width:640px){.lk-lib-l{grid-template-columns:repeat(3,minmax(0,1fr))}.lk-lib-l>li:last-child:nth-child(odd){grid-column:auto}}
+@media (max-width:340px){.lk-lib-l{grid-template-columns:1fr}}
+.lk-lib-a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;align-items:baseline;padding:9px 11px;border-radius:12px;text-decoration:none;color:var(--tinta);border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 76%,transparent);transition:border-color .18s}
 .lk-lib-a:hover,.lk-lib-a:focus-visible{border-color:var(--oro)}
 .lk-lib-l li.hecho .lk-lib-a{border-color:color-mix(in srgb,var(--oro) 55%,transparent);background:color-mix(in srgb,var(--oro) 11%,transparent)}
-.lk-lib-n{font:500 .78rem/1.2 var(--f-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lk-lib-p{font:600 .74rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.lk-lib-n{font:600 .78rem/1.22 var(--f-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-lib-p{font:600 .74rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums;text-align:right}
 .lk-lib-bar{grid-column:1/-1;height:4px;border-radius:999px;background:color-mix(in srgb,var(--oro) 12%,transparent);overflow:hidden}
 .lk-lib-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo))}
-.lk-lib-c{grid-column:1/-1;font:400 .64rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
+.lk-lib-c{font:400 .65rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-lib-ir{font:600 .64rem/1.2 var(--f-ui);color:var(--oro);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .av-cif{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .av-cif li{display:grid;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 8%,transparent),transparent);text-align:center;transition:border-color .2s,box-shadow .2s}
 .av-cif.lk-h li{justify-items:center;gap:3px;padding:10px 4px}
@@ -576,15 +584,15 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .av-cif small{font:500 .64rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .av-sube{font:600 .64rem/1 var(--f-ui);color:#9fe0b4}
 .av-antes{font-size:.6rem;color:var(--tenue)}
-.av-graf{position:relative;padding:18px 8px 8px 32px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
-.av-rej{position:absolute;left:8px;right:8px;top:18px;bottom:38px;pointer-events:none}
-.av-ln{position:absolute;left:24px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
-.av-ln em{position:absolute;right:calc(100% + 6px);top:-6px;font:500 .56rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
+.av-graf{position:relative;padding:18px 10px 8px 26px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
+.av-rej{position:absolute;left:6px;right:8px;top:18px;bottom:38px;pointer-events:none}
+.av-ln{position:absolute;left:20px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
+.av-ln em{position:absolute;right:calc(100% + 5px);top:-6px;font:500 .56rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
 .av-ln-max{top:0}.av-ln-mid{top:50%}
 .av-ln-med{border-top:1px dashed color-mix(in srgb,var(--oro-vivo) 44%,transparent)}
 .av-bar{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:6px;height:146px;padding:0 2px}
 .av-bar.denso{gap:3px}
-.av-col{all:unset;box-sizing:border-box;flex:1;min-width:0;max-width:46px;display:grid;grid-template-rows:1fr 24px;gap:6px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.av-col{all:unset;box-sizing:border-box;flex:1;min-width:0;max-width:52px;display:grid;grid-template-rows:1fr 24px;gap:6px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .av-col:focus-visible .av-pozo{outline:2px solid var(--oro-vivo);outline-offset:1px}
 .av-pozo{position:relative;display:block;overflow:hidden;border-radius:8px 8px 3px 3px;background:color-mix(in srgb,var(--oro) 8%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 10%,transparent)}
 .av-pozo i{position:absolute;left:0;right:0;bottom:0;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#fff3c8,#e8b94d 42%,#8a5a0c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);animation:av-sube .78s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 38ms) both}
@@ -602,18 +610,27 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 :root[data-theme=light] .av-badge.pico{color:#78500b;border-color:rgba(138,106,43,.45);background:rgba(176,134,50,.15)}
 :root[data-theme=light] .av-sube{color:#156936}
 :root[data-theme=light] .av-col.ya .av-et-a{color:#a8203c}
-.lk-proy{margin:12px 0 4px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--oro) 11%,transparent),transparent 65%),color-mix(in srgb,var(--hoja-2) 78%,transparent);display:grid;gap:7px}
+.lk-proy{margin:12px 0 4px;padding:13px 15px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--oro) 13%,transparent),transparent 65%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 86%,transparent),color-mix(in srgb,var(--hoja) 92%,transparent));box-shadow:inset 0 1px 0 rgba(255,248,224,.12);display:grid;gap:10px}
 .lk-proy-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .lk-proy-tit{font:600 .66rem/1.15 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:var(--oro-vivo)}
-.lk-proy-corte{font:500 .64rem/1 var(--f-ui);color:var(--tenue);padding:3px 8px;border-radius:999px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 80%,transparent);font-variant-numeric:tabular-nums}
-.lk-proy-val{display:flex;align-items:baseline;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
-.lk-proy-val b{font:600 clamp(1.18rem,3.6vw,1.45rem)/1.12 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
-.lk-proy-val span{font:500 .76rem/1.3 var(--f-ui);color:var(--oro-vivo)}
-.lk-proy-det{margin:0;font:400 .76rem/1.48 var(--f-ui);color:var(--tinta-2)}
-.lk-proy-imp{margin:0;font:500 .74rem/1.45 var(--f-ui);color:color-mix(in srgb,var(--oro-vivo) 82%,var(--tinta))}
-.jg-hoy-jer{margin:6px 0 0;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--oro) 14%,var(--linea-2));font:500 .72rem/1.35 var(--f-ui);color:color-mix(in srgb,var(--oro) 78%,var(--tenue))}
+.lk-proy-corte{font:500 .64rem/1 var(--f-ui);color:var(--tenue);padding:4px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 24%,var(--linea-2));background:color-mix(in srgb,var(--hoja) 84%,transparent);font-variant-numeric:tabular-nums}
+.lk-proy-hero{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--oro) 26%,var(--linea-2));background:linear-gradient(110deg,color-mix(in srgb,var(--oro) 12%,transparent),color-mix(in srgb,var(--hoja) 65%,transparent))}
+.lk-proy-hero-izq{display:grid;gap:2px}
+.lk-proy-hero-izq small{font:500 .64rem/1.15 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
+.lk-proy-hero-izq b{font:600 clamp(1.24rem,3.8vw,1.52rem)/1.1 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
+.lk-proy-meta{display:inline-flex;align-items:center;padding:5px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 14%,transparent);font:600 .74rem/1.2 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.lk-proy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:440px){.lk-proy-grid{grid-template-columns:1fr}}
+.lk-proy-cel{display:grid;gap:3px;align-content:start;padding:9px 11px;border-radius:11px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 72%,transparent)}
+.lk-proy-cel small{font:600 .62rem/1.15 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
+.lk-proy-cel b{font:600 .88rem/1.25 var(--f-ui);color:var(--tinta);font-variant-numeric:tabular-nums}
+.lk-proy-cel span{font:400 .72rem/1.3 var(--f-ui);color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.lk-proy-cel.imp{border-color:color-mix(in srgb,var(--oro) 32%,var(--linea-2));background:color-mix(in srgb,var(--oro) 7%,var(--hoja))}
+.lk-proy-cel.imp b{color:var(--oro-vivo)}
+.lk-proy-pie{margin:0;font:400 .72rem/1.4 var(--f-ui);color:var(--tenue);text-align:center}
+.jg-hoy-jer{margin:6px 0 0;padding-top:7px;border-top:1px solid var(--linea-2);font:400 .72rem/1.35 var(--f-ui);color:var(--tenue)}
 @media (max-width:480px){.av-bar.denso .av-et-l{display:none}.av-bar.denso .av-et-c{display:inline}}
-@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 8px 26px}.av-ln{left:20px}.av-bar.denso{gap:2px}.av-et-a{font-size:.5rem}.av-et-b{font-size:.55rem}}
+@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 8px 22px}.av-ln{left:16px}.av-bar.denso{gap:2px}.av-et-a{font-size:.5rem}.av-et-b{font-size:.55rem}}
 @media (prefers-reduced-motion:reduce){.av-pozo i{animation:none}}
 html[data-mov="no"] .av-pozo i{animation:none}
 .fr-c{display:grid;gap:14px;justify-items:center}
@@ -1683,12 +1700,12 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 .jg-med.sube .hito{animation:jg-med-hito 4.2s cubic-bezier(.2,.8,.2,1) both}
 @keyframes jg-med-hito{0%{opacity:0;transform:translate3d(-12px,-50%,0) scale(.9)}10%{opacity:1;transform:translate3d(0,-50%,0) scale(1)}86%{opacity:1;transform:translate3d(0,-50%,0)}100%{opacity:0;transform:translate3d(6px,-50%,0)}}
 .jg-med:active{transform:scale(.94)}
-.jg-bonos{position:absolute;left:calc(100% + 5px);bottom:3px;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:4px;pointer-events:none}
-.jg-bono{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;font:600 10.5px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.02em!important;white-space:nowrap;color:var(--m1);background:linear-gradient(180deg,color-mix(in srgb,var(--m2) 34%,#0b0906),color-mix(in srgb,var(--m3) 40%,#070504));border:1px solid color-mix(in srgb,var(--m2) 55%,transparent);box-shadow:0 4px 10px -6px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
+.jg-bonos{position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);display:flex;flex-direction:column-reverse;align-items:center;gap:3px;pointer-events:none;transition:opacity .2s}
+.jg-bono{display:inline-flex;align-items:center;justify-content:center;height:18px;padding:0 7px;border-radius:999px;font:600 10px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.02em!important;white-space:nowrap;color:var(--m1);background:linear-gradient(180deg,color-mix(in srgb,var(--m2) 34%,#0b0906),color-mix(in srgb,var(--m3) 40%,#070504));border:1px solid color-mix(in srgb,var(--m2) 55%,transparent);box-shadow:0 4px 10px -6px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
 .jg-bono.b-dob{color:#fff3c4;border-color:rgba(245,198,78,.75);box-shadow:0 0 10px -2px rgba(245,198,78,.55),inset 0 1px 0 rgba(255,255,255,.18)}
 .jg-bono.b-imp{color:#ffe1b0;border-color:rgba(255,170,80,.7)}
 .jg-bono.b-sala{color:#d6f5e2;border-color:rgba(110,205,150,.7)}
-.jg-med.sube .jg-bonos{opacity:0}
+.jg-med.sube .jg-bonos,.jg-med.pulso .jg-bonos{opacity:0}
 .jg-emb{position:relative}
 .jg-lapiz{position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,var(--oro-vivo),var(--oro));color:var(--sobre-oro,#16120b);box-shadow:0 0 0 2px var(--hoja),0 4px 10px -4px rgba(0,0,0,.8);pointer-events:none}
 .jg-lapiz svg{width:13px;height:13px}
@@ -1699,7 +1716,8 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 @media (prefers-reduced-motion:reduce){.jg-med .barrido,.jg-med.sube .rayos,.jg-med.pulso{animation:none}.jg-med .arco{transition:none}}
 html[data-mov="no"] .jg-med .barrido,html[data-mov="no"] .jg-med.sube .rayos,html[data-mov="no"] .jg-med.pulso{animation:none}
 html.con-modal .jg-med{opacity:0;pointer-events:none}
-html.jg-con-med .adelante{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+html.jg-con-med .adelante{bottom:calc(122px + env(safe-area-inset-bottom,0px))}
+html.jg-con-med.jg-con-lb .adelante{bottom:calc(134px + env(safe-area-inset-bottom,0px))}
 .jg-rota{display:inline-block}
 @media print{.jg-med{display:none}}
 @media (prefers-reduced-motion:reduce){.jg-med.pulso::after,.jg-med.pulso i,.jg-med.sube{animation:none!important}}
@@ -1785,7 +1803,7 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
 @media (min-width:900px){.ap-vitrina{grid-template-columns:repeat(2,minmax(0,1fr))}.ap-uso{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}.ap-raro{font:400 .68rem/1.3 var(--f-ui);color:var(--tenue);text-align:center}
 @media (prefers-reduced-motion:reduce){.ap-vitrina li .ap-mu::after{animation:none;opacity:0}}
 html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
-.jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;gap:.42rem;min-height:1.62rem;padding:.2rem .82rem .2rem .22rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+.jg-lb,.jg-lbp{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px));z-index:63;transform:translate3d(-50%,0,0);display:inline-flex;align-items:center;justify-content:center;gap:.42rem;min-height:1.62rem;padding:.22rem .62rem .22rem .34rem;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent;
   font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
   box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,224,140,.6),0 12px 28px -10px rgba(0,0,0,.78),0 0 0 1px rgba(0,0,0,.22);
@@ -1794,7 +1812,7 @@ html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
 .jg-lb.fuera,.jg-lbp.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
 .jg-lb:active,.jg-lbp:active{transform:translate3d(-50%,0,0) scale(.96)}
 /* X16: la perícopa entera, encima del botón del verso (vista continua) */
-.jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .74rem .18rem .2rem;color:var(--tinta)}
+.jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .56rem .18rem .3rem;color:var(--tinta)}
 .jg-lbp .jg-lb-i{width:1rem;height:1rem}
 /* X15: «Leído» al pie del verso (vista por versos), sobre el borde de la fila: no mueve el texto */
 /* (15-nov-2026, fluidez) el pie vive en la capa de la hoja y se coloca con una transformación: nunca cambia la fila mientras se lee */
@@ -2488,6 +2506,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     actualizarYo(r.yo); repintar();
   }
   function fechaJerusalen() {
+    if (A.fechaHoraJerusalen) return A.fechaHoraJerusalen();
     try { return new Intl.DateTimeFormat("es", { timeZone: "Asia/Jerusalem", day: "numeric", month: "long", year: "numeric" }).format(new Date()) + " d.H.D."; }
     catch (e) { return ""; }
   }
@@ -2500,7 +2519,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       y.pers > 0 ? h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Perseverancia: ", h("b", { text: plural(y.pers, "día", "días") }), " · tu mejor marca: " + plural(y.persMejor, "día", "días") +
         " · descansos guardados: " + y.desc + " de 3. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).")
         : h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Tu perseverancia empieza con el primer verso de hoy." + (y.persMejor ? " Tu mejor marca: " + plural(y.persMejor, "día", "días") + "." : "") + " Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas)."),
-      fJer ? h("p", { class: "jg-hoy-jer", text: "Hoy en Yᵉrūshāláyim [Jerusalén]: " + fJer }) : null);
+      fJer ? h("p", { class: "jg-hoy-jer", text: "Yᵉrūshāláyim [Jerusalén] · " + fJer }) : null);
   }
   // Lectura por confirmar (BiEx, 10-nov-2026): reparto 60/40, lista desplegable de los versos y fórmula de corrección
   function tarjetaPorConfirmar(y, enHoy) {
@@ -2630,7 +2649,16 @@ html[data-mov="no"] .ap-savia{display:none!important}
       return "Estás a solo " + fmt(a.dif) + " de experiencia (unos " + plural(vEst, "verso", "versos") + ") de superar a " + (a.a || "quien te antecede") + (a.pos ? " por el puesto " + fmt(a.pos) : "") + (a.amb ? " en " + a.amb : "") + ".";
     },
     interaccion: (a) => {
-      const INT = { desafio: "te lanzó un reto amistoso de lectura", animo: "te envió ánimo para cuidar tu perseverancia", relevo: "te pasó el relevo de lectura de hoy", revancha: "te pidió revancha tras perder su puesto contigo", mision: "te invitó a completar las misiones de hoy", saludo: "te saludó desde la lectura" };
+      const nMis = (a.misiones >= 2 && a.misiones <= 5) ? a.misiones : (S.yo && Array.isArray(S.yo.misiones) && S.yo.misiones.length >= 2 ? S.yo.misiones.length : 0);
+      const txtMis = nMis ? "tus " + nMis + " misiones de hoy" : "todas tus misiones de hoy";
+      const INT = {
+        desafio: "te lanzó un desafío amistoso: completar " + txtMis,
+        animo: "te envió ánimo para cuidar tu perseverancia",
+        relevo: "te pasó el relevo de lectura de hoy",
+        revancha: "te pidió revancha tras perder su puesto contigo",
+        mision: "te invitó a completar " + txtMis,
+        saludo: "te saludó desde la lectura"
+      };
       const quien = (a.a || "Un lector") + (a.nv ? " (nivel " + a.nv + ")" : "");
       return quien + " " + (INT[a.tipo] || a.txt || "te envió una señal de ánimo") + (a.det ? ": " + a.det : "") + ".";
     } };
@@ -3665,9 +3693,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // nueve cámaras de arilos; cada cámara se llena de luz rubí con el nivel de su aspecto. Vectorial y quieta (se pinta una
   // sola vez a la densidad real); la luz que respira va aparte, por el compositor. En el corte no se ve la corona del fruto.
   const FR_ORDEN = ["be", "go", "pl", "lo", "bn", "bo", "cf", "ma", "te"];
-  let GR_N = 0;
+  const CACHE_GRANADA = new Map();
   function granadaSVG(fr, R, sel) {
-    const id = "gr" + (++GR_N), f = (v) => v.toFixed(1), niv = (k) => (fr && fr[k] ? fr[k].n | 0 : 0);
+    const f = (v) => v.toFixed(1), niv = (k) => (fr && fr[k] ? fr[k].n | 0 : 0);
+    const sigG = R + ":" + (sel || "") + ":" + FR_ORDEN.map(niv).join(",");
+    if (CACHE_GRANADA.has(sigG)) return CACHE_GRANADA.get(sigG);
+    const id = "gr" + R + "_";
     const clase = (n) => (n <= 0 ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4);
     const ARIL = [["#5c1422", "#2a050c", 0.2], ["#a51d33", "#4d0814", 0.45], ["#cf2640", "#6a0b1c", 0.58], ["#f03c58", "#8c1024", 0.7], ["#ff7d93", "#b3132e", 0.82]];
     let defs = "";
@@ -3699,7 +3730,10 @@ html[data-mov="no"] .ap-savia{display:none!important}
     });
     out += '<circle r="' + f(R * 0.11) + '" fill="url(#' + id + 'p)" stroke="#cfa77a" stroke-width="' + f(R * 0.012) + '"/>' +
       '<ellipse cx="' + f(-R * 0.3) + '" cy="' + f(-R * 0.36) + '" rx="' + f(R * 0.5) + '" ry="' + f(R * 0.28) + '" transform="rotate(-28 ' + f(-R * 0.3) + " " + f(-R * 0.36) + ')" fill="#fff" opacity=".06"/>';
-    return { defs, cuerpo: out, tot: FR_ORDEN.reduce((t, k) => t + niv(k), 0) };
+    const res = { defs, cuerpo: out, tot: FR_ORDEN.reduce((t, k) => t + niv(k), 0) };
+    if (CACHE_GRANADA.size >= 24) CACHE_GRANADA.delete(CACHE_GRANADA.keys().next().value);
+    CACHE_GRANADA.set(sigG, res);
+    return res;
   }
   // La tarjeta del fruto: la granada grande y los nueve aspectos en rejilla de 3 × 3; al tocar uno, su cámara se ilumina y
   // abajo se lee qué lo hace crecer, qué da y su cita (con su lumbrerita, abre los versos en BiEx)
@@ -3737,14 +3771,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Cosecha del Árbol (BiEx, 14-nov-2026; YÔḥānā́n 4:36-38: uno siembra y otro siega). La cesta se llena con el tiempo hasta
   // 18 h y su medida crece con lo que siembran todos; se recoge cuando se quiera. Al recogerla, una aguja recorre de 0,20 % a
   // 0,50 % y se detiene en la parte que tocó (el fruto del espíritu sube la probabilidad de lo alto).
-  let CO_N = 0;
+  const CACHE_CESTA = new Map();
   function cestaSVG(f) {
     // (BiEx, 14-nov-2026: «más fotorrealismo, que no parezca de dibujo animado») cesta de mimbre vista desde arriba en
     // perspectiva: cada hebra del tejido con su volumen (pasa sobre y bajo las varas) y su tono propio, fibras con textura,
     // borde enrollado con sus ataduras, sombra de contacto y luz desde lo alto a la izquierda. Dentro, el grano (trigo con su
     // surco y algunos arilos de granada) sube con lo sembrado y, llena, asoma en montón sobre el borde. Todo vectorial.
-    f = Math.max(0, Math.min(1, f));
-    const id = "co" + (++CO_N), r = azar(77), f1 = (v) => v.toFixed(1), PI = Math.PI;
+    f = Math.round(Math.max(0, Math.min(1, f)) * 200) / 200;
+    if (CACHE_CESTA.has(f)) return CACHE_CESTA.get(f);
+    const id = "co_", r = azar(77), f1 = (v) => v.toFixed(1), PI = Math.PI;
     const CX = 100, CY = 54, RX = 78, RY = 27, BY = 142, BRX = 56, BRY = 15;
     const el = (t) => ({ y: CY + (BY - CY) * t, rx: RX + (BRX - RX) * t, ry: RY + (BRY - RY) * t });
     const pt = (t, a) => { const e = el(t); return [CX + e.rx * Math.cos(a), e.y + e.ry * Math.sin(a)]; };
@@ -3790,7 +3825,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<g filter="url(#' + id + 't)" opacity=".86">' + torsion(PI - 0.05, 2 * PI + 0.05, 0.11, -1) + "</g>";
     const hebra = (k, c0, c1, c2) => '<radialGradient id="' + id + "h" + k + '" cx=".5" cy=".36" r=".62"><stop offset="0" stop-color="' + c0 + '"/><stop offset=".58" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></radialGradient>';
     const trigo = (k, c0, c1, c2) => '<radialGradient id="' + id + "g" + k + '" cx=".36" cy=".3" r=".78"><stop offset="0" stop-color="' + c0 + '"/><stop offset=".55" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></radialGradient>';
-    return '<defs>' + hebra(0, "#f2d29a", "#d2a462", "#7a4c1c") + hebra(1, "#e8c486", "#c7975a", "#704419") + hebra(2, "#ddb878", "#bb8b4e", "#653d15") + hebra(3, "#f6dcaa", "#d9ad6c", "#82531f") +
+    const out = '<defs>' + hebra(0, "#f2d29a", "#d2a462", "#7a4c1c") + hebra(1, "#e8c486", "#c7975a", "#704419") + hebra(2, "#ddb878", "#bb8b4e", "#653d15") + hebra(3, "#f6dcaa", "#d9ad6c", "#82531f") +
       trigo(0, "#fff1c4", "#e7b85c", "#93601c") + trigo(1, "#fbe6b0", "#dcaa50", "#865616") + trigo(2, "#fff6d6", "#efc56d", "#a06a22") +
       '<radialGradient id="' + id + 'r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb3c0"/><stop offset=".45" stop-color="#d42a48"/><stop offset="1" stop-color="#6e0a1c"/></radialGradient>' +
       '<linearGradient id="' + id + 'b" gradientUnits="userSpaceOnUse" x1="20" x2="180"><stop offset="0" stop-color="#4a2e0e"/><stop offset=".3" stop-color="#c8954a"/><stop offset=".42" stop-color="#f0cf8e"/><stop offset=".7" stop-color="#b07c38"/><stop offset="1" stop-color="#3e270c"/></linearGradient>' +
@@ -3818,6 +3853,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<g filter="url(#' + id + 't)">' + at + "</g>" +
       '<path d="M' + P(pt(0, PI)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0)) + '" fill="none" stroke="url(#' + id + 'o)" stroke-width="10" stroke-linecap="round" opacity=".55"/>' +
       '<path d="M' + P(pt(0, PI - 0.06)) + "A" + RX + " " + RY + " 0 0 0 " + P(pt(0, 0.9)) + '" fill="none" stroke="#fff1cc" stroke-opacity=".38" stroke-width="1.3" transform="translate(-1 -2.6)"/>';
+    if (CACHE_CESTA.size >= 12) CACHE_CESTA.delete(CACHE_CESTA.keys().next().value);
+    CACHE_CESTA.set(f, out);
+    return out;
   }
   // AC5 (BiEx, 15-nov-2026: «híper realista y épico»): instrumento de joyería en vector (nítido a cualquier densidad): bisel de
   // oro cepillado con su brillo, esfera honda de esmalte negro con grabado de rayas, escala mayor y menor grabadas, arco de
@@ -4354,15 +4392,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
       document.removeEventListener("visibilitychange", onVis);
     });
   }
-  // V21 + Neon (23-nov-2026): estadísticas del día, la semana y el mes con tablero horológico interactivo. Al tocar cualquiera
-  // de las cinco métricas el gráfico cambia al instante a esa magnitud; cada columna se puede inspeccionar y muestra referencia
-  // de media y mejor marca (solo se celebra lo que crece: nunca una flecha de pérdida).
+  // V21 + Neon › Argon (23-nov-2026): estadísticas del día, la semana y el mes con tablero horológico interactivo. Al tocar cualquiera
+  // de las cinco métricas el gráfico cambia al instante a esa magnitud; se recortan los días iniciales en cero para no dejar vacío el
+  // lado izquierdo y la cabecera reparte simétricamente el foco seleccionado a la izquierda y el acumulado/media a la derecha.
   function tarjetaAvance(y, P) {
     const hist = Array.isArray(P.hist) ? P.hist.slice() : []; if (P.hoyR) hist.push(Object.assign({ hoy: 1 }, P.hoyR)); if (hist.length < 1) return null;
     const MET = [["xp", "experiencia", "Experiencia"], ["v", "versos", "Versos marcados"], ["m", "minutos", "Minutos leídos"], ["a", "aciertos", "Aciertos en pruebas"], ["c", "capítulos", "Capítulos completos"]];
     const suma = (l) => l.reduce((o, d) => { for (const [k] of MET) o[k] = (o[k] || 0) + (d[k] | 0); return o; }, {});
     const sem = (f) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d.toISOString().slice(0, 10); }; // la semana empieza el domingo
     const grupos = (clave) => { const m = new Map(); for (const d of hist) { const k = clave(d.f); if (!m.has(k)) m.set(k, []); m.get(k).push(d); } return [...m].map(([k, l]) => Object.assign({ k }, suma(l))); };
+    const recortarCeros = (arr, minCols) => {
+      const iAct = arr.findIndex((d) => MET.some(([k]) => (d[k] | 0) > 0));
+      if (iAct <= 1) return arr;
+      const desde = Math.max(0, Math.min(iAct - 1, arr.length - minCols));
+      return arr.slice(desde);
+    };
     const DIAS_L = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"], DIAS_C = ["D", "L", "M", "X", "J", "V", "S"];
     const F_D = new Intl.DateTimeFormat(LOC_ES, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
     const F_DM = new Intl.DateTimeFormat(LOC_ES, { day: "numeric", month: "short", timeZone: "UTC" });
@@ -4370,15 +4414,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const F_MY = new Intl.DateTimeFormat(LOC_ES, { month: "long", year: "numeric", timeZone: "UTC" });
     const mesC = (dt) => F_M.format(dt).replace(/\.$/, "");
     const VISTAS = {
-      dia: () => ({ l: hist.slice(-14).map((d) => {
+      dia: () => ({ l: recortarCeros(hist.slice(-14), 5).map((d) => {
         const dt = new Date(d.f + "T12:00:00Z"), dow = dt.getUTCDay(), dn = String(dt.getUTCDate());
         return Object.assign({ et: d.hoy ? "Hoy (" + F_DM.format(dt) + ")" : F_D.format(dt), etA: d.hoy ? "Hoy" : DIAS_L[dow], etAC: d.hoy ? "Hoy" : DIAS_C[dow], etB: dn }, d);
       }), ahora: "Hoy", antes: "ayer", serie: "últimos días" }),
-      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => {
+      semana: () => ({ l: recortarCeros(grupos(sem).slice(-8), 4).map((g2, i, a) => {
         const dt = new Date(g2.k + "T12:00:00Z"), ult = i === a.length - 1, top = ult ? "Esta" : String(dt.getUTCDate());
         return Object.assign({ et: ult ? "Esta semana" : "Sem. " + F_DM.format(dt), etA: top, etAC: top, etB: ult ? "sem." : mesC(dt) }, g2);
       }), ahora: "Esta semana", antes: "sem. anterior", serie: "últimas semanas" }),
-      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => {
+      mes: () => ({ l: recortarCeros(grupos((f) => f.slice(0, 7)).slice(-6), 3).map((g2, i, a) => {
         const dt = new Date(g2.k + "-15T12:00:00Z"), ult = i === a.length - 1, top = ult ? "Este" : mesC(dt);
         return Object.assign({ et: ult ? "Este mes" : F_MY.format(dt), etA: top, etAC: top, etB: ult ? "mes" : "'" + String(dt.getUTCFullYear()).slice(-2) }, g2);
       }), ahora: "Este mes", antes: "mes anterior", serie: "últimos meses" }),
@@ -4392,6 +4436,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const metInfo = MET.find((x) => x[0] === met) || MET[0];
       const vals = l.map((d) => d[met] | 0);
       const max = Math.max(1, ...vals), totP = vals.reduce((a, b) => a + b, 0);
+      const activosN = vals.filter((v) => v > 0).length;
       const med = vals.length ? Math.round(totP / vals.length) : 0;
       let iMax = vals.length - 1;
       for (let i = 0; i < vals.length; i++) if (vals[i] >= vals[iMax]) iMax = i;
@@ -4401,10 +4446,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const badge = subeM > 0 ? h("span", { class: "av-badge sube", text: "▲ +" + subeM + " % frente a " + V.antes })
         : esPico ? h("span", { class: "av-badge pico", text: "Mejor marca del período" })
         : h("span", { class: "av-badge", text: "Media: " + fmt(med) + " " + metInfo[1] });
-      const focoTxt = h("span", { class: "av-foco-v", "aria-live": "polite", text: (l[l.length - 1] ? l[l.length - 1].et : V.ahora) + " · " + fmt(curV) + " " + metInfo[1] });
+      const focoTit = h("span", { class: "av-tit", text: (cur.et || V.ahora) + " · " + metInfo[2] });
+      const focoNum = h("b", { class: "av-tot", text: fmt(curV) });
+      const focoSub = h("small", { "aria-live": "polite", text: prev ? V.antes + ": " + fmt(prevV) + " " + metInfo[1] + " · mejor: " + fmt(max) : "Mejor marca: " + fmt(max) + " " + metInfo[1] });
       const cab = h("div", { class: "jg-av-cab" },
-        h("div", { class: "jg-av-izq" }, h("span", { class: "av-tit", text: V.ahora + " · " + metInfo[2] }), h("b", { class: "av-tot", text: fmt(totP) }), h("small", { text: metInfo[1] + " en " + V.serie })),
-        h("div", { class: "jg-av-der" }, badge, focoTxt));
+        h("div", { class: "jg-av-izq" }, focoTit, focoNum, focoSub),
+        h("div", { class: "jg-av-der" },
+          badge,
+          h("span", { class: "av-foco-v", text: "Total (" + V.serie + "): " + fmt(totP) }),
+          h("span", { class: "av-meta-r", text: activosN + " de " + vals.length + (vista === "dia" ? " días activos" : vista === "semana" ? " sem. activas" : " meses activos") + " · media " + fmt(med) })));
       const cifras = h("ul", { class: "av-cif", role: "group", "aria-label": "Elegir magnitud del gráfico" }, MET.map(([k, nom, tit]) => {
         const a = cur[k] | 0, b = prev ? prev[k] | 0 : 0, sube = prev && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
         const num = h("b", { text: soloGraf ? fmt(a) : "0" });
@@ -4419,8 +4469,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const seleccionar = (idx) => {
         selIdx = idx;
         cols.forEach((cEl, j) => cEl.classList.toggle("sel", j === idx));
-        const d = l[idx];
-        if (d) focoTxt.textContent = d.et + " · " + fmt(d[met] | 0) + " " + metInfo[1];
+        const d = l[idx], ant = idx > 0 ? l[idx - 1] : null;
+        if (d) {
+          focoTit.textContent = d.et + " · " + metInfo[2];
+          focoNum.textContent = fmt(d[met] | 0);
+          focoSub.textContent = (ant ? "Anterior: " + fmt(ant[met] | 0) + " · " : "") + "Mejor: " + fmt(max) + " " + metInfo[1];
+        }
       };
       const pctMed = Math.max(4, Math.min(96, (100 * med) / max));
       const barras = h("div", { class: "av-bar" + (l.length > 8 ? " denso" : ""), role: "img", "aria-label": metInfo[2] + ": " + l.map((d) => d.et + " " + fmt(d[met] | 0)).join(", ") },
@@ -4548,29 +4602,45 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const tag = "Corte " + CORTES[res.corte] + " · próx. " + PROX[res.corte];
     if (res.estado === "completa") {
       caja.replaceChildren(
-        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección de lectura" }), h("span", { class: "lk-proy-corte", text: tag })),
-        h("div", { class: "lk-proy-val" }, h("b", { text: "¡Meta cumplida!" })),
-        h("p", { class: "lk-proy-det", text: "Completaste todos los versos de esta lectura de la Nueva Voluntad." }));
+        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección estadística" }), h("span", { class: "lk-proy-corte", text: tag })),
+        h("div", { class: "lk-proy-hero" },
+          h("div", { class: "lk-proy-hero-izq" }, h("small", { text: "Estado de la lectura" }), h("b", { text: "¡Meta cumplida!" })),
+          h("span", { class: "lk-proy-meta", text: "100 % completada" })),
+        h("p", { class: "lk-proy-pie", text: "Completaste todos los versos de esta lectura de la Nueva Voluntad." }));
       return;
     }
     if (res.estado === "sin_ritmo") {
       caja.replaceChildren(
-        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección de lectura" }), h("span", { class: "lk-proy-corte", text: tag })),
-        h("p", { class: "lk-proy-det", text: "Lee unos versos hoy y en el próximo corte (00:00, 06:00, 12:00 o 18:00) calcularemos en cuánto tiempo completarás la Nueva Voluntad." }));
+        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección estadística" }), h("span", { class: "lk-proy-corte", text: tag })),
+        h("div", { class: "lk-proy-hero" },
+          h("div", { class: "lk-proy-hero-izq" }, h("small", { text: "Esperando tu ritmo de hoy" }), h("b", { text: fmt(res.faltan || 7957) + " versos por delante" })),
+          h("span", { class: "lk-proy-meta", text: "4 cortes diarios" })),
+        h("p", { class: "lk-proy-pie", text: "Lee unos versos hoy y estimaremos en cuánto tiempo alcanzarás la lectura completa de la Nueva Voluntad." }));
       return;
     }
     const ritmoTxt = res.mu.toFixed(1).replace(".", ",") + " versos/día";
-    const horq = res.diasBase >= 3 && res.diasCons > res.diasOpt + 2 && res.dias <= 3650
-      ? " · horquilla estimada: " + fmtDuracionDias(res.diasOpt) + " a " + fmtDuracionDias(res.diasCons) : "";
-    const imp = res.ahorro >= 2 && res.dias <= 3650
-      ? "Con +" + res.salto + " versos al día adelantas tu meta en " + fmtDuracionDias(res.ahorro) + " (la alcanzarías en " + fmtDuracionDias(res.diasImp) + ")."
-      : "";
+    const tieneHorq = res.diasBase >= 2 && res.diasCons > res.diasOpt && res.dias <= 3650;
+    const horqVal = tieneHorq ? fmtDuracionDias(res.diasOpt) + " – " + fmtDuracionDias(res.diasCons) : fmtDuracionDias(Math.max(1, Math.round(res.dias * 0.85))) + " – " + fmtDuracionDias(Math.round(res.dias * 1.2));
+    const tieneImp = res.ahorro >= 1 && res.dias <= 3650;
     caja.replaceChildren(
-      h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección · lectura n.º " + res.sig }), h("span", { class: "lk-proy-corte", text: tag })),
-      h("div", { class: "lk-proy-val" }, h("b", { text: fmtDuracionDias(res.dias) }), res.fechaMeta ? h("span", { text: "Meta aprox.: " + res.fechaMeta }) : null),
-      h("p", { class: "lk-proy-det", text: "A tu ritmo ponderado reciente (" + ritmoTxt + ")" + horq + "." }),
-      imp ? h("p", { class: "lk-proy-imp", text: imp }) : null,
-      h("p", { class: "jg-mini", text: "Fórmula estadística (media exponencial de " + plural(res.diasBase, "día", "días") + " con control de picos) · se recalcula 4 veces al día (00:00, 06:00, 12:00 y 18:00)." }));
+      h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección estadística · lectura n.º " + res.sig }), h("span", { class: "lk-proy-corte", text: tag })),
+      h("div", { class: "lk-proy-hero" },
+        h("div", { class: "lk-proy-hero-izq" }, h("small", { text: "Tiempo restante estimado" }), h("b", { text: fmtDuracionDias(res.dias) })),
+        res.fechaMeta ? h("span", { class: "lk-proy-meta", text: "Meta: " + res.fechaMeta }) : null),
+      h("div", { class: "lk-proy-grid" },
+        h("div", { class: "lk-proy-cel" },
+          h("small", { text: "Ritmo ponderado" }),
+          h("b", { text: ritmoTxt }),
+          h("span", { text: "Muestra de " + plural(res.diasBase, "día", "días") })),
+        h("div", { class: "lk-proy-cel" },
+          h("small", { text: "Horquilla probable" }),
+          h("b", { text: horqVal }),
+          h("span", { text: "Según tu constancia reciente" })),
+        h("div", { class: "lk-proy-cel imp" },
+          h("small", { text: "Impulso +" + res.salto + " versos/día" }),
+          h("b", { text: tieneImp ? "Adelantas " + fmtDuracionDias(res.ahorro) : "Meta en " + fmtDuracionDias(res.diasImp) }),
+          h("span", { text: "Llegarías en " + fmtDuracionDias(res.diasImp) }))),
+      h("p", { class: "lk-proy-pie", text: "Media exponencial ponderada con control de picos · se recalcula 4 veces al día (00:00, 06:00, 12:00 y 18:00)." }));
   }
   // AD2 + Neon › Argon (23-nov-2026): lecturas completas de la Nueva Voluntad en Tesoro, con proyección estadística 4×/día y desglose local por libro (%)
   function tarjetaLecturas(y) {
@@ -4605,11 +4675,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
               h("span", { class: "lk-lib-n", text: b.n }),
               h("span", { class: "lk-lib-p", text: pc + " %" }),
               h("span", { class: "lk-lib-bar", "aria-hidden": "true" }, h("i", { style: "width:" + pc + "%" })),
-              h("small", { class: "lk-lib-c", text: fmt(b.l) + " / " + fmt(b.t) + " versos" })));
+              h("small", { class: "lk-lib-c", text: fmt(b.l) + " / " + fmt(b.t) + " versos" }),
+              h("small", { class: "lk-lib-ir", text: pc >= 100 ? "Completado ✓" : "Cap. " + (b.sig || 1) + " ›" })));
         }));
       };
       const sumLoc = lista.reduce((a, b) => a + (b.l || 0), 0);
-      const notaSinc = hechos > sumLoc ? h("p", { class: "jg-mini", style: "margin:8px 0 6px", text: "Tu total exacto (" + fmt(hechos) + " versos) está guardado en tu cuenta en el servidor. El desglose por libro de este dispositivo muestra los capítulos que has abierto o marcado aquí y se completa al visitar cada capítulo." }) : null;
+      const notaSinc = hechos > sumLoc ? h("p", { class: "jg-mini lk-libs-nota", text: "Tu total exacto (" + fmt(hechos) + " versos) está guardado en tu cuenta. El desglose por libro en este dispositivo refleja los capítulos abiertos aquí y se sincroniza al visitar cada capítulo." }) : null;
       const det = h("details", { class: "jg-pc lk-libs" },
         h("summary", {}, h("span", { text: L.k ? "Progreso por libro · lectura n.º " + sig : "Progreso por libro" }), h("small", { text: iniciados + " de " + lista.length + " iniciados" })),
         notaSinc, cont);
@@ -4629,15 +4700,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
   const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
+  let CACHE_ARBOL = { sig: "", el: null }, CACHE_FIG = { sig: "", el: null };
   // Armadura: la figura y las seis piezas en rejilla (2 × 3) con su grado en cinco cuentas; la pieza elegida muestra abajo
   // qué gana con la forja siguiente y el botón para forjarla (se elige sola la primera que ya se puede forjar).
   function tarjetaArmadura(y, P, rehacer) {
     const av = P.av, d = P.def, cantos = (P.piedras || []).reduce((a, x) => a + x, 0);
     const puede = (gr) => { const s = d.forja[gr + 1]; return !!s && P.dr >= s.dr && cantos >= s.cantos; };
     const piezas = h("ul", { class: "ap-piezas" }), det = h("div", { class: "ap-forja", "aria-live": "polite" });
-    // al ponerse al día el Árbol, la misma figura sigue viva si su armadura y sus accesorios no cambiaron (sin redibujarla)
-    const sigF = JSON.stringify([av.eq || {}, av.acc || {}]), previa = FIG_PREV && FIG_PREV.dataset.sig === sigF ? FIG_PREV : null; FIG_PREV = null;
-    const fig = h("div", { class: "ap-fig" }, previa || figuraArmadura(av));
+    // al ponerse al día el Árbol (o al volver de otra pestaña), la misma figura sigue viva en caché si su armadura y sus accesorios no cambiaron
+    const sigF = JSON.stringify([av.eq || {}, av.acc || {}]);
+    const previa = (FIG_PREV && FIG_PREV.dataset.sig === sigF) ? FIG_PREV : (CACHE_FIG.sig === sigF && CACHE_FIG.el && !CACHE_FIG.el.isConnected) ? CACHE_FIG.el : null;
+    FIG_PREV = null;
+    const serEl = previa || (CACHE_FIG = { sig: sigF, el: figuraArmadura(av) }).el;
+    if (previa) setTimeout(() => { if (serEl._desp) serEl._desp(); else vivirSer(serEl); }, 60);
+    const fig = h("div", { class: "ap-fig" }, serEl);
     const elegir = (i) => {
       const [id, n, at] = d.piezas[i], gr = av.eq[id] | 0, sig = d.forja[gr + 1], nAt = (d.atrib.find((a) => a[0] === at) || [])[1];
       [...piezas.children].forEach((li, j) => li.classList.toggle("sel", j === i));
@@ -4913,7 +4989,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const frutos = (yy.invi && yy.invi.unidos) || 0, sigA = JSON.stringify([yy.inv, yy.nivel, yy.vt, yy.xpNivel, yy.xpSig, yy.emb, yy.foto, av.ef, av.fr, frutos]);
     const lienzoV = suave ? zona.querySelector(".ap-lienzo") : null, cifrasV = suave ? [...zona.querySelectorAll(".ap-cifras b")].map((b) => b.textContent) : null;
     FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
-    const lienzo = lienzoV && lienzoV.dataset.sig === sigA ? lienzoV : h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos));
+    const lienzo = (lienzoV && lienzoV.dataset.sig === sigA) ? lienzoV : (CACHE_ARBOL.sig === sigA && CACHE_ARBOL.el && !CACHE_ARBOL.el.isConnected) ? CACHE_ARBOL.el : (CACHE_ARBOL = { sig: sigA, el: h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos)) }).el;
     const heroe = h("section", { class: "ap-heroe" }, lienzo, datos);
     const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
     FIG_PREV = null;
@@ -6056,12 +6132,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const fila = el.classList.contains("vl"), pe = periDe(v);
     if (fila && mm.length) { ponerPie(elm, m, pe, rep, dos); }
     else if (LB.pie) LB.pie.hidden = true;
+    const sp = document.querySelector(".jg-sala-p"), alza = sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px";
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
       let ver = false;
       if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
       LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver ? 0 : -1;
-      if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", LB.el.style.getPropertyValue("--jg-lb-alza") || "0px"); }
+      if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", alza); }
     }
     if (nuevo) {
       LB.v = v; LB.m = m; LB.mm = mm; LB.clave = clave; LB.el.classList.remove("hecho");
@@ -6072,7 +6149,6 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (cambioV && R.lib) document.dispatchEvent(new CustomEvent("biex:verso-activo", { detail: { c: R.lib, cap: R.cap, v } }));
     }
     LB.el.classList.toggle("espera", !listo);
-    const sp = document.querySelector(".jg-sala-p"), alza = sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px";
     const hoja = LB.ah && LB.ah.parentElement;
     // (15-nov-2026 + Neon 23-nov-2026, fluidez) todas las lecturas de geometría antes de escribir estilos o clases: evita
     // reflujos síncronos en la vista verso por fila y guarda las métricas estables del número (.vn)
