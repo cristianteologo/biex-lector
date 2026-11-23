@@ -576,27 +576,44 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .av-cif small{font:500 .64rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .av-sube{font:600 .64rem/1 var(--f-ui);color:#9fe0b4}
 .av-antes{font-size:.6rem;color:var(--tenue)}
-.av-graf{position:relative;padding:18px 8px 6px 32px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
-.av-rej{position:absolute;left:8px;right:8px;top:18px;bottom:28px;pointer-events:none}
+.av-graf{position:relative;padding:18px 8px 8px 32px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
+.av-rej{position:absolute;left:8px;right:8px;top:18px;bottom:38px;pointer-events:none}
 .av-ln{position:absolute;left:24px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
 .av-ln em{position:absolute;right:calc(100% + 6px);top:-6px;font:500 .56rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
 .av-ln-max{top:0}.av-ln-mid{top:50%}
 .av-ln-med{border-top:1px dashed color-mix(in srgb,var(--oro-vivo) 44%,transparent)}
-.av-bar{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:6px;height:132px;padding:0 2px}
-.av-col{all:unset;box-sizing:border-box;flex:1;min-width:0;max-width:44px;display:grid;grid-template-rows:1fr auto;gap:6px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.av-bar{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:6px;height:146px;padding:0 2px}
+.av-bar.denso{gap:3px}
+.av-col{all:unset;box-sizing:border-box;flex:1;min-width:0;max-width:46px;display:grid;grid-template-rows:1fr 24px;gap:6px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .av-col:focus-visible .av-pozo{outline:2px solid var(--oro-vivo);outline-offset:1px}
 .av-pozo{position:relative;display:block;overflow:hidden;border-radius:8px 8px 3px 3px;background:color-mix(in srgb,var(--oro) 8%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 10%,transparent)}
 .av-pozo i{position:absolute;left:0;right:0;bottom:0;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#fff3c8,#e8b94d 42%,#8a5a0c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);animation:av-sube .78s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 38ms) both}
 .av-col.ya .av-pozo i{background:linear-gradient(180deg,#ffd5dd,#ff6d87 44%,#9e122c);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 0 14px -2px rgba(255,95,126,.5)}
 .av-col.sel .av-pozo{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro-vivo) 58%,transparent)}
-.av-col.sel small{color:var(--oro-vivo);font-weight:600}
+.av-col.sel .av-et-a,.av-col.sel .av-et-b{color:var(--oro-vivo);font-weight:600}
+.av-col.ya .av-et-a{color:#ff9cae;font-weight:600}
 .av-pico{position:absolute;left:50%;top:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#fff7d6;box-shadow:0 0 8px #ffd872;pointer-events:none}
-.av-col small{font:500 .58rem/1.1 var(--f-ui);color:var(--tenue);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.av-col small{display:grid;place-items:center;align-content:center;gap:2px;font:500 .56rem/1 var(--f-ui);color:var(--tenue);text-align:center;font-variant-numeric:tabular-nums;overflow:visible}
+.av-et-a{display:block;font-size:.54rem;letter-spacing:.02em;text-transform:uppercase;color:var(--tenue);white-space:nowrap}
+.av-et-b{display:block;font-size:.6rem;font-weight:600;color:var(--tinta-2);white-space:nowrap}
+.av-et-c{display:none}
 @keyframes av-sube{from{transform:translate3d(0,100%,0)}to{transform:none}}
 :root[data-theme=light] .av-badge.sube{color:#156936;border-color:rgba(21,105,54,.35);background:rgba(21,105,54,.1)}
 :root[data-theme=light] .av-badge.pico{color:#78500b;border-color:rgba(138,106,43,.45);background:rgba(176,134,50,.15)}
 :root[data-theme=light] .av-sube{color:#156936}
-@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 6px 26px}.av-ln{left:20px}}
+:root[data-theme=light] .av-col.ya .av-et-a{color:#a8203c}
+.lk-proy{margin:12px 0 4px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--oro) 11%,transparent),transparent 65%),color-mix(in srgb,var(--hoja-2) 78%,transparent);display:grid;gap:7px}
+.lk-proy-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.lk-proy-tit{font:600 .66rem/1.15 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:var(--oro-vivo)}
+.lk-proy-corte{font:500 .64rem/1 var(--f-ui);color:var(--tenue);padding:3px 8px;border-radius:999px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 80%,transparent);font-variant-numeric:tabular-nums}
+.lk-proy-val{display:flex;align-items:baseline;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
+.lk-proy-val b{font:600 clamp(1.18rem,3.6vw,1.45rem)/1.12 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
+.lk-proy-val span{font:500 .76rem/1.3 var(--f-ui);color:var(--oro-vivo)}
+.lk-proy-det{margin:0;font:400 .76rem/1.48 var(--f-ui);color:var(--tinta-2)}
+.lk-proy-imp{margin:0;font:500 .74rem/1.45 var(--f-ui);color:color-mix(in srgb,var(--oro-vivo) 82%,var(--tinta))}
+.jg-hoy-jer{margin:6px 0 0;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--oro) 14%,var(--linea-2));font:500 .72rem/1.35 var(--f-ui);color:color-mix(in srgb,var(--oro) 78%,var(--tenue))}
+@media (max-width:480px){.av-bar.denso .av-et-l{display:none}.av-bar.denso .av-et-c{display:inline}}
+@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 8px 26px}.av-ln{left:20px}.av-bar.denso{gap:2px}.av-et-a{font-size:.5rem}.av-et-b{font-size:.55rem}}
 @media (prefers-reduced-motion:reduce){.av-pozo i{animation:none}}
 html[data-mov="no"] .av-pozo i{animation:none}
 .fr-c{display:grid;gap:14px;justify-items:center}
@@ -1080,6 +1097,11 @@ html[data-dal] .jg-arbol .jg-nodo.activo .pt{stroke:#5aa9e6}
 .jg-novedades li:has(.jg-nov-t)::before{top:.3em}
 .jg-nov-t{font:500 .7rem/1.25 var(--f-ui);letter-spacing:.07em;color:var(--oro);font-variant-numeric:lining-nums tabular-nums}
 .jg-nov-x{min-width:0;overflow-wrap:anywhere}
+.jg-novedades li.comp{padding:9px 11px 9px 22px;border-radius:12px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:linear-gradient(110deg,color-mix(in srgb,var(--oro) 11%,transparent),color-mix(in srgb,var(--hoja-2) 72%,transparent))}
+.jg-novedades li.comp::before{left:9px;top:.85em;background:radial-gradient(circle at 35% 35%,#ffd49e,#e08b36 70%);box-shadow:0 0 9px rgba(235,148,58,.75)}
+.jg-novedades li.subio::before{background:radial-gradient(circle at 35% 35%,#d9ffe4,#5ec284 70%);box-shadow:0 0 9px rgba(94,194,132,.7)}
+.jg-nov-acc{display:inline-flex;align-items:center;gap:4px;margin-top:3px;justify-self:start;font:600 .72rem/1.2 var(--f-ui);color:var(--oro-vivo);text-decoration:none;letter-spacing:.03em}
+.jg-nov-acc:hover{text-decoration:underline}
 .jg-letras{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
 .jg-letras button{font:400 1.25rem/1 "BiEx Texto","Gentium Book Plus",Georgia,serif;height:40px;border-radius:10px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer}
 .jg-letras button[aria-pressed=true]{border-color:var(--oro);color:var(--oro-vivo);background:var(--oro-suave)}
@@ -2346,9 +2368,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const rel = h("i", { class: "jg-relleno" }), borde = h("span", { class: "jg-borde", "aria-hidden": "true" }, h("b", { class: "jg-brasa" }));
     const bar = h("div", { class: "jg-barra jg-epica" + (pct >= 90 ? " cerca" : ""), role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(y.xpSig), "aria-valuenow": String(y.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente", style: "--p:" + pct.toFixed(2) },
       rel, h("span", { class: "jg-epica-vidrio", "aria-hidden": "true" }), h("span", { class: "jg-marcas", "aria-hidden": "true" }), borde);
+    const pctRed = Math.round(pct * 10) / 10;
+    const pctVis = y.xpSig && y.xpNivel < y.xpSig ? Math.min(99.9, pctRed) : pctRed;
     const cab = h("div", { class: "jg-epica-cab", "aria-hidden": "true" },
       h("span", { class: "jg-epica-rumbo", text: y.enTope ? "Nivel tope · " + y.tope : "Nivel " + y.nivel + " › " + (y.nivel + 1) }),
-      h("span", { class: "jg-epica-pct", text: Math.round(pct) + " %" }));
+      h("span", { class: "jg-epica-pct", text: pctVis.toFixed(1).replace(".", ",") + " %" }));
     const visto = A.store.get("jg:xpv", null), desde = visto && visto.n === y.nivel ? visto.p : visto && visto.n < y.nivel ? 0 : 0;
     A.store.set("jg:xpv", { n: y.nivel, p: pct });
     if (desde < pct - 0.3 && !sinAnim() && rel.animate) requestAnimationFrame(() => {
@@ -2463,14 +2487,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (r.error) return A.avisar(r.error === "ya_cambiada" ? "Ya cambiaste una misión hoy" : mensaje(r));
     actualizarYo(r.yo); repintar();
   }
+  function fechaJerusalen() {
+    try { return new Intl.DateTimeFormat("es", { timeZone: "Asia/Jerusalem", day: "numeric", month: "long", year: "numeric" }).format(new Date()) + " d.H.D."; }
+    catch (e) { return ""; }
+  }
   function tarjetaHoy(y) {
+    const fJer = fechaJerusalen();
     return tarjeta("Hoy", null, h("div", { class: "jg-cifras" },
       h("div", {}, h("b", { text: fmt(y.hoy.versos) }), h("span", { text: "versos" })),
       h("div", {}, h("b", { text: fmt(Math.floor((y.hoy.mr || y.hoy.ms || 0) / MIN)) }), h("span", { text: "minutos" })),
       h("div", {}, h("b", { text: fmt(y.hoy.xp) }), h("span", { text: "experiencia" }))),
       y.pers > 0 ? h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Perseverancia: ", h("b", { text: plural(y.pers, "día", "días") }), " · tu mejor marca: " + plural(y.persMejor, "día", "días") +
         " · descansos guardados: " + y.desc + " de 3. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).")
-        : h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Tu perseverancia empieza con el primer verso de hoy." + (y.persMejor ? " Tu mejor marca: " + plural(y.persMejor, "día", "días") + "." : "") + " Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas)."));
+        : h("p", { class: "jg-mini" }, A.svg(ICO_JG.llama, "0 0 24 24"), " Tu perseverancia empieza con el primer verso de hoy." + (y.persMejor ? " Tu mejor marca: " + plural(y.persMejor, "día", "días") + "." : "") + " Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas)."),
+      fJer ? h("p", { class: "jg-hoy-jer", text: "Hoy en Yᵉrūshāláyim [Jerusalén]: " + fJer }) : null);
   }
   // Lectura por confirmar (BiEx, 10-nov-2026): reparto 60/40, lista desplegable de los versos y fórmula de corrección
   function tarjetaPorConfirmar(y, enHoy) {
@@ -2583,7 +2613,27 @@ html[data-mov="no"] .ap-savia{display:none!important}
     renuevo_vence: (a) => "Tu Renuevo venció sin completar sus misiones; tus " + plural(a.p, "día", "días") + " de perseverancia siguen esperando otro Renuevo.",
     fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
     mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") + ".",
-    renMedia: (a) => (a.m % 2 ? "Siete días seguidos de perseverancia: ganaste un descanso y media pieza de Renuevo (te falta otra media para un Renuevo sin dracmas)." : "Siete días seguidos de perseverancia: ganaste un descanso y completaste una pieza de Renuevo: tu próximo Renuevo sale sin dracmas.") };
+    renMedia: (a) => (a.m % 2 ? "Siete días seguidos de perseverancia: ganaste un descanso y media pieza de Renuevo (te falta otra media para un Renuevo sin dracmas)." : "Siete días seguidos de perseverancia: ganaste un descanso y completaste una pieza de Renuevo: tu próximo Renuevo sale sin dracmas."),
+    adelantado: (a) => {
+      const quien = (a.a || "Un lector") + (a.nv ? " (nivel " + a.nv + ")" : "") + (a.otros > 0 ? " y " + plural(a.otros, "lector más", "lectores más") : "");
+      const tramo = a.de && a.pos ? ": pasaste del puesto " + fmt(a.de) + " al " + fmt(a.pos) : a.pos ? " (ahora vas en el puesto " + fmt(a.pos) + ")" : "";
+      const vEst = a.dif > 0 ? Math.max(1, Math.ceil(a.dif / 10)) : 0;
+      const brecha = a.dif > 0 ? " Te lleva " + fmt(a.dif) + " de experiencia (unos " + plural(vEst, "verso", "versos") + " para recuperar tu lugar)." : "";
+      return quien + (a.otros > 0 ? " te adelantaron" : " te adelantó") + (a.amb ? " en " + a.amb : "") + tramo + "." + brecha;
+    },
+    adelantaste: (a) => {
+      const tramo = a.de && a.pos ? "del puesto " + fmt(a.de) + " al " + fmt(a.pos) : a.pos ? "al puesto " + fmt(a.pos) : "de puesto";
+      return "¡Subiste " + tramo + (a.amb ? " en " + a.amb : "") + (a.a ? " al superar a " + a.a : "") + "! Sigue leyendo para defender tu posición.";
+    },
+    cerca_puesto: (a) => {
+      const vEst = a.dif > 0 ? Math.max(1, Math.ceil(a.dif / 10)) : 1;
+      return "Estás a solo " + fmt(a.dif) + " de experiencia (unos " + plural(vEst, "verso", "versos") + ") de superar a " + (a.a || "quien te antecede") + (a.pos ? " por el puesto " + fmt(a.pos) : "") + (a.amb ? " en " + a.amb : "") + ".";
+    },
+    interaccion: (a) => {
+      const INT = { desafio: "te lanzó un reto amistoso de lectura", animo: "te envió ánimo para cuidar tu perseverancia", relevo: "te pasó el relevo de lectura de hoy", revancha: "te pidió revancha tras perder su puesto contigo", mision: "te invitó a completar las misiones de hoy", saludo: "te saludó desde la lectura" };
+      const quien = (a.a || "Un lector") + (a.nv ? " (nivel " + a.nv + ")" : "");
+      return quien + " " + (INT[a.tipo] || a.txt || "te envió una señal de ánimo") + (a.det ? ": " + a.det : "") + ".";
+    } };
   // Hora de cada novedad, en la zona horaria de quien lee (BiEx, 13-nov-2026): «Hace 5 min · 6:35 a. m.», «Hoy · 6:40 a. m.»,
   // «Ayer · 9:12 p. m.» o «12 nov. · 9:12 p. m.»; lo reciente se actualiza solo cada minuto mientras la tarjeta está a la vista
   const LOC_ES = /^es\b/i.test(navigator.language || "") ? navigator.language : "es"; // «5:09 p. m.» o «17:09», según el país de quien lee
@@ -2601,15 +2651,63 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // AC12: lo que sale al marcar «Leído» (fragmentos y dracmas) también queda en Novedades: se guarda en este dispositivo y se
   // une a las novedades del servidor por su hora
   function novedadLocal(k, d) { const l = A.store.get("jg:novL", null) || []; l.unshift(Object.assign({ k, t: Date.now() }, d)); A.store.set("jg:novL", l.slice(0, 30)); }
+  // Competencia en Novedades: guarda una foto ligera de tu puesto en cada ámbito (liga, clasificación, compañía) y registra
+  // quién te adelantó (o a quién superaste) con la hora y la diferencia de experiencia, sin duplicar avisos ya enviados por el servidor.
+  function comprobarAdelantamientos(clave, lista, amb, ruta, yoExtra) {
+    if (!S.yo || !S.yo.inv || !Array.isArray(lista) || !lista.length) return;
+    const xpDe = (x) => (x && (x.xp != null ? x.xp : x.x)) | 0;
+    const yo = lista.find((x) => x && x.yo) || (yoExtra && yoExtra.p ? { p: yoExtra.p, xp: xpDe(yoExtra), yo: true } : null);
+    if (!yo || !(yo.p >= 1)) return;
+    const id = S.yo.inv + ":" + clave;
+    const snaps = A.store.get("jg:snapPos", null) || {};
+    const prev = snaps[id];
+    const yoXp = xpDe(yo);
+    const arribaAhora = lista.filter((x) => x && !x.yo && x.p < yo.p).sort((a, b) => b.p - a.p);
+    const ahora = Date.now();
+    const novsLoc = A.store.get("jg:novL", null) || [];
+    const yaReciente = (k, ap, ms) => novsLoc.some((n) => n && n.k === k && n.amb === amb && (!ap || n.a === ap) && ahora - (n.t || 0) < ms) ||
+      ((S.yo.avisos || []).some((n) => n && n.k === k && (!ap || n.a === ap) && ahora - (n.t || 0) < ms));
+    if (prev && prev.p >= 1) {
+      if (yo.p > prev.p) {
+        const prevArriba = new Set(prev.arriba || []);
+        const nuevos = arribaAhora.filter((x) => x.p >= prev.p || !prevArriba.has(x.apodo));
+        const rival = nuevos[0] || arribaAhora[0];
+        if (rival && !yaReciente("adelantado", rival.apodo, 30 * 60e3)) {
+          const dif = Math.max(1, xpDe(rival) - yoXp);
+          novedadLocal("adelantado", { a: rival.apodo, nv: rival.nivel | 0, otros: Math.max(0, nuevos.length - 1), amb, de: prev.p, pos: yo.p, dif, ruta });
+        }
+      } else if (yo.p < prev.p) {
+        const superado = lista.find((x) => x && !x.yo && x.p === yo.p + 1);
+        if (!yaReciente("adelantaste", superado ? superado.apodo : "", 30 * 60e3)) {
+          novedadLocal("adelantaste", { a: superado ? superado.apodo : "", amb, de: prev.p, pos: yo.p, ruta });
+        }
+      } else if (yo.p > 1 && arribaAhora[0]) {
+        const r = arribaAhora[0], dif = xpDe(r) - yoXp;
+        if (dif > 0 && dif <= 60 && !yaReciente("cerca_puesto", r.apodo, 18 * 3600e3)) {
+          novedadLocal("cerca_puesto", { a: r.apodo, pos: r.p, dif, amb, ruta });
+        }
+      }
+    }
+    snaps[id] = { p: yo.p, xp: yoXp, t: ahora, arriba: arribaAhora.slice(0, 6).map((x) => x.apodo) };
+    const ks = Object.keys(snaps);
+    if (ks.length > 18) ks.sort((a, b) => (snaps[a].t || 0) - (snaps[b].t || 0)).slice(0, ks.length - 18).forEach((k) => { delete snaps[k]; });
+    A.store.set("jg:snapPos", snaps);
+  }
   function tarjetaNovedades(y) {
     const loc = (A.store.get("jg:novL", null) || []).filter((a) => a && a.t);
     const l = [...(y.avisos || []), ...loc].filter((a) => NOVEDAD[a.k]).sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 8);
     if (!l.length) return null;
     const horas = [];
+    const u = A.ultimo && A.ultimo(), seguir = (u && u.h) || "#/MAT/1";
     const ul = h("ul", { class: "jg-novedades" }, l.map((a) => {
       const t = a.t ? h("time", { class: "jg-nov-t", datetime: new Date(a.t).toISOString(), text: cuandoFue(a.t) }) : null;
       if (t) horas.push([t, a.t]);
-      return h("li", {}, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }));
+      const esComp = a.k === "adelantado" || a.k === "cerca_puesto" || a.k === "interaccion";
+      const esSub = a.k === "adelantaste";
+      const acc = a.k === "adelantado" || a.k === "cerca_puesto"
+        ? h("a", { class: "jg-nov-acc", href: seguir, text: a.k === "adelantado" ? "Leer para recuperar tu puesto ›" : "Leer para adelantarlo ›" })
+        : (a.k === "interaccion" ? h("a", { class: "jg-nov-acc", href: a.ruta || seguir, text: "Ir a leer ›" }) : a.ruta && esSub ? h("a", { class: "jg-nov-acc", href: a.ruta, text: "Ver puestos ›" }) : null);
+      return h("li", { class: esComp ? "comp" : esSub ? "subio" : "" }, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }), acc);
     }));
     if (horas.some(([, t]) => Date.now() - t < 3600e3)) {
       const reloj = setInterval(() => { if (!ul.isConnected) return clearInterval(reloj); for (const [el, t] of horas) el.textContent = cuandoFue(t); }, 60000);
@@ -2737,6 +2835,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         if (r.error) nodos = [h("p", { class: "jg-mini", text: mensaje(r) })];
         else {
           const l = r.lista || [], mio = r.yo && !l.slice(0, 5).some((x) => x.yo);
+          comprobarAdelantamientos("clas:" + (lugar.pais ? "pais" : "mundo") + ":semana:" + r.rango, l, lugar.pais ? nombrePais(lugar.pais) : "la clasificación mundial", "#/escudrina/clasificacion", r.yo);
           nodos = [h("p", { class: "jg-mini jg-cl2-sub", text: "Esta semana · " + (RANGOS[r.rango] || "tu rango") + " · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") }),
             l.length ? h("ol", { class: "jg-lista" }, l.slice(0, 5).map(fila)) : h("p", { class: "jg-mini", text: "Todavía nadie de tu rango suma experiencia aquí. ¡Puedes ser la primera persona!" }),
             mio ? h("p", { class: "jg-mini jg-cl2-yo", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia" }) : null,
@@ -4264,11 +4363,25 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const suma = (l) => l.reduce((o, d) => { for (const [k] of MET) o[k] = (o[k] || 0) + (d[k] | 0); return o; }, {});
     const sem = (f) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d.toISOString().slice(0, 10); }; // la semana empieza el domingo
     const grupos = (clave) => { const m = new Map(); for (const d of hist) { const k = clave(d.f); if (!m.has(k)) m.set(k, []); m.get(k).push(d); } return [...m].map(([k, l]) => Object.assign({ k }, suma(l))); };
-    const F_D = new Intl.DateTimeFormat(LOC_ES, { weekday: "short", day: "numeric" }), F_M = new Intl.DateTimeFormat(LOC_ES, { month: "short" });
+    const DIAS_L = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"], DIAS_C = ["D", "L", "M", "X", "J", "V", "S"];
+    const F_D = new Intl.DateTimeFormat(LOC_ES, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+    const F_DM = new Intl.DateTimeFormat(LOC_ES, { day: "numeric", month: "short", timeZone: "UTC" });
+    const F_M = new Intl.DateTimeFormat(LOC_ES, { month: "short", timeZone: "UTC" });
+    const F_MY = new Intl.DateTimeFormat(LOC_ES, { month: "long", year: "numeric", timeZone: "UTC" });
+    const mesC = (dt) => F_M.format(dt).replace(/\.$/, "");
     const VISTAS = {
-      dia: () => ({ l: hist.slice(-14).map((d) => Object.assign({ et: d.hoy ? "hoy" : F_D.format(new Date(d.f + "T12:00:00Z")) }, d)), ahora: "Hoy", antes: "ayer", serie: "últimos días" }),
-      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "esta" : F_D.format(new Date(g2.k + "T12:00:00Z")) }, g2)), ahora: "Esta semana", antes: "sem. anterior", serie: "últimas semanas" }),
-      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "este" : F_M.format(new Date(g2.k + "-15T12:00:00Z")) }, g2)), ahora: "Este mes", antes: "mes anterior", serie: "últimos meses" }),
+      dia: () => ({ l: hist.slice(-14).map((d) => {
+        const dt = new Date(d.f + "T12:00:00Z"), dow = dt.getUTCDay(), dn = String(dt.getUTCDate());
+        return Object.assign({ et: d.hoy ? "Hoy (" + F_DM.format(dt) + ")" : F_D.format(dt), etA: d.hoy ? "Hoy" : DIAS_L[dow], etAC: d.hoy ? "Hoy" : DIAS_C[dow], etB: dn }, d);
+      }), ahora: "Hoy", antes: "ayer", serie: "últimos días" }),
+      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => {
+        const dt = new Date(g2.k + "T12:00:00Z"), ult = i === a.length - 1, top = ult ? "Esta" : String(dt.getUTCDate());
+        return Object.assign({ et: ult ? "Esta semana" : "Sem. " + F_DM.format(dt), etA: top, etAC: top, etB: ult ? "sem." : mesC(dt) }, g2);
+      }), ahora: "Esta semana", antes: "sem. anterior", serie: "últimas semanas" }),
+      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => {
+        const dt = new Date(g2.k + "-15T12:00:00Z"), ult = i === a.length - 1, top = ult ? "Este" : mesC(dt);
+        return Object.assign({ et: ult ? "Este mes" : F_MY.format(dt), etA: top, etAC: top, etB: ult ? "mes" : "'" + String(dt.getUTCFullYear()).slice(-2) }, g2);
+      }), ahora: "Este mes", antes: "mes anterior", serie: "últimos meses" }),
     };
     const zona = h("div", { class: "av-z" });
     let vista = A.store.get("jg:avVista", null) || "dia";
@@ -4310,14 +4423,16 @@ html[data-mov="no"] .ap-savia{display:none!important}
         if (d) focoTxt.textContent = d.et + " · " + fmt(d[met] | 0) + " " + metInfo[1];
       };
       const pctMed = Math.max(4, Math.min(96, (100 * med) / max));
-      const barras = h("div", { class: "av-bar", role: "img", "aria-label": metInfo[2] + ": " + l.map((d) => d.et + " " + fmt(d[met] | 0)).join(", ") },
+      const barras = h("div", { class: "av-bar" + (l.length > 8 ? " denso" : ""), role: "img", "aria-label": metInfo[2] + ": " + l.map((d) => d.et + " " + fmt(d[met] | 0)).join(", ") },
         l.map((d, i) => {
           const val = d[met] | 0, hp = val > 0 ? Math.max(5, (100 * val) / max) : 2;
           const esTope = val > 0 && i === iMax && vals.some((x) => x > 0);
           const col = h("button", { type: "button", class: "av-col" + (i === l.length - 1 ? " ya" : "") + (esTope ? " tope" : "") + (i === selIdx ? " sel" : ""), "aria-label": d.et + ": " + fmt(val) + " " + metInfo[1],
             onclick: () => { vibrar(5); seleccionar(i); }, onpointerenter: (e) => { if (e.pointerType === "mouse") seleccionar(i); } },
             h("span", { class: "av-pozo" }, h("i", { style: "height:" + hp.toFixed(1) + "%;--i:" + i }), esTope ? h("em", { class: "av-pico", "aria-hidden": "true" }) : null),
-            h("small", { text: d.et }));
+            h("small", {},
+              h("span", { class: "av-et-a" }, d.etA !== d.etAC ? [h("span", { class: "av-et-l", text: d.etA }), h("span", { class: "av-et-c", text: d.etAC })] : d.etA),
+              h("span", { class: "av-et-b", text: d.etB })));
           cols.push(col);
           return col;
         }));
@@ -4333,7 +4448,131 @@ html[data-mov="no"] .ap-savia{display:none!important}
     pintar(false);
     return tarjeta("Tu avance", ico("arbol"), seg, zona);
   }
-  // AD2 + Neon (23-nov-2026): lecturas completas de la Nueva Voluntad en Tesoro, con desglose local de progreso por libro (%)
+  // Proyección estadística para completar la Nueva Voluntad (BiEx, 23-nov-2026): media exponencial ponderada (vida media
+  // de 7 días) con recorte de picos extremos (winsorización) e intervalo de confianza, recalculada 4 veces al día (00:00, 06:00, 12:00 y 18:00).
+  function fmtDuracionDias(d) {
+    d = Math.max(1, Math.round(d));
+    if (d > 3650) return "más de 10 años";
+    if (d < 45) return plural(d, "día", "días");
+    if (d < 365) {
+      let m = Math.floor(d / 30.4375), r = Math.round(d - m * 30.4375);
+      if (r >= 29) { m++; r = 0; }
+      return plural(m, "mes", "meses") + (r >= 3 ? " y " + plural(r, "día", "días") : "");
+    }
+    let a = Math.floor(d / 365.25), m = Math.round((d - a * 365.25) / 30.4375);
+    if (m >= 12) { a++; m = 0; }
+    return plural(a, "año", "años") + (m > 0 ? " y " + plural(m, "mes", "meses") : "");
+  }
+  function calcularProyeccionLectura(y, P) {
+    const L = y && y.lk; if (!L || !L.total) return null;
+    const ahora = new Date(), hr = ahora.getHours(), corte = Math.floor(hr / 6);
+    const fechaLoc = ahora.getFullYear() + "-" + String(ahora.getMonth() + 1).padStart(2, "0") + "-" + String(ahora.getDate()).padStart(2, "0");
+    const clave = fechaLoc + "#" + corte + "#" + (y.inv || "") + "#" + (L.k | 0);
+    const tieneHist = !!(P && Array.isArray(P.hist));
+    if (L.faltan <= 0) return { estado: "completa", clave, corte, sig: L.k + 1 };
+    const cache = A.store.get("jg:lkProy", null);
+    if (cache && cache.clave === clave && (cache.fuente === "hist" || !tieneHist)) return cache;
+    const mapa = new Map();
+    if (tieneHist) for (const d of P.hist) if (d && d.f) mapa.set(d.f, (mapa.get(d.f) || 0) + Math.max(0, d.v | 0));
+    const hoyF = (P && P.hoyR && P.hoyR.f) || (y.hoy && y.hoy.f) || fechaLoc;
+    const hoyV = Math.max((P && P.hoyR && P.hoyR.v) | 0, (y.hoy && y.hoy.versos) | 0);
+    const prevFechas = [...mapa.keys()].filter((f) => f < hoyF).sort();
+    const hoyMs = Date.parse(hoyF + "T12:00:00Z") || Date.now();
+    const serie = [];
+    if (prevFechas.length) {
+      const primeraAct = prevFechas.find((f) => (mapa.get(f) || 0) > 0);
+      if (primeraAct) {
+        const iniMs = Math.max(Date.parse(primeraAct + "T12:00:00Z"), hoyMs - 30 * 864e5);
+        const finMs = hoyMs - 864e5;
+        for (let t = iniMs; t <= finMs + 1000; t += 864e5) {
+          const f = new Date(t).toISOString().slice(0, 10);
+          const age = Math.max(1, Math.round((hoyMs - t) / 864e5));
+          serie.push({ v: mapa.get(f) || 0, age, wMul: 1 });
+        }
+      }
+    }
+    if (hoyV > 0) {
+      if (serie.length) {
+        const media0 = serie.reduce((a, x) => a + x.v, 0) / serie.length;
+        const wHoy = hoyV >= media0 ? 1 : Math.max(0.25, (hr + ahora.getMinutes() / 60) / 24);
+        serie.push({ v: hoyV, age: 0, wMul: wHoy });
+      } else {
+        serie.push({ v: hoyV, age: 0, wMul: 1 });
+      }
+    }
+    const activos = serie.map((x) => x.v).filter((v) => v > 0).sort((a, b) => a - b);
+    const fuente = tieneHist ? "hist" : "min";
+    if (!activos.length) {
+      const res0 = { estado: "sin_ritmo", clave, corte, faltan: L.faltan, fuente };
+      A.store.set("jg:lkProy", res0);
+      return res0;
+    }
+    const medAct = activos[Math.floor(activos.length / 2)];
+    const p90 = activos[Math.min(activos.length - 1, Math.floor(activos.length * 0.9))];
+    const techo = Math.max(medAct * 2.5, p90, 20);
+    const lam = Math.LN2 / 7;
+    let sw = 0, sw2 = 0, sv = 0;
+    for (const x of serie) {
+      const w = Math.exp(-lam * x.age) * x.wMul, vv = Math.min(x.v, techo);
+      sw += w; sw2 += w * w; sv += w * vv;
+    }
+    const mu = sw > 0 ? sv / sw : 0;
+    if (mu < 0.2) {
+      const res0 = { estado: "sin_ritmo", clave, corte, faltan: L.faltan, fuente };
+      A.store.set("jg:lkProy", res0);
+      return res0;
+    }
+    let varS = 0;
+    for (const x of serie) {
+      const w = Math.exp(-lam * x.age) * x.wMul, vv = Math.min(x.v, techo);
+      varS += w * (vv - mu) * (vv - mu);
+    }
+    const nEf = sw2 > 0 ? (sw * sw) / sw2 : 1;
+    const sd = Math.sqrt(varS / sw);
+    const se = nEf > 1.25 ? sd / Math.sqrt(nEf) : mu * 0.25;
+    const muLow = Math.max(mu * 0.45, mu - 0.85 * se);
+    const muHigh = Math.min(mu * 1.75, mu + 0.85 * se);
+    const dias = Math.max(1, Math.ceil(L.faltan / mu));
+    const diasOpt = Math.max(1, Math.ceil(L.faltan / muHigh));
+    const diasCons = Math.max(dias, Math.ceil(L.faltan / muLow));
+    const salto = mu >= 40 ? 15 : 10;
+    const diasImp = Math.max(1, Math.ceil(L.faltan / (mu + salto)));
+    const ahorro = Math.max(0, dias - diasImp);
+    const fechaMeta = dias <= 3650 ? new Date(Date.now() + dias * 864e5).toLocaleDateString("es", dias > 365 ? { month: "long", year: "numeric" } : { day: "numeric", month: "long", year: "numeric" }) + " d.H.D." : "";
+    const res = { estado: "ok", clave, corte, fuente, mu: Math.round(mu * 10) / 10, dias, diasOpt, diasCons, fechaMeta, diasBase: serie.length, salto, diasImp, ahorro, sig: L.k + 1 };
+    A.store.set("jg:lkProy", res);
+    return res;
+  }
+  function pintarProyeccionLectura(caja, res) {
+    const CORTES = ["00:00", "06:00", "12:00", "18:00"], PROX = ["06:00", "12:00", "18:00", "00:00"];
+    const tag = "Corte " + CORTES[res.corte] + " · próx. " + PROX[res.corte];
+    if (res.estado === "completa") {
+      caja.replaceChildren(
+        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección de lectura" }), h("span", { class: "lk-proy-corte", text: tag })),
+        h("div", { class: "lk-proy-val" }, h("b", { text: "¡Meta cumplida!" })),
+        h("p", { class: "lk-proy-det", text: "Completaste todos los versos de esta lectura de la Nueva Voluntad." }));
+      return;
+    }
+    if (res.estado === "sin_ritmo") {
+      caja.replaceChildren(
+        h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección de lectura" }), h("span", { class: "lk-proy-corte", text: tag })),
+        h("p", { class: "lk-proy-det", text: "Lee unos versos hoy y en el próximo corte (00:00, 06:00, 12:00 o 18:00) calcularemos en cuánto tiempo completarás la Nueva Voluntad." }));
+      return;
+    }
+    const ritmoTxt = res.mu.toFixed(1).replace(".", ",") + " versos/día";
+    const horq = res.diasBase >= 3 && res.diasCons > res.diasOpt + 2 && res.dias <= 3650
+      ? " · horquilla estimada: " + fmtDuracionDias(res.diasOpt) + " a " + fmtDuracionDias(res.diasCons) : "";
+    const imp = res.ahorro >= 2 && res.dias <= 3650
+      ? "Con +" + res.salto + " versos al día adelantas tu meta en " + fmtDuracionDias(res.ahorro) + " (la alcanzarías en " + fmtDuracionDias(res.diasImp) + ")."
+      : "";
+    caja.replaceChildren(
+      h("div", { class: "lk-proy-cab" }, h("span", { class: "lk-proy-tit", text: "Proyección · lectura n.º " + res.sig }), h("span", { class: "lk-proy-corte", text: tag })),
+      h("div", { class: "lk-proy-val" }, h("b", { text: fmtDuracionDias(res.dias) }), res.fechaMeta ? h("span", { text: "Meta aprox.: " + res.fechaMeta }) : null),
+      h("p", { class: "lk-proy-det", text: "A tu ritmo ponderado reciente (" + ritmoTxt + ")" + horq + "." }),
+      imp ? h("p", { class: "lk-proy-imp", text: imp }) : null,
+      h("p", { class: "jg-mini", text: "Fórmula estadística (media exponencial de " + plural(res.diasBase, "día", "días") + " con control de picos) · se recalcula 4 veces al día (00:00, 06:00, 12:00 y 18:00)." }));
+  }
+  // AD2 + Neon › Argon (23-nov-2026): lecturas completas de la Nueva Voluntad en Tesoro, con proyección estadística 4×/día y desglose local por libro (%)
   function tarjetaLecturas(y) {
     const L = y && y.lk; if (!L || !L.total) return null;
     const hechos = L.total - L.faltan, fr = hechos / L.total, C = 2 * Math.PI * 34, u = "lk" + Math.random().toString(36).slice(2, 7);
@@ -4342,6 +4581,16 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<circle cx="40" cy="40" r="34" fill="none" stroke="url(#' + u + ')" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - fr)).toFixed(2) + '" transform="rotate(-90 40 40)"/>', "0 0 80 80");
     const sig = L.k + 1, H = L.h || [];
     const cel = [["sin marcar", H[0]], ["1 vez", H[1]], ["2 veces", H[2]], ["3 veces", H[3]], ["4 o más", H[4]]];
+    const proyBox = h("div", { class: "lk-proy", "aria-live": "polite" });
+    const proyIni = calcularProyeccionLectura(y, PODER);
+    if (proyIni) pintarProyeccionLectura(proyBox, proyIni);
+    if (S.token && (!proyIni || proyIni.fuente !== "hist") && L.faltan > 0) {
+      cargarPoder(false).then((P) => {
+        if (!proyBox.isConnected || !P || P.error) return;
+        const res = calcularProyeccionLectura(y, P);
+        if (res) pintarProyeccionLectura(proyBox, res);
+      }).catch(() => {});
+    }
     const porLibro = (() => {
       if (!A.progresoLibros) return null;
       const lista = A.progresoLibros(A.store.get("jg:cf", null) || {}, lecturasK());
@@ -4374,6 +4623,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           h("p", { class: "lk-t" }, L.k ? "Has leído la Nueva Voluntad completa " + (L.k === 1 ? "una vez" : L.k + " veces") + ", verso a verso." : "Tu primera lectura completa de la Nueva Voluntad, verso a verso."),
           h("p", { class: "jg-mini" }, "Para la lectura n.º " + sig + ": " + fmt(hechos) + " de " + fmt(L.total) + " versos (" + Math.round(fr * 100) + " %) · faltan " + fmt(L.faltan) + "."),
           L.k ? h("p", { class: "jg-mini" }, "Al completarse una lectura, cada marca baja un nivel: la doble queda sencilla y la sencilla se vacía para la lectura nueva. Cada cuenta queda aquí.") : null)),
+      proyBox,
       h("ul", { class: "av-cif lk-h", "aria-label": "Cuántas veces se marcó cada verso" }, cel.map(([t, n]) => h("li", {}, h("b", { text: fmt(n | 0) }), h("small", { text: t })))),
       porLibro);
   }
@@ -5138,6 +5388,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
       if (q.rango === -1) return cargarTodos();
       const r = await pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(q.rango) }));
       if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
+      const ambTxt = (r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "la clasificación mundial" : "tu clasificación");
+      comprobarAdelantamientos("clas:" + q.ambito + ":" + q.periodo + ":" + r.rango, r.lista, ambTxt, "#/escudrina/clasificacion", r.yo);
       const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
       const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
@@ -5159,7 +5411,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
       for (const i of orden) {
         const r = rs[i]; if (!r || r.error) continue;
         const id = "jg-rg-" + i, lista = r.lista || [];
-        if (r.yo) mia = { i, p: r.yo.p, xp: r.yo.xp, id };
+        if (r.yo) {
+          mia = { i, p: r.yo.p, xp: r.yo.xp, id };
+          const ambTxt = (r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "la clasificación mundial" : "tu clasificación");
+          comprobarAdelantamientos("clas:" + q.ambito + ":" + q.periodo + ":" + i, lista, ambTxt, "#/escudrina/clasificacion", r.yo);
+        }
         const ol = h("ol", { class: "jg-lista" }, lista.slice(0, 10).map(filaDe));
         const mas = lista.length > 10 ? h("button", { class: "btn chico", type: "button", onclick: (e) => { ol.replaceChildren(...lista.map(filaDe)); e.currentTarget.remove(); } }, "Ver los " + lista.length) : null;
         saltos.push(h("button", { class: "jg-salto" + (r.yo ? " mio" : ""), type: "button", onclick: () => { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: "start", behavior: sinAnim() ? "auto" : "smooth" }); } }, RANGOS[i], h("small", { text: String(lista.length) })));
@@ -5787,13 +6043,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function ponerLB(v, forzar, m, dos) {
     if (!LB.el) return;
     LB.modal = document.documentElement.classList.contains("con-modal");
-    if (!v || LB.modal) { LB.v = 0; LB.m = 0; LB.mm = []; LB.clave = ""; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } document.documentElement.classList.remove("jg-con-lb"); quitarMeta(); return; }
+    if (!v || LB.modal) { const habia = LB.v; LB.v = 0; LB.m = 0; LB.mm = []; LB.clave = ""; LB.el.classList.add("fuera"); LB.el.tabIndex = -1; if (LB.ah) LB.ah.hidden = true; if (LB.pie) LB.pie.hidden = true; if (LB.pb) { LB.pb.classList.add("fuera"); LB.pb.tabIndex = -1; } document.documentElement.classList.remove("jg-con-lb"); quitarMeta(); if (habia && !LB.modal && R.lib) document.dispatchEvent(new CustomEvent("biex:verso-activo", { detail: { c: R.lib, cap: R.cap, v: 0 } })); return; }
     const el = document.getElementById("v" + v); if (!el) return;
     m = m || 0;
     // m: el verso al que va el «Leído» (0 = nada que marcar); dos: los dos versos que tocan la zona a la vez
     const mm = dos && dos.length > 1 ? dos : m ? [m] : [], elm = (m && document.getElementById("v" + (dos ? dos[dos.length - 1] : m))) || el;
     const clave = mm.join(","), listo = mm.length > 0 && mm.every((x) => R.pend.has(x));
-    const nuevo = LB.v !== v || LB.clave !== clave;
+    const cambioV = LB.v !== v, nuevo = cambioV || LB.clave !== clave;
     if (LB.ah) LB.ah.classList.toggle("marcado", !marcable(v));
     if (!nuevo && !forzar && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
     const lc = R.lib + "." + R.cap, rep = m ? marcadoAntes(lc, m) : false;
@@ -5813,6 +6069,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       LB.el.querySelector("b").textContent = et;
       LB.el.querySelector("small").textContent = dos ? "versos " + dos.join(" y ") : m ? "verso " + m : "";
       LB.el.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + m + " como leído"));
+      if (cambioV && R.lib) document.dispatchEvent(new CustomEvent("biex:verso-activo", { detail: { c: R.lib, cap: R.cap, v } }));
     }
     LB.el.classList.toggle("espera", !listo);
     const sp = document.querySelector(".jg-sala-p"), alza = sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px";
@@ -6881,6 +7138,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function resumenLiga(r, mini) {
     const nv = r.nv || 1, i = nv - 1, yo = (r.lista || []).find((x) => x.yo);
+    if (r.enGrupo && Array.isArray(r.lista) && r.lista.length) {
+      comprobarAdelantamientos("liga:" + (r.sem || semanaClave()) + ":" + nv, r.lista, "la liga " + ligaNombre(nv), "#/escudrina/liga");
+    }
     const cab = h("div", { class: "jg-liga-cab" }, h("span", { class: "jg-gema-viva", style: "--g:" + PIEDRAS[i][2] }, gema(i, true)),
       h("div", {}, h("p", { class: "jg-tit", text: "Liga " + ligaNombre(nv) }),
         h("p", { class: "jg-mini" }, h("span", { lang: "grc", text: PIEDRAS[i][0] }), " · " + ORDF[i] + " fundamento de 12 · termina en " + restaTexto(r.fin))));
@@ -6954,7 +7214,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         inv && inv.c ? h("div", { class: "jg-aviso" }, "Te invitaron a una compañía. ", h("a", { href: "#/escudrina/c/" + inv.c, text: "Ver la invitación" })) : null, formCompania(pista));
     }
     const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando…" }));
-    pedir("/compania", { guardable: true }).then((r) => { if (!zona.isConnected || r.error || !r.comp) return; zona.replaceChildren(metaCompania(r)); animarCifras(zona); });
+    pedir("/compania", { guardable: true }).then((r) => {
+      if (!zona.isConnected || r.error || !r.comp) return;
+      if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + r.comp.cod, r.miembros, "tu compañía «" + r.comp.nombre + "»", "#/escudrina/compania");
+      zona.replaceChildren(metaCompania(r)); animarCifras(zona);
+    });
     return tarjeta("Compañía · " + y.comp.nombre, ico("compania"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/compania" }, ico("compania"), h("span", { text: "Ver mi compañía" })),
       h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
   }
@@ -6972,6 +7236,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       return animarCifras(zona);
     }
     const c = r.comp;
+    if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + c.cod, r.miembros, "tu compañía «" + c.nombre + "»", "#/escudrina/compania");
     const salir = h("button", { class: "btn", type: "button", onclick: async (e) => {
       if (!e.currentTarget.dataset.seguro) { e.currentTarget.dataset.seguro = "1"; e.currentTarget.querySelector("span").textContent = "Toca otra vez para salir"; return; }
       const x = await pedir("/compania/salir", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x));
@@ -7378,8 +7643,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; if (S.cont && S.cont.isConnected) repintar(); },
     // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
     estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v), veces: vecesDe(c + "." + cap, v), k: lecturasK() } : null),
-    // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista (14-nov-2026)
-    versoActivo: () => (R.lib && (LB.v || R.vf)) || 0,
+    // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista y para sincronizar el marcador flotante (14-nov-2026 · Argon 23-nov-2026)
+    versoActivo: (c, cap) => (R.lib && (!c || R.lib === c) && (!cap || R.cap === cap) && (LB.v || R.vf)) || 0,
     // V22 · benignidad: compartir un verso o un capítulo hace crecer ese aspecto del fruto (cuenta una vez al día por pasaje)
     async compartido(hh) {
       const m = /^#\/([1-3A-Z]{3})\/(\d{1,3})(?:\/[a-z]+)?(?:\/(\d{1,3}))?/.exec(String(hh || "")); if (!m || !S.token) return;
