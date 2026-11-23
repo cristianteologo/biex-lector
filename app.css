@@ -240,7 +240,7 @@ a { color: var(--oro); text-underline-offset: 3px; }
 .libro-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 22px; padding-bottom: 40px; }
 @media (min-width: 1024px) { .libro-grid { grid-template-columns: 272px minmax(0, 1fr); } }
 .riel { display: none; }
-@media (min-width: 1024px) { .riel { display: grid; gap: 20px; align-content: start; position: sticky; top: calc(var(--alto) + 18px + env(safe-area-inset-top, 0px)); max-height: calc(100vh - var(--alto) - 34px); overflow: auto; padding: 2px 6px 10px 2px; scrollbar-width: thin; } }
+@media (min-width: 1024px) { .riel { display: grid; gap: 20px; align-content: start; position: sticky; top: calc(var(--alto) + 18px + env(safe-area-inset-top, 0px)); max-height: calc(100vh - var(--alto) - 34px); overflow: auto; padding: 2px 6px 10px 2px; scrollbar-width: none; } }
 .rotulo { font-family: var(--f-ui); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--tenue); margin: 0 0 10px; }
 .caps { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; }
 .cap { position: relative; display: grid; place-items: center; height: 38px; border: 1px solid var(--linea-2); background: var(--hoja); border-radius: 8px; font-family: var(--f-display); font-size: 1.05rem; text-decoration: none; color: var(--tinta-2); overflow: hidden; }
@@ -837,7 +837,7 @@ button.ms-w { border: 0; background: none; font: inherit; color: inherit; cursor
 /* ===================================================================== línea del tiempo */
 .tl-intro { max-width: 760px; font-size: .95rem; line-height: 1.6; }
 .tl-conj { display: grid; gap: 10px; padding: 18px 20px 16px; border: 1px solid var(--linea-2); border-radius: var(--radio); background: var(--hoja); }
-.tl-mapa { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; margin: 0 -6px; padding: 0 6px; -webkit-overflow-scrolling: touch; }
+.tl-mapa { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -6px; padding: 0 6px; -webkit-overflow-scrolling: touch; }
 .tl-lienzo { position: relative; min-width: 640px; height: 120px; margin: 0 22px 0 16px; }
 .te-eje { position: absolute; left: 0; right: 0; height: 1px; background: var(--linea); }
 .te-m { position: absolute; pointer-events: none; top: 7px; transform: translateX(-50%); font-family: var(--f-ui); font-size: .7rem; font-variant-numeric: tabular-nums; color: var(--tenue); white-space: nowrap; }
@@ -1190,7 +1190,7 @@ select.mm-nativo { position: fixed !important; left: 0 !important; top: 0 !impor
 .mm-pop { position: fixed; z-index: 2000; overflow: auto; overscroll-behavior: contain; padding: 6px; display: grid; gap: 2px; border-radius: 16px;
   background: color-mix(in srgb, var(--hoja) 70%, transparent); -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
   border: 1px solid color-mix(in srgb, var(--oro) 30%, transparent); box-shadow: 0 24px 60px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
-  transform-origin: top center; animation: mmEntra .16s cubic-bezier(.2, .8, .2, 1); scrollbar-width: thin; }
+  transform-origin: top center; animation: mmEntra .16s cubic-bezier(.2, .8, .2, 1); scrollbar-width: none; }
 :root[data-theme="light"] .mm-pop { background: color-mix(in srgb, #fffdf8 72%, transparent); box-shadow: 0 24px 60px rgba(60, 45, 20, .22), inset 0 1px 0 rgba(255, 255, 255, .7); }
 .mm-pop.arriba { transform-origin: bottom center; }
 .mm-pop.sale { animation: mmSale .14s ease forwards; }
@@ -2193,8 +2193,9 @@ html[data-mov="no"].aparece #vista { animation: none; }
    lo que no cabe se ajusta (cada vista se probó de 280 a 1280 px con los nueve tamaños); el recorte es solo la red de seguridad */
 html, body { overflow-x: clip; }
 html.lupa, html.lupa body { overflow-x: visible; } /* la lupa del escritorio (Ctrl + rueda o el panel) sí recorre la página a lo ancho */
-html, body, * { scrollbar-width: none !important; }
-::-webkit-scrollbar { display: none; width: 0 !important; height: 0 !important; }
+:root, html, body, * { scrollbar-width: none !important; scrollbar-color: transparent transparent !important; -ms-overflow-style: none !important; }
+:root::-webkit-scrollbar, html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; }
+::-webkit-scrollbar-thumb, ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { display: none !important; background: transparent !important; }
 /* Las cajas de los textos añadidos, idénticas en las dos vistas (verso por fila y perícopa): mismo ancho, márgenes y letra */
 .lectura .aviso-anadido, .continuo .aviso-anadido { max-width: 768px; margin: 16px auto 12px; }
 .continuo .aviso-anadido p { font-size: inherit; line-height: inherit; text-align: start; hyphens: manual; -webkit-hyphens: manual; }
@@ -2582,5 +2583,11 @@ html.jg-con-sala .pie.pie-a .in { padding-bottom: 56px; }
 .nav-libros.por-grupos .libs { display: flex; flex-wrap: wrap; gap: 6px; }
 .nav-libros.por-grupos .lib-chip { flex: 1 1 calc(50% - 3px); min-width: 0; }
 @media (min-width: 700px) { .nav-libros.por-grupos .lib-chip { flex-basis: calc(33.333% - 4px); } }
-/* AL10: una ventana que vuelve con «Atrás» aparece ya puesta (sin la entrada), con su velo de fondo también quieto */
-.modal.sin-entrada[open], .modal.sin-entrada[open]::backdrop { animation: none !important; }
+/* AL10 + Neon (23-nov-2026): una ventana que vuelve con «Atrás» (o se cierra al seguir un resultado de búsqueda) no ejecuta
+   ni animación ni transición @supports(overlay:auto) — evita el doble parpadeo al volver desde resultados de Buscar */
+.modal.sin-entrada, .modal.sin-entrada[open], .modal.sin-entrada::backdrop, .modal.sin-entrada[open]::backdrop { animation: none !important; transition: none !important; }
+/* Fluidez en teléfono (Neon, 23-nov-2026): las ventanas flotantes del juego (.modal.flot) usan velo obsidiana nítido sin
+   backdrop-filter de pantalla completa, evitando que el GPU desenfoque la vista de fondo en cada cuadro al desplazarse */
+.modal.flot::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(4, 3, 2, .78); }
+:root[data-theme="light"] .modal.flot::backdrop { background: rgba(28, 21, 10, .42); }
+.modal.flot .m-cuerpo { -webkit-overflow-scrolling: touch; contain: layout style; }

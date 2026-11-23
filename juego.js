@@ -176,14 +176,113 @@
   }
   const invitacionPendiente = () => { const p = A.store.get("jg:inv", null); return p && p.c && Date.now() - (p.t || 0) < 30 * 864e5 ? p.c : null; };
 
-  // ------------------------------------------------------------------ arte (vectorial, alta definición)
+  // 12 bloques del fundamento (Ἀpοκάlυpsις 21:19-20 · Neon, 23-nov-2026): cada piedra con el corte y veta propios de su material
+  // real (sin ids para repetirse en Tesoro, Ligas, Celebración y Guía; cero cruces ni estrellas)
   function gema(i, tiene) {
-    const c = PIEDRAS[i][2], cl = mezcla(c, "#ffffff", 0.45), cm = mezcla(c, "#ffffff", 0.18), co = mezcla(c, "#000000", 0.3), cx = mezcla(c, "#000000", 0.48);
-    const f = tiene ? "" : ' fill-opacity=".14"';
-    return A.svg('<g stroke="' + (tiene ? mezcla(c, "#ffffff", 0.6) : "currentColor") + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
-      '<path d="M6 18L14 9l6 9z" fill="' + cm + '"/><path d="M14 9h20l-6 9h-8z" fill="' + cl + '"/><path d="M34 9l8 9H28z" fill="' + c + '"/>' +
-      '<path d="M6 18h14l4 24z" fill="' + co + '"/><path d="M20 18h8l-4 24z" fill="' + c + '"/><path d="M28 18h14L24 42z" fill="' + cx + '"/></g>' +
-      (tiene ? '<ellipse cx="31.5" cy="12.4" rx="3" ry="1.05" transform="rotate(-32 31.5 12.4)" fill="#fff" opacity=".85"/>' : ""), "0 0 48 48");
+    const c = PIEDRAS[i][2], cl = mezcla(c, "#ffffff", 0.45), cm = mezcla(c, "#ffffff", 0.18), co = mezcla(c, "#000000", 0.32), cx = mezcla(c, "#000000", 0.52);
+    const st = tiene ? mezcla(c, "#ffffff", 0.56) : "currentColor", f = tiene ? "" : ' fill-opacity=".14"';
+    const brillo = (x, y, rx, ry, rot) => tiene ? '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" transform="rotate(' + rot + " " + x + " " + y + ')" fill="#fff" opacity=".78"/>' : "";
+    let d = "";
+    if (i === 0) { // Ἴαspις [jaspe]: bloque mineral opaco redondeado con vetas orgánicas y motas ocres
+      d = '<g stroke="' + st + '" stroke-width=".75" stroke-linejoin="round"' + f + '>' +
+        '<path d="M13 9C20 6.5 29 7 35 11C41 15 42 25 38 33C34 40 23 42 15 38C7.5 34 6.5 22 9 14C10 11 11.2 9.8 13 9Z" fill="' + c + '"/>' +
+        '<path d="M9.5 18C16 14 25 18 39 14C40 19 39.5 24 38.5 26C28 29 18 24 8.5 28Z" fill="' + co + '" opacity=".75" stroke="none"/>' +
+        '<path d="M12 31C20 27 29 33 36.5 31.5C33.5 38 24 40.5 16 37.5Z" fill="' + cx + '" opacity=".72" stroke="none"/>' +
+        '<path d="M11 14.5C18 12.5 27 14 35.5 11.5" fill="none" stroke="' + cl + '" stroke-width="1.4" opacity=".68" stroke-linecap="round"/>' +
+        (tiene ? '<circle cx="19" cy="21" r="1.2" fill="#d9b25f" opacity=".8"/><circle cx="31" cy="28" r="1.1" fill="#d9b25f" opacity=".75"/><circle cx="24" cy="34" r=".9" fill="#f3d893" opacity=".7"/>' : "") +
+        '</g>' + brillo(18, 13.5, 4.2, 1.4, -22);
+    } else if (i === 1) { // Sάpfειrος [zafiro/lapislázuli antiguo]: cabujón oval real con motas doradas de pirita
+      d = '<g stroke="' + st + '" stroke-width=".75" stroke-linejoin="round"' + f + '>' +
+        '<ellipse cx="24" cy="24" rx="14.5" ry="17.5" fill="' + co + '"/>' +
+        '<ellipse cx="24" cy="23.5" rx="11.8" ry="14.5" fill="' + c + '" stroke="none"/>' +
+        '<ellipse cx="22.5" cy="20.5" rx="7.6" ry="9.4" fill="' + cm + '" opacity=".72" stroke="none"/>' +
+        '<path d="M14 14Q24 9 34 14M13.5 33.5Q24 39 34.5 33.5" fill="none" stroke="' + cl + '" stroke-width=".65" opacity=".55"/>' +
+        (tiene ? '<circle cx="18" cy="27" r="1.1" fill="#f5cf6b"/><circle cx="29.5" cy="19" r=".95" fill="#ffe7a6"/><circle cx="26.5" cy="31.5" r="1.15" fill="#e6b74c"/><circle cx="21" cy="15.5" r=".75" fill="#fff2c4"/>' : "") +
+        '</g>' + brillo(18.5, 14.5, 3.6, 1.3, -38);
+    } else if (i === 2) { // Χαlκēδṓn [calcedonia]: piedra pulida translúcida con bandas lechosas suaves
+      d = '<g stroke="' + st + '" stroke-width=".75"' + f + '>' +
+        '<path d="M24 7C33.5 7 40 14 40 24.5C40 34.5 33 41 24 41C14.5 41 8 34 8 24.5C8 14.5 14.5 7 24 7Z" fill="' + co + '"/>' +
+        '<path d="M24 9.5C32 9.5 37.5 15.5 37.5 24.5C37.5 33 31.8 38.5 24 38.5C16 38.5 10.5 32.8 10.5 24.5C10.5 15.8 16 9.5 24 9.5Z" fill="' + c + '" stroke="none"/>' +
+        '<path d="M11 22C17 17.5 31 17.5 37 22" fill="none" stroke="' + cl + '" stroke-width="2.4" opacity=".68" stroke-linecap="round"/>' +
+        '<path d="M12.5 29.5C19 26 29 26 35.5 29.5" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".42" stroke-linecap="round"/>' +
+        '<ellipse cx="24" cy="18" rx="8.5" ry="5.5" fill="' + cl + '" opacity=".38" stroke="none"/>' +
+        '</g>' + brillo(18, 14.5, 4.4, 1.5, -28);
+    } else if (i === 3) { // Smάrαgδος [esmeralda]: talla esmeralda escalonada octagonal rectangular
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M15 7H33L39 13V35L33 41H15L9 35V13Z" fill="' + cx + '"/>' +
+        '<path d="M15 7H33L30 12.5H18Z" fill="' + cl + '"/><path d="M9 13L15 7L18 12.5L14 16.5Z" fill="' + cm + '"/>' +
+        '<path d="M33 7L39 13L34 16.5L30 12.5Z" fill="' + c + '"/><path d="M9 13L14 16.5V31.5L9 35Z" fill="' + co + '"/>' +
+        '<path d="M39 13V35L34 31.5V16.5Z" fill="' + cx + '"/><path d="M14 31.5L18 35.5H30L34 31.5L39 35L33 41H15L9 35Z" fill="' + co + '"/>' +
+        '<path d="M18 12.5H30L34 16.5V31.5L30 35.5H18L14 31.5V16.5Z" fill="' + c + '"/>' +
+        '<rect x="17.5" y="16" width="13" height="16" rx="1.2" fill="' + cm + '" opacity=".85"/>' +
+        '</g>' + brillo(21, 18.5, 3.2, 1, -24);
+    } else if (i === 4) { // Sαrδόnυc̅ṣ [sardónice]: bloque camafeo con estratos paralelos terracota y marfil
+      d = '<g stroke="' + st + '" stroke-width=".75"' + f + '>' +
+        '<rect x="9" y="8" width="30" height="32" rx="10" fill="' + cx + '"/>' +
+        '<path d="M10 15H38V20.5H10Z" fill="#f7ebd2" stroke="none" opacity=".92"/>' +
+        '<path d="M9.5 20.5H38.5V27.5H9.5Z" fill="' + c + '" stroke="none"/>' +
+        '<path d="M10 27.5H38V31.5H10Z" fill="#f5e3c2" stroke="none" opacity=".88"/>' +
+        '<path d="M11.5 31.5H36.5C35.5 36.8 31.5 39.5 24 39.5C16.5 39.5 12.5 36.8 11.5 31.5Z" fill="' + co + '" stroke="none"/>' +
+        '<path d="M13 10.5H35C36.8 11.8 37.6 13.3 38 15H10C10.4 13.3 11.2 11.8 13 10.5Z" fill="' + cm + '" stroke="none"/>' +
+        '<rect x="9" y="8" width="30" height="32" rx="10" fill="none" stroke="' + st + '" stroke-width=".85"/>' +
+        '</g>' + brillo(18, 12.5, 4.4, 1.2, -12);
+    } else if (i === 5) { // Sάrδιοn [cornalina / sardio]: cabujón lágrima-oval traslúcido de fuego cálido
+      d = '<g stroke="' + st + '" stroke-width=".75"' + f + '>' +
+        '<path d="M24 6.5C31 14 38 22 38 29C38 36.5 32 41.5 24 41.5C16 41.5 10 36.5 10 29C10 22 17 14 24 6.5Z" fill="' + cx + '"/>' +
+        '<path d="M24 9.5C30 16 35.5 23 35.5 29C35.5 35 30.5 39 24 39C17.5 39 12.5 35 12.5 29C12.5 23 18 16 24 9.5Z" fill="' + c + '" stroke="none"/>' +
+        '<ellipse cx="24" cy="29.5" rx="7.5" ry="7" fill="' + cl + '" opacity=".5" stroke="none"/>' +
+        '<circle cx="24" cy="31" r="3.6" fill="#ffd29d" opacity=".48" stroke="none"/>' +
+        '</g>' + brillo(19.5, 20.5, 2.2, 4.8, 22);
+    } else if (i === 6) { // Χrυsόlιdsος [crisólito]: gema cojín facetada verde-dorado luminoso
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M16 8Q24 5.5 32 8L40 16Q42.5 24 40 32L32 40Q24 42.5 16 40L8 32Q5.5 24 8 16Z" fill="' + co + '"/>' +
+        '<path d="M16 8L24 14L32 8L40 16L34 24L40 32L32 40L24 34L16 40L8 32L14 24L8 16Z" fill="' + c + '"/>' +
+        '<path d="M16 8Q24 5.5 32 8L24 14Z" fill="' + cl + '"/><path d="M8 16L16 8L14 24Z" fill="' + cm + '"/>' +
+        '<path d="M18 16H30L32 24L30 32H18L16 24Z" fill="' + cl + '" opacity=".86"/>' +
+        '<path d="M21 19.5H27L28.5 24L27 28.5H21L19.5 24Z" fill="#fffbe0" opacity=".42" stroke="none"/>' +
+        '</g>' + brillo(20.5, 14, 3.6, 1.1, -20);
+    } else if (i === 7) { // Βḗrυllος [berilo]: prisma columnar hexagonal natural con estrías finas
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M14 13L24 7L34 13V35L24 41L14 35Z" fill="' + co + '"/>' +
+        '<path d="M14 13L20 15.5V37.5L14 35Z" fill="' + cm + '"/><path d="M20 15.5L28 15.5V37.5L20 37.5Z" fill="' + c + '"/>' +
+        '<path d="M28 15.5L34 13V35L28 37.5Z" fill="' + cx + '"/><path d="M14 13L24 7L34 13L28 15.5H20Z" fill="' + cl + '"/>' +
+        '<path d="M22.5 18V35M25.5 18V35" fill="none" stroke="#ffffff" stroke-width=".6" opacity=".35"/>' +
+        '</g>' + brillo(22, 11.2, 3.2, 1, -15);
+    } else if (i === 8) { // Τοpάζιοn [topacio]: talla radiante cálida miel-dorada de 8 caras
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M17 7H31L39 15V33L31 41H17L9 33V15Z" fill="' + co + '"/>' +
+        '<path d="M17 7H31L27.5 13H20.5Z" fill="' + cl + '"/><path d="M9 15L17 7L20.5 13L15 18.5Z" fill="#fff4c4" opacity=".9"/>' +
+        '<path d="M31 7L39 15L33 18.5L27.5 13Z" fill="' + cm + '"/><path d="M9 15L15 18.5V29.5L9 33Z" fill="' + c + '"/>' +
+        '<path d="M39 15V33L33 29.5V18.5Z" fill="' + cx + '"/><path d="M15 29.5L20.5 35H27.5L33 29.5L39 33L31 41H17L9 33Z" fill="' + co + '"/>' +
+        '<path d="M20.5 13H27.5L33 18.5V29.5L27.5 35H20.5L15 29.5V18.5Z" fill="' + cm + '"/>' +
+        '<path d="M24 15L30.5 24L24 33L17.5 24Z" fill="' + cl + '" opacity=".75"/>' +
+        '</g>' + brillo(20.5, 16, 3.1, 1.1, -30);
+    } else if (i === 9) { // Χrυsόprαsος [crisopraso]: cabujón verde manzana translúcido con luz interior cálida
+      d = '<g stroke="' + st + '" stroke-width=".75"' + f + '>' +
+        '<rect x="8.5" y="10" width="31" height="28" rx="13" fill="' + co + '"/>' +
+        '<rect x="10.8" y="12.2" width="26.4" height="23.6" rx="11" fill="' + c + '" stroke="none"/>' +
+        '<ellipse cx="24" cy="24" rx="10" ry="8.5" fill="' + cm + '" opacity=".72" stroke="none"/>' +
+        '<ellipse cx="22.5" cy="22" rx="5.5" ry="4.2" fill="#eaffbe" opacity=".55" stroke="none"/>' +
+        '</g>' + brillo(17.5, 16, 4.2, 1.4, -24);
+    } else if (i === 10) { // ῾Hυάκιndsος [jacinto]: talla marquesa encendida de fuego canela-ámbar
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M24 6C32.5 12.5 37.5 18.5 37.5 24C37.5 29.5 32.5 35.5 24 42C15.5 35.5 10.5 29.5 10.5 24C10.5 18.5 15.5 12.5 24 6Z" fill="' + cx + '"/>' +
+        '<path d="M24 6L30 16L24 14L18 16Z" fill="' + cl + '"/><path d="M18 16L10.5 24L18 32L24 24Z" fill="' + cm + '"/>' +
+        '<path d="M30 16L37.5 24L30 32L24 24Z" fill="' + co + '"/><path d="M18 32L24 42L30 32L24 34Z" fill="' + cx + '"/>' +
+        '<path d="M24 14L30 24L24 34L18 24Z" fill="' + c + '"/>' +
+        '<path d="M24 18L27.5 24L24 30L20.5 24Z" fill="#ffd299" opacity=".62" stroke="none"/>' +
+        '</g>' + brillo(20.5, 17, 2.2, 4, 24);
+    } else { // Ἀmέdsυsτος [amatista]: drusa natural de tres cristales hexagonales de cuarzo violeta
+      d = '<g stroke="' + st + '" stroke-width=".7" stroke-linejoin="round"' + f + '>' +
+        '<path d="M8 38L10 21L15 16L19 22L18 38Z" fill="' + co + '"/><path d="M10 21L15 16L15 38H11Z" fill="' + cm + '"/>' +
+        '<path d="M30 38L29 22L33 17L38 22L40 38Z" fill="' + cx + '"/><path d="M29 22L33 17L34 38H30Z" fill="' + c + '"/>' +
+        '<path d="M16.5 39V17L24 7L31.5 17V39Z" fill="' + co + '"/>' +
+        '<path d="M16.5 17L24 7V39H16.5Z" fill="' + c + '"/><path d="M24 7L20 17V39H24Z" fill="' + cm + '"/>' +
+        '<path d="M24 7L28 17L24 14.5L20 17Z" fill="' + cl + '"/>' +
+        '<path d="M10 38H38L35 41H13Z" fill="' + cx + '"/>' +
+        '</g>' + brillo(21.8, 12.5, 1.4, 3.6, 14);
+    }
+    return A.svg(d, "0 0 48 48");
   }
   function lauro() {
     const cx = 24, cy = 23, r = 15.5;
@@ -492,65 +591,58 @@ html[data-mov="no"] .av-pozo i{animation:none}
 :root[data-theme="light"] .ap-pd-gema{background:radial-gradient(circle at 38% 30%,#2c2418,#120f0b 76%);border-color:rgba(138,106,43,.7)}
 @media (prefers-reduced-motion:reduce){.ap-pd-gema-luz,.ap-pd-brillo{animation:none}.ap-pd-brillo{opacity:0}}
 html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:none}html[data-mov="no"] .ap-pd-brillo{opacity:0}
-/* AF33 v2 · Cámara Orbital del Poder (Neon, 23-nov-2026): esfera orbital 3D inspirada en filamentos de oro entrelazados,
-   períodos coprimos que nunca se repiten mecánicamente, inclinación táctil/puntero por compositor, pilares resonantes y
-   medallones vivos de estadísticas; cero animaciones dentro del SVG, cero cruces ni estrellas */
+/* AF33 v3 · Cámara Orbital del Poder (Neon, 23-nov-2026): optimizada para desplazamiento sedoso en móvil sin cortes —
+   3 planos excéntricos de oro entrelazados en períodos coprimos, sin preserve-3d anidado dentro de clip circular, sin
+   filter:drop-shadow en texto animado, pausa automática fuera de pantalla y al abrir ventana modal; cero cruces ni estrellas */
 .ap-vp{--vp-c1:#e8cf94;--vp-c2:#6ea8e0;--vp-c3:#e84866;--vp-c4:#4db9ae;--vp-c5:#e8be63;--vp-c6:#c59bf0;--vp-luz:#e8cf94;display:grid;gap:14px;text-align:left;width:100%;min-width:0}
 :root[data-theme="light"] .ap-vp{--vp-c1:#8a6418;--vp-c2:#275e96;--vp-c3:#a81834;--vp-c4:#1d786b;--vp-c5:#926311;--vp-c6:#6a3ea1}
 .ap-vp-marco{display:grid;justify-items:center;gap:6px;width:100%}
-.ap-vp-reloj{position:relative;width:min(294px,82vw);aspect-ratio:1;margin:0 auto;perspective:860px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.ap-vp-reloj{position:relative;width:min(288px,80vw);aspect-ratio:1;margin:0 auto;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;contain:layout style}
 .ap-vp-reloj:active{cursor:grabbing}
-.ap-vp-escena{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));will-change:transform}
-.ap-vp-cam{position:absolute;inset:2px;border-radius:50%;overflow:hidden;border:1.5px solid transparent;
-  background:radial-gradient(circle at 46% 35%,#20170a 0%,#0b0805 42%,#040405 78%,#000 100%) padding-box,
+.ap-vp-escena{position:relative;width:100%;height:100%;transform:none}
+.ap-vp-escena.inclinada{transform:perspective(820px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));will-change:transform}
+.ap-vp-cam{position:absolute;inset:2px;border-radius:50%;overflow:hidden;border:1.5px solid transparent;contain:layout style paint;
+  background:radial-gradient(circle at 46% 35%,#22180b 0%,#0b0805 42%,#040405 78%,#000 100%) padding-box,
     linear-gradient(135deg,#fff5cf,#d7a645 22%,#593a0e 49%,#e6c06a 76%,#fff1c2) border-box;
-  box-shadow:inset 0 0 28px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.32),inset 0 -1px 0 rgba(201,168,101,.22),0 18px 34px -16px rgba(0,0,0,.88),0 0 28px -10px color-mix(in srgb,var(--vp-luz) 38%,transparent)}
-:root[data-theme="light"] .ap-vp-cam{box-shadow:inset 0 0 28px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.38),0 0 0 3px rgba(138,106,43,.14),0 16px 28px -14px rgba(45,32,12,.45)}
-.ap-vp-luz{position:absolute;inset:8%;border-radius:50%;pointer-events:none;
-  background:radial-gradient(closest-side,color-mix(in srgb,var(--vp-luz) 30%,transparent),color-mix(in srgb,var(--vp-et,#e8cf94) 12%,transparent) 50%,transparent 78%);
-  animation:ap-vp-lat 7.3s ease-in-out infinite;will-change:opacity,transform}
-@keyframes ap-vp-lat{0%,100%{opacity:.42;transform:scale(.95)}50%{opacity:.92;transform:scale(1.05)}}
-.ap-vp-orb{position:absolute;inset:-4%;pointer-events:none;transform-style:preserve-3d}
-.ap-vp-orb.o1{transform:translateZ(-8px) rotateX(22deg) rotateY(-14deg)}
-.ap-vp-orb.o2{transform:translateZ(-2px) rotateX(-24deg) rotateY(18deg)}
-.ap-vp-orb.o3{transform:translateZ(6px) rotateX(15deg) rotateY(22deg)}
-.ap-vp-orb.o4{transform:translateZ(12px) rotateX(-18deg) rotateY(-20deg)}
-.ap-vp-orb.o5{transform:translateZ(16px)}
-.ap-vp-gira{position:absolute;inset:0;will-change:transform;animation:ap-vp-rot var(--vt,47s) linear infinite}
+  box-shadow:inset 0 0 26px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.34),0 16px 30px -16px rgba(0,0,0,.85)}
+:root[data-theme="light"] .ap-vp-cam{box-shadow:inset 0 0 26px rgba(0,0,0,.92),inset 0 1px 0 rgba(255,246,214,.38),0 0 0 3px rgba(138,106,43,.14),0 14px 26px -14px rgba(45,32,12,.42)}
+.ap-vp-luz{position:absolute;inset:10%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--vp-luz) 28%,transparent),color-mix(in srgb,var(--vp-et,#e8cf94) 11%,transparent) 52%,transparent 78%);
+  animation:ap-vp-lat 7.3s ease-in-out infinite;will-change:opacity}
+@keyframes ap-vp-lat{0%,100%{opacity:.46}50%{opacity:.92}}
+.ap-vp-gira{position:absolute;inset:-4%;pointer-events:none;will-change:transform;animation:ap-vp-rot var(--vt,47s) linear infinite}
 .ap-vp-gira.inv{animation-direction:reverse}
 .ap-vp-gira svg{display:block;width:100%;height:100%;overflow:visible}
 @keyframes ap-vp-rot{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .ap-vp-dest{position:absolute;inset:12%;pointer-events:none;will-change:transform;animation:ap-vp-rot var(--dt,23s) linear infinite}
 .ap-vp-dest.inv{animation-direction:reverse}
 .ap-vp-dest i{position:absolute;left:var(--dx,50%);top:var(--dy,8%);width:var(--ds,16px);height:var(--ds,16px);margin:calc(var(--ds,16px) * -.5) 0 0 calc(var(--ds,16px) * -.5);border-radius:50%;
-  background:radial-gradient(closest-side,#fffdf4 0,rgba(255,232,165,.92) 24%,rgba(224,173,72,.35) 54%,transparent 80%);
-  animation:ap-vp-gl var(--pt,6.1s) ease-in-out var(--pd,0s) infinite;will-change:opacity,transform}
-@keyframes ap-vp-gl{0%,100%{opacity:.22;transform:scale(.68)}46%{opacity:1;transform:scale(1.18)}72%{opacity:.5;transform:scale(.88)}}
-.ap-vp-anillo{position:absolute;inset:2px;pointer-events:none;transform:translateZ(18px)}
+  background:radial-gradient(closest-side,#fffdf4 0,rgba(255,232,165,.92) 24%,rgba(224,173,72,.35) 54%,transparent 80%)}
+.ap-vp-anillo{position:absolute;inset:2px;pointer-events:none;transform:translate3d(calc(var(--px,0px) * .45),calc(var(--py,0px) * .45),0)}
 .ap-vp-anillo svg,.ap-vp-parc svg{display:block;width:100%;height:100%;overflow:visible}
-.ap-vp-parcs{position:absolute;inset:2px;pointer-events:none;transform:translateZ(20px)}
-.ap-vp-parc{position:absolute;inset:0;opacity:.62;transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.2,1);will-change:opacity,transform}
-.ap-vp-parc.act{opacity:1;transform:scale(1.016)}
+.ap-vp-parcs{position:absolute;inset:2px;pointer-events:none;transform:translate3d(calc(var(--px,0px) * .65),calc(var(--py,0px) * .65),0)}
+.ap-vp-parc{position:absolute;inset:0;opacity:.62;transition:opacity .28s ease}
+.ap-vp-parc.act{opacity:1}
 .ap-vp-parc.ten{opacity:.28}
-.ap-vp-rayos{position:absolute;inset:-4%;pointer-events:none;opacity:0;transform:translateZ(24px);filter:drop-shadow(0 0 3px rgba(255,230,162,.85));will-change:opacity}
+.ap-vp-rayos{position:absolute;inset:-4%;pointer-events:none;opacity:0;will-change:opacity}
 .ap-vp-rayos svg{display:block;width:100%;height:100%;overflow:visible}
-.ap-vp-velo{position:absolute;inset:21%;border-radius:50%;pointer-events:none;transform:translateZ(25px);
+.ap-vp-velo{position:absolute;inset:21%;border-radius:50%;pointer-events:none;
   background:radial-gradient(closest-side,rgba(5,4,3,.88) 0,rgba(7,6,4,.72) 64%,rgba(7,6,4,0) 100%)}
-.ap-vp-centro{position:absolute;inset:20%;display:grid;place-content:center;justify-items:center;text-align:center;gap:3px;pointer-events:none;transform:translateZ(32px)}
-.ap-vp-rot{font:600 .6rem/1 var(--f-ui);letter-spacing:.26em;text-transform:uppercase;color:#d6b267;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+.ap-vp-centro{position:absolute;inset:20%;display:grid;place-content:center;justify-items:center;text-align:center;gap:3px;pointer-events:none;
+  transform:translate3d(var(--px,0px),var(--py,0px),0)}
+.ap-vp-rot{font:600 .6rem/1 var(--f-ui);letter-spacing:.26em;text-transform:uppercase;color:#d6b267;text-shadow:0 1px 6px rgba(0,0,0,.9)}
 .ap-vp-val{position:relative;font:500 clamp(2.15rem,7vw,2.75rem)/1 var(--f-display);letter-spacing:.015em;font-variant-numeric:lining-nums tabular-nums;
-  background:linear-gradient(180deg,#fffef8 0%,#fce29c 36%,#d49e3c 72%,#8c5e14 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 2px 10px rgba(0,0,0,.95)) drop-shadow(0 0 14px rgba(235,190,94,.28))}
+  background:linear-gradient(180deg,#fffef8 0%,#fce29c 36%,#d49e3c 72%,#8c5e14 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .ap-vp-et{font:600 .61rem/1.15 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--vp-et,#ffe39a);margin-top:3px;padding:3px 9px;border-radius:999px;
-  border:1px solid color-mix(in srgb,var(--vp-et,#ffe39a) 44%,transparent);background:rgba(12,9,5,.78);box-shadow:0 2px 10px rgba(0,0,0,.6)}
-.ap-vp-falta{font:400 .66rem/1.25 var(--f-ui);color:#cbc2b1;max-width:16ch;margin-top:2px;text-shadow:0 1px 6px rgba(0,0,0,.95)}
+  border:1px solid color-mix(in srgb,var(--vp-et,#ffe39a) 44%,transparent);background:rgba(12,9,5,.82)}
+.ap-vp-falta{font:400 .66rem/1.25 var(--f-ui);color:#cbc2b1;max-width:16ch;margin-top:2px;text-shadow:0 1px 5px rgba(0,0,0,.9)}
 .ap-vp-pista{margin:0;text-align:center;font:500 .64rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--tenue);opacity:.78;transition:opacity .4s ease}
 .ap-vp-pista.visto{opacity:.38}
-.ap-vp-banda{display:grid;gap:8px;padding:12px 13px;border-radius:16px;border:1px solid color-mix(in srgb,var(--vp-et,var(--oro)) 34%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--vp-et,var(--oro)) 8%,var(--hoja-2)),color-mix(in srgb,var(--hoja) 92%,transparent))}
+.ap-vp-banda{display:grid;gap:8px;padding:12px 13px;border-radius:16px;border:1px solid color-mix(in srgb,var(--vp-et,var(--oro)) 34%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--vp-et,var(--oro)) 8%,var(--hoja-2)),color-mix(in srgb,var(--hoja) 92%,transparent));contain:layout style}
 .ap-vp-bcab{display:flex;justify-content:space-between;align-items:baseline;gap:6px 10px;flex-wrap:wrap;font:500 .75rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .ap-vp-bcab b{color:var(--oro-vivo);font-weight:600;font-variant-numeric:tabular-nums}
 .ap-vp-tramo{position:relative;height:8px;border-radius:99px;background:color-mix(in srgb,var(--hoja-3) 82%,rgba(0,0,0,.4));box-shadow:inset 0 1px 3px rgba(0,0,0,.55),0 0 0 1px color-mix(in srgb,var(--oro) 22%,transparent);overflow:hidden}
-.ap-vp-tramo>i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--vp-et,var(--oro-vivo)) 72%,#fff4cf);transform:translate3d(calc(var(--p,0) * 1% - 100%),0,0);will-change:transform}
+.ap-vp-tramo>i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--vp-et,var(--oro-vivo)) 72%,#fff4cf);transform:translate3d(calc(var(--p,0) * 1% - 100%),0,0)}
 :root[data-theme="light"] .ap-vp-tramo{background:#ddd2be;box-shadow:inset 0 1px 3px rgba(45,32,12,.25)}
 :root[data-theme="light"] .ap-vp-tramo>i{background:linear-gradient(90deg,#6e4e15,#b3852f 68%,#dfb862)}
 .ap-vp-etapas{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
@@ -564,7 +656,7 @@ html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:
 .ap-vp-etapas b{font:600 .62rem/1.12 var(--f-ui);color:var(--tinta);text-wrap:balance;max-width:100%}
 .ap-vp-etapas small{font:400 .58rem/1 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .ap-vp-sec{font:600 .68rem/1.2 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro);margin:2px 0 -4px}
-.ap-vp-pilares{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap-vp-pilares{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;contain:layout style}
 .ap-vp-pbtn{all:unset;position:relative;overflow:hidden;box-sizing:border-box;width:100%;display:grid;gap:5px;padding:10px 11px;border-radius:14px;cursor:pointer;border:1px solid color-mix(in srgb,var(--pc) 30%,var(--linea-2));
   background:radial-gradient(125% 95% at 0% 0%,color-mix(in srgb,var(--pc) 13%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 82%,transparent);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .22s;-webkit-tap-highlight-color:transparent}
@@ -580,10 +672,10 @@ html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:
 .ap-vp-pnum b{font:600 1.28rem/1 var(--f-display);color:var(--pc);font-variant-numeric:lining-nums tabular-nums}
 .ap-vp-pnum small{font:400 .66rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .ap-vp-pbar{position:relative;height:3.5px;border-radius:99px;background:color-mix(in srgb,var(--tinta) 10%,transparent);overflow:hidden}
-.ap-vp-pbar i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 72%,var(--oro-2)),var(--pc));transform:translate3d(calc(var(--w,0) * 1% - 100%),0,0);will-change:transform}
+.ap-vp-pbar i{position:absolute;inset:0;display:block;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 72%,var(--oro-2)),var(--pc));transform:translate3d(calc(var(--w,0) * 1% - 100%),0,0)}
 .ap-vp-foco{margin:0;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--vp-luz) 30%,var(--linea-2));background:linear-gradient(110deg,color-mix(in srgb,var(--vp-luz) 8%,transparent),color-mix(in srgb,var(--hoja-2) 62%,transparent) 70%);font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2);transition:border-color .25s ease}
 .ap-vp-foco b{color:var(--oro-vivo);font-weight:600}
-.ap-vp-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap-vp-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;contain:layout style}
 @media (min-width:440px){.ap-vp-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .ap-vp-stats li{display:grid;min-width:0}
 .ap-vp-stbtn{all:unset;position:relative;overflow:hidden;box-sizing:border-box;width:100%;display:grid;justify-items:center;align-content:center;gap:3px;padding:11px 7px 10px;border-radius:14px;cursor:pointer;text-align:center;min-width:0;
@@ -591,16 +683,17 @@ html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:
   background:radial-gradient(120% 90% at 50% -15%,color-mix(in srgb,var(--sc,var(--oro)) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 86%,transparent),color-mix(in srgb,var(--hoja) 78%,transparent));
   box-shadow:inset 0 1px 0 rgba(255,248,224,.12),0 6px 14px -12px rgba(0,0,0,.6);
   transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .22s;-webkit-tap-highlight-color:transparent}
-.ap-vp-stbtn::after{content:"";position:absolute;top:-35%;bottom:-35%;left:0;width:42%;pointer-events:none;opacity:.34;
-  background:linear-gradient(108deg,transparent 15%,color-mix(in srgb,var(--sc,#ffe8a8) 38%,#fff) 50%,transparent 85%);
-  transform:translate3d(-170%,0,0);animation:ap-vp-sheen var(--st,17.3s) cubic-bezier(.4,0,.2,1) var(--sd,-3s) infinite;will-change:transform}
-@keyframes ap-vp-sheen{0%,78%{transform:translate3d(-170%,0,0)}100%{transform:translate3d(380%,0,0)}}
-.ap-vp-stbtn:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--sc,var(--oro)) 62%,transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.22),0 10px 20px -14px color-mix(in srgb,var(--sc,var(--oro)) 68%,transparent)}
+.ap-vp-stbtn::after{content:"";position:absolute;top:-35%;bottom:-35%;left:0;width:44%;pointer-events:none;opacity:0;
+  background:linear-gradient(108deg,transparent 15%,color-mix(in srgb,var(--sc,#ffe8a8) 42%,#fff) 50%,transparent 85%);
+  transform:translate3d(-170%,0,0)}
+.ap-vp-stbtn.sel::after{animation:ap-vp-dest 1.15s cubic-bezier(.25,.7,.2,1) 1}
+@keyframes ap-vp-dest{0%{opacity:0;transform:translate3d(-170%,0,0)}22%{opacity:.46}100%{opacity:0;transform:translate3d(360%,0,0)}}
+.ap-vp-stbtn:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--sc,var(--oro)) 62%,transparent)}
 .ap-vp-stbtn:active{transform:scale(.97)}
 .ap-vp-stbtn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
 .ap-vp-stbtn.sel{border-color:color-mix(in srgb,var(--sc,var(--oro)) 80%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--sc,var(--oro)) 26%,transparent),0 10px 22px -14px color-mix(in srgb,var(--sc,var(--oro)) 72%,transparent)}
 .ap-vp-sttop{display:inline-flex;align-items:center;gap:5px}
-.ap-vp-sttop i{width:5.5px;height:5.5px;border-radius:1.2px;transform:rotate(45deg);background:var(--sc,var(--oro));box-shadow:0 0 6px color-mix(in srgb,var(--sc,var(--oro)) 65%,transparent);flex:none}
+.ap-vp-sttop i{width:5.5px;height:5.5px;border-radius:1.2px;transform:rotate(45deg);background:var(--sc,var(--oro));flex:none}
 .ap-vp-stbtn b{font:600 1.08rem/1.1 var(--f-display);color:var(--sc,var(--oro-vivo));font-variant-numeric:lining-nums tabular-nums}
 .ap-vp-stbtn span{font:600 .67rem/1.2 var(--f-ui);color:var(--tinta);letter-spacing:.02em}
 .ap-vp-stbtn small{font:400 .61rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
@@ -609,11 +702,32 @@ html[data-mov="no"] .ap-pd-gema-luz,html[data-mov="no"] .ap-pd-brillo{animation:
 .ap-vp-stnota b{color:var(--oro-vivo);font-weight:600}
 .ap-vp-pie{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;padding-top:4px;font:400 .76rem/1.45 var(--f-ui);color:var(--tinta-2);text-align:center}
 .ap-vp-pie .ap-cita{font:600 .76rem/1.3 var(--f-ui);color:var(--oro-vivo);display:inline-flex;align-items:center;gap:.28em;padding:2px 7px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,transparent);background:color-mix(in srgb,var(--oro) 8%,transparent)}
-.ap-vp.pausa .ap-vp-luz,.ap-vp.pausa .ap-vp-gira,.ap-vp.pausa .ap-vp-dest,.ap-vp.pausa .ap-vp-dest i,.ap-vp.pausa .ap-vp-stbtn::after{animation-play-state:paused}
+.ap-vp.pausa .ap-vp-luz,.ap-vp.pausa .ap-vp-gira,.ap-vp.pausa .ap-vp-dest,.ap-vp.fuera .ap-vp-luz,.ap-vp.fuera .ap-vp-gira,.ap-vp.fuera .ap-vp-dest{animation-play-state:paused}
 @media (max-width:340px){.ap-vp-pilares{grid-template-columns:1fr}.ap-vp-etapas b{font-size:.54rem}}
-@media (prefers-reduced-motion:reduce){.ap-vp-luz,.ap-vp-gira,.ap-vp-dest,.ap-vp-dest i,.ap-vp-stbtn::after{animation:none}.ap-vp-stbtn::after{opacity:0}}
-html[data-mov="no"] .ap-vp-luz,html[data-mov="no"] .ap-vp-gira,html[data-mov="no"] .ap-vp-dest,html[data-mov="no"] .ap-vp-dest i,html[data-mov="no"] .ap-vp-stbtn::after{animation:none}
-html[data-mov="no"] .ap-vp-stbtn::after{opacity:0}
+@media (prefers-reduced-motion:reduce){.ap-vp-luz,.ap-vp-gira,.ap-vp-dest,.ap-vp-stbtn.sel::after{animation:none}}
+html[data-mov="no"] .ap-vp-luz,html[data-mov="no"] .ap-vp-gira,html[data-mov="no"] .ap-vp-dest,html[data-mov="no"] .ap-vp-stbtn.sel::after{animation:none}
+/* Fluidez en Árbol y ventanas abiertas (Neon, 23-nov-2026): contención de pintura y pausa total del fondo detrás de cualquier modal */
+.ap-arbol,.ser-in,.jg-tarjeta{contain:layout style}
+.ser-in.quieto .si-niebla,.ser-in.quieto .si-mo,
+html.con-modal #vista .ap-vida i,html.con-modal #vista .ap-gr-v::before,html.con-modal #vista .ap-gr-v::after,html.con-modal #vista .ap-bebe,
+html.con-modal #vista .si-niebla,html.con-modal #vista .si-mo,html.con-modal #vista .ap-pd-gema-luz,html.con-modal #vista .ap-pd-brillo,
+html.con-modal #vista .jg-yo *{animation-play-state:paused!important}
+/* Cuenta atrás de El Coloso de la Tradición (sábado 28-nov-2026 · 18:00 UTC) */
+.jg-coloso{border:1px solid color-mix(in srgb,var(--oro) 52%,transparent);border-radius:18px;padding:15px 16px;display:grid;gap:10px;
+  background:radial-gradient(125% 110% at 50% -25%,color-mix(in srgb,var(--oro) 18%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.16),0 14px 28px -18px rgba(0,0,0,.78);contain:layout style}
+.jg-coloso-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.jg-coloso-cab .eyebrow{margin:0;color:var(--oro-vivo);letter-spacing:.18em}
+.jg-coloso-h{margin:0;font:500 clamp(1.18rem,4.2vw,1.48rem)/1.18 var(--f-display);color:var(--tinta);letter-spacing:.02em}
+.jg-coloso-p{margin:0;font:400 .82rem/1.48 var(--f-ui);color:var(--tinta-2)}
+.jg-coloso-chip{font:600 .62rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo);padding:4px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:color-mix(in srgb,var(--oro) 11%,transparent)}
+.jg-coloso .jg-cuenta{margin:0;width:100%;justify-items:stretch}
+.jg-coloso .jg-cuenta>.jg-mini,.jg-coloso .jg-zonas{text-align:center}
+.jg-coloso .jg-reloj{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+.jg-coloso .jg-reloj>span{min-width:0;padding:8px 3px;border-radius:12px;border-color:color-mix(in srgb,var(--oro) 28%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 88%,transparent))}
+.jg-coloso .jg-reloj b{font:600 clamp(1.18rem,4.6vw,1.5rem)/1.1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
+.jg-coloso .jg-reloj small{font-size:.58rem;letter-spacing:.05em}
+@media (max-width:305px){.jg-coloso .jg-reloj{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ap-atr,.ap-piezas,.ap-uso,.ap-vitrina{list-style:none;margin:0;padding:0}
 .ap-atr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ap-atr li{display:grid;justify-items:center;gap:7px;padding:10px 6px 9px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 26%,var(--linea-2));background:radial-gradient(120% 85% at 50% 0%,color-mix(in srgb,var(--ac) 15%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tinta) 4%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.07);transition:border-color .2s,box-shadow .2s}
@@ -1288,7 +1402,7 @@ html[data-mov="no"] .jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}html[d
 .jg-atajo small{font:400 .76rem/1.35 var(--f-ui);color:var(--tenue)}
 @media (min-width:720px){.jg-atajos{grid-template-columns:repeat(4,minmax(0,1fr))}}
 /* menú del juego: cinco secciones siempre a la mano */
-.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:color-mix(in srgb,var(--hoja) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 9%,transparent),0 18px 40px -18px rgba(0,0,0,.85);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
+.jg-muelle{position:fixed;z-index:62;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translate3d(-50%,0,0);width:min(calc(100vw - 20px),440px);box-sizing:border-box;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding:6px;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 12%,transparent),0 14px 30px -14px rgba(0,0,0,.88);transition:opacity .25s;animation:jg-sube-muelle .45s cubic-bezier(.2,.8,.2,1) both}
 @keyframes jg-sube-muelle{from{opacity:0;transform:translate3d(-50%,26px,0)}to{opacity:1;transform:translate3d(-50%,0,0)}}
 .jg-muelle a{position:relative;z-index:1;display:grid;justify-items:center;gap:4px;padding:8px 2px 7px;border-radius:16px;color:var(--tenue);text-decoration:none;font:500 .68rem/1 var(--f-ui);letter-spacing:.04em;-webkit-tap-highlight-color:transparent;transition:color .2s}
 .jg-muelle a svg{width:24px;height:24px;transition:transform .32s cubic-bezier(.3,1.6,.5,1)}
@@ -1511,9 +1625,10 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
   background:radial-gradient(circle at 42% 28%,color-mix(in srgb,var(--ac-c,#f5c64e) 34%,#21180d),#070606 78%) padding-box,
     linear-gradient(135deg,#fff8de,var(--ac-c,#f5c64e) 32%,#8bbcff 66%,#ffe9a8) border-box;
   box-shadow:inset 0 1px 1px rgba(255,250,232,.4),0 0 20px -4px color-mix(in srgb,var(--ac-c,#f5c64e) 76%,transparent)}
-.ap-vitrina li.ap-acc-t3 .ap-mu::after,.ap-vitrina li.ap-acc-t4 .ap-mu::after{content:"";position:absolute;top:-35%;bottom:-35%;left:0;width:54%;pointer-events:none;opacity:.46;
-  background:linear-gradient(112deg,transparent 14%,rgba(255,248,224,.42) 45%,rgba(175,218,255,.32) 56%,transparent 86%);
-  transform:translate3d(-175%,0,0);animation:ap-vp-sheen var(--at,11.3s) cubic-bezier(.4,0,.2,1) var(--ad,-2s) infinite;will-change:transform}
+.ap-vitrina li.ap-acc-t3 .ap-mu::after,.ap-vitrina li.ap-acc-t4 .ap-mu::after{content:"";position:absolute;inset:-25%;pointer-events:none;opacity:.34;
+  background:linear-gradient(118deg,transparent 28%,rgba(255,248,224,.42) 48%,rgba(175,218,255,.28) 58%,transparent 76%);
+  transform:translate3d(-18%,0,0);transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+.ap-vitrina li:hover .ap-mu::after{transform:translate3d(26%,0,0);opacity:.58}
 .ap-vitrina li.cerrado .ap-mu{opacity:.9;box-shadow:inset 0 0 0 1px rgba(255,232,168,.26),0 0 16px -6px color-mix(in srgb,var(--ac-c,#f5c64e) 58%,transparent)}
 .ap-vitrina li.puesto{border-color:color-mix(in srgb,var(--oro-vivo) 72%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 15%,transparent),inset 0 1px 0 rgba(255,248,224,.24)}
 .ap-vitrina li .ap-mn{grid-area:mn;display:block;font:600 .86rem/1.25 var(--f-ui)}
@@ -2480,13 +2595,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
     if (sec === "tesoro") partes = [tarjetaPapiros(y), tarjetaHallazgos(y), tarjetaPotencias(y)];
-    else if (sec === "mundo") partes = [tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
+    else if (sec === "mundo") partes = [tarjetaColoso(false), tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
     else if (sec === "juntos") partes = [salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
-    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), pend,
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), tarjetaColoso(true), pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       salaInv,
@@ -2638,18 +2753,41 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // Muestra días, horas, minutos y segundos, la fecha en la hora de quien lee y, plegada, la hora en otras ciudades.
   function cuentaAtras(ms, rotulo, alTerminar) {
     if (!ms) return null;
-    const reloj = h("span", { class: "jg-reloj", role: "timer" });
+    const UN = [["día", "días"], ["hora", "horas"], ["minuto", "minutos"], ["segundo", "segundos"]];
+    const celdas = UN.map(([a, b]) => { const nb = h("b", { text: "0" }), sm = h("small", { text: b }); return { sp: h("span", {}, nb, sm), nb, sm, a, b, v: -1 }; });
+    const reloj = h("span", { class: "jg-reloj", role: "timer" }, ...celdas.map((c) => c.sp));
     const el = h("div", { class: "jg-cuenta" }, h("span", { class: "jg-mini", text: (rotulo || "Lanzamiento") + ": " + fechaLarga(ms) + " (tu hora local)" }), reloj, zonasLanzamiento(ms));
     const pintar = () => {
+      if (document.hidden) return true;
       const f = ms - Date.now();
       if (f <= 0) { el.replaceChildren(h("span", { text: alTerminar || "¡Escudriña ya abrió!" })); return false; }
-      reloj.replaceChildren(uni(Math.floor(f / 864e5), "día", "días"), uni(Math.floor((f % 864e5) / 36e5), "hora", "horas"), uni(Math.floor((f % 36e5) / 6e4), "minuto", "minutos"), uni(Math.floor((f % 6e4) / 1000), "segundo", "segundos"));
+      const vals = [Math.floor(f / 864e5), Math.floor((f % 864e5) / 36e5), Math.floor((f % 36e5) / 6e4), Math.floor((f % 6e4) / 1000)];
+      for (let i = 0; i < 4; i++) {
+        const c = celdas[i], v = vals[i];
+        if (c.v !== v) { c.v = v; c.nb.textContent = String(v); c.sm.textContent = v === 1 ? c.a : c.b; }
+      }
       return true;
     };
     pintar();
-    // con segundos, como en la portada (BiEx, 10-nov-2026); se detiene con la pestaña oculta
+    // con segundos, como en la portada (BiEx, 10-nov-2026); se detiene con la pestaña oculta y actualiza en sitio sin reconstruir nodos
     const t = setInterval(() => { if (!el.isConnected || !pintar()) clearInterval(t); }, 1000);
     return el;
+  }
+  // Cuenta atrás de El Coloso de la Tradición (BiEx, 23-nov-2026): sábado 28-nov-2026 18:00 UTC (visible hasta 7 días después de la apertura)
+  const COLOSO_MS = Date.UTC(2026, 10, 28, 18, 0, 0);
+  function tarjetaColoso(compacta) {
+    const ms = (S.cfg && S.cfg.colosoEn) || COLOSO_MS;
+    if (!ms || Date.now() > ms + 7 * 864e5) return null;
+    const falta = ms - Date.now();
+    return h("section", { class: "jg-coloso" + (compacta ? " comp" : "") },
+      h("div", { class: "jg-coloso-cab" },
+        h("span", { class: "eyebrow", text: falta > 0 ? "Próximo evento comunitario" : "Evento comunitario abierto" }),
+        h("span", { class: "jg-coloso-chip", text: "Sábado 28 nov · 18:00 UTC" })),
+      h("h2", { class: "jg-coloso-h", text: "El Coloso de la Tradición" }),
+      h("p", { class: "jg-coloso-p", text: compacta
+        ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
+        : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
+      cuentaAtras(ms, "Apertura", "¡El Coloso de la Tradición ha despertado!"));
   }
   // Lo que se conserva al lanzar (BiEx, 9-nov-2026): nada se pierde del todo
   const textoConserva = () => { const c = (S.cfg && S.cfg.conserva) || [0.72, 40]; return "entre el " + String(c[0]).replace(".", ",") + " % y el " + String(c[1]).replace(".", ",") + " %"; };
@@ -2831,7 +2969,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
   const semilla32 = (s) => { let h = 2166136261; for (const ch of String(s || "biex")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
   const azar = (k) => () => { k = (k + 0x6d2b79f5) >>> 0; let t = k; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   function fotoUrl(f) { return /^[a-z0-9]{4,12}\.[0-9a-f]{10}$/.test(f || "") ? API_ABS + "/foto/" + f : ""; }
-  let FOTO_N = 0, IO_ARBOL = null;
+  let FOTO_N = 0, IO_ARBOL = null, MO_MODAL = null;
+  function observarModal() {
+    if (MO_MODAL || !window.MutationObserver) return;
+    MO_MODAL = new MutationObserver(() => {
+      const ab = document.documentElement.classList.contains("con-modal");
+      for (const el of document.querySelectorAll("#vista .ap-arbol")) {
+        for (const a of el._anims || []) { try { if (!ab && el._vis !== false) a.play(); else a.pause(); } catch (er) { /* nada */ } }
+      }
+      if (!ab) for (const el of document.querySelectorAll("#vista .ser-in")) if (el._desp) el._desp();
+    });
+    MO_MODAL.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  }
   // Árbol de poder (héroe de la sección)
   function arbolPoder(y, av, frutos) {
     const rnd = azar(semilla32(y.inv)), f1 = (v) => v.toFixed(1), ef = av.ef || {}, nivel = y.nivel || 1;
@@ -2888,13 +3037,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // Vida del árbol fuera del SVG (BiEx, 10-nov-2026: «está borroso»): el dibujo queda quieto y se rasteriza una sola vez a la
     // densidad real; los destellos de la copa, los frutos y las motas son capas pequeñas que solo cambian opacidad y posición
     // (las mueve el compositor, sin volver a pintar el árbol) y se detienen cuando el árbol sale de la pantalla.
+    // Neon (23-nov-2026): capas GPU recortadas (~66 → ~22) preservando exactamente la secuencia rnd() para desplazamiento sedoso en móvil.
     const pc = (x, yy) => "left:" + (x / 10).toFixed(2) + "%;top:" + (yy / 11.1).toFixed(2) + "%";
     const vida = h("div", { class: "ap-vida", "aria-hidden": "true" }, h("i", { class: "ap-copa-v" }));
-    const paso = Math.max(1, Math.floor(brillos.length / 10));
-    for (let i = 0, n = 0; i < brillos.length && n < 10; i += paso, n++) { const [x, yy, r, dl] = brillos[i];
+    const paso = Math.max(1, Math.floor(brillos.length / 6));
+    for (let i = 0, n = 0; i < brillos.length && n < 6; i += paso, n++) { const [x, yy, r, dl] = brillos[i];
       vida.append(h("i", { class: "ap-gl", style: pc(x, yy) + ";--s:" + (1.6 + r / 7).toFixed(2) + ";--d:" + dl.toFixed(2) + "s;--t:" + (4.6 + (i % 5) * 0.7).toFixed(1) + "s" })); }
-    frutXY.slice(0, 8).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
-    for (let i = 0; i < 8; i++) vida.append(h("i", { class: "ap-mo", style: pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s" }));
+    frutXY.slice(0, 4).forEach(([x, yy], i) => vida.append(h("i", { class: "ap-gl fr", style: pc(x, yy) + ";--s:4.2;--d:" + (i * 0.9).toFixed(1) + "s;--t:6.5s" })));
+    for (let i = 0; i < 8; i++) {
+      const stMo = pc(80 + rnd() * 840, 160 + rnd() * 700) + ";--d:" + (rnd() * 9).toFixed(2) + "s;--t:" + (7 + rnd() * 6).toFixed(1) + "s";
+      if (i < 5) vida.append(h("i", { class: "ap-mo", style: stMo }));
+    }
     // V22 + Neon (23-nov-2026): la granada del fruto del espíritu anidada más abajo en el corazón de la copa, sostenida por su
     // tallo al ramaje central y abrazada por brotes dorados en primer plano sin tapar ninguna de las nueve cámaras
     const GR_X = 500, GR_Y = 316, gr = granadaSVG(av.fr || {}, 66);
@@ -2934,7 +3087,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // luces y más rápidas. Capa aparte en las coordenadas del dibujo (offset-path): el árbol sigue quieto y nítido.
     // V19 (BiEx, 12-nov-2026: fluidez del Árbol): la savia ya no anima «offset-path» (el navegador lo calcula en el hilo
     // principal en cada cuadro); cada luz recorre puntos tomados de su raíz con traslados (compositor) y opacidad, y se
-    // detiene cuando el árbol sale de la pantalla. Menos luces: hasta 3 por raíz, con una sola estela.
+    // detiene cuando el árbol sale de la pantalla. Neon (23-nov-2026): hasta 2 pulsos integrados por raíz (máx. 12 capas WAAPI
+    // en vez de 36) y pausa automática cuando hay una ventana modal abierta.
     const savia = h("div", { class: "ap-savia", "aria-hidden": "true" }), saviaA = [];
     try {
       const ns = "http://www.w3.org/2000/svg", sv = document.createElementNS(ns, "svg"); sv.setAttribute("style", "position:absolute;width:0;height:0;overflow:hidden"); document.body.append(sv);
@@ -2944,12 +3098,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
         const L = pa.getTotalLength(), fuera = (l) => { const p = pa.getPointAtLength(l); return Math.hypot(p.x - mx, p.y - my) >= 44; };
         let a = 0, z = L; for (let it = 0; it < 22; it++) { const m = (a + z) / 2; if (fuera(m)) a = m; else z = m; }
         const L0 = a, pts = []; for (let q = 0; q <= 18; q++) { const pt = pa.getPointAtLength(L0 * (1 - q / 18)); pts.push([pt.x, pt.y]); }
-        const n = 1 + Math.min(2, Math.floor(val / 10)), dur = Math.max(2.2, 4.8 - val * 0.06) * 1000;
-        for (let k = 0; k < n; k++) for (const [tam, op, lag] of [[16, 1, 0], [10, 0.45, 70]]) {
+        const n = 1 + Math.min(1, Math.floor(val / 12)), dur = Math.max(2.3, 4.8 - val * 0.06) * 1000, tam = 16, op = 0.96;
+        for (let k = 0; k < n; k++) {
           const el = h("i", { class: "ap-sv", style: "--c:" + col + ";--s:" + tam + "px" }); savia.append(el);
           const kf = pts.map(([x, y], q) => ({ transform: "translate3d(" + (x - tam / 2).toFixed(1) + "px," + (y - tam / 2).toFixed(1) + "px,0)", opacity: q === 0 ? 0 : q === 2 ? op : q === 16 ? op : q === 18 ? 0 : undefined, offset: q / 18 }));
           for (const f of kf) if (f.opacity === undefined) delete f.opacity;
-          if (el.animate && !sinAnim()) saviaA.push(el.animate(kf, { duration: dur, delay: -((dur * k) / n + i * 410 + lag), iterations: Infinity, easing: "cubic-bezier(.45,.05,.55,.95)" }));
+          if (el.animate && !sinAnim()) saviaA.push(el.animate(kf, { duration: dur, delay: -((dur * k) / n + i * 410), iterations: Infinity, easing: "cubic-bezier(.45,.05,.55,.95)" }));
         }
       });
       sv.remove();
@@ -2959,8 +3113,18 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     caja._anims = saviaA;
-    if ("IntersectionObserver" in window) { if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => { for (const e of es) { e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting); for (const a of e.target._anims || []) { try { if (e.isIntersecting) a.play(); else a.pause(); } catch (er) { /* nada */ } } } }); IO_ARBOL.observe(caja); }
-    // (BiEx, 21-nov-2026, AF5) la savia corre también mientras se desplaza la página (solo se detiene fuera de la pantalla)
+    observarModal();
+    if ("IntersectionObserver" in window) {
+      if (!IO_ARBOL) IO_ARBOL = new IntersectionObserver((es) => {
+        const mod = document.documentElement.classList.contains("con-modal");
+        for (const e of es) {
+          e.target._vis = e.isIntersecting; e.target.classList.toggle("quieto", !e.isIntersecting);
+          for (const a of e.target._anims || []) { try { if (e.isIntersecting && !mod) a.play(); else a.pause(); } catch (er) { /* nada */ } }
+        }
+      });
+      IO_ARBOL.observe(caja);
+    }
+    // (BiEx, 21-nov-2026, AF5) la savia corre también mientras se desplaza la página (solo se detiene fuera de la pantalla o bajo modal)
     return caja;
   }
   // Z1 · El ser interior (BiEx, 13 y 14-nov-2026: «Presencia velada», «vivo y sereno»): realista y sin sexo (es espíritu: el
@@ -3076,7 +3240,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "si-fig" }, capa("si-manto", capaManto, true),
         h("div", { class: "si-mueve si-torso" }, capa("", capaTorso, true), h("i", { class: "si-pecho" }),
           h("div", { class: "si-mueve si-cabeza" }, capa("", cab, true), h("i", { class: "si-alma" }))),
-        luces), ...Array.from({ length: 6 }, (_, i) => h("i", { class: "si-mo", style: "left:" + (22 + ((i * 37) % 56)) + "%;--t:" + (6 + (i % 3) * 1.7).toFixed(1) + "s;--d:" + (i * 1.3).toFixed(1) + "s" })));
+        luces), ...Array.from({ length: 4 }, (_, i) => h("i", { class: "si-mo", style: "left:" + (24 + ((i * 37) % 52)) + "%;--t:" + (6.4 + (i % 3) * 1.7).toFixed(1) + "s;--d:" + (i * 1.6).toFixed(1) + "s" })));
     caja.style.setProperty("--si-luz", luz);
     caja.dataset.sig = JSON.stringify([av.eq || {}, acc]); // si no cambia, al ponerse al día el Árbol se conserva este mismo (sin redibujarlo)
     setTimeout(() => vivirSer(caja), 60);
@@ -3093,14 +3257,21 @@ html[data-mov="no"] .ap-savia{display:none!important}
     if (!caja.animate || sinAnim() || caja._vive) return;
     if (!caja.isConnected) { if ((intento | 0) < 50) setTimeout(() => vivirSer(caja, (intento | 0) + 1), 160); return; }
     caja._vive = true;
+    observarModal();
     const fig = caja.querySelector(".si-fig"), fondo = caja.querySelector(".si-fondo"), torso = caja.querySelector(".si-torso"), cabeza = caja.querySelector(".si-cabeza"), alma = caja.querySelector(".si-alma"), pecho = caja.querySelector(".si-pecho");
     const al = (a, b) => a + Math.random() * (b - a);
     let visible = true, t1 = 0, t2 = 0, fuera = 0;
-    const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { const v = e.some((x) => x.isIntersecting); if (v && !visible) { visible = true; respira(); gesto(); } else if (!v) visible = false; }) : null;
+    const enModal = () => !!caja.closest(".modal");
+    const vivo = () => caja.isConnected && visible && !document.hidden && (enModal() || !document.documentElement.classList.contains("con-modal"));
+    const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => {
+      const v = e.some((x) => x.isIntersecting);
+      caja.classList.toggle("quieto", !v);
+      if (v && !visible) { visible = true; if (vivo()) { respira(); gesto(); } } else if (!v) visible = false;
+    }) : null;
     if (io) io.observe(caja);
-    const vivo = () => caja.isConnected && visible && !document.hidden;
-    const alVolver = () => { if (!document.hidden && caja.isConnected && visible) { respira(); gesto(); } };
-    const parar = () => { clearTimeout(t1); clearTimeout(t2); if (io) io.disconnect(); document.removeEventListener("visibilitychange", alVolver); caja._vive = false; };
+    const alVolver = () => { if (vivo()) { respira(); gesto(); } };
+    caja._desp = alVolver;
+    const parar = () => { clearTimeout(t1); clearTimeout(t2); if (io) io.disconnect(); document.removeEventListener("visibilitychange", alVolver); caja._desp = null; caja._vive = false; };
     // fuera del documento por un momento (al ponerse al día el Árbol): espera; si no vuelve en 30 s, se detiene
     const ausente = () => { if (caja.isConnected) { fuera = 0; return false; } if (++fuera > 20) { parar(); return true; } t1 = setTimeout(respira, 1500); return true; };
     function respira() {
@@ -3579,9 +3750,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
     t = setTimeout(descarga, al(900, 2200));
     return chip;
   }
-  // AF33 v2 · Ventana del poder (Neon, 23-nov-2026): cámara orbital 3D inspirada en filamentos de oro entrelazados, períodos
-  // coprimos que nunca se repiten mecánicamente, inclinación táctil/puntero/sensor con reposo a 0 % CPU, pilares resonantes,
-  // medallones vivos de estadísticas y citas in-situ (2 Κοrίndsιοι 4:7 y Ἐfέsιοι 3:16). Cierra con ×, Esc y el gesto atrás.
+  // AF33 v3 · Ventana del poder (Neon, 23-nov-2026): cámara orbital de alta relojería optimizada para desplazamiento sedoso en
+  // móvil sin cortes — 3 planos excéntricos de oro entrelazados en períodos coprimos (31,7 s · 53,1 s · 83,9 s), sin preserve-3d
+  // anidado dentro de recorte circular, reposo en transform:none, relieve 3D+paralaje al interactuar con el dedo o puntero, pausa
+  // automática cuando la esfera sale del campo visual al desplazarse, pilares resonantes, medallones vivos y citas in-situ
+  // (2 Κοrίndsιοι 4:7 y Ἐfέsιοι 3:16). Cierra con ×, Esc y el gesto atrás.
   let VP_N = 0;
   function abrirVentanaPoder(y, P) {
     const yy = S.yo || y || {}, av = (P && P.av) || yy.av || {}, poder = av.poder | 0;
@@ -3612,7 +3785,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       { k: "ac", n: "Accesorios", v: pAc, col: "var(--vp-c4)", luz: "#55ccb9", g: [u + "g4", "#b0f5e8", "#2b877d"], fm: fmt(nInv) + " × 25",
         det: plural(nInv, "accesorio", "accesorios") + " en tu vitrina (" + plural(nEqAcc, "equipado", "equipados") + " en el ser interior). Cada accesorio obtenido suma +25 de poder." },
     ];
-    // 5 planos orbitales estáticos en SVG (filamentos excéntricos de oro fundido, cero animaciones dentro del SVG)
+    // 3 planos orbitales consolidados en SVG estáticos (filamentos excéntricos de oro + elipses + 60 marcas vernier; cero animaciones dentro del SVG)
     const arco = (cx, cy, r, a1, a2) => {
       const p1 = [(cx + r * Math.cos(a1)).toFixed(1), (cy + r * Math.sin(a1)).toFixed(1)];
       const p2 = [(cx + r * Math.cos(a2)).toFixed(1), (cy + r * Math.sin(a2)).toFixed(1)];
@@ -3623,37 +3796,35 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<stop offset="0" stop-color="#a87620" stop-opacity="0"/><stop offset=".24" stop-color="#d49e3a" stop-opacity="' + (op * 0.72).toFixed(2) + '"/>' +
       '<stop offset=".52" stop-color="#fff4ce" stop-opacity="' + op + '"/><stop offset=".78" stop-color="#c9902e" stop-opacity="' + (op * 0.65).toFixed(2) + '"/>' +
       '<stop offset="1" stop-color="#7a5111" stop-opacity="0"/></linearGradient>';
-    const hilo = (d, gid, w, glow) => (glow ? '<path d="' + d + '" fill="none" stroke="url(#' + u + gid + ')" stroke-width="' + (w * 3.4).toFixed(1) + '" stroke-linecap="round" opacity=".2"/>' : "") +
+    const hilo = (d, gid, w, glow) => (glow ? '<path d="' + d + '" fill="none" stroke="url(#' + u + gid + ')" stroke-width="' + (w * 3.2).toFixed(1) + '" stroke-linecap="round" opacity=".18"/>' : "") +
       '<path d="' + d + '" fill="none" stroke="url(#' + u + gid + ')" stroke-width="' + w + '" stroke-linecap="round"/>';
-    const orb1 = A.svg("<defs>" + oroG("oa1", 0, 0, 1, 1, 0.92) + oroG("oa2", 1, 0, 0, 1, 0.74) + "</defs>" +
+    const orb1 = A.svg("<defs>" + oroG("oa1", 0, 0, 1, 1, 0.94) + oroG("oa2", 1, 0, 0, 1, 0.76) + oroG("oa3", 0, 0.2, 1, 0.8, 0.82) + "</defs>" +
+      '<g transform="rotate(-24 150 150)"><ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oa3)" stroke-width="3.6" opacity=".15"/>' +
+      '<ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oa3)" stroke-width="1.15"/></g>' +
       hilo(arco(114, 122, 108, -0.75, 2.35), "oa1", 1.35, 1) +
       hilo(arco(196, 178, 94, 1.35, 4.45), "oa2", 1.05, 1), "0 0 300 300");
-    const orb2 = A.svg("<defs>" + oroG("ob1", 1, 0, 0, 1, 0.9) + oroG("ob2", 0, 1, 1, 0, 0.72) + "</defs>" +
+    const orb2 = A.svg("<defs>" + oroG("ob1", 1, 0, 0, 1, 0.92) + oroG("ob2", 0, 1, 1, 0, 0.74) + oroG("ob3", 0.2, 1, 0.8, 0, 0.8) + "</defs>" +
+      '<g transform="rotate(34 150 150)"><ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'ob3)" stroke-width="3.4" opacity=".15"/>' +
+      '<ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'ob3)" stroke-width="1.1"/></g>' +
       hilo(arco(186, 112, 112, 0.55, 3.65), "ob1", 1.35, 1) +
-      hilo(arco(118, 196, 86, -2.3, 0.78), "ob2", 1.1, 1), "0 0 300 300");
-    const orb3 = A.svg("<defs>" + oroG("oc1", 0, 0.2, 1, 0.8, 0.86) + oroG("oc2", 1, 1, 0, 0, 0.65) + "</defs>" +
-      '<g transform="rotate(-24 150 150)"><ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oc1)" stroke-width="4.2" opacity=".17"/>' +
-      '<ellipse cx="150" cy="150" rx="126" ry="78" fill="none" stroke="url(#' + u + 'oc1)" stroke-width="1.2"/></g>' +
-      hilo(arco(156, 166, 70, -0.9, 2.15), "oc2", 0.95, 0), "0 0 300 300");
-    const orb4 = A.svg("<defs>" + oroG("od1", 0.2, 1, 0.8, 0, 0.84) + oroG("od2", 0, 0, 1, 1, 0.66) + "</defs>" +
-      '<g transform="rotate(34 150 150)"><ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'od1)" stroke-width="3.8" opacity=".16"/>' +
-      '<ellipse cx="150" cy="150" rx="116" ry="70" fill="none" stroke="url(#' + u + 'od1)" stroke-width="1.15"/></g>' +
-      hilo(arco(132, 110, 88, 2.35, 5.4), "od2", 0.9, 0), "0 0 300 300");
+      hilo(arco(118, 196, 86, -2.3, 0.78), "ob2", 1.05, 1), "0 0 300 300");
     let marcas = "";
     for (let i = 0; i < 60; i++) {
       const a = (i / 60) * Math.PI * 2, m = i % 5 === 0;
       marcas += '<line x1="' + (150 + (m ? 133 : 136) * Math.cos(a)).toFixed(1) + '" y1="' + (150 + (m ? 133 : 136) * Math.sin(a)).toFixed(1) + '" x2="' + (150 + 140 * Math.cos(a)).toFixed(1) + '" y2="' + (150 + 140 * Math.sin(a)).toFixed(1) + '" stroke="' + (m ? "#f5d78e" : "#a88339") + '" stroke-opacity="' + (m ? ".52" : ".22") + '" stroke-width="' + (m ? "1.1" : ".6") + '" stroke-linecap="round"/>';
     }
-    const orb5 = A.svg(marcas + '<circle cx="150" cy="150" r="141" fill="none" stroke="#e5bd66" stroke-opacity=".14" stroke-width=".7"/>', "0 0 300 300");
-    const plano = (cls, svg, vt, inv) => h("span", { class: "ap-vp-orb " + cls, "aria-hidden": "true" }, h("span", { class: "ap-vp-gira" + (inv ? " inv" : ""), style: "--vt:" + vt }, svg));
-    // 4 destellos ópticos circulares (sin cruces ni estrellas) en períodos coprimos donde cruzan las órbitas
+    const orb3 = A.svg("<defs>" + oroG("oc1", 1, 1, 0, 0, 0.68) + oroG("oc2", 0, 0, 1, 1, 0.64) + "</defs>" +
+      marcas + '<circle cx="150" cy="150" r="141" fill="none" stroke="#e5bd66" stroke-opacity=".14" stroke-width=".7"/>' +
+      hilo(arco(156, 166, 70, -0.9, 2.15), "oc1", 0.95, 0) +
+      hilo(arco(132, 110, 88, 2.35, 5.4), "oc2", 0.9, 0), "0 0 300 300");
+    const gira = (svg, vt, inv) => h("span", { class: "ap-vp-gira" + (inv ? " inv" : ""), "aria-hidden": "true", style: "--vt:" + vt }, svg);
+    // 3 destellos ópticos circulares (sin cruces ni estrellas) en períodos coprimos donde cruzan las órbitas
     const destellos = [
-      ["13.7s", 0, "50%", "7%", "18px", "4.3s", "-1.1s"],
-      ["19.3s", 1, "86%", "34%", "14px", "6.1s", "-2.8s"],
-      ["27.1s", 0, "24%", "82%", "16px", "7.9s", "-4.5s"],
-      ["37.9s", 1, "14%", "30%", "12px", "9.7s", "-6.2s"],
-    ].map(([dt, inv, dx, dy, ds, pt, pd]) => h("span", { class: "ap-vp-dest" + (inv ? " inv" : ""), "aria-hidden": "true", style: "--dt:" + dt },
-      h("i", { style: "--dx:" + dx + ";--dy:" + dy + ";--ds:" + ds + ";--pt:" + pt + ";--pd:" + pd })));
+      ["17.3s", 0, "50%", "7%", "18px"],
+      ["29.1s", 1, "86%", "34%", "14px"],
+      ["43.7s", 0, "24%", "82%", "16px"],
+    ].map(([dt, inv, dx, dy, ds]) => h("span", { class: "ap-vp-dest" + (inv ? " inv" : ""), "aria-hidden": "true", style: "--dt:" + dt },
+      h("i", { style: "--dx:" + dx + ";--dy:" + dy + ";--ds:" + ds })));
     // Anillo perimetral de etapa + gema diamante de avance
     const angTip = -Math.PI / 2 + fracEt * Math.PI * 2, tx = 150 + 130 * Math.cos(angTip), ty = 150 + 130 * Math.sin(angTip);
     const anillo = h("span", { class: "ap-vp-anillo", "aria-hidden": "true" }, A.svg(
@@ -3674,7 +3845,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const capaRay = h("span", { class: "ap-vp-rayos", "aria-hidden": "true" });
     const valPoder = h("b", { class: "ap-vp-val", text: fmt(poder) });
     const camara = h("div", { class: "ap-vp-cam" }, h("span", { class: "ap-vp-luz", "aria-hidden": "true" }),
-      plano("o1", orb1, "31.7s", 0), plano("o2", orb2, "47.3s", 1), plano("o3", orb3, "61.9s", 0), plano("o4", orb4, "79.1s", 1), plano("o5", orb5, "103.3s", 0), ...destellos);
+      gira(orb1, "31.7s", 0), gira(orb2, "53.1s", 1), gira(orb3, "83.9s", 0), ...destellos);
     const escena = h("div", { class: "ap-vp-escena" }, camara, anillo, parcs, capaRay, h("span", { class: "ap-vp-velo", "aria-hidden": "true" }),
       h("div", { class: "ap-vp-centro" },
         h("span", { class: "ap-vp-rot", text: "Poder" }),
@@ -3693,7 +3864,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "ap-vp-tramo", role: "progressbar", "aria-valuemin": String(inicio), "aria-valuemax": String(meta || poder || 2400), "aria-valuenow": String(poder), "aria-label": "Avance de poder hacia la siguiente etapa", style: "--p:" + (fracEt * 100).toFixed(1) }, barraEt),
       h("ol", { class: "ap-vp-etapas", "aria-label": "Etapas del poder" }, ET.map(([n, rom, nom, ini, , col]) =>
         h("li", { class: n < cur[0] ? "ok" : n === cur[0] ? "act" : "", style: "--ec:" + col }, h("em", { text: rom }), h("i", { "aria-hidden": "true" }), h("b", { text: nom }), h("small", { text: fmt(ini) })))));
-    // Pilares interactivos resonantes con la esfera 3D (2 × 2 simétrico)
+    // Pilares interactivos resonantes con la esfera (2 × 2 simétrico)
     const foco = h("p", { class: "ap-vp-foco", "aria-live": "polite" });
     const ulPil = h("ul", { class: "ap-vp-pilares" });
     const pilBars = [], pilNums = [];
@@ -3715,19 +3886,19 @@ html[data-mov="no"] .ap-savia{display:none!important}
       ulPil.append(h("li", {}, bt));
       if (idx === 0) verP(p, bt, 0);
     });
-    // Estadísticas vivas del ser interior (medallones interactivos con destello asíncrono coprimo y nota al tocar)
+    // Estadísticas vivas del ser interior (medallones interactivos con destello al seleccionar y nota al tocar)
     const STATS = [
-      { k: "nv", sc: "var(--vp-c2)", st: "13.1s", sd: "-2.3s", val: "Nivel " + fmt(niv), cnt: null, nom: yy.rangoNombre || "Lector", sub: yy.enTope ? "tope del mes" : fmt(yy.xpNivel) + " / " + fmt(yy.xpSig),
+      { k: "nv", sc: "var(--vp-c2)", val: "Nivel " + fmt(niv), cnt: null, nom: yy.rangoNombre || "Lector", sub: yy.enTope ? "tope del mes" : fmt(yy.xpNivel) + " / " + fmt(yy.xpSig),
         nota: yy.enTope ? "Has alcanzado el tope mensual (" + yy.tope + "). Tu experiencia sigue acumulándose en reserva (" + fmt(yy.reserva) + ")." : "Te faltan " + fmt(Math.max(0, (yy.xpSig | 0) - (yy.xpNivel | 0))) + " XP para ascender al nivel " + fmt(niv + 1) + " (+15 poder)." },
-      { k: "ar", sc: "var(--vp-c1)", st: "17.3s", sd: "-6.7s", val: grArm + " / 30", cnt: null, nom: "Armadura", sub: "+" + fmt(grArm * 2) + " a atributos",
+      { k: "ar", sc: "var(--vp-c1)", val: grArm + " / 30", cnt: null, nom: "Armadura", sub: "+" + fmt(grArm * 2) + " a atributos",
         nota: grArm >= 30 ? "Armadura forjada al grado máximo (30/30): aporta +60 puntos efectivos (+600 de poder)." : "Faltan " + fmt(30 - grArm) + " grados de forja por completar; cada grado suma +2 a su atributo (+20 de poder)." },
-      { k: "fr", sc: "var(--vp-c3)", st: "21.7s", sd: "-11.4s", val: fmt(sumFr), cnt: sumFr, nom: "Fruto", sub: "en 9 cámaras",
+      { k: "fr", sc: "var(--vp-c3)", val: fmt(sumFr), cnt: sumFr, nom: "Fruto", sub: "en 9 cámaras",
         nota: "Las nueve cámaras del fruto del espíritu (Gαlάται 5:22-23) suman " + fmt(sumFr) + " niveles y aportan +" + fmt(pFr) + " al poder total." },
-      { k: "ac", sc: "var(--vp-c4)", st: "25.9s", sd: "-4.9s", val: fmt(nInv), cnt: nInv, nom: "Accesorios", sub: plural(nEqAcc, "equipado", "equipados"),
+      { k: "ac", sc: "var(--vp-c4)", val: fmt(nInv), cnt: nInv, nom: "Accesorios", sub: plural(nEqAcc, "equipado", "equipados"),
         nota: "Cada aura, manto, lauro o sello que guardas en tu tesoro suma +25 de poder aunque no lo lleves equipado en este momento." },
-      { k: "vc", sc: "var(--vp-c5)", st: "19.1s", sd: "-9.2s", val: fmt(yy.vc || 0), cnt: yy.vc || 0, nom: "Versos leídos", sub: yy.lk && yy.lk.k ? plural(yy.lk.k, "lectura plena", "lecturas plenas") : fmt(yy.xp || 0) + " XP total",
+      { k: "vc", sc: "var(--vp-c5)", val: fmt(yy.vc || 0), cnt: yy.vc || 0, nom: "Versos leídos", sub: yy.lk && yy.lk.k ? plural(yy.lk.k, "lectura plena", "lecturas plenas") : fmt(yy.xp || 0) + " XP total",
         nota: "Solo cuentan los versos confirmados en BiEx («Leído», capítulo marcado o prueba respondida): lectura real, sin atajos." },
-      { k: "cn", sc: "var(--vp-c6)", st: "29.3s", sd: "-15.1s", val: fmt(cantos), cnt: cantos, nom: "Cantos", sub: fmt(dr) + " dr.",
+      { k: "cn", sc: "var(--vp-c6)", val: fmt(cantos), cnt: cantos, nom: "Cantos", sub: fmt(dr) + " dr.",
         nota: "Tienes " + plural(cantos, "canto", "cantos") + " para forjar grados altos de la armadura y " + fmt(dr) + " dracmas ganadas leyendo." },
     ];
     const stNota = h("p", { class: "ap-vp-stnota", "aria-live": "polite" });
@@ -3741,7 +3912,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     STATS.forEach((st, idx) => {
       const bNum = h("b", { text: st.val });
       if (st.cnt != null && st.cnt > 0) stNums.push([bNum, st.cnt]);
-      const bt = h("button", { class: "ap-vp-stbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--sc:" + st.sc + ";--st:" + st.st + ";--sd:" + st.sd, onclick: () => verSt(st, bt, 1) },
+      const bt = h("button", { class: "ap-vp-stbtn" + (idx === 0 ? " sel" : ""), type: "button", style: "--sc:" + st.sc, onclick: () => verSt(st, bt, 1) },
         h("span", { class: "ap-vp-sttop" }, h("i", { "aria-hidden": "true" }), bNum),
         h("span", { text: st.nom }),
         h("small", { text: st.sub }));
@@ -3773,29 +3944,40 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("p", { class: "ap-vp-sec", text: "Composición del poder" }), ulPil, foco,
       h("p", { class: "ap-vp-sec", text: "Estadísticas del ser interior" }), ulStats, stNota,
       pie, panelV);
-    // Inclinación 3D interactiva por dedo, puntero o inclinación suave del dispositivo (reposa a 0 % CPU al detenerse)
+    // Inclinación 3D + paralaje 2.5D solo al interactuar con dedo o puntero: al soltar vuelve a reposo (transform:none, 0 % CPU)
+    // sin eventos continuos de giroscopio que interfieran con el desplazamiento vertical en móvil.
     let rx = 0, ry = 0, trx = 0, tryy = 0, raf = 0, arrastra = false;
+    const limpiar3D = () => {
+      escena.classList.remove("inclinada");
+      escena.style.removeProperty("--rx"); escena.style.removeProperty("--ry");
+      escena.style.removeProperty("--px"); escena.style.removeProperty("--py");
+    };
     const animar3D = () => {
       raf = 0; if (!cuerpo.isConnected) return;
-      rx += (trx - rx) * 0.16; ry += (tryy - ry) * 0.16;
+      rx += (trx - rx) * 0.18; ry += (tryy - ry) * 0.18;
+      if (!arrastra && Math.abs(trx) < 0.01 && Math.abs(tryy) < 0.01 && Math.abs(rx) < 0.06 && Math.abs(ry) < 0.06) {
+        rx = 0; ry = 0; limpiar3D(); return;
+      }
+      escena.classList.add("inclinada");
       escena.style.setProperty("--rx", rx.toFixed(2) + "deg");
       escena.style.setProperty("--ry", ry.toFixed(2) + "deg");
+      escena.style.setProperty("--px", (ry * 0.36).toFixed(2) + "px");
+      escena.style.setProperty("--py", (-rx * 0.36).toFixed(2) + "px");
       if (Math.abs(trx - rx) > 0.04 || Math.abs(tryy - ry) > 0.04) raf = requestAnimationFrame(animar3D);
     };
     const mover3D = (nx, ny) => {
       if (sinAnim()) return;
-      trx = Math.max(-16, Math.min(16, -ny * 16));
-      tryy = Math.max(-16, Math.min(16, nx * 16));
+      trx = Math.max(-14, Math.min(14, -ny * 14));
+      tryy = Math.max(-14, Math.min(14, nx * 14));
       if (!raf) raf = requestAnimationFrame(animar3D);
     };
     const desdeEvento = (e) => {
       const r = reloj.getBoundingClientRect(); if (!r.width || !r.height) return;
       mover3D(((e.clientX - r.left) / r.width - 0.5) * 2, ((e.clientY - r.top) / r.height - 0.5) * 2);
     };
-    const onDown = (e) => { if (sinAnim()) return; arrastra = true; pista.classList.add("visto"); try { reloj.setPointerCapture(e.pointerId); } catch (er) { /* nada */ } desdeEvento(e); };
+    const onDown = (e) => { if (sinAnim()) return; arrastra = true; pista.classList.add("visto"); desdeEvento(e); };
     const onMove = (e) => { if (sinAnim()) return; if (arrastra || e.pointerType === "mouse") { if (arrastra) pista.classList.add("visto"); desdeEvento(e); } };
     const onUp = () => { arrastra = false; mover3D(0, 0); };
-    const onOri = (e) => { if (arrastra || sinAnim() || document.hidden || e.beta == null || e.gamma == null) return; mover3D(Math.max(-0.55, Math.min(0.55, e.gamma / 42)), Math.max(-0.55, Math.min(0.55, (e.beta - 42) / 48))); };
     const onVis = () => { cuerpo.classList.toggle("pausa", document.hidden); };
     reloj.addEventListener("pointerdown", onDown);
     reloj.addEventListener("pointermove", onMove);
@@ -3803,13 +3985,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     reloj.addEventListener("pointercancel", onUp);
     reloj.addEventListener("pointerleave", onUp);
     document.addEventListener("visibilitychange", onVis);
-    if ("DeviceOrientationEvent" in window) window.addEventListener("deviceorientation", onOri, { passive: true });
-    // Filamentos dorados sutiles en la capa HTML (solo opacidad; nunca se repiten; se detienen al cerrar la ventana)
-    let tRay = 0;
+    // Filamentos dorados sutiles en la capa HTML (solo opacidad; en pausa cuando la esfera queda fuera de pantalla al desplazarse)
+    let tRay = 0, ioEsf = null;
     const al = (a, b) => a + Math.random() * (b - a);
     const chispa = () => {
       clearTimeout(tRay); if (!cuerpo.isConnected) return;
-      if (!document.hidden && !sinAnim() && capaRay.animate) {
+      if (!document.hidden && !sinAnim() && !cuerpo.classList.contains("fuera") && capaRay.animate) {
         let d = ""; const n = 1 + Math.floor(Math.random() * 2);
         for (let i = 0; i < n; i++) {
           const ang = al(0, Math.PI * 2); let x = 150 + 114 * Math.cos(ang), y0 = 150 + 114 * Math.sin(ang);
@@ -3824,6 +4005,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
     };
     const vista = () => A.cajaModal(A.cabModal("Poder", "En el ser interior"), cuerpo);
     vista.alMostrar = () => {
+      const raizScroll = reloj.closest(".m-cuerpo");
+      if ("IntersectionObserver" in window && raizScroll) {
+        ioEsf = new IntersectionObserver((es) => {
+          const vis = es.some((x) => x.isIntersecting);
+          cuerpo.classList.toggle("fuera", !vis);
+        }, { root: raizScroll, threshold: 0.02 });
+        ioEsf.observe(reloj);
+      }
       if (!sinAnim()) {
         if (poder > 0) contarRapido(valPoder, poder, 950);
         if (barraEt.animate) barraEt.animate([{ transform: "translate3d(-100%,0,0)" }, { transform: "translate3d(" + (fracEt * 100 - 100).toFixed(1) + "%,0,0)" }], { duration: 920, easing: "cubic-bezier(.2,.8,.2,1)" });
@@ -3835,8 +4024,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     };
     A.abrirModal(vista, () => {
       clearTimeout(tRay); tRay = 0; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (ioEsf) { ioEsf.disconnect(); ioEsf = null; }
       document.removeEventListener("visibilitychange", onVis);
-      if ("DeviceOrientationEvent" in window) window.removeEventListener("deviceorientation", onOri);
     });
   }
   // V21 (BiEx, 12-nov-2026): estadísticas del día, la semana y el mes, espectaculares. Lo de ahora frente a lo anterior (solo
