@@ -503,27 +503,67 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .co-medidor svg,.co-aguja{position:absolute;inset:0;width:100%;height:100%}
 .co-aguja{transform-origin:50% 85.7%;transform:rotate(-90deg);will-change:transform}
 .co-res{margin:0;display:grid;gap:2px}
-.co-res b{font-size:1.6rem;font-family:var(--f-titulo,inherit);letter-spacing:.02em;color:#ffd77a}
+.co-res b{font-size:1.6rem;font-family:var(--f-display,inherit);letter-spacing:.02em;color:#ffd77a}
 .co-res small{font-size:.8rem;color:var(--tinta-2)}
-.av-z{display:grid;gap:14px;margin-top:12px}
-.av-tit{margin:0;text-align:center;font:600 .78rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)}
+/* Tablero horológico interactivo «Tu avance» (Neon, 23-nov-2026) */
+.av-z{display:grid;gap:12px;margin-top:12px}
+.jg-av-cab{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 14px;padding:12px 14px;border-radius:16px;
+  border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));
+  background:radial-gradient(120% 110% at 0% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 90%,transparent),color-mix(in srgb,var(--hoja) 94%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.14)}
+.jg-av-izq{display:grid;justify-items:start;gap:2px;min-width:0;text-align:left}
+.av-tit{margin:0;font:600 .66rem/1.15 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro-vivo)}
+.av-tot{font:600 clamp(1.7rem,5.2vw,2.25rem)/1.02 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums;text-align:left;justify-self:start;text-shadow:0 0 18px color-mix(in srgb,var(--oro) 28%,transparent)}
+.jg-av-izq small{font:400 .72rem/1.25 var(--f-ui);color:var(--tenue)}
+.jg-av-der{display:grid;justify-items:end;gap:5px}
+.av-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font:600 .66rem/1.1 var(--f-ui);letter-spacing:.04em;color:var(--tinta-2);border:1px solid color-mix(in srgb,var(--oro) 28%,var(--linea-2));background:color-mix(in srgb,var(--oro) 8%,transparent)}
+.av-badge.sube{color:#b7f5ca;border-color:rgba(130,225,165,.48);background:rgba(70,175,112,.16)}
+.av-badge.pico{color:#fff0bc;border-color:rgba(245,198,78,.58);background:rgba(232,184,72,.18)}
+.av-foco-v{font:500 .76rem/1.15 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .lk-z{display:flex;align-items:center;gap:16px;margin:4px 0 12px}.lk-med{flex:none;width:104px;height:104px}.lk-med b{font-size:2.3rem}
-.lk-tx{min-width:0}.lk-t{margin:0 0 4px;font:500 1rem/1.4 var(--f-ui);color:var(--texto)}.lk-h small{font-size:.68rem}
-@media (max-width:420px){.lk-z{flex-direction:column;text-align:center}}
+.lk-tx{min-width:0}.lk-t{margin:0 0 4px;font:500 1rem/1.4 var(--f-ui);color:var(--tinta)}.lk-h small{font-size:.68rem}
+@media (max-width:420px){.lk-z{flex-direction:column;text-align:center}.jg-av-der{justify-items:start}}
+.lk-libs{margin-top:10px}
+.lk-lib-l{list-style:none;margin:0;padding:8px 10px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr));gap:7px}
+.lk-lib-a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;align-items:baseline;padding:8px 10px;border-radius:11px;text-decoration:none;color:var(--tinta);border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 72%,transparent);transition:border-color .18s}
+.lk-lib-a:hover,.lk-lib-a:focus-visible{border-color:var(--oro)}
+.lk-lib-l li.hecho .lk-lib-a{border-color:color-mix(in srgb,var(--oro) 55%,transparent);background:color-mix(in srgb,var(--oro) 11%,transparent)}
+.lk-lib-n{font:500 .78rem/1.2 var(--f-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-lib-p{font:600 .74rem/1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.lk-lib-bar{grid-column:1/-1;height:4px;border-radius:999px;background:color-mix(in srgb,var(--oro) 12%,transparent);overflow:hidden}
+.lk-lib-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo))}
+.lk-lib-c{grid-column:1/-1;font:400 .64rem/1.2 var(--f-ui);color:var(--tenue);font-variant-numeric:tabular-nums}
 .av-cif{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.av-cif li{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 22%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 10%,transparent),transparent);text-align:center}
-.av-cif b{font:600 1.18rem/1 var(--f-titulo,var(--f-ui));color:var(--oro-vivo);font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(255,214,120,.35)}
-.av-cif small{font-size:.66rem;color:var(--tinta-2);line-height:1.2}
-.av-sube{font:600 .66rem/1 var(--f-ui);color:#9fe0b4}
-.av-antes{font-size:.62rem;color:var(--tenue)}
-.av-bar{display:flex;align-items:flex-end;justify-content:center;gap:5px;height:120px;padding:0 2px}
-.av-col{flex:1;min-width:0;max-width:46px;display:grid;grid-template-rows:1fr auto;gap:5px;height:100%}
-.av-pozo{position:relative;display:block;overflow:hidden;border-radius:7px 7px 3px 3px;background:color-mix(in srgb,var(--oro) 7%,transparent)}
-.av-pozo i{position:absolute;left:0;right:0;bottom:0;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#fff0bf,#e9b84a 45%,#8a5a0c);box-shadow:inset 0 1px 0 rgba(255,255,255,.55);animation:av-sube .9s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 45ms) both}
-.av-col.ya .av-pozo i{background:linear-gradient(180deg,#ffd0d9,#ff6f86 45%,#a5132d);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 16px rgba(255,90,120,.45)}
-.av-col small{font-size:.58rem;color:var(--tenue);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.av-cif li{display:grid;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 8%,transparent),transparent);text-align:center;transition:border-color .2s,box-shadow .2s}
+.av-cif.lk-h li{justify-items:center;gap:3px;padding:10px 4px}
+.av-cif li.sel{border-color:color-mix(in srgb,var(--oro-vivo) 66%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 18%,transparent),color-mix(in srgb,var(--oro) 4%,transparent));box-shadow:inset 0 1px 0 rgba(255,248,224,.22),0 8px 20px -14px color-mix(in srgb,var(--oro) 75%,transparent)}
+.av-cif-b{all:unset;box-sizing:border-box;width:100%;height:100%;display:grid;justify-items:center;align-content:center;gap:3px;padding:10px 4px;border-radius:13px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.av-cif-b:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:-2px}
+.av-cif b{font:600 1.24rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums;text-shadow:0 0 14px color-mix(in srgb,var(--oro) 32%,transparent)}
+.av-cif small{font:500 .64rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.av-sube{font:600 .64rem/1 var(--f-ui);color:#9fe0b4}
+.av-antes{font-size:.6rem;color:var(--tenue)}
+.av-graf{position:relative;padding:18px 8px 6px 32px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
+.av-rej{position:absolute;left:8px;right:8px;top:18px;bottom:28px;pointer-events:none}
+.av-ln{position:absolute;left:24px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
+.av-ln em{position:absolute;right:calc(100% + 6px);top:-6px;font:500 .56rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
+.av-ln-max{top:0}.av-ln-mid{top:50%}
+.av-ln-med{border-top:1px dashed color-mix(in srgb,var(--oro-vivo) 44%,transparent)}
+.av-bar{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:6px;height:132px;padding:0 2px}
+.av-col{all:unset;box-sizing:border-box;flex:1;min-width:0;max-width:44px;display:grid;grid-template-rows:1fr auto;gap:6px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.av-col:focus-visible .av-pozo{outline:2px solid var(--oro-vivo);outline-offset:1px}
+.av-pozo{position:relative;display:block;overflow:hidden;border-radius:8px 8px 3px 3px;background:color-mix(in srgb,var(--oro) 8%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 10%,transparent)}
+.av-pozo i{position:absolute;left:0;right:0;bottom:0;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#fff3c8,#e8b94d 42%,#8a5a0c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);animation:av-sube .78s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 38ms) both}
+.av-col.ya .av-pozo i{background:linear-gradient(180deg,#ffd5dd,#ff6d87 44%,#9e122c);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 0 14px -2px rgba(255,95,126,.5)}
+.av-col.sel .av-pozo{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro-vivo) 58%,transparent)}
+.av-col.sel small{color:var(--oro-vivo);font-weight:600}
+.av-pico{position:absolute;left:50%;top:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#fff7d6;box-shadow:0 0 8px #ffd872;pointer-events:none}
+.av-col small{font:500 .58rem/1.1 var(--f-ui);color:var(--tenue);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip}
 @keyframes av-sube{from{transform:translate3d(0,100%,0)}to{transform:none}}
-@media (max-width:420px){.av-cif{gap:4px}.av-cif li{padding:9px 2px}.av-cif b{font-size:.98rem}.av-cif small{font-size:.58rem}}
+:root[data-theme=light] .av-badge.sube{color:#156936;border-color:rgba(21,105,54,.35);background:rgba(21,105,54,.1)}
+:root[data-theme=light] .av-badge.pico{color:#78500b;border-color:rgba(138,106,43,.45);background:rgba(176,134,50,.15)}
+:root[data-theme=light] .av-sube{color:#156936}
+@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 6px 26px}.av-ln{left:20px}}
 @media (prefers-reduced-motion:reduce){.av-pozo i{animation:none}}
 html[data-mov="no"] .av-pozo i{animation:none}
 .fr-c{display:grid;gap:14px;justify-items:center}
@@ -712,12 +752,20 @@ html[data-mov="no"] .ap-vp-luz,html[data-mov="no"] .ap-vp-gira,html[data-mov="no
 html.con-modal #vista .ap-vida i,html.con-modal #vista .ap-gr-v::before,html.con-modal #vista .ap-gr-v::after,html.con-modal #vista .ap-bebe,
 html.con-modal #vista .si-niebla,html.con-modal #vista .si-mo,html.con-modal #vista .ap-pd-gema-luz,html.con-modal #vista .ap-pd-brillo,
 html.con-modal #vista .jg-yo *{animation-play-state:paused!important}
-/* Cuenta atrás de El Coloso de la Tradición (sábado 28-nov-2026 · 18:00 UTC) */
-.jg-coloso{border:1px solid color-mix(in srgb,var(--oro) 52%,transparent);border-radius:18px;padding:15px 16px;display:grid;gap:10px;
-  background:radial-gradient(125% 110% at 50% -25%,color-mix(in srgb,var(--oro) 18%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent));
-  box-shadow:inset 0 1px 0 rgba(255,248,224,.16),0 14px 28px -18px rgba(0,0,0,.78);contain:layout style}
+/* Cuenta atrás de El Coloso de la Tradición (sábado 28-nov-2026 · 18:00 UTC) con señal sutil de novedad (solo compositor) */
+.jg-coloso{position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 58%,transparent);border-radius:18px;padding:15px 16px;display:grid;gap:10px;
+  background:radial-gradient(125% 110% at 50% -25%,color-mix(in srgb,var(--oro) 20%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.22),0 14px 28px -18px rgba(0,0,0,.78);contain:layout paint style}
+.jg-coloso::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(108deg,transparent 34%,color-mix(in srgb,var(--oro-vivo) 14%,transparent) 50%,transparent 66%);transform:translate3d(-115%,0,0);animation:jg-coloso-luz 8.5s ease-in-out infinite;will-change:transform}
+@keyframes jg-coloso-luz{0%,56%{transform:translate3d(-115%,0,0)}100%{transform:translate3d(115%,0,0)}}
 .jg-coloso-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.jg-coloso-cab .eyebrow{margin:0;color:var(--oro-vivo);letter-spacing:.18em}
+.jg-coloso-nov{display:inline-flex;align-items:center;gap:7px;font:600 .64rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro-vivo)}
+.jg-coloso-dot{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 8px color-mix(in srgb,var(--oro-vivo) 75%,transparent)}
+.jg-coloso-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--oro-vivo);opacity:0;animation:jg-coloso-pulso 2.6s ease-out infinite}
+@keyframes jg-coloso-pulso{0%{transform:scale(.5);opacity:.85}100%{transform:scale(1.9);opacity:0}}
+html.con-modal .jg-coloso::after,html.con-modal .jg-coloso-dot::after,html.desplazando .jg-coloso::after,html.desplazando .jg-coloso-dot::after{animation-play-state:paused}
+html[data-mov="no"] .jg-coloso::after,html[data-mov="no"] .jg-coloso-dot::after{animation:none;display:none}
+@media (prefers-reduced-motion:reduce){.jg-coloso::after,.jg-coloso-dot::after{animation:none;display:none}}
 .jg-coloso-h{margin:0;font:500 clamp(1.18rem,4.2vw,1.48rem)/1.18 var(--f-display);color:var(--tinta);letter-spacing:.02em}
 .jg-coloso-p{margin:0;font:400 .82rem/1.48 var(--f-ui);color:var(--tinta-2)}
 .jg-coloso-chip{font:600 .62rem/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo);padding:4px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:color-mix(in srgb,var(--oro) 11%,transparent)}
@@ -841,11 +889,15 @@ html[data-mov="no"] .ap-vida{display:none}
 .jg-pop{z-index:83!important;bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
 html.jg-con-muelle .jg-pop{bottom:calc(196px + env(safe-area-inset-bottom,0px))!important}
 html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
-.jg-coleccion{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin:12px 0;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:linear-gradient(110deg,color-mix(in srgb,var(--oro) 12%,transparent),transparent 70%)}
-.jg-coleccion p{margin:0;font:400 .9rem/1.45 var(--f-ui);color:var(--tinta)}
+.jg-coleccion{display:grid;gap:10px;margin:12px 0;padding:13px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:linear-gradient(125deg,color-mix(in srgb,var(--oro) 12%,transparent),transparent 70%)}
+.jg-col-cab{display:flex;align-items:center;gap:11px;min-width:0}
+.jg-col-cab>div{display:grid;gap:2px;min-width:0}
+.jg-col-cab b{font:600 .92rem/1.2 var(--f-ui);color:var(--oro-vivo)}
+.jg-col-cab small{font:400 .74rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-coleccion p{margin:0;font:400 .86rem/1.48 var(--f-ui);color:var(--tinta)}
 .jg-coleccion b{color:var(--oro-vivo)}
-.jg-col-ico{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 14%,transparent)}
-.jg-col-ico svg{width:22px;height:22px}
+.jg-col-ico{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:10px;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 28%,transparent)}
+.jg-col-ico svg{width:20px;height:20px}
 .jg-coleccion.plegable{display:block;padding:0;margin:4px 0 0}
 .jg-coleccion.plegable summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;cursor:pointer;list-style:none}
 .jg-coleccion.plegable summary::-webkit-details-marker{display:none}
@@ -857,8 +909,6 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-coleccion.plegable p{padding:0 14px 12px;font-size:.84rem}
 /* AF19: barra hacia la próxima Designación */
 .jg-col-c{display:grid;gap:8px;min-width:0}
-.jg-coleccion:not(.plegable){align-items:start}
-.jg-coleccion:not(.plegable)>.jg-col-ico{margin-top:2px}
 .jg-coleccion.plegable .jg-col-c{padding:0 14px 12px}
 .jg-coleccion.plegable .jg-col-c p{padding:0}
 .jg-dg{display:grid;gap:6px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--oro) 7%,transparent);border:1px solid color-mix(in srgb,var(--oro) 22%,transparent)}
@@ -940,15 +990,22 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-seg button[aria-pressed=true]{color:var(--oro-vivo);font-weight:600;border-color:color-mix(in srgb,var(--oro-vivo) 52%,transparent);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 55%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 32%,transparent),color-mix(in srgb,var(--oro) 12%,transparent));box-shadow:inset 0 1px 0 rgba(255,244,210,.3),0 8px 18px -12px color-mix(in srgb,var(--oro) 80%,transparent)}
 .jg-seg+.jg-seg{margin-top:-2px}
 @media (min-width:640px){.jg-seg{display:flex}.jg-seg button{flex:1 1 0}}
-.jg-lista{list-style:none;margin:0;padding:0;display:grid;gap:4px}
-.jg-fila{display:grid;grid-template-columns:2.2em 34px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px}
-.jg-fila:nth-child(odd){background:var(--hoja-2)}
+.jg-lista{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.jg-fila{display:grid;grid-template-columns:1.85em 34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px}
+.jg-fila:nth-child(odd){background:color-mix(in srgb,var(--hoja-2) 86%,transparent)}
 .jg-fila.yo{outline:1.5px solid var(--oro);background:var(--oro-suave)}
-.jg-fila .p{font:500 .95rem/1 var(--f-display);color:var(--oro);text-align:right}
+.jg-fila .p{display:grid;place-items:center;min-width:1.7em;height:1.7em;border-radius:999px;font:600 .9rem/1 var(--f-display);color:var(--oro);text-align:center}
+.jg-fila.p1 .p{background:color-mix(in srgb,#f5c64e 22%,transparent);color:#ffe7a6;box-shadow:inset 0 0 0 1px color-mix(in srgb,#f5c64e 52%,transparent)}
+.jg-fila.p2 .p{background:color-mix(in srgb,#c5cedb 18%,transparent);color:#e6ecf5;box-shadow:inset 0 0 0 1px color-mix(in srgb,#c5cedb 42%,transparent)}
+.jg-fila.p3 .p{background:color-mix(in srgb,#cc8c54 18%,transparent);color:#f3cda8;box-shadow:inset 0 0 0 1px color-mix(in srgb,#cc8c54 44%,transparent)}
+:root[data-theme=light] .jg-fila.p1 .p{color:#7a530e}:root[data-theme=light] .jg-fila.p2 .p{color:#445060}:root[data-theme=light] .jg-fila.p3 .p{color:#7a4a1e}
 .jg-fila svg{width:34px;height:34px;display:block}
-.jg-fila .n{font:400 .95rem/1.25 var(--f-ui);color:var(--tinta);overflow:hidden;text-overflow:ellipsis}
-.jg-fila .n small{display:block;font-size:.74rem;color:var(--tenue)}
-.jg-fila .x{font:500 .9rem/1 var(--f-ui);color:var(--oro-vivo);white-space:nowrap}
+.jg-fila .jg-ciu svg{width:18px;height:18px}
+.jg-fila .n{display:grid;gap:1px;min-width:0;font:400 .92rem/1.25 var(--f-ui);color:var(--tinta)}
+.jg-fila .n b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jg-fila .n small{display:block;font-size:.72rem;line-height:1.25;color:var(--tenue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jg-fila .x{display:grid;justify-items:end;gap:1px;font:600 .92rem/1 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--oro-vivo);white-space:nowrap;text-align:right}
+.jg-fila .x small{font:500 .58rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tenue)}
 .jg-vivo{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 .82rem/1.4 var(--f-ui);color:var(--tenue)}
 .jg-vivo b{color:var(--oro-vivo);font-weight:500}
 .jg-vivo i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7bc98f;margin-right:6px;vertical-align:1px}
@@ -1521,8 +1578,9 @@ html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-ins
 .jg-enapp .jg-acciones{margin-top:10px}
 @media (prefers-reduced-motion:reduce){.ap-fig .fa-luz.on{animation:none;opacity:.85}.jg-epica .jg-brasa,.jg-epica .jg-brasa::after,.ap-lumbre::after{animation:none}.jg-escena *,.jg-escena *::after,.jg-yo .jg-emb::after,.jg-yo .jg-barra>i::after,.jg-llave::before,.jg-llave .jg-codigo span,.jg-muelle,.jg-tiembla{animation:none!important}.g-versos i::after{transform:none}.g-mis b::after,.g-dias i::after{transform:scale(1)}.g-xp{opacity:1}}
 html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov="no"] .jg-epica .jg-brasa,html[data-mov="no"] .jg-epica .jg-brasa::after,html[data-mov="no"] .ap-lumbre::after{animation:none}html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
-/* medidor de avance mientras se lee: nivel y aro que se llena con cada verso validado */
-.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:46.4px;height:54.4px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 7px 10px rgba(0,0,0,.62));--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
+/* N10 (Neon, 23-nov-2026): escudo de nivel con tipografía en px fijos e inmune a --k y a la letra para dislexia:
+   «NIVEL» y las cifras quedan siempre holgados dentro del aro interior (r = 14,2 px) sin tocar el borde ni «Adelante» */
+.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:58.6px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 7px 10px rgba(0,0,0,.62));--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
 .jg-med[data-r="0"]{--m1:#f6d2ad;--m2:#bd844c;--m3:#5a381a;--mg:rgba(189,132,76,.5)}
 .jg-med[data-r="1"]{--m1:#f5f7fb;--m2:#b6bfcc;--m3:#535b67;--mg:rgba(182,191,204,.5)}
 .jg-med[data-r="3"]{--m1:#e6fbea;--m2:#56c48c;--m3:#1b5539;--mg:rgba(86,196,140,.5)}
@@ -1531,11 +1589,11 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 .jg-med .arco{transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
 .jg-med .barrido{animation:jg-med-barrido 9s ease-in-out infinite}
 @keyframes jg-med-barrido{0%,62%{transform:translate3d(0,0,0)}100%{transform:translate3d(96px,0,0)}}
-.jg-med .nvk{position:absolute;left:0;right:0;top:17.4px;text-align:center;font:600 .36rem/1 var(--f-ui);letter-spacing:.16em;text-indent:.16em;color:var(--m2);pointer-events:none}
-.jg-med b{position:absolute;left:0;right:0;top:23.2px;text-align:center;font:600 1.09rem/1 var(--f-display,serif);font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 10px var(--mg),0 1px 0 rgba(0,0,0,.7);pointer-events:none}
-.jg-med.dos b{font-size:.92rem;top:24.8px}
-.jg-med.tres b{font-size:.76rem;top:26.4px}
-.jg-med i{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translate3d(-50%,0,0);font:600 .84rem/1 var(--f-ui);font-style:normal;color:var(--m1);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 0 8px var(--mg),0 1px 6px rgba(0,0,0,.95)}
+.jg-med .nvk{position:absolute;left:0;right:0;top:20.4px;text-align:center;font:600 5.4px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.7px!important;text-indent:.7px;color:var(--m2);pointer-events:none;white-space:nowrap}
+.jg-med b{position:absolute;left:0;right:0;top:27.4px;text-align:center;font:600 15px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:0!important;font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 10px var(--mg),0 1px 0 rgba(0,0,0,.7);pointer-events:none}
+.jg-med.dos b{font-size:13.5px;top:28.2px}
+.jg-med.tres b{font-size:11px;top:29.6px}
+.jg-med i{position:absolute;left:50%;bottom:calc(100% + 2px);transform:translate3d(-50%,0,0);font:600 12px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;font-style:normal;color:var(--m1);opacity:0;pointer-events:none;white-space:nowrap;text-shadow:0 0 8px var(--mg),0 1px 6px rgba(0,0,0,.95)}
 .jg-med.pulso{animation:jg-med-p .55s cubic-bezier(.3,1.6,.5,1)}
 @keyframes jg-med-p{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
 .jg-med.pulso i{animation:jg-med-mas 1.4s ease-out both}
@@ -1543,12 +1601,12 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 .jg-med .rayos{position:absolute;left:50%;top:52%;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:repeating-conic-gradient(from 0deg,var(--mg) 0 5deg,transparent 5deg 20deg);-webkit-mask:radial-gradient(circle,transparent 17%,#000 30%,transparent 70%);mask:radial-gradient(circle,transparent 17%,#000 30%,transparent 70%);opacity:0;pointer-events:none;transform:scale(.5)}
 .jg-med.sube .rayos{animation:jg-med-rayos 2.6s ease-out both}
 @keyframes jg-med-rayos{0%{opacity:0;transform:scale(.4) rotate(0deg)}18%{opacity:1}100%{opacity:0;transform:scale(1.4) rotate(48deg)}}
-.jg-med .hito{position:absolute;left:calc(100% + 6px);top:50%;display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:999px;background:linear-gradient(180deg,var(--m1),var(--m2));color:#16120b;font:600 1rem/1 var(--f-display,serif);letter-spacing:.05em;white-space:nowrap;opacity:0;pointer-events:none;transform:translate3d(-8px,-50%,0);box-shadow:0 0 0 4px color-mix(in srgb,var(--m2) 26%,transparent),0 10px 26px -10px rgba(0,0,0,.9)}
+.jg-med .hito{position:absolute;left:calc(100% + 6px);top:50%;display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:999px;background:linear-gradient(180deg,var(--m1),var(--m2));color:#16120b;font:600 14.5px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:.05em;white-space:nowrap;opacity:0;pointer-events:none;transform:translate3d(-8px,-50%,0);box-shadow:0 0 0 4px color-mix(in srgb,var(--m2) 26%,transparent),0 10px 26px -10px rgba(0,0,0,.9)}
 .jg-med.sube .hito{animation:jg-med-hito 4.2s cubic-bezier(.2,.8,.2,1) both}
 @keyframes jg-med-hito{0%{opacity:0;transform:translate3d(-12px,-50%,0) scale(.9)}10%{opacity:1;transform:translate3d(0,-50%,0) scale(1)}86%{opacity:1;transform:translate3d(0,-50%,0)}100%{opacity:0;transform:translate3d(6px,-50%,0)}}
 .jg-med:active{transform:scale(.94)}
 .jg-bonos{position:absolute;left:calc(100% + 5px);bottom:3px;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:4px;pointer-events:none}
-.jg-bono{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;font:600 .66rem/1 var(--f-ui);letter-spacing:.02em;white-space:nowrap;color:var(--m1);background:linear-gradient(180deg,color-mix(in srgb,var(--m2) 34%,#0b0906),color-mix(in srgb,var(--m3) 40%,#070504));border:1px solid color-mix(in srgb,var(--m2) 55%,transparent);box-shadow:0 4px 10px -6px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
+.jg-bono{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;font:600 10.5px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.02em!important;white-space:nowrap;color:var(--m1);background:linear-gradient(180deg,color-mix(in srgb,var(--m2) 34%,#0b0906),color-mix(in srgb,var(--m3) 40%,#070504));border:1px solid color-mix(in srgb,var(--m2) 55%,transparent);box-shadow:0 4px 10px -6px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
 .jg-bono.b-dob{color:#fff3c4;border-color:rgba(245,198,78,.75);box-shadow:0 0 10px -2px rgba(245,198,78,.55),inset 0 1px 0 rgba(255,255,255,.18)}
 .jg-bono.b-imp{color:#ffe1b0;border-color:rgba(255,170,80,.7)}
 .jg-bono.b-sala{color:#d6f5e2;border-color:rgba(110,205,150,.7)}
@@ -1563,7 +1621,7 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 @media (prefers-reduced-motion:reduce){.jg-med .barrido,.jg-med.sube .rayos,.jg-med.pulso{animation:none}.jg-med .arco{transition:none}}
 html[data-mov="no"] .jg-med .barrido,html[data-mov="no"] .jg-med.sube .rayos,html[data-mov="no"] .jg-med.pulso{animation:none}
 html.con-modal .jg-med{opacity:0;pointer-events:none}
-html.jg-con-med .adelante{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+html.jg-con-med .adelante{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .jg-rota{display:inline-block}
 @media print{.jg-med{display:none}}
 @media (prefers-reduced-motion:reduce){.jg-med.pulso::after,.jg-med.pulso i,.jg-med.sube{animation:none!important}}
@@ -1734,21 +1792,25 @@ html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
    ligada al desplazamiento (animation-timeline: view()), sola en el compositor y sin JavaScript; al detenerse, el resplandor del
    verso elegido sigue como siempre */
 @supports (animation-timeline:view()){
-.hoja.jg-pies .vl{position:relative}
-.hoja.jg-pies .vl::before{content:"";position:absolute;left:-1px;top:4px;bottom:4px;width:2px;border-radius:2px;pointer-events:none;opacity:0;
-  background:linear-gradient(180deg,transparent,var(--oro-vivo) 16%,color-mix(in srgb,var(--oro-vivo) 70%,#fff8e6) 50%,var(--oro-vivo) 84%,transparent);
-  box-shadow:0 0 10px 1px color-mix(in srgb,var(--oro) 35%,transparent)}
-html.desplazando .hoja.jg-pies .vl::before{animation:jg-paso linear both;animation-timeline:view();animation-range:cover}
+.hoja.jg-pies .vl{position:relative;contain:layout style}
+/* Neon (23-nov-2026): mantener la línea de tiempo fijada y solo alternar visibility al desplazar evita crear/destruir decenas de animaciones en el primer cuadro */
+.hoja.jg-pies .vl::before{content:"";position:absolute;left:-1px;top:4px;bottom:4px;width:2.5px;border-radius:2px;pointer-events:none;opacity:0;visibility:hidden;
+  background:linear-gradient(180deg,transparent,var(--oro-vivo) 16%,color-mix(in srgb,var(--oro-vivo) 72%,#fff8e6) 50%,var(--oro-vivo) 84%,transparent);
+  animation:jg-paso linear both;animation-timeline:view();animation-range:cover}
+html.desplazando .hoja.jg-pies .vl::before{visibility:visible}
 /* (BiEx, 22-nov-2026: «doble efecto de marca al lado izquierdo») mientras se desplaza, la luz de paso de cada verso (AF40) es la única marca:
    el hilo del verso que se lee se funde y vuelve al detenerse (solo donde existe la luz de paso) */
-@supports (animation-timeline:view()){.hoja.jg-pies .jg-ah{transition:opacity .32s ease} html.desplazando .hoja.jg-pies .jg-ah{opacity:0;transition-duration:.12s}}
-@keyframes jg-paso{0%,33%{opacity:0}46%{opacity:.75}58%,100%{opacity:0}}
-html[data-mov="no"] .hoja.jg-pies .vl::before{display:none}
-@media (prefers-reduced-motion:reduce){.hoja.jg-pies .vl::before{display:none}}
+.hoja.jg-pies .jg-ah{transition:opacity .32s ease}
+html.desplazando .hoja.jg-pies .jg-ah{opacity:0;transition-duration:.12s}
+@keyframes jg-paso{0%,33%{opacity:0}46%{opacity:.78}58%,100%{opacity:0}}
+html[data-mov="no"] .hoja.jg-pies .vl::before{display:none;animation:none}
+@media (prefers-reduced-motion:reduce){.hoja.jg-pies .vl::before{display:none;animation:none}}
 }
-/* AC17 (15-nov-2026): la clasificación y el prestigio, desplegados en su tarjeta */
-.jg-cl2{display:grid;gap:10px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
-.jg-cl2-z{display:grid;gap:8px;min-width:0}
+/* AC17 + Neon (23-nov-2026): la clasificación y el prestigio, desplegados con simetría exacta en 4 columnas */
+.jg-cl2{display:grid;gap:11px;padding:12px;border-radius:15px;background:color-mix(in srgb,var(--hoja-2) 70%,transparent);border:1px solid var(--linea-2)}
+.jg-cl2-seg{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+.jg-cl2-z{display:grid;gap:9px;min-width:0}
+.jg-cl2-sub{text-align:center;margin:0}
 .jg-cl2-z .jg-lista{margin:0}
 .jg-cl2-tu{border-top:1px dashed var(--linea);padding-top:6px}
 .jg-cl2-yo{text-align:center}
@@ -2254,20 +2316,50 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const hh = u ? u.h : "#/MAT/1";
     return h("a", { class: "btn oro jg-grande", href: hh }, A.svg(A.ICO.seguir), h("span", {}, u ? "Seguir leyendo" : "Empezar a leer", h("small", { text: u ? u.t : "Mattáy 1" })));
   }
-  // adónde lleva cada misión: a la lectura que la cumple
+  // adónde lleva cada misión: a la lectura exacta que la cumple (dinámico según el avance local del lector)
+  function buscarCapMision(filtro, modo) {
+    const cf = A.store.get("jg:cf", null) || {}, K = lecturasK();
+    const libs = A.progresoLibros ? A.progresoLibros(cf, K) : [];
+    const sub = filtro ? libs.filter((b) => filtro(b.c)) : libs;
+    if (modo === "repaso") {
+      // busca un capítulo que ya tenga versos marcados antes de hoy
+      for (const b of sub) {
+        for (let cap = 1; cap <= b.caps; cap++) {
+          const s = cf[b.c + "." + cap] || "";
+          if (s && /[^0]/.test(s)) return "#/" + b.c + "/" + cap;
+        }
+      }
+      return null;
+    }
+    // «nuevos» / «vida» / «cartas»: primer capítulo con versos sin marcar en el libro actual (si aplica) o en el primer libro pendiente
+    const u = A.ultimo && A.ultimo(), uC = u && (u.h.match(/^#\/([1-3A-Z]{3})\//) || [])[1];
+    const orden = uC ? [...sub.filter((b) => b.c === uC), ...sub.filter((b) => b.c !== uC)] : sub;
+    const cand = orden.find((b) => b.l < b.t && b.sig);
+    return cand ? "#/" + cand.c + "/" + cand.sig : (orden[0] ? "#/" + orden[0].c + "/1" : null);
+  }
   function destinoMision(m) {
     const u = A.ultimo && A.ultimo(), seguir = u ? u.h : "#/MAT/1";
     if (m.tipo === "libros") return "#/libros";
-    if (m.tipo === "vida") return u && /^#\/(LUK|MAT|MRK|JHN)\//.test(u.h) ? u.h : "#/LUK/1";
-    if (m.tipo === "cartas") return u && !/^#\/(LUK|MAT|MRK|JHN|ACT|REV)\//.test(u.h) ? u.h : "#/libros";
+    if (m.tipo === "vida") return buscarCapMision((c) => ["LUK", "MAT", "MRK", "JHN"].includes(c), "nuevo") || "#/LUK/1";
+    if (m.tipo === "cartas") return buscarCapMision((c) => !["MAT", "MRK", "LUK", "JHN", "ACT", "REV"].includes(c), "nuevo") || "#/ROM/1";
+    if (m.tipo === "nuevos") return buscarCapMision(null, "nuevo") || seguir;
+    if (m.tipo === "repaso") return buscarCapMision(null, "repaso") || seguir;
+    if (m.tipo === "preguntas") {
+      const p = (espejo().p || [])[0];
+      if (p) { const [lib, cap] = p.split("."); return "#/" + lib + "/" + cap; }
+      return seguir;
+    }
     return seguir;
   }
   function tarjetaMisiones(y) {
     // una misión cumplida muestra siempre su meta completa (13-nov-2026: «0 de 1 · cumplida» tras el cambio de conteo de P20)
     const lista = h("ul", { class: "jg-misiones" }, (y.mis || []).map((m) => (m.hecha && !(m.prog >= m.meta) ? Object.assign({}, m, { prog: m.meta }) : m)).map((m, i) => h("li", { class: "jg-mision" + (m.hecha ? " hecha" : "") },
       h("span", { class: "jg-ok", "aria-hidden": "true" }, ico("marca")),
-      h(m.hecha ? "div" : "a", m.hecha ? {} : { class: "jg-mis-ir", href: destinoMision(m), title: "Ir a cumplirla" }, h("div", { class: "jg-mt", text: textoMision(m) }), h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * m.prog) / m.meta).toFixed(0) + "%" })),
-        h("span", { class: "jg-mini", text: fmt(m.prog) + " de " + fmt(m.meta) + (m.hecha ? " · cumplida" : " · tócala para ir a cumplirla") })),
+      h(m.hecha ? "div" : "a", m.hecha ? {} : { class: "jg-mis-ir", href: destinoMision(m), title: "Ir a cumplirla", onclick: m.tipo === "preguntas" ? () => {
+        const hayP = (espejo().p || []).length > 0;
+        setTimeout(() => A.avisar(hayP ? "Tienes una prueba lista al final de este capítulo: desplázate abajo para abrirla." : "Completa un capítulo leyendo a tu ritmo: la prueba de 3 preguntas aparece al final del capítulo."), 350);
+      } : null }, h("div", { class: "jg-mt", text: textoMision(m) }), h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * m.prog) / m.meta).toFixed(0) + "%" })),
+        h("span", { class: "jg-mini", text: fmt(m.prog) + " de " + fmt(m.meta) + (m.hecha ? " · cumplida" : m.tipo === "preguntas" ? " · las pruebas salen al final de cada capítulo" : " · tócala para ir a cumplirla") })),
       h("div", {}, h("div", { class: "jg-pr", text: "+" + m.xp }), h("div", { class: "jg-pr", style: "opacity:.75", text: "+" + m.dr + " dr." }),
         !m.hecha && !y.cambio && i > 0 ? h("button", { class: "jg-cambiar", type: "button", onclick: () => cambiarMision(i) }, "Cambiar") : null))));
     const cambio = h("p", { class: "jg-mini jg-cambio" }, "Nuevas misiones en ", h("b", { text: hastaCambio(y.tz) }));
@@ -2546,10 +2638,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function tarjetaClasificacion(y) {
     const lugar = y.lugar || {}, zona = h("div", { class: "jg-cl2-z", "aria-live": "polite" }, h("p", { class: "cargando", text: "Cargando…" }));
     let vista = A.store.get("jg:clVista", "clas") === "pres" ? "pres" : "clas", alto = 0;
-    const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
-    const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }),
-      h("span", { class: "n" }, x.ciudad, h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x", text: fmt(x.pr) }));
+    const icoCiu = () => h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'));
+    const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+      h("span", { class: "n" }, h("b", { text: x.apodo }), h("small", { text: "nivel " + x.nivel + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
+    const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), icoCiu(),
+      h("span", { class: "n" }, h("b", { text: x.ciudad }), h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x" }, fmt(x.pr), h("small", { text: "pts." })));
     const pie = (href, t) => h("a", { class: "btn chico jg-cl2-mas", href }, h("span", { text: t }), A.svg(A.ICO.der));
     async function pintar() {
       alto = Math.max(alto, zona.offsetHeight); if (alto) zona.style.minHeight = alto + "px";
@@ -2561,7 +2654,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         if (r.error) nodos = [h("p", { class: "jg-mini", text: mensaje(r) })];
         else {
           const l = r.lista || [], mio = r.yo && !l.slice(0, 5).some((x) => x.yo);
-          nodos = [h("p", { class: "jg-mini", text: "Esta semana · " + (RANGOS[r.rango] || "tu rango") + " · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") }),
+          nodos = [h("p", { class: "jg-mini jg-cl2-sub", text: "Esta semana · " + (RANGOS[r.rango] || "tu rango") + " · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") }),
             l.length ? h("ol", { class: "jg-lista" }, l.slice(0, 5).map(fila)) : h("p", { class: "jg-mini", text: "Todavía nadie de tu rango suma experiencia aquí. ¡Puedes ser la primera persona!" }),
             mio ? h("p", { class: "jg-mini jg-cl2-yo", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia" }) : null,
             pie("#/escudrina/clasificacion", "Ver toda la clasificación")];
@@ -2572,7 +2665,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         if (r.error) nodos = [h("p", { class: "jg-mini", text: mensaje(r) })];
         else {
           const l = r.lista || [], mia = l.find((x) => x.ciudad === lugar.ciudad && x.pais === lugar.pais), arriba = l.slice(0, 5);
-          nodos = [h("p", { class: "jg-mini", text: "Esta semana · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") + " · cada ciudad suma a sus 12 mejores lectores" }),
+          nodos = [h("p", { class: "jg-mini jg-cl2-sub", text: "Esta semana · " + (lugar.pais ? nombrePais(lugar.pais) : "el mundo") + " · cada ciudad suma a sus 12 mejores lectores" }),
             l.length ? h("ol", { class: "jg-lista" }, arriba.map(filaC)) : h("p", { class: "jg-mini", text: "Todavía ninguna ciudad suma prestigio aquí. ¡La tuya puede ser la primera!" }),
             mia && !arriba.includes(mia) ? h("ol", { class: "jg-lista jg-cl2-tu", start: String(mia.p) }, filaC(mia)) : null,
             pie("#/escudrina/prestigio", "Ver todo el prestigio local")];
@@ -2594,7 +2687,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const pend = null; // P20 (12-nov-2026): ya no se piden confirmaciones manuales
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
-    if (sec === "tesoro") partes = [tarjetaPapiros(y), tarjetaHallazgos(y), tarjetaPotencias(y)];
+    if (sec === "tesoro") partes = [tarjetaPapiros(y), tarjetaHallazgos(y), tarjetaLecturas(y), tarjetaPotencias(y)].filter(Boolean);
     else if (sec === "mundo") partes = [tarjetaColoso(false), tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
     else if (sec === "juntos") partes = [salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
@@ -2781,7 +2874,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const falta = ms - Date.now();
     return h("section", { class: "jg-coloso" + (compacta ? " comp" : "") },
       h("div", { class: "jg-coloso-cab" },
-        h("span", { class: "eyebrow", text: falta > 0 ? "Próximo evento comunitario" : "Evento comunitario abierto" }),
+        h("span", { class: "jg-coloso-nov" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: falta > 0 ? "Novedad · Próximo evento" : "Novedad · Evento abierto" })),
         h("span", { class: "jg-coloso-chip", text: "Sábado 28 nov · 18:00 UTC" })),
       h("h2", { class: "jg-coloso-h", text: "El Coloso de la Tradición" }),
       h("p", { class: "jg-coloso-p", text: compacta
@@ -2846,7 +2939,9 @@ html[data-mov="no"] .ap-savia{display:none!important}
       return h("details", { class: "jg-coleccion plegable" }, h("summary", {}, ico0(), h("span", {}, h("b", { text: "Rollos de colección" }), res), h("i", { class: "jg-col-v", "aria-hidden": "true" })),
         h("div", { class: "jg-col-c" }, avanceDesignacion(y, res), h("p", { text: regla }), h("p", { text: texto })));
     }
-    return h("div", { class: "jg-coleccion" }, ico0(), h("div", { class: "jg-col-c" }, h("p", {}, h("b", { text: "Rollos de colección. " }), regla), avanceDesignacion(y), h("p", { class: "jg-mini", text: texto })));
+    return h("div", { class: "jg-coleccion" },
+      h("div", { class: "jg-col-cab" }, ico0(), h("div", {}, h("b", { text: "Rollos de colección" }), h("small", { text: "Dos PDF exclusivos y numerados por cada Designación" }))),
+      h("div", { class: "jg-col-c" }, avanceDesignacion(y), h("p", { text: regla }), h("p", { class: "jg-mini", text: texto })));
   }
   function tarjetaCampana(y) {
     const url = enlaceInvitacion(), M = marcos(), conf = (y.invi && y.invi.conf) || 0;
@@ -4028,40 +4123,85 @@ html[data-mov="no"] .ap-savia{display:none!important}
       document.removeEventListener("visibilitychange", onVis);
     });
   }
-  // V21 (BiEx, 12-nov-2026): estadísticas del día, la semana y el mes, espectaculares. Lo de ahora frente a lo anterior (solo
-  // se celebra lo que crece: nunca una flecha de pérdida) y las barras de los últimos días, semanas o meses, que suben al
-  // aparecer (traslado por el compositor, sin escalas).
+  // V21 + Neon (23-nov-2026): estadísticas del día, la semana y el mes con tablero horológico interactivo. Al tocar cualquiera
+  // de las cinco métricas el gráfico cambia al instante a esa magnitud; cada columna se puede inspeccionar y muestra referencia
+  // de media y mejor marca (solo se celebra lo que crece: nunca una flecha de pérdida).
   function tarjetaAvance(y, P) {
     const hist = Array.isArray(P.hist) ? P.hist.slice() : []; if (P.hoyR) hist.push(Object.assign({ hoy: 1 }, P.hoyR)); if (hist.length < 1) return null;
-    const MET = [["xp", "experiencia"], ["v", "versos marcados"], ["m", "minutos"], ["a", "aciertos"], ["c", "capítulos"]];
+    const MET = [["xp", "experiencia", "Experiencia"], ["v", "versos", "Versos marcados"], ["m", "minutos", "Minutos leídos"], ["a", "aciertos", "Aciertos en pruebas"], ["c", "capítulos", "Capítulos completos"]];
     const suma = (l) => l.reduce((o, d) => { for (const [k] of MET) o[k] = (o[k] || 0) + (d[k] | 0); return o; }, {});
     const sem = (f) => { const d = new Date(f + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - d.getUTCDay()); return d.toISOString().slice(0, 10); }; // la semana empieza el domingo
     const grupos = (clave) => { const m = new Map(); for (const d of hist) { const k = clave(d.f); if (!m.has(k)) m.set(k, []); m.get(k).push(d); } return [...m].map(([k, l]) => Object.assign({ k }, suma(l))); };
     const F_D = new Intl.DateTimeFormat(LOC_ES, { weekday: "short", day: "numeric" }), F_M = new Intl.DateTimeFormat(LOC_ES, { month: "short" });
     const VISTAS = {
-      dia: () => ({ l: hist.slice(-14).map((d) => Object.assign({ et: d.hoy ? "hoy" : F_D.format(new Date(d.f + "T12:00:00Z")) }, d)), ahora: "Hoy", antes: "ayer" }),
-      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "esta" : F_D.format(new Date(g2.k + "T12:00:00Z")) }, g2)), ahora: "Esta semana", antes: "la semana anterior" }),
-      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "este" : F_M.format(new Date(g2.k + "-15T12:00:00Z")) }, g2)), ahora: "Este mes", antes: "el mes anterior" }),
+      dia: () => ({ l: hist.slice(-14).map((d) => Object.assign({ et: d.hoy ? "hoy" : F_D.format(new Date(d.f + "T12:00:00Z")) }, d)), ahora: "Hoy", antes: "ayer", serie: "últimos días" }),
+      semana: () => ({ l: grupos(sem).slice(-8).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "esta" : F_D.format(new Date(g2.k + "T12:00:00Z")) }, g2)), ahora: "Esta semana", antes: "sem. anterior", serie: "últimas semanas" }),
+      mes: () => ({ l: grupos((f) => f.slice(0, 7)).slice(-6).map((g2, i, a) => Object.assign({ et: i === a.length - 1 ? "este" : F_M.format(new Date(g2.k + "-15T12:00:00Z")) }, g2)), ahora: "Este mes", antes: "mes anterior", serie: "últimos meses" }),
     };
-    const zona = h("div", { class: "av-z" }); let vista = A.store.get("jg:avVista", null) || "dia";
-    function pintar() {
+    const zona = h("div", { class: "av-z" });
+    let vista = A.store.get("jg:avVista", null) || "dia";
+    let met = A.store.get("jg:avMet", null) || "xp";
+    if (!MET.some((x) => x[0] === met)) met = "xp";
+    function pintar(soloGraf) {
       const V = VISTAS[vista](), l = V.l, cur = l[l.length - 1] || {}, prev = l[l.length - 2] || null;
-      const cifras = h("ul", { class: "av-cif" }, MET.map(([k, nom]) => { const a = cur[k] | 0, b = prev ? prev[k] | 0 : 0, sube = prev && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
-        const num = h("b", { text: "0" });
-        setTimeout(() => contarRapido(num, a, 900), 60);
-        return h("li", {}, num, h("small", { text: nom }), sube > 0 ? h("span", { class: "av-sube", text: "▲ " + sube + " %" }) : prev ? h("span", { class: "av-antes", text: V.antes + ": " + fmt(b) }) : null); }));
-      const max = Math.max(1, ...l.map((d) => d.xp | 0));
-      const barras = h("div", { class: "av-bar", role: "img", "aria-label": "Experiencia: " + l.map((d) => d.et + " " + fmt(d.xp | 0)).join(", ") },
-        l.map((d, i) => h("div", { class: "av-col" + (i === l.length - 1 ? " ya" : "") }, h("span", { class: "av-pozo" }, h("i", { style: "height:" + Math.max(2, (100 * (d.xp | 0)) / max).toFixed(1) + "%;--i:" + i })), h("small", { text: d.et }))));
-      zona.replaceChildren(h("p", { class: "av-tit", text: V.ahora }), cifras, barras);
+      const metInfo = MET.find((x) => x[0] === met) || MET[0];
+      const vals = l.map((d) => d[met] | 0);
+      const max = Math.max(1, ...vals), totP = vals.reduce((a, b) => a + b, 0);
+      const med = vals.length ? Math.round(totP / vals.length) : 0;
+      let iMax = vals.length - 1;
+      for (let i = 0; i < vals.length; i++) if (vals[i] >= vals[iMax]) iMax = i;
+      const curV = cur[met] | 0, prevV = prev ? prev[met] | 0 : 0;
+      const subeM = prev && curV > prevV && prevV > 0 ? Math.round((100 * (curV - prevV)) / prevV) : 0;
+      const esPico = curV > 0 && curV >= max && vals.length > 1;
+      const badge = subeM > 0 ? h("span", { class: "av-badge sube", text: "▲ +" + subeM + " % frente a " + V.antes })
+        : esPico ? h("span", { class: "av-badge pico", text: "Mejor marca del período" })
+        : h("span", { class: "av-badge", text: "Media: " + fmt(med) + " " + metInfo[1] });
+      const focoTxt = h("span", { class: "av-foco-v", "aria-live": "polite", text: (l[l.length - 1] ? l[l.length - 1].et : V.ahora) + " · " + fmt(curV) + " " + metInfo[1] });
+      const cab = h("div", { class: "jg-av-cab" },
+        h("div", { class: "jg-av-izq" }, h("span", { class: "av-tit", text: V.ahora + " · " + metInfo[2] }), h("b", { class: "av-tot", text: fmt(totP) }), h("small", { text: metInfo[1] + " en " + V.serie })),
+        h("div", { class: "jg-av-der" }, badge, focoTxt));
+      const cifras = h("ul", { class: "av-cif", role: "group", "aria-label": "Elegir magnitud del gráfico" }, MET.map(([k, nom, tit]) => {
+        const a = cur[k] | 0, b = prev ? prev[k] | 0 : 0, sube = prev && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
+        const num = h("b", { text: soloGraf ? fmt(a) : "0" });
+        if (!soloGraf) setTimeout(() => contarRapido(num, a, 760), 40);
+        return h("li", { class: k === met ? "sel" : "" },
+          h("button", { type: "button", class: "av-cif-b", "aria-pressed": String(k === met), "aria-label": tit + ": " + fmt(a), onclick: () => { if (met === k) return; met = k; A.store.set("jg:avMet", k); vibrar(6); pintar(true); } },
+            num, h("small", { text: nom }),
+            sube > 0 ? h("span", { class: "av-sube", text: "▲ " + sube + " %" }) : prev ? h("span", { class: "av-antes", text: V.antes + ": " + fmt(b) }) : null));
+      }));
+      const cols = [];
+      let selIdx = l.length - 1;
+      const seleccionar = (idx) => {
+        selIdx = idx;
+        cols.forEach((cEl, j) => cEl.classList.toggle("sel", j === idx));
+        const d = l[idx];
+        if (d) focoTxt.textContent = d.et + " · " + fmt(d[met] | 0) + " " + metInfo[1];
+      };
+      const pctMed = Math.max(4, Math.min(96, (100 * med) / max));
+      const barras = h("div", { class: "av-bar", role: "img", "aria-label": metInfo[2] + ": " + l.map((d) => d.et + " " + fmt(d[met] | 0)).join(", ") },
+        l.map((d, i) => {
+          const val = d[met] | 0, hp = val > 0 ? Math.max(5, (100 * val) / max) : 2;
+          const esTope = val > 0 && i === iMax && vals.some((x) => x > 0);
+          const col = h("button", { type: "button", class: "av-col" + (i === l.length - 1 ? " ya" : "") + (esTope ? " tope" : "") + (i === selIdx ? " sel" : ""), "aria-label": d.et + ": " + fmt(val) + " " + metInfo[1],
+            onclick: () => { vibrar(5); seleccionar(i); }, onpointerenter: (e) => { if (e.pointerType === "mouse") seleccionar(i); } },
+            h("span", { class: "av-pozo" }, h("i", { style: "height:" + hp.toFixed(1) + "%;--i:" + i }), esTope ? h("em", { class: "av-pico", "aria-hidden": "true" }) : null),
+            h("small", { text: d.et }));
+          cols.push(col);
+          return col;
+        }));
+      const rej = h("div", { class: "av-rej", "aria-hidden": "true" },
+        h("span", { class: "av-ln av-ln-max" }, h("em", { text: fmt(max) })),
+        h("span", { class: "av-ln av-ln-mid" }, h("em", { text: fmt(Math.round(max / 2)) })),
+        med > 0 ? h("span", { class: "av-ln av-ln-med", style: "bottom:" + pctMed.toFixed(1) + "%" }) : null);
+      const graf = h("div", { class: "av-graf" }, rej, barras);
+      zona.replaceChildren(cab, cifras, graf);
     }
     const seg = h("div", { class: "jg-seg fila", role: "group" }, [["dia", "Día"], ["semana", "Semana"], ["mes", "Mes"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(vista === k), onclick: (e) => {
-      vista = k; A.store.set("jg:avVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintar(); } }, t)));
-    pintar();
+      vista = k; A.store.set("jg:avVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintar(false); } }, t)));
+    pintar(false);
     return tarjeta("Tu avance", ico("arbol"), seg, zona);
   }
-  // AD2 (BiEx, 15-nov-2026): lecturas completas de la Nueva Voluntad sin cifras infladas (cada verso leído al menos K veces),
-  // el avance hacia la siguiente y cuántas veces se marcó cada verso
+  // AD2 + Neon (23-nov-2026): lecturas completas de la Nueva Voluntad en Tesoro, con desglose local de progreso por libro (%)
   function tarjetaLecturas(y) {
     const L = y && y.lk; if (!L || !L.total) return null;
     const hechos = L.total - L.faltan, fr = hechos / L.total, C = 2 * Math.PI * 34, u = "lk" + Math.random().toString(36).slice(2, 7);
@@ -4070,14 +4210,38 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<circle cx="40" cy="40" r="34" fill="none" stroke="url(#' + u + ')" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - fr)).toFixed(2) + '" transform="rotate(-90 40 40)"/>', "0 0 80 80");
     const sig = L.k + 1, H = L.h || [];
     const cel = [["sin marcar", H[0]], ["1 vez", H[1]], ["2 veces", H[2]], ["3 veces", H[3]], ["4 o más", H[4]]];
+    const porLibro = (() => {
+      if (!A.progresoLibros) return null;
+      const lista = A.progresoLibros(A.store.get("jg:cf", null) || {}, lecturasK());
+      if (!lista || !lista.length) return null;
+      const iniciados = lista.filter((b) => b.l > 0).length;
+      const cont = h("ul", { class: "lk-lib-l" });
+      const pintarL = () => {
+        cont.replaceChildren(...lista.map((b) => {
+          const pc = b.t ? Math.min(100, Math.round((100 * b.l) / b.t)) : 0;
+          return h("li", { class: pc >= 100 ? "hecho" : b.l > 0 ? "en" : "" },
+            h("a", { href: "#/" + b.c + "/" + (b.sig || 1), class: "lk-lib-a" },
+              h("span", { class: "lk-lib-n", text: b.n }),
+              h("span", { class: "lk-lib-p", text: pc + " %" }),
+              h("span", { class: "lk-lib-bar", "aria-hidden": "true" }, h("i", { style: "width:" + pc + "%" })),
+              h("small", { class: "lk-lib-c", text: fmt(b.l) + " / " + fmt(b.t) + " versos" })));
+        }));
+      };
+      const det = h("details", { class: "jg-pc lk-libs" },
+        h("summary", {}, h("span", { text: L.k ? "Progreso por libro · lectura n.º " + sig : "Progreso por libro" }), h("small", { text: iniciados + " de " + lista.length + " iniciados" })),
+        cont);
+      det.addEventListener("toggle", () => { if (det.open && !det.dataset.ok) { det.dataset.ok = "1"; pintarL(); } });
+      return det;
+    })();
     return tarjeta("Lecturas completas", ico("libro"),
       h("div", { class: "lk-z" },
         h("div", { class: "jg-qz-med lk-med", role: "img", "aria-label": plural(L.k, "lectura completa", "lecturas completas") }, anillo, h("b", { text: String(L.k) }), h("small", { text: L.k === 1 ? "lectura" : "lecturas" })),
         h("div", { class: "lk-tx" },
           h("p", { class: "lk-t" }, L.k ? "Has leído la Nueva Voluntad completa " + (L.k === 1 ? "una vez" : L.k + " veces") + ", verso a verso." : "Tu primera lectura completa de la Nueva Voluntad, verso a verso."),
-          h("p", { class: "jg-mini" }, "Para la lectura n.º " + sig + ": " + fmt(hechos) + " de " + fmt(L.total) + " versos · faltan " + fmt(L.faltan) + "."),
+          h("p", { class: "jg-mini" }, "Para la lectura n.º " + sig + ": " + fmt(hechos) + " de " + fmt(L.total) + " versos (" + Math.round(fr * 100) + " %) · faltan " + fmt(L.faltan) + "."),
           L.k ? h("p", { class: "jg-mini" }, "Al completarse una lectura, cada marca baja un nivel: la doble queda sencilla y la sencilla se vacía para la lectura nueva. Cada cuenta queda aquí.") : null)),
-      h("ul", { class: "av-cif lk-h", "aria-label": "Cuántas veces se marcó cada verso" }, cel.map(([t, n]) => h("li", {}, h("b", { text: fmt(n | 0) }), h("small", { text: t })))));
+      h("ul", { class: "av-cif lk-h", "aria-label": "Cuántas veces se marcó cada verso" }, cel.map(([t, n]) => h("li", {}, h("b", { text: fmt(n | 0) }), h("small", { text: t })))),
+      porLibro);
   }
   const semanaClave = () => { const d = new Date(), j = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), dia = (j.getUTCDay() + 6) % 7; j.setUTCDate(j.getUTCDate() - dia + 3); const y0 = new Date(Date.UTC(j.getUTCFullYear(), 0, 4)); return j.getUTCFullYear() + "-" + String(1 + Math.round(((j - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7)).padStart(2, "0"); };
   const ICO_FORJA = '<path d="M5 20h9M7.5 16.5h4l1 3.5h-6zM13.6 4.2l5.6 5.6-2.3 2.3-1.6-1.6-5.4 5.4-1.8-1.8 5.4-5.4-1.6-1.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>';
@@ -4366,7 +4530,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
     const lienzo = lienzoV && lienzoV.dataset.sig === sigA ? lienzoV : h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos));
     const heroe = h("section", { class: "ap-heroe" }, lienzo, datos);
-    const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P), tarjetaLecturas(yy)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
+    const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
     FIG_PREV = null;
     if (suave) {
       // sin entrada de nuevo: se dan por vistas antes de ponerlas
@@ -4522,7 +4686,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const soltar = (e) => { if (!ptrs.delete(e.pointerId)) return; if (!ptrs.size) aplicar(true); };
     caja.addEventListener("pointerup", soltar); caja.addEventListener("pointercancel", soltar);
     caja.addEventListener("click", (e) => { if (movido) { e.stopPropagation(); e.preventDefault(); movido = false; } }, true);
-    caja.addEventListener("wheel", (e) => { if (!e.ctrlKey && z === 1 && e.deltaY > 0) return; e.preventDefault(); acercar(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
+    caja.addEventListener("wheel", (e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); acercar(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
     caja.addEventListener("dblclick", (e) => { if (e.target.closest && e.target.closest(".jg-nodo, .jg-arbol-ctl")) return; verTodo(); });
     const ctl = h("div", { class: "jg-arbol-ctl" },
       h("button", { type: "button", "aria-label": "Acercar", onclick: () => acercar(1.4) }, "+"), h("button", { type: "button", "aria-label": "Alejar", onclick: () => acercar(1 / 1.4) }, "−"),
@@ -5336,11 +5500,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
     // si la hoja cambia de alto (letra, imágenes, ventana), el resplandor y el pie se vuelven a colocar eligiendo de nuevo
     // (antes se llamaba a ponerLB sin su verso de «Leído»: el pie se ocultaba y volvía a aparecer, un titileo)
-    if ("ResizeObserver" in window) { LB.ro = new ResizeObserver(() => { if (LB.v) { LB.forzar = true; pedirLB(); } }); LB.ro.observe(hoja); }
+    if ("ResizeObserver" in window) { LB.ro = new ResizeObserver(() => { LB.vnMet = null; LB.pieKey = ""; if (LB.v) { LB.forzar = true; pedirLB(); } }); LB.ro.observe(hoja); }
     // al detenerse el desplazamiento, y otra vez cuando las barras terminan de esconderse o volver (.42 s)
     if (!LB.scroll) {
       LB.scroll = true;
       addEventListener("scroll", () => { clearTimeout(LB.st); clearTimeout(LB.st2); LB.st = setTimeout(pedirLB, 110); LB.st2 = setTimeout(pedirLB, 650); }, { passive: true });
+      addEventListener("resize", () => { LB.vnMet = null; LB.pieKey = ""; if (LB.v) { LB.forzar = true; pedirLB(); } }, { passive: true });
+      if (window.visualViewport) visualViewport.addEventListener("resize", () => { LB.vnMet = null; LB.pieKey = ""; if (LB.v) { LB.forzar = true; pedirLB(); } }, { passive: true });
       document.addEventListener("transitionend", (e) => { if (e.propertyName === "transform" && e.target instanceof Element && e.target.matches("header.barra, .barra-hoja")) pedirLB(); }, true);
     }
     finCapJuego();
@@ -5501,27 +5667,30 @@ html[data-mov="no"] .ap-savia{display:none!important}
       LB.el.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + m + " como leído"));
     }
     LB.el.classList.toggle("espera", !listo);
-    const sp = document.querySelector(".jg-sala-p");
-    LB.el.style.setProperty("--jg-lb-alza", sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px");
+    const sp = document.querySelector(".jg-sala-p"), alza = sp ? Math.round(sp.offsetHeight + 10) + "px" : "0px";
+    const hoja = LB.ah && LB.ah.parentElement;
+    // (15-nov-2026 + Neon 23-nov-2026, fluidez) todas las lecturas de geometría antes de escribir estilos o clases: evita
+    // reflujos síncronos en la vista verso por fila y guarda las métricas estables del número (.vn)
+    let rh = null, r = null, fx = 0, y0 = 0, y1 = 0;
+    const num = numeroDe(el), enFila = el.classList.contains("vl");
+    if (hoja) {
+      rh = hoja.getBoundingClientRect();
+      const r0 = el.getBoundingClientRect(), e1 = dos && document.getElementById("v" + dos[0]), e2 = dos && document.getElementById("v" + dos[dos.length - 1]);
+      r = e1 && e2 ? { top: Math.min(e1.getBoundingClientRect().top, r0.top), bottom: Math.max(e2.getBoundingClientRect().bottom, r0.bottom) } : r0;
+      if (enFila && num) {
+        const nr = num.getBoundingClientRect();
+        if (!LB.vnMet) { const cs = getComputedStyle(num), ra = parseFloat(getComputedStyle(num, "::after").right); LB.vnMet = { ra: isNaN(ra) ? -8 : ra, fs: parseFloat(cs.fontSize) || 18 }; }
+        fx = nr.right - LB.vnMet.ra - 1.5; y0 = nr.top + 0.55 * LB.vnMet.fs; y1 = r.bottom - 8;
+      } else {
+        const cont = el.closest(".lectura, .continuo") || el.parentElement, rc = cont.getBoundingClientRect();
+        if (!LB.plCont) LB.plCont = parseFloat(getComputedStyle(cont).paddingLeft) || 12;
+        fx = rc.left + Math.max(4, Math.min(LB.plCont / 2, 22)); y0 = r.top + 3; y1 = r.bottom - 3;
+      }
+    }
+    if (LB.el.style.getPropertyValue("--jg-lb-alza") !== alza) LB.el.style.setProperty("--jg-lb-alza", alza);
     if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
     else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
-    const hoja = LB.ah && LB.ah.parentElement; if (!hoja) return;
-    // (15-nov-2026, fluidez) primero se mide y después se escribe, y solo con transformaciones (el hilo se estira con scaleY): nada
-    // de esto cambia el diseño de la hoja. Al pasar al verso siguiente el hilo y el halo se deslizan (transición de 0,26 s); al
-    // aparecer o al saltar lejos, se colocan sin deslizarse.
-    const rh = hoja.getBoundingClientRect(), r0 = el.getBoundingClientRect(), e1 = dos && document.getElementById("v" + dos[0]), e2 = dos && document.getElementById("v" + dos[dos.length - 1]);
-    const r = e1 && e2 ? { top: Math.min(e1.getBoundingClientRect().top, r0.top), bottom: Math.max(e2.getBoundingClientRect().bottom, r0.bottom) } : r0;
-    // el hilo: verso por fila, sobre la rayita del estado que sigue al número (la prolonga a lo largo de todo el verso);
-    // en la perícopa, en el centro del margen izquierdo, a lo largo de los renglones del verso
-    const num = numeroDe(el), enFila = el.classList.contains("vl");
-    let fx, y0, y1;
-    if (enFila && num) {
-      const nr = num.getBoundingClientRect(), cs = getComputedStyle(num), ra = parseFloat(getComputedStyle(num, "::after").right), fs = parseFloat(cs.fontSize) || 18;
-      fx = nr.right - (isNaN(ra) ? -8 : ra) - 1.5; y0 = nr.top + 0.55 * fs; y1 = r.bottom - 8;
-    } else {
-      const cont = el.closest(".lectura, .continuo") || el.parentElement, rc = cont.getBoundingClientRect(), pl = parseFloat(getComputedStyle(cont).paddingLeft) || 12;
-      fx = rc.left + Math.max(4, Math.min(pl / 2, 22)); y0 = r.top + 3; y1 = r.bottom - 3;
-    }
+    if (!hoja) return;
     const f = LB.ah.firstChild, antes = LB.ah.hidden, ty = y0 - rh.top;
     const salto = antes || LB.y0 == null || Math.abs(ty - LB.y0) > innerHeight * 0.9;
     LB.y0 = ty;
@@ -5545,27 +5714,38 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // el verso largo se sigue leyendo: su «Leído» aparece cuando su pie ya está a la vista
     if (rb.bottom > innerHeight - 8 || rb.bottom < T + 18) { if (!P.hidden) P.hidden = true; LB.pieV = 0; return; }
     const rh = hoja.getBoundingClientRect();
-    // a la derecha del texto; si los saltos rápidos flotan sobre ese borde, a su izquierda
+    // a la derecha del texto; si los saltos rápidos flotan sobre ese borde derecho (sin desplazarlo al hacer zoom táctil), a su izquierda
     let der = 10; const sr = document.querySelector(".saltos-rap");
-    if (sr && sr.offsetHeight) { const q = sr.getBoundingClientRect(); if (q.width && q.left < rb.right - 10) der = Math.max(10, Math.round(rb.right - q.left + 8)); }
+    if (sr && sr.classList.contains("vis") && sr.offsetHeight) {
+      const q = sr.getBoundingClientRect();
+      if (q.width && q.left > rh.left + rh.width * 0.5 && q.left < rb.right - 10) der = Math.max(10, Math.min(72, Math.round(rb.right - q.left + 8)));
+    }
     // el último renglón real del texto (las cajas de cada renglón, no la del bloque entero)
     // (solo las últimas piezas del texto: el último renglón está en ellas, y medir el verso entero costaba en los versos largos)
-    const vt = el.querySelector(":scope > .vt") || el, rg = document.createRange(), hijos = vt.childNodes;
+    const vt = el.querySelector(":scope > .vt") || el, vtRect = vt.getBoundingClientRect(), rg = document.createRange(), hijos = vt.childNodes;
     if (hijos.length > 14) { rg.setStartBefore(hijos[hijos.length - 14]); rg.setEndAfter(hijos[hijos.length - 1]); } else rg.selectNodeContents(vt);
     const rs = [...rg.getClientRects()].filter((q) => q.width > 0.5 && q.height > 1), fondo = rs.reduce((m, q) => Math.max(m, q.bottom), -1e9);
     const enUlt = rs.filter((q) => q.bottom > fondo - 4), ult = enUlt.length ? { top: Math.min(...enUlt.map((q) => q.top)), bottom: fondo, right: Math.max(...enUlt.map((q) => q.right)), height: fondo - Math.min(...enUlt.map((q) => q.top)) } : rb;
     // después, textos y estado (cambian solo dentro de la capa del pie)
     const conPeri = !!(pe && pe.ok && v === pe.b);
     const bp = P.querySelector(".jg-pie-p"); if (bp.hidden === conPeri) bp.hidden = !conPeri;
-    if (conPeri) { bp.querySelector(".jg-pie-t").textContent = "Perícopa " + pe.a + "–" + pe.b; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
+    const tp = conPeri ? "Perícopa " + pe.a + "–" + pe.b : "";
+    if (conPeri) { const bpt = bp.querySelector(".jg-pie-t"); if (bpt.textContent !== tp) bpt.textContent = tp; bp.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); }
     const bv = P.querySelector(".jg-pie-v"), et = rep ? "Repasado" : "Leído", nn = dos ? dos.join(" y ") : String(v);
-    if (bv.querySelector(".jg-pie-t").textContent !== et) bv.querySelector(".jg-pie-t").textContent = et;
-    if (bv.querySelector(".jg-pie-n").textContent !== nn) bv.querySelector(".jg-pie-n").textContent = nn;
+    const bvt = bv.querySelector(".jg-pie-t"), bvn = bv.querySelector(".jg-pie-n");
+    if (bvt.textContent !== et) bvt.textContent = et;
+    if (bvn.textContent !== nn) bvn.textContent = nn;
     bv.setAttribute("aria-label", et + ": marcar " + (dos ? "los versos " + dos.join(" y ") + " como leídos" : "el verso " + v + " como leído"));
-    P.classList.toggle("espera", !(dos || [v]).every((x) => R.pend.has(x))); P.classList.remove("hecho-v", "hecho-p");
+    const espera = !(dos || [v]).every((x) => R.pend.has(x));
+    P.classList.toggle("espera", espera); P.classList.remove("hecho-v", "hecho-p");
     const vuelve = P.hidden; if (vuelve) P.hidden = false;
-    const pw = P.offsetWidth || 90, ph = P.offsetHeight || 18, cabe = rb.right - der - ult.right >= pw + 12;
-    const x = rb.right - der - pw - rh.left, y = (cabe ? ult.top + (ult.height - ph) / 2 : ult.bottom + 3) - rh.top;
+    // Neon (23-nov-2026): guardar el ancho/alto del pie por su contenido para evitar un reflujo síncrono en cada cambio de verso
+    const pKey = (conPeri ? "p:" + tp.length : "v") + ":" + et + ":" + nn.length;
+    if (LB.pieKey !== pKey || !LB.pieW) { LB.pieW = P.offsetWidth || 90; LB.pieH = P.offsetHeight || 18; LB.pieKey = pKey; }
+    const pw = LB.pieW, ph = LB.pieH, cabe = rb.right - der - ult.right >= pw + 12;
+    const minX = Math.max(8, vtRect.left - rh.left), maxX = Math.max(minX, Math.min(rb.right, rh.right) - rh.left - pw - 6);
+    const x = Math.max(minX, Math.min(maxX, rb.right - der - pw - rh.left));
+    const y = (cabe ? ult.top + (ult.height - ph) / 2 : ult.bottom + 3) - rh.top;
     P.classList.toggle("jg-pie-quieto", vuelve || !LB.pieV || LB.pieY == null || Math.abs(y - LB.pieY) > innerHeight * 0.9);
     const t = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
     if (P.style.transform !== t) P.style.transform = t;
@@ -5638,17 +5818,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const lc = R.lib + "." + R.cap, k = lc + "." + v, l = repasos(); if (!l.includes(k)) { l.push(k); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); }
     const o = A.store.get("jg:rp", null) || {}, x = o[lc] || ""; if (x[v - 1] !== "1") { o[lc] = pon(x, v - 1, "1"); A.store.set("jg:rp", o); }
   }
+  let tAvisoEsp = 0;
   function tocarLeido(v, boton, quieto) {
     if (!v || !R.lib || yaLeido(v) || R.quiere.has(v)) return;
-    if (marcadoAntes(R.lib + "." + R.cap, v)) anotarRepaso(v);
+    const esRep = marcadoAntes(R.lib + "." + R.cap, v);
+    if (esRep) anotarRepaso(v);
     if (!quieto) { vibrar([12, 30, 16]); sonar("chispa"); }
     const p = R.pend.get(v);
     if (p) { R.pend.delete(v); guardarPend(); R.hechos.add(v); acreditar(R.lib, R.cap, v, p[0], 3, true); marcarLeidoV(v); if (tocaPremio()) enviar(false); }
     else { R.quiere.add(v); const num = numeroDe(document.getElementById("v" + v)); if (num) num.classList.add("jg-quiere"); } // cuenta completo al cumplir su tiempo
     if (boton) chispas(10, boton, Math.random() < 0.5 ? ["polvo"] : ["aro"]);
     if (quieto) { /* la perícopa avisa una sola vez */ }
-    else if (!p && !A.store.get("jg:leidoEsp", 0)) { A.store.set("jg:leidoEsp", 1); A.avisar("Ese verso contará como leído cuando termines de leerlo con calma."); }
-    else if (!A.store.get("jg:leidoOk2", 0)) { A.store.set("jg:leidoOk2", 1); A.avisar("«Leído»: solo cuentan como leídos los versos que marcas. Márcalo cuando de verdad lo leíste."); }
+    else if (!p && Date.now() - tAvisoEsp > 18000) {
+      tAvisoEsp = Date.now();
+      A.store.set("jg:leidoEsp", 1);
+      A.avisar(esRep ? "Repásalo con calma unos segundos: contará como repasado al cumplir su tiempo." : "Léelo con calma unos segundos: contará como leído al cumplir su tiempo.");
+    }
+    else if (p && !A.store.get("jg:leidoOk2", 0)) { A.store.set("jg:leidoOk2", 1); A.avisar("«Leído»: solo cuentan como leídos los versos que marcas. Márcalo cuando de verdad lo leíste."); }
     finCapJuego();
   }
   function estadoSellos(v) {
@@ -6942,7 +7128,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const r = await presentes(lib || ""); if (r.error) { if (!vivo) zona.replaceChildren(h("p", { class: "jg-mini", text: mensaje(r) })); return; }
       const f = JSON.stringify([lib, r.libros, r.caps, (r.lectores || []).map((x) => [x.a, x.l]), r.salas]); if (vivo && f === firma) return; firma = f;
       const libros = (S.cfg && S.cfg.orden) || Object.keys(r.libros || {}), max = Math.max(1, ...Object.values(r.libros || { x: 1 }));
-      const mapa = h("div", { class: "jg-luces", role: "list" }, (libros.length ? libros : Object.keys(r.libros)).map((b) => { const n = (r.libros || {})[b] || 0;
+      const mapa = h("div", { class: "jg-luces", role: "list" }, (libros.length ? libros : Object.keys(r.libros || {})).map((b) => { const n = (r.libros || {})[b] || 0;
         return h("button", { class: "jg-lz" + (n ? " on" : "") + (b === lib ? " sel" : ""), type: "button", role: "listitem", style: "--k:" + (n ? (0.35 + 0.65 * n / max).toFixed(2) : 0), "aria-label": nombreLibro(b) + ": " + plural(n, "persona", "personas"), title: nombreLibro(b), onclick: () => ver(b === lib ? "" : b) },
           h("span", { text: corto(b) }), n ? h("b", { text: String(n) }) : null); }));
       const caps = Object.entries(r.caps || {}).sort((a, b) => b[1] - a[1]).slice(0, 12);
