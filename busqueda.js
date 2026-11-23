@@ -14,9 +14,85 @@
   BQ.palabras = (s) => (BQ.norm(s).replace(/[ʰ-˿⁰-ⁿᵃ-ᶿ`´]/g, "").match(LETRA) || []);
   BQ.griego = (s) => /[Ͱ-Ͽἀ-῿]/.test(String(s || ""));
 
-  const VACIAS_ES = new Set(("a al ante bajo cabe con contra de del desde durante e el ella ellas ello ellos en entre era eran eres es esa esas ese eso esos esta estas este esto estos fue fueron ha han has hasta he la las le les lo los mas me mi mis muy ni no nos nosotros o os para pero por que quien se si sin sino so sobre su sus te ti tu tus u un una uno unos unas y ya yo cual cuales como cuando donde porque pues tambien incluso aun asi esto aquel aquella aquellos aquellas otro otra otros otras todo toda todos todas cada mismo misma hay ser estar sea son estan estaba estaban fue habia han hemos haber tiene tienen tenia dijo dice decia dicho entonces luego mientras ser cosa cosas algo alguien alguno alguna nada nadie quiero busco buscar donde dice habla texto verso versiculo versiculos pasaje pasajes cita biblia parte capitulo libro").split(" "));
+  const VACIAS_ES = new Set(("a al ante bajo cabe con contra de del desde durante e el ella ellas ello ellos en entre era eran eres es esa esas ese eso esos esta estas este esto estos fue fueron ha han has hasta he la las le les lo los mas me mi mis muy ni no nos nosotros o os para pero por que quien se si sin sino so sobre su sus te ti tu tus u un una uno unos unas y ya yo cual cuales como cuando donde porque pues tambien incluso aun asi esto aquel aquella aquellos aquellas otro otra otros otras todo toda todos todas cada mismo misma hay ser estar sea son estan estaba estaban fue habia han hemos haber tiene tienen tenia dijo dice decia dicho entonces luego mientras ser cosa cosas algo alguien alguno alguna nada nadie quiero busco buscar donde dice habla texto verso versiculo versiculos pasaje pasajes cita biblia parte capitulo libro necesito acerca significa explica explicame saber entender puedo debo hacer siento estoy tengo consejo biblico biblica nueva voluntad").split(" "));
   const VACIAS_EN = new Set(("a an and are as at be but by for from had has have he her him his i in into is it its me my not of on or our out shall she so than that the their them then there these they this those thou thee thy to unto up us was we were what when which who whom will with ye you your yea also said say says saith").split(" "));
   BQ.vaciaEs = (w) => VACIAS_ES.has(w);
+
+  // Sinónimos cotidianos del español actual (peso secundario: ayudan a encontrar pasajes cuando se busca con vocabulario moderno)
+  const SINONIMOS = {
+    ansiedad: ["afanar", "preocupar", "angustia", "inquietud", "ansioso"],
+    ansioso: ["afanar", "preocupar", "angustia", "inquietud"],
+    estres: ["fatiga", "carga", "descanso", "preocupar", "angustia"],
+    depresion: ["tristeza", "angustia", "abatido", "consuelo", "animo"],
+    deprimido: ["tristeza", "angustia", "abatido", "consuelo"],
+    tristeza: ["triste", "llorar", "dolor", "consuelo", "gozo"],
+    triste: ["tristeza", "llorar", "consuelo", "gozo"],
+    soledad: ["solo", "abandonar", "desamparar", "consuelo"],
+    solo: ["soledad", "abandonar", "desamparar"],
+    miedo: ["temor", "temer", "espanto", "valor", "animo"],
+    temor: ["miedo", "temer", "confianza"],
+    dinero: ["riqueza", "plata", "tesoro", "codicia", "avaricia"],
+    finanzas: ["riqueza", "tesoro", "dinero", "administrar", "deuda"],
+    economia: ["riqueza", "tesoro", "dinero", "trabajo", "sustento"],
+    trabajo: ["obra", "labor", "trabajar", "salario", "diligente"],
+    matrimonio: ["marido", "esposo", "esposa", "mujer", "casar", "boda"],
+    pareja: ["marido", "esposo", "esposa", "mujer", "casar"],
+    divorcio: ["repudiar", "divorciar", "separar", "marido", "mujer"],
+    familia: ["casa", "hijos", "padre", "madre", "hermanos"],
+    amistad: ["amigo", "hermano", "companero", "amor"],
+    orgullo: ["soberbia", "altivo", "arrogante", "humildad"],
+    soberbia: ["orgullo", "altivo", "arrogante", "humildad"],
+    humildad: ["humilde", "manso", "sencillo", "pequeno"],
+    paciencia: ["paciente", "perseverancia", "aguantar", "longanimidad"],
+    perdon: ["perdonar", "remision", "misericordia", "compasion"],
+    perdonar: ["perdon", "remision", "misericordia", "ofensa"],
+    oracion: ["orar", "ruego", "suplica", "peticion", "clamar"],
+    orar: ["oracion", "ruego", "suplica", "pedir", "clamar"],
+    rezar: ["oracion", "orar", "ruego", "suplica"],
+    milagro: ["senal", "prodigio", "maravilla", "sanar", "poder"],
+    sanidad: ["sanar", "curar", "enfermo", "salud"],
+    enfermedad: ["enfermo", "dolencia", "sanar", "curar"],
+    curar: ["sanar", "sanidad", "enfermo"],
+    ayuno: ["ayunar", "abstener", "oracion"],
+    bautismo: ["bautizar", "inmersion", "agua"],
+    inmersion: ["bautizar", "bautismo", "agua"],
+    resurreccion: ["resucitar", "levantar", "vida"],
+    gratitud: ["gracias", "agradecer", "alabanza"],
+    agradecimiento: ["gracias", "agradecer", "alabanza"],
+    alegria: ["gozo", "alegre", "regocijar"],
+    gozo: ["alegria", "alegre", "regocijar"],
+    enojo: ["ira", "enojar", "colera", "furor", "airar"],
+    rabia: ["ira", "enojo", "furor"],
+    envidia: ["envidiar", "celos", "codicia"],
+    celos: ["envidia", "rivalidad"],
+    tentacion: ["tentar", "prueba", "pecado"],
+    duda: ["dudar", "incredulo", "fe", "confianza"],
+    sufrimiento: ["padecer", "sufrir", "afliccion", "tribulacion", "dolor"],
+    dolor: ["padecer", "afliccion", "sufrir", "consuelo"],
+    liderazgo: ["pastor", "anciano", "servir", "guiar"],
+    lider: ["pastor", "anciano", "servir", "guiar"],
+    autoestima: ["valor", "hijo", "amado", "hechura", "humilde"],
+    esperanza: ["esperar", "confianza", "promesa"],
+    sabiduria: ["sabio", "entendimiento", "discernimiento", "prudencia"],
+    mentira: ["mentir", "engano", "falso", "verdad"],
+    chisme: ["murmurar", "calumnia", "lengua", "detractor"],
+    pecado: ["pecar", "transgresion", "iniquidad", "arrepentimiento"],
+    arrepentimiento: ["arrepentir", "conversion", "volver", "perdon"],
+    cielo: ["reino", "gloria", "trono"],
+    infierno: ["gehena", "hades", "fuego", "juicio", "condenacion"],
+    demonio: ["espiritu", "inmundo", "satanas"],
+    diablo: ["satanas", "enemigo", "tentador"],
+    angel: ["mensajero", "cielo"],
+    juicio: ["juzgar", "tribunal", "justicia"],
+    justicia: ["justo", "recto", "equidad"],
+    misericordia: ["compasion", "piedad", "gracia"],
+    libertad: ["libre", "esclavo", "yugo"],
+    servicio: ["servir", "siervo", "ministerio", "diacono"],
+    generosidad: ["generoso", "ofrenda", "limosna", "compartir"],
+    diezmo: ["ofrenda", "primicia"],
+    ayuda: ["ayudar", "socorrer", "auxilio", "amparo"],
+    proteccion: ["guardar", "proteger", "librar", "refugio", "escudo"]
+  };
 
   // Raíces del español (ligeras: plurales, género, terminaciones verbales frecuentes)
   const SUF_ES = ["aciones", "acion", "amientos", "amiento", "imientos", "imiento", "aremos", "eremos", "iremos", "abamos", "iamos", "aramos", "ieramos", "ieron", "aron", "asteis", "isteis", "aban", "abas", "aran", "eran", "iran", "arian", "erian", "irian", "arais", "ando", "iendo", "yendo", "ados", "adas", "idos", "idas", "ado", "ada", "ido", "ida", "aba", "amos", "emos", "imos", "ar", "er", "ir", "an", "en"];
@@ -228,12 +304,24 @@
     }
     return mejor;
   };
+  // Respaldo ligero por prefijo (raíces de >= 5 letras que comparten el inicio en b/e) cuando una palabra no tiene coincidencia exacta
+  function prefijoEs(R, t) {
+    if (!t || t.length < 5) return [];
+    const out = [], p = t.slice(0, Math.min(t.length, 6));
+    for (const k of ["b", "e"]) {
+      const C = R.campos[k]; if (!C || !C.terminos) continue;
+      for (const x of C.terminos) {
+        if (x.startsWith(p) && !out.includes(x)) { out.push(x); if (out.length >= 4) return out; }
+      }
+    }
+    return out;
+  }
   // conceptos: Map(raíz española → [índices de lema]); lemas de la consulta griega directa en ctx.lemasGriegos
   BQ.versos = function (R, q, ctx) {
     ctx = ctx || {};
     const crudo = BQ.palabras(q).filter((w) => !BQ.griego(w));
     // cada palabra de la consulta es una «idea»; todo lo que la representa (raíz española, inglesa, lemas) cuenta para ella
-    const terminosB = new Map(), terminosI = new Map(), lemas = new Map(), correcciones = [];
+    const terminosB = new Map(), terminosSin = new Map(), terminosI = new Map(), lemas = new Map(), correcciones = [];
     let ideas = 0;
     crudo.forEach((w, i) => {
       if (VACIAS_ES.has(w) || VACIAS_EN.has(w)) return;
@@ -252,12 +340,25 @@
           return;
         }
       }
+      // Expansión por sinónimos del español cotidiano (peso secundario para ampliar la cobertura sin desplazar coincidencias exactas)
+      const sins = SINONIMOS[w] || SINONIMOS[re];
+      if (sins) {
+        for (const s of sins) {
+          const rs = BQ.raizEsN(s);
+          if (rs && rs !== tE && !terminosSin.has(rs)) terminosSin.set(rs, [enEs ? 0.55 : 0.78, i]);
+          if (ctx.conceptos && rs) for (const li of ctx.conceptos.pal.get(rs) || []) if (!lemas.has(li)) lemas.set(li, [enEs ? 0.55 : 0.72, i]);
+        }
+      }
       if (tE && !enEs && !enEn) {
         if (latin) tE = null;
-        else if (!(ctx.vocab && ctx.vocab.has(tE))) { const c = BQ.corregir(R, "e", tE) || BQ.corregir(R, "b", tE); if (c) { correcciones.push([w, c]); tE = c; } }
+        else if (!(ctx.vocab && ctx.vocab.has(tE)) && !sins) {
+          const c = BQ.corregir(R, "e", tE) || BQ.corregir(R, "b", tE);
+          if (c) { correcciones.push([w, c]); tE = c; }
+          else { for (const pf of prefijoEs(R, tE)) if (!terminosSin.has(pf)) terminosSin.set(pf, [0.65, i]); }
+        }
       }
       if (latin) for (const li of latin) if (!lemas.has(li)) lemas.set(li, [enEs || enEn ? 0.7 : 1.0, i]);
-      if (!tE && !tI && !latin) return;
+      if (!tE && !tI && !latin && !sins) return;
       if (tE && !terminosB.has(tE)) terminosB.set(tE, i);
       if (tI && (enEn || !enEs) && !terminosI.has(tI)) terminosI.set(tI, i);
       if (ctx.conceptos && tE) for (const li of ctx.conceptos.pal.get(tE) || []) if (!lemas.has(li)) lemas.set(li, [BQ.esNombre(tE) ? 1.0 : 0.8, i]);
@@ -285,6 +386,7 @@
       }
     };
     for (const [t, i] of terminosB) { sumar("b", BQ.postingsDe(R, "b", t), 1, i); sumar("e", BQ.postingsDe(R, "e", t), 1, i); }
+    for (const [t, [p, i]] of terminosSin) { sumar("b", BQ.postingsDe(R, "b", t), p, i); sumar("e", BQ.postingsDe(R, "e", t), p, i); }
     for (const [t, i] of terminosI) sumar("i", BQ.postingsDe(R, "i", t), 1, i);
     for (const [li, [p, i]] of lemas) sumar("g", BQ.postingsDe(R, "g", li), p, i);
     // solo cuentan las ideas que aparecen en algún verso (una palabra sin ningún hallazgo no castiga a los demás)

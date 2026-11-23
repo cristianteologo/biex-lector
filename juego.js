@@ -43,8 +43,20 @@
   // de acceso y Google no deja iniciar sesión en ellos. Se detectan para ofrecer «Abrir en mi navegador» (BiEx, 9-nov-2026).
   const UA = navigator.userAgent || "";
   const EN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|TikTok|musical_ly|Snapchat|Pinterest|LinkedInApp/i.test(UA) || (/Android/i.test(UA) && /; wv\)/.test(UA));
-  // Vibración breve al tocar (solo teléfonos que la tienen; nunca en modo tranquilo ni sin animaciones)
-  const vibrar = (p) => { try { if (navigator.vibrate && !(S.yo && S.yo.tranquilo) && !sinAnim()) navigator.vibrate(p); } catch (e) { /* sin vibración */ } };
+  // Vibración configurable (Normal / Suave / Desactivada en biex:vib); las recompensas pueden vibrar también en Modo tranquilo
+  const vibrar = (p) => {
+    try {
+      if (!navigator.vibrate) return;
+      const modo = A && A.store ? A.store.get("vib", "normal") : "normal";
+      if (modo === "no") return;
+      if (modo === "suave") {
+        const s = Array.isArray(p) ? p.map((v, i) => (i % 2 === 0 ? Math.max(6, Math.round(v * 0.55)) : v)) : Math.max(6, Math.round((+p || 10) * 0.55));
+        navigator.vibrate(s);
+        return;
+      }
+      navigator.vibrate(p);
+    } catch (e) { /* sin vibración */ }
+  };
   function copiar(texto, ok) {
     const fin = () => A.avisar(ok || "Copiado");
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto).then(fin, () => copiarViejo(texto, fin));
@@ -496,9 +508,18 @@ html[data-mov="no"] .co-medidor.brilla .co-destello::before{animation:none}
 .jg-vl-luz{position:absolute;inset:-40% -10% auto;height:80%;z-index:-1;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 22%,transparent),transparent);opacity:.8}
 .jg-vl-rot{font:600 .68rem/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:var(--oro)}
 .jg-vl .jg-vl-t{margin:0;font-family:var(--f-texto);font-size:1.02rem;line-height:1.55;color:var(--tinta)}
+.jg-vl-pie{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 10px;margin-top:4px}
 .jg-vl-ref{display:inline-flex;align-items:center;gap:4px;font:500 .82rem/1 var(--f-ui);color:var(--oro-vivo);text-decoration:none;padding:6px 10px;border-radius:999px}
 .jg-vl-ref svg{width:13px;height:13px}
 .jg-vl-ref:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.jg-vl-lei{appearance:none;display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
+  color:var(--oro-vivo);font:600 .74rem/1 var(--f-ui);letter-spacing:.05em;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,248,224,.28);transition:transform .14s,border-color .18s,background .18s}
+.jg-vl-lei:hover,.jg-vl-lei:focus-visible{border-color:var(--oro-vivo);outline:none}
+.jg-vl-lei:active{transform:scale(.96)}
+.jg-vl-lei.hecho{border-color:color-mix(in srgb,var(--oro) 44%,transparent);background:color-mix(in srgb,var(--oro) 12%,var(--hoja));color:var(--oro);cursor:default}
+.jg-vl-lei.esp{opacity:.78;cursor:wait}
+.jg-vl-lei svg{width:14px;height:14px;flex:none}
 /* AC6: la celebración del reparto de atributos */
 .jg-rp-l{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .jg-rp-m{display:grid;justify-items:center;gap:3px;min-width:84px;padding:12px 10px 10px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--hoja-2) 80%,transparent);opacity:.45;transform:translateY(6px) scale(.96);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.9,.25,1.2),box-shadow .6s ease}
@@ -610,9 +631,14 @@ html[data-mov="no"] .av-pozo i{animation:none}
 .ap-cifras b{font:600 1.05rem/1.1 var(--f-ui);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
 .ap-cifras small{font:400 .7rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .ap-foto{justify-content:center}
-.ap-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.ap-pts{font:500 .88rem/1.2 var(--f-ui);color:var(--tinta)}
-.ap-pts b{font-size:1.2rem;color:var(--oro-vivo);margin-right:2px}
+/* Cabecera simétrica de Atributos (Neon, 23-nov-2026): en móvil (<520 px) puntos centrados arriba y dracmas + Poder equilibrados debajo; en pantallas anchas todo en una fila limpia */
+.ap-cab{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 10px;padding:11px 12px;border-radius:15px;border:1px solid color-mix(in srgb,var(--oro) 22%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 7%,transparent),transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.06)}
+.ap-cab-l{display:contents}
+.ap-pts{grid-column:1/-1;width:100%;text-align:center;padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--oro) 16%,transparent);font:500 .88rem/1.25 var(--f-ui);color:var(--tinta)}
+.ap-pts b{font-size:1.2rem;color:var(--oro-vivo);margin-right:3px;font-variant-numeric:tabular-nums}
+.ap-cab .ap-saldo{justify-self:start}
+@media (min-width:520px){.ap-cab{grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;padding:10px 14px}.ap-cab-l{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}.ap-pts{grid-column:auto;width:auto;text-align:left;padding-bottom:0;border-bottom:0}}
+@media (max-width:305px){.ap-cab{grid-template-columns:1fr;justify-items:center}.ap-cab .ap-saldo,.ap-cab-r{justify-self:center}}
 /* AF33 (Neon, 22-nov-2026): medallón de alta relojería para el botón de Poder; gema tallada sin cruz ni estrella, filo de oro labrado, reflejo metálico por compositor y descargas finas */
 .ap-poder{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 8px;border-radius:999px;border:1.25px solid transparent;cursor:pointer;isolation:isolate;-webkit-tap-highlight-color:transparent;
   background:radial-gradient(120% 150% at 22% -35%,rgba(255,244,210,.22),transparent 58%) padding-box,linear-gradient(180deg,#1a1610,#0d0b08 62%,#16120c) padding-box,linear-gradient(135deg,#fff6d6,#cfa042 24%,#5e3f10 49%,#e6c26e 76%,#fff4cc) border-box;
@@ -853,7 +879,7 @@ html[data-mov="no"] .si-niebla,html[data-mov="no"] .si-mo{animation:none}
 .ap-saldo{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--dr-oro) 48%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 18%,transparent),color-mix(in srgb,var(--dr-oro) 6%,transparent));box-shadow:inset 0 1px 0 rgba(255,244,208,.2);font:500 .78rem/1 var(--f-ui);color:var(--tinta-2);white-space:nowrap}
 .ap-saldo b{font:600 1.02rem/1 var(--f-ui);color:var(--dr-oro);font-variant-numeric:tabular-nums}
 .ap-saldo svg{width:16px;height:16px;color:var(--dr-oro)}
-.ap-cab-r{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ap-cab-r{display:inline-flex;align-items:center;justify-self:end;align-self:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .ap-cifras li.ap-cif-dr b{color:var(--dr-oro)}
 .jg .btn.dr-ok{border-color:color-mix(in srgb,var(--dr-oro) 66%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 28%,var(--hoja)),color-mix(in srgb,var(--dr-oro) 13%,var(--hoja)));color:var(--dr-oro);box-shadow:inset 0 1px 0 rgba(255,246,214,.2),0 6px 16px -10px color-mix(in srgb,var(--dr-oro) 60%,transparent)}
 .jg .btn.dr-ok:hover,.jg .btn.dr-ok:focus-visible{border-color:var(--dr-oro);background:linear-gradient(180deg,color-mix(in srgb,var(--dr-oro) 36%,var(--hoja)),color-mix(in srgb,var(--dr-oro) 18%,var(--hoja)))}
@@ -880,7 +906,7 @@ html[data-mov="no"] .si-niebla,html[data-mov="no"] .si-mo{animation:none}
 .ap-verfoto img{display:block;width:min(256px,70vw);height:auto;aspect-ratio:1;border-radius:50%;margin:6px auto 12px;border:2px solid var(--oro);object-fit:cover}
 .emb-foto{cursor:pointer}
 @media (min-width:700px){.ap-atr{grid-template-columns:repeat(6,minmax(0,1fr))}.ap-vitrina li{flex-basis:calc((100% - 24px) / 4)}}
-@media (max-width:359px){.ap-arm{grid-template-columns:1fr}.ap-fig{max-width:180px;margin:0 auto}}
+@media (max-width:480px){.ap-arm{grid-template-columns:1fr;gap:14px}.ap-fig{max-width:200px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){.ap-vida{display:none}}
 html[data-mov="no"] .ap-vida{display:none}
 .jg-ciu{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:var(--oro);background:color-mix(in srgb,var(--oro) 10%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 30%,transparent)}
@@ -1249,7 +1275,8 @@ button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px
 @keyframes jg-sube{0%{opacity:0;transform:translate(-50%,10px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1;transform:translate(-50%,-6px)}100%{opacity:0;transform:translate(-50%,-14px)}}
 @keyframes jg-brilla{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 .jg-cel .arte.anim{animation:jg-brilla 1.6s ease-in-out 2}
-@media (min-width:720px){.jg-piedras{grid-template-columns:repeat(12,minmax(0,1fr))}.jg-dos{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}}
+.jg-dos{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+@media (min-width:720px){.jg-piedras{grid-template-columns:repeat(12,minmax(0,1fr))}.jg-dos{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.jg-cel .arte.anim{animation:none}}
 .jg-subt{margin:.1em 0 0;font:italic 400 1.22rem/1.2 var(--f-display,var(--f-texto));color:var(--oro);letter-spacing:.02em}
 .jg-campana{position:relative;display:grid;gap:10px;text-align:center;padding:22px 18px 20px;border-radius:var(--radio);border:1px solid color-mix(in srgb,var(--oro) 55%,transparent);background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 70%),color-mix(in srgb,var(--hoja) 88%,transparent)}
@@ -1684,7 +1711,7 @@ html[data-mov="no"] .jg-premio-fig{animation:none}
    del lector); la armadura y la tienda una debajo de otra; la vitrina en filas (muestra, nombre, precio y lo que da),
    en dos columnas en pantallas anchas: sin columnas largas ni huecos */
 @media (min-width:1100px){.panel.jg{max-width:1080px;margin-inline:auto;width:100%}}
-.panel.jg > .ap{max-width:none;width:100%}
+.panel.jg > .ap{max-width:none;width:100%;gap:18px}
 .jg-dos.ap-dos{grid-template-columns:minmax(0,1fr)!important}
 .ap-vitrina{display:grid!important;grid-template-columns:minmax(0,1fr);gap:9px}
 .ap-vitrina li{position:relative;overflow:hidden;display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"mu mn bt" "mu da da";justify-items:start;align-items:center;column-gap:12px;row-gap:3px;padding:11px 12px;text-align:left;transition:border-color .2s,box-shadow .22s}
@@ -1838,20 +1865,56 @@ html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
 @keyframes jg-ah{0%,100%{opacity:.66}50%{opacity:1}}
 html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 @media (prefers-reduced-motion:reduce){.jg-ah .f,.jg-ah .n{animation:none}}
+/* Marcas de lectura en oro cepillado y zafiro de repaso (Neon, 23-nov-2026): alta legibilidad y 0 % CPU */
 .vn.jg-meta,.vs>sup.jg-meta{color:var(--oro-vivo)}
-.vn.jg-leido,.vs>sup.jg-leido{color:var(--oro-vivo);text-shadow:0 0 10px color-mix(in srgb,var(--oro) 45%,transparent)}
-.vl .vn.jg-leido::before{content:"";position:absolute;left:1px;top:.9em;width:6px;height:3px;border:solid var(--oro-vivo);border-width:0 0 1.6px 1.6px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
-.vs>sup.jg-leido{background:linear-gradient(currentColor,currentColor) 50% 100%/72% 1.5px no-repeat}
-.vl .vn.jg-leido.jg-repaso::before{width:6px;height:3px;border-color:var(--repaso,#8fd0ff);box-shadow:-2.6px 2.6px 0 -.2px transparent;filter:drop-shadow(-3px 1px 0 var(--oro-vivo))}
-.vl .vn.jg-repaso::after{width:3px;border:0;background:linear-gradient(180deg,var(--e) 0 48%,var(--repaso,#8fd0ff) 52% 100%);border-radius:2px}
-.vn.jg-repaso,.vs>sup.jg-repaso{text-shadow:0 0 10px color-mix(in srgb,var(--repaso,#8fd0ff) 40%,transparent)}
-.vs>sup.jg-repaso{background:linear-gradient(currentColor,currentColor) 50% calc(100% - 3px)/72% 1.2px no-repeat,linear-gradient(var(--repaso,#8fd0ff),var(--repaso,#8fd0ff)) 50% 100%/72% 1.2px no-repeat}
+.vn.jg-leido,.vs>sup.jg-leido{color:var(--oro-vivo);text-shadow:0 0 11px color-mix(in srgb,var(--oro) 44%,transparent)}
+.vl .vn.jg-leido::before{content:"";position:absolute;left:0;top:.72em;width:7.5px;height:3.8px;border:solid var(--oro-vivo);border-width:0 0 1.8px 1.8px;border-radius:0;background:none;transform:rotate(-45deg);opacity:1}
+.vl:not(.mk):not(.anadido):not(.an-parcial) .vn.jg-leido::after{background:linear-gradient(180deg,color-mix(in srgb,var(--oro-vivo) 28%,transparent),var(--oro-vivo) 26%,var(--oro) 74%,color-mix(in srgb,var(--oro) 24%,transparent));box-shadow:0 0 8px -1px color-mix(in srgb,var(--oro) 50%,transparent)}
+.vs>sup.jg-leido{padding:0 2px 2px;background:linear-gradient(90deg,transparent,var(--oro-vivo) 20%,var(--oro) 80%,transparent) 50% 100%/92% 1.6px no-repeat}
+.vl .vn.jg-leido.jg-repaso::before{width:7px;height:3.6px;border-color:var(--repaso,#8fd0ff);box-shadow:-2.6px 2.6px 0 -.2px transparent;filter:drop-shadow(-3.2px 1.2px 0 var(--oro-vivo))}
+.vl:not(.mk):not(.anadido):not(.an-parcial) .vn.jg-repaso::after{width:3px;border:0;background:linear-gradient(180deg,var(--oro-vivo) 0 46%,var(--repaso,#8fd0ff) 54% 100%);border-radius:2px;box-shadow:0 0 8px -1px color-mix(in srgb,var(--repaso,#8fd0ff) 45%,transparent)}
+.vn.jg-repaso,.vs>sup.jg-repaso{text-shadow:0 0 10px color-mix(in srgb,var(--repaso,#8fd0ff) 42%,transparent)}
+.vs>sup.jg-repaso{padding:0 2px 3px;background:linear-gradient(90deg,transparent,var(--oro-vivo) 20%,var(--oro) 80%,transparent) 50% calc(100% - 3px)/92% 1.3px no-repeat,linear-gradient(90deg,transparent,var(--repaso,#8fd0ff) 20%,var(--repaso,#8fd0ff) 80%,transparent) 50% 100%/92% 1.3px no-repeat}
 :root[data-theme="light"]{--repaso:#1f6fb8}
 .vn.jg-quiere,.vs>sup.jg-quiere{text-decoration:underline dotted color-mix(in srgb,var(--oro-vivo) 80%,transparent);text-underline-offset:4px}
+.jg-pie-p{color:color-mix(in srgb,var(--oro-vivo) 38%,var(--tinta));border-color:color-mix(in srgb,var(--oro) 46%,transparent);background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.22),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 14%,var(--hoja-2)),color-mix(in srgb,var(--hoja) 96%,transparent))}
 .fin-leido.jg-fin{display:grid;justify-items:center;gap:8px}
-.fin-leido.jg-fin.hecho{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--oro-vivo)}
-.fin-leido.jg-fin.hecho svg{width:20px;height:20px}
+.fin-leido.jg-fin.hecho{display:flex;width:max-content;max-width:100%;box-sizing:border-box;margin:22px auto 6px;gap:9px;align-items:center;justify-content:center;padding:9px 19px 9px 15px;border-radius:999px;border:1.2px solid transparent;
+  background:radial-gradient(110% 120% at 50% -20%,color-mix(in srgb,var(--oro-vivo) 24%,transparent),transparent 64%) padding-box,linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent)) padding-box,linear-gradient(135deg,#fff5cf,var(--oro) 35%,color-mix(in srgb,var(--oro-2) 60%,#4d330c) 68%,#ffeeb8) border-box;
+  color:var(--oro-vivo);font:600 .78rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,248,224,.3),0 10px 24px -14px rgba(0,0,0,.75),0 0 18px -8px color-mix(in srgb,var(--oro) 65%,transparent)}
+.fin-leido.jg-fin.hecho svg{width:17px;height:17px;flex:none}
+:root[data-theme="light"] .fin-leido.jg-fin.hecho{color:#7a5510;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 8px 18px -12px rgba(60,45,20,.35)}
 .jg-fin-n{max-width:34em;text-align:center;margin:0}
+/* Misión mundial activa: faro de participación y llamada directa a leer (Neon, 23-nov-2026) */
+.jg-tarjeta.jg-mis-mund{border-color:color-mix(in srgb,var(--oro) 48%,var(--linea-2));background:radial-gradient(125% 95% at 50% -20%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 62%),var(--hoja);box-shadow:inset 0 1px 0 rgba(255,248,224,.18),0 14px 28px -20px rgba(0,0,0,.78)}
+.jg-mm-aviso{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 11px;margin:0 0 10px;border-radius:12px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 15%,var(--hoja-2)),color-mix(in srgb,var(--oro) 6%,var(--hoja)))}
+.jg-mm-aviso.ya{border-color:color-mix(in srgb,#6fbf8f 48%,transparent);background:linear-gradient(180deg,color-mix(in srgb,#6fbf8f 14%,var(--hoja-2)),color-mix(in srgb,#6fbf8f 5%,var(--hoja)))}
+.jg-mm-est{display:inline-flex;align-items:center;gap:8px;font:600 .66rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)}
+.jg-mm-aviso.ya .jg-mm-est{color:#7cd99e}
+:root[data-theme="light"] .jg-mm-aviso.ya .jg-mm-est{color:#1d6f42}
+.jg-mm-dot{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 8px color-mix(in srgb,var(--oro-vivo) 75%,transparent)}
+.jg-mm-aviso.ya .jg-mm-dot{background:#6fbf8f;box-shadow:0 0 8px rgba(111,191,143,.7)}
+.jg-mm-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid currentColor;color:var(--oro-vivo);opacity:0;animation:jg-coloso-pulso 2.6s ease-out infinite}
+.jg-mm-aviso.ya .jg-mm-dot::after{color:#6fbf8f}
+html.con-modal .jg-mm-dot::after,html.desplazando .jg-mm-dot::after{animation-play-state:paused}
+html[data-mov="no"] .jg-mm-dot::after{animation:none;display:none}
+@media (prefers-reduced-motion:reduce){.jg-mm-dot::after{animation:none;display:none}}
+.jg-mm-meta{font:600 .68rem/1 var(--f-ui);padding:4px 9px;border-radius:999px;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);background:color-mix(in srgb,var(--oro) 10%,transparent);white-space:nowrap}
+.jg-mm-aviso.ya .jg-mm-meta{color:#7cd99e;border-color:color-mix(in srgb,#6fbf8f 42%,transparent);background:color-mix(in srgb,#6fbf8f 10%,transparent)}
+:root[data-theme="light"] .jg-mm-aviso.ya .jg-mm-meta{color:#1d6f42}
+.jg-mm-cta{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;box-sizing:border-box;margin:10px 0 8px;text-decoration:none}
+.jg-mm-cta svg{width:15px;height:15px;flex:none}
+.jg-mm-hoy[hidden]{display:none}
+.jg-mm-hoy{display:grid;gap:8px;padding:13px 15px;border-radius:var(--radio);border:1px solid color-mix(in srgb,var(--oro) 48%,var(--linea-2));background:radial-gradient(120% 100% at 10% -20%,color-mix(in srgb,var(--oro) 18%,transparent),transparent 62%),var(--hoja);box-shadow:inset 0 1px 0 rgba(255,248,224,.18),0 12px 24px -18px rgba(0,0,0,.72)}
+.jg-mm-hoy-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.jg-mm-hoy-t{margin:0;font:500 1.04rem/1.25 var(--f-display);color:var(--tinta)}
+.jg-mm-hoy-acc{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.jg-mm-hoy-acc .btn{flex:1 1 auto;justify-content:center}
+.jg-mm-hoy-acc .btn svg{width:14px;height:14px}
+/* Selector de vibración en Cuenta › Preferencias */
+.jg-vib-pref{display:grid;gap:7px;padding:10px 0 2px;border-top:1px solid var(--linea-2);margin-top:4px}
+.jg-vib-pref .jg-vib-tit{font:500 .92rem/1.3 var(--f-ui);color:var(--tinta)}
+.jg-vib-pref .jg-seg{margin:0}
 .jg-conf{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;background:rgba(5,4,3,.64)}
 :root[data-theme="light"] .jg-conf{background:rgba(40,30,15,.32)}
 .jg-conf-c{width:min(420px,100%);border-radius:18px;padding:20px 20px 16px;border:1px solid var(--linea);background:linear-gradient(180deg,rgba(255,246,214,.05),transparent 70%),var(--hoja);box-shadow:var(--sombra)}
@@ -2714,7 +2777,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
-    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), tarjetaColoso(true), pend,
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), tarjetaColoso(true), avisoMisionMundial(y), pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
       h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       salaInv,
@@ -3489,7 +3552,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const saldoDr = h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.");
     const puedePunto = P.dr >= av.precioPunto, puedeReasig = gratis || P.dr >= 60;
     return tarjeta("Atributos", ico("arbol"),
-      h("div", { class: "ap-cab" }, quedan, h("div", { class: "ap-cab-r" }, saldoDr, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
+      h("div", { class: "ap-cab" }, h("div", { class: "ap-cab-l" }, quedan, saldoDr), h("div", { class: "ap-cab-r" }, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
         h("button", { class: "btn " + (puedePunto ? "dr-ok" : "dr-falta"), type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
@@ -3772,10 +3835,56 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function tarjetaVerso(titulo) {
     const cuerpo = h("p", { class: "jg-vl-t" }, h("span", { class: "cargando-mini", text: "Buscando un verso…" })), pie = h("div", { class: "jg-vl-pie" });
     const el = h("div", { class: "jg-vl", role: "group", "aria-label": titulo || "Un verso para ti" }, h("span", { class: "jg-vl-luz", "aria-hidden": "true" }), h("small", { class: "jg-vl-rot", text: titulo || "Un verso para ti" }), cuerpo, pie);
+    let tVis = Date.now();
+    el._visto = () => { tVis = Date.now(); };
     versoDeLectura().then((x) => {
       if (!x) { el.remove(); return; }
       cuerpo.replaceChildren(x.nodo);
-      pie.replaceChildren(h("a", { class: "jg-vl-ref", href: "#/" + x.c + "/" + x.cap + "/l/" + x.v, onclick: () => { if (document.documentElement.classList.contains("con-modal")) A.cerrarModal(); } }, nombreLibro(x.c) + " " + x.cap + ":" + x.v, A.svg(A.ICO.der)));
+      if (!el.classList.contains("espera")) tVis = Date.now();
+      const lc = x.c + "." + x.cap, clave = lc + "." + x.v;
+      const esRep = marcadoAntes(lc, x.v), ya = LB.ok.has(clave);
+      const pal = Math.max(4, (x.nodo.textContent || "").trim().split(/\s+/).filter(Boolean).length);
+      const reqMs = Math.max((S.cfg && S.cfg.msMin) || 2500, Math.min(18000, Math.round(pal * ((S.cfg && S.cfg.msPalabra) || 450))));
+      const btnT = h("span", { text: ya ? (esRep ? "Repasado" : "Leído") : (esRep ? "Marcar repasado" : "Marcar leído") });
+      const btn = h("button", { class: "jg-vl-lei" + (ya ? " hecho" : ""), type: "button", disabled: ya, "aria-pressed": String(ya) }, ico("marca"), btnT);
+      let esperando = false;
+      const completar = () => {
+        esperando = false;
+        const ms = Math.max(reqMs, Math.round(Date.now() - tVis));
+        LB.ok.add(clave);
+        if (esRep) {
+          const l = repasos(); if (!l.includes(clave)) { l.push(clave); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); }
+          const o = A.store.get("jg:rp", null) || {}, s = o[lc] || ""; if (s[x.v - 1] !== "1") { o[lc] = pon(s, x.v - 1, "1"); A.store.set("jg:rp", o); }
+        }
+        if (A.marcarLeido) A.marcarLeido(x.c, x.cap, [x.v]);
+        const cf = cfDe(lc); guardarCf(lc, pon(cf, x.v - 1, B36[Math.min(35, vecesCar(cf[x.v - 1]) + 1)]), true);
+        const e = espejo(), h0 = e.m[lc] || "";
+        e.m[lc] = pon(h0, x.v - 1, String(Math.min(9, (+(h0[x.v - 1] || 0)) + 1)));
+        if (!e.c) e.c = {}; e.c[lc] = pon(e.c[lc] || "", x.v - 1, "1");
+        A.store.set("jg:hoy", e);
+        if (S.token) { R.cola.push([x.c, x.cap, x.v, ms, 3]); if (!R.ultEnvio) R.ultEnvio = Date.now(); guardarCola(false); enviar(false); }
+        btn.classList.remove("esp"); btn.classList.add("hecho"); btn.disabled = true; btn.setAttribute("aria-pressed", "true");
+        btnT.textContent = esRep ? "Repasado" : "Leído";
+        vibrar([12, 30, 16]); sonar("chispa"); chispas(12, btn, ["polvo", "aro"]);
+        A.avisar(esRep ? "Verso repasado: sumado a tu avance" : "Verso marcado como leído: sumado a tu avance");
+      };
+      btn.onclick = () => {
+        if (btn.disabled || esperando) return;
+        const falta = reqMs - (Date.now() - tVis);
+        if (falta <= 0) return completar();
+        esperando = true; btn.classList.add("esp");
+        const paso = () => {
+          if (!el.isConnected) { esperando = false; return; }
+          const r = reqMs - (Date.now() - tVis);
+          if (r <= 0) return completar();
+          btnT.textContent = "Leyendo… " + Math.ceil(r / 1000) + " s";
+          setTimeout(paso, Math.min(450, r));
+        };
+        if (falta > 1200) A.avisar("Léelo con calma unos segundos: se marcará como leído al cumplir su tiempo.");
+        paso();
+      };
+      pie.replaceChildren(btn,
+        h("a", { class: "jg-vl-ref", href: "#/" + x.c + "/" + x.cap + "/l/" + x.v, onclick: () => { if (document.documentElement.classList.contains("con-modal")) A.cerrarModal(); } }, nombreLibro(x.c) + " " + x.cap + ":" + x.v, A.svg(A.ICO.der)));
       el.classList.add("listo");
     });
     return el;
@@ -3811,7 +3920,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
         vers, h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => rehacer() }, h("span", { text: "Ver mi cesta" }))));
       sonar("cosecha");
       const T = -90 + (180 * Math.max(0, Math.min(1, (r.p - 0.002) / 0.003)));
-      const fin = () => { ag.style.transform = "rotate(" + T.toFixed(1) + "deg)"; res.style.opacity = "1"; med.classList.add("brilla"); contarRapido(cifra, r.xp, 900, "+"); chispas(r.plena ? 30 : 16); if (r.plena) vibrar([20, 40, 20]); setTimeout(() => vers.classList.remove("espera"), 650); };
+      const fin = () => { ag.style.transform = "rotate(" + T.toFixed(1) + "deg)"; res.style.opacity = "1"; med.classList.add("brilla"); contarRapido(cifra, r.xp, 900, "+"); chispas(r.plena ? 30 : 16); if (r.plena) vibrar([20, 40, 20]); setTimeout(() => { vers.classList.remove("espera"); if (vers._visto) vers._visto(); }, 650); };
       if (sinAnim() || !ag.animate) return fin();
       ag.animate([{ transform: "rotate(-90deg)" }, { transform: "rotate(" + Math.min(84, T + 70).toFixed(1) + "deg)", offset: 0.55 }, { transform: "rotate(" + (T - 6).toFixed(1) + "deg)", offset: 0.8 }, { transform: "rotate(" + T.toFixed(1) + "deg)" }],
         { duration: 1900, easing: "cubic-bezier(.25,.8,.25,1)", fill: "forwards" }).finished.then(fin, fin);
@@ -5106,7 +5215,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
       tarjeta("Código de acceso", ico("codigo"), h("p", { text: "Si tu código anterior se pudo ver o lo perdiste, crea uno nuevo." }), h("button", { class: "btn", type: "button", onclick: codigoNuevo }, h("span", { text: "Crear un código nuevo" })), zonaCodigo),
       tarjeta("Preferencias", null, pref("verApodo", "Mostrar mi apodo", "En las clasificaciones, tu compañía y «quién está leyendo». Si lo ocultas, en su lugar se verá tu ciudad."),
         pref("verCiudad", "Mostrar mi ciudad en las clasificaciones", "Si la ocultas, sigues apareciendo en tu región, tu país, tu continente y el mundo."),
-        pref("tranquilo", "Modo tranquilo", "Sin sonidos. Para menos movimiento, usa también «Sin animaciones» en la apariencia del lector.")),
+        pref("tranquilo", "Modo tranquilo", "Sin sonidos. Para menos movimiento, usa también «Sin animaciones» en la apariencia del lector."),
+        (() => {
+          let vMod = A.store.get("vib", "normal");
+          const segV = h("div", { class: "jg-seg", role: "group", "aria-label": "Vibración de las recompensas" },
+            [["normal", "Normal"], ["suave", "Suave"], ["no", "Desactivada"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(vMod === k), onclick: (e) => {
+              vMod = k; A.store.set("vib", k);
+              for (const b of segV.children) b.setAttribute("aria-pressed", String(b === e.currentTarget));
+              if (k !== "no") vibrar(k === "suave" ? 10 : [14, 30, 18]);
+            } }, t)));
+          return h("div", { class: "jg-vib-pref" },
+            h("span", { class: "jg-vib-tit", text: "Vibración en recompensas" }),
+            segV,
+            h("p", { class: "jg-mini", text: "Permanece activa incluso en Modo tranquilo. En Android, el modo «No molestar» del teléfono puede silenciar los navegadores por seguridad del sistema: si quieres sentirla también así, permite tu navegador en Ajustes › No molestar › Aplicaciones." }));
+        })()),
       tarjeta("Sesiones", null, h("div", { class: "jg-acciones" },
         h("button", { class: "btn", type: "button", onclick: async () => { if (await confirmar("¿Salir de Escudriña en este dispositivo?", "Para volver necesitarás tu código, tu llave o tu cuenta.", "Salir")) { olvidarSesion(false); A.irA("#/escudrina"); } } }, h("span", { text: "Salir en este dispositivo" })),
         h("button", { class: "btn", type: "button", onclick: async () => { if (!(await confirmar("Cerrar todas las sesiones", "Se cerrarán todas tus sesiones, también en otros dispositivos.", "Cerrar todas"))) return; const r = await pedir("/cuenta/salir-todos", { metodo: "POST" }); if (r.error) return A.avisar(mensaje(r)); guardarSesion(r.token); A.avisar("Cerraste las demás sesiones"); } }, h("span", { text: "Cerrar todas las sesiones" })))),
@@ -6249,12 +6371,14 @@ html[data-mov="no"] .ap-savia{display:none!important}
     dr: '<circle cx="12" cy="12" r="8.6" fill="url(#fdr)" stroke="#7a5418" stroke-width=".9"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff3c8" stroke-opacity=".55" stroke-width=".8"/><defs><radialGradient id="fdr" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff2b8"/><stop offset=".55" stop-color="#e2b04a"/><stop offset="1" stop-color="#8f6118"/></radialGradient></defs>' };
   function premioPop(txt, n, clase, i) {
     const fig = FIG_PREMIO[clase] ? h("span", { class: "jg-premio-fig", "aria-hidden": "true" }, A.svg(FIG_PREMIO[clase])) : null;
-    const el = h("div", { class: "jg-pop jg-premio " + (clase || ""), role: "status", style: "--i:" + (i || 0) }, fig, h("b", { text: "+0" }), h("small", { text: txt }));
-    document.body.append(el); contarRapido(el.firstChild, n, 900, "+");
-    if (sinAnim() || !el.animate) { setTimeout(() => el.remove(), 3200); return; }
-    // (AF12) un segundo más a la vista: 3,3 s
-    el.animate([{ opacity: 0, transform: "translate(-50%,12px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.11 }, { opacity: 1, transform: "translate(-50%,-8px)", offset: 0.87 }, { opacity: 0, transform: "translate(-50%,-18px)" }],
-      { duration: 3300, delay: 260 + (i || 0) * 380, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
+    const num = h("b", { text: "+0" });
+    const el = h("div", { class: "jg-pop jg-premio " + (clase || ""), role: "status", style: "--i:" + (i || 0) }, fig, num, h("small", { text: txt }));
+    document.body.append(el); contarRapido(num, n, 900, "+");
+    const extra = clase === "frag" ? 550 : 0;
+    if (sinAnim() || !el.animate) { el.style.opacity = "1"; setTimeout(() => el.remove(), 3200 + extra); return; }
+    // (AF12 + Neon, 23-nov-2026) medio segundo más a la vista para los fragmentos de papiro (3,85 s)
+    el.animate([{ opacity: 0, transform: "translate(-50%,12px)" }, { opacity: 1, transform: "translate(-50%,0)", offset: 0.1 }, { opacity: 1, transform: "translate(-50%,-8px)", offset: clase === "frag" ? 0.89 : 0.87 }, { opacity: 0, transform: "translate(-50%,-18px)" }],
+      { duration: 3300 + extra, delay: 260 + (i || 0) * 380, easing: "ease-out", fill: "both" }).finished.then(() => el.remove(), () => el.remove());
   }
   function celebrar(r) {
     if (document.hidden) { if (CEL_PEND.length < 6) CEL_PEND.push(r); return; }
@@ -6919,21 +7043,62 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     }, 3800);
     return el;
   }
+  function enlaceMisionMundial(m) {
+    if (m && m.ambito === "libro" && m.lib) return "#/" + m.lib + "/1";
+    if (m && m.ambito === "vida") return "#/MRK/1";
+    if (m && m.ambito === "cartas") return "#/ROM/1";
+    const u = A.ultimo && A.ultimo();
+    return u && u.h ? u.h : "#/MRK/1";
+  }
+  function avisoMisionMundial(y) {
+    const caja = h("aside", { class: "jg-mm-hoy", hidden: true, "aria-label": "Misión mundial activa" });
+    pedir("/vivo", { sin: true, guardable: true }).then((v) => {
+      if (!caja.isConnected || !v || v.error) return;
+      const m = v.mision;
+      if (!m || m.ok) return;
+      const mio = y.mision && y.mision.k === m.k && (y.mision.e | 0) === (m.e | 0) ? y.misAporte || 0 : 0;
+      const min = (S.cfg && S.cfg.misMin) || 10;
+      if (mio >= min) return;
+      const pct = Math.max(0, Math.min(100, (100 * m.total) / Math.max(1, m.meta)));
+      const falta = Math.max(1, min - mio);
+      caja.hidden = false;
+      caja.replaceChildren(
+        h("div", { class: "jg-mm-hoy-cab" },
+          h("span", { class: "jg-mm-est" }, h("i", { class: "jg-mm-dot", "aria-hidden": "true" }), "Misión mundial activa"),
+          h("span", { class: "jg-mm-meta", text: mio > 0 ? "Te faltan " + plural(falta, "verso", "versos") : "Aporta " + min + " versos" })),
+        h("p", { class: "jg-mm-hoy-t", text: textoMisionMundial(m) }),
+        h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
+        h("p", { class: "jg-mini", text: fmt(m.total) + " de " + fmt(m.meta) + " · " + plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) }),
+        h("div", { class: "jg-mm-hoy-acc" },
+          h("a", { class: "btn chico oro", href: enlaceMisionMundial(m) }, h("span", { text: "Participar leyendo" }), A.svg(A.ICO.der)),
+          h("a", { class: "btn chico", href: "#/escudrina/mundo" }, h("span", { text: "Ver en Mundo" }))));
+    });
+    return caja;
+  }
   function tarjetaMision(y) {
     const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando la misión…" }));
+    const card = tarjeta("Misión mundial", ico("mundo"), zona);
     let firma = "";
     const pintarM = (v) => {
       if (!zona.isConnected || v.error) return;
       const f = JSON.stringify([v.mision && [v.mision.k, v.mision.e, v.mision.total, v.mision.part, v.mision.ok], v.proxMision]); if (f === firma) return; firma = f;
       const m = v.mision;
+      card.classList.toggle("jg-mis-mund", !!(m && !m.ok));
       if (!m) return zona.replaceChildren(h("p", { text: v.proxMision ? "La primera misión mundial empieza el " + fechaLarga(v.proxMision) + "." : "Pronto empieza una misión mundial." }));
       const pct = Math.max(0, Math.min(100, (100 * m.total) / Math.max(1, m.meta))), mio = y.mision && y.mision.k === m.k && (y.mision.e | 0) === (m.e | 0) ? y.misAporte || 0 : 0, min = (S.cfg && S.cfg.misMin) || 10;
+      const yaPart = mio >= min;
+      const aviso = !m.ok ? h("div", { class: "jg-mm-aviso" + (yaPart ? " ya" : ""), role: "status" },
+        h("span", { class: "jg-mm-est" }, h("i", { class: "jg-mm-dot", "aria-hidden": "true" }), yaPart ? "¡Ya participas en la misión!" : mio > 0 ? "Misión activa · en marcha" : "Misión activa · participa hoy"),
+        h("span", { class: "jg-mm-meta", text: yaPart ? "Aporte: " + fmt(mio) : mio > 0 ? "Faltan " + fmt(min - mio) : "Mínimo " + min + " versos" })) : null;
+      const cta = !m.ok ? h("a", { class: "btn oro jg-mm-cta", href: enlaceMisionMundial(m) }, h("span", { text: yaPart ? "Seguir aportando versos" : "Participar leyendo ahora" }), A.svg(A.ICO.der)) : null;
       // relevos (BiEx, 10-nov-2026): lograda antes de tiempo, la siguiente abre a los 20 min y corre hasta el final de la franja
-      zona.replaceChildren(m.e ? h("p", { class: "jg-chip jg-relevo", text: "Relevo " + (m.e + 1) + " de " + ((m.relevos || 3) + 1) }) : null,
+      zona.replaceChildren(aviso,
+        m.e ? h("p", { class: "jg-chip jg-relevo", text: "Relevo " + (m.e + 1) + " de " + ((m.relevos || 3) + 1) }) : null,
         h("p", { class: "jg-tit jg-mis-t", text: textoMisionMundial(m) }),
         h("p", { class: "jg-total" }, cifra(m.total), " de " + fmt(m.meta) + (m.ok ? " · ¡lograda!" : "")),
         m.ok && m.relevo ? h("p", { class: "jg-aviso" }, h("b", { text: "¡Lograda antes de tiempo! " }), "El relevo " + (m.e + 2) + " abre en ", (() => { const el = h("b", { class: "jg-rel-t", text: restaTexto(m.relevo) }); const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); el.textContent = m.relevo > Date.now() ? restaTexto(m.relevo) : "un momento"; }, 15000); return el; })(), ": una misión nueva hasta el final de esta franja.") : null,
         h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
+        cta,
         h("p", { class: "jg-mini" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
         h("p", { class: "jg-mini" }, relojCiudades(m.fin, "Termina el")),
         h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble y 4 dracmas en cuanto se logra, y 15 min y 1 dracma si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
@@ -6942,7 +7107,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     };
     pedir("/vivo", { sin: true, guardable: true }).then(pintarM);
     enVivo(zona, 25e3, () => pedir("/vivo", { sin: true }).then(pintarM));
-    return tarjeta("Misión mundial", ico("mundo"), zona);
+    return card;
   }
 
   // ================================================================== lectura en compañía (salas en tiempo real)
