@@ -1156,29 +1156,42 @@
     M.irTrasSalto = irAhora;
     try { history.go(-n); setTimeout(irAhora, 140); } catch (e) { irAhora(); }
   }
-  // Neon (23-nov-2026): sincroniza la ventana abierta con el teclado virtual en teléfonos (visualViewport) para que al
-  // desplazarse arriba mientras se escribe una nota siempre se vea el encabezado y el comienzo de la vista; y al abrirse el
-  // teclado mantiene visible el campo enfocado (p. ej., la nota de estudio) dentro de .m-cuerpo.
-  function enfocarEnModal(el) {
+  // Neon › Argon (23-nov-2026): sincroniza la ventana abierta con el teclado virtual en teléfonos (visualViewport) sin sobresaltos:
+  // ancla la posición visual de .mk-nota cuando cargan bloques asíncronos arriba y alinea una sola vez al asentarse el teclado.
+  function enfocarEnModal(el, soloSiFuera) {
     const mc = $(".m-cuerpo", modal);
     if (!el || !mc || !el.isConnected) return;
     const rm = mc.getBoundingClientRect(), re = el.getBoundingClientRect();
+    if (soloSiFuera && re.top >= rm.top + 10 && re.bottom <= rm.bottom - 10) return;
     const objetivo = mc.scrollTop + (re.top - rm.top) - Math.max(18, Math.round((rm.height - Math.min(re.height, rm.height * 0.65)) * 0.42));
     mc.scrollTop = Math.max(0, objetivo);
+  }
+  function conAnclaEnModal(fnMutacion) {
+    const mc = modal.open ? $(".m-cuerpo", modal) : null;
+    const n = mc ? $(".mk-nota", mc) : null;
+    const anclar = !!(n && n.isConnected && (document.activeElement === n || performance.now() < (M.anclaNota || 0)));
+    const y0 = anclar ? n.getBoundingClientRect().top : 0;
+    fnMutacion();
+    if (anclar && n.isConnected) {
+      const dy = n.getBoundingClientRect().top - y0;
+      if (Math.abs(dy) > 0.5) mc.scrollTop = Math.max(0, mc.scrollTop + dy);
+    }
   }
   function irANotaEnModal() {
     const n = $(".modal[open] .mk-nota");
     if (!n) return;
-    enfocarEnModal(n);
+    M.centrada = performance.now();
+    M.anclaNota = performance.now() + 2600;
+    enfocarEnModal(n, false);
     try { n.focus({ preventScroll: true }); } catch (e) { n.focus(); }
-    for (const ms of [140, 340, 560]) setTimeout(() => { if (document.activeElement === n && n.isConnected) enfocarEnModal(n); }, ms);
   }
   if (window.visualViewport) {
-    let vvAbierto = false;
-    const syncVV = () => {
+    let vvAbierto = false, tVV = 0;
+    const syncVV = (esResize) => {
       const r = document.documentElement;
       if (!modal.open || window.innerWidth > 760) {
         vvAbierto = false;
+        clearTimeout(tVV); tVV = 0;
         if (r.classList.contains("teclado-abierto")) { r.classList.remove("teclado-abierto"); r.style.removeProperty("--vvh"); r.style.removeProperty("--vvt"); }
         return;
       }
@@ -1189,16 +1202,22 @@
       if (abierto) {
         r.style.setProperty("--vvh", Math.max(220, Math.round(vv.height)) + "px");
         r.style.setProperty("--vvt", Math.max(0, Math.round(vv.offsetTop)) + "px");
-        if (recien) {
-          const ae = document.activeElement;
-          if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && modal.contains(ae)) requestAnimationFrame(() => enfocarEnModal(ae));
+        if (recien || esResize) {
+          clearTimeout(tVV);
+          tVV = setTimeout(() => {
+            tVV = 0;
+            if (!modal.open) return;
+            const ae = document.activeElement;
+            if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && modal.contains(ae)) enfocarEnModal(ae, true);
+          }, 95);
         }
       } else {
+        clearTimeout(tVV); tVV = 0;
         r.style.removeProperty("--vvh"); r.style.removeProperty("--vvt");
       }
     };
-    window.visualViewport.addEventListener("resize", syncVV);
-    window.visualViewport.addEventListener("scroll", syncVV);
+    window.visualViewport.addEventListener("resize", () => syncVV(true));
+    window.visualViewport.addEventListener("scroll", () => syncVV(false));
   }
   function marcarPaso() { try { const vid = ++vidN; history.pushState(Object.assign({}, history.state || {}, { biexVentana: 1, vid }), "", location.href); M.estados++; M.vid = vid; pasoAdelante(true); } catch (e) { /* sin historial (marco sin permiso) */ } }
   window.addEventListener("popstate", (e) => {
@@ -1298,22 +1317,27 @@
     }
     const c = $(".m-cuerpo", modal); if (c) c.scrollTop = 0;
     restaurarScrollM();
-    if (fn.alMostrar) requestAnimationFrame(fn.alMostrar);
+    if (fn.alMostrar) fn.alMostrar();
   }
   function abrirModal(fn, alCerrar) {
     if (M.encima && modal.open) { M.encima = false; empujar(fn); return; }
     M.encima = false;
     if (modal.open && M.alCerrar && M.alCerrar !== alCerrar) { const f = M.alCerrar; M.alCerrar = null; f(); }
     M.pila = [fn]; M.fwd = []; M.alCerrar = alCerrar || null;
-    pintarModal();
-    if (!modal.open) {
+    const abrir = !modal.open;
+    if (abrir) {
       try { modal.showModal(); } catch (e) { modal.setAttribute("open", ""); }
       M.abiertaEn = performance.now();
       document.documentElement.classList.add("con-modal");
+    }
+    pintarModal();
+    if (abrir) {
       marcarPaso();
       repintarAdelante();
     }
-    const foco = $(".m-cab .btn-icono:last-child", modal); if (foco) foco.focus({ preventScroll: true });
+    if (!modal.contains(document.activeElement)) {
+      const foco = $(".m-cab .btn-icono:last-child", modal); if (foco) foco.focus({ preventScroll: true });
+    }
   }
   const empujar = (fn) => { M.fwd = []; M.pila.push(fn); pintarModal(); marcarPaso(); };
   // Abre la ventana pedida como un paso más de la que está abierta (si no hay ninguna, como siempre)
@@ -1521,11 +1545,11 @@
     const extra = EMBED ? [
       h("button", { class: "btn-icono", type: "button", "aria-label": "Cerrar el lector", title: "Cerrar el lector", onclick: () => { try { window.parent.postMessage({ biex: "cerrar" }, "*"); } catch (e) { /* ignorar */ } } }, svg(ICO.cerrar)),
     ] : [];
-    // Fondo vivo: luces muy tenues que se desplazan despacio y motas de luz que suben (se detiene con «Sin animaciones»)
+    // Fondo vivo: luces muy tenues (3 halos precargados en caché de textura GPU) y motas de luz que suben (se detiene con «Sin animaciones»)
     const motas = Array.from({ length: 10 }, (_, i) => h("i", { style: "--x:" + ((i * 61 + 7) % 100) + "%;--d:" + (34 + (i * 13) % 30) + "s;--r:-" + ((i * 7.3) % 40).toFixed(1) + "s;--s:" + (1.4 + (i % 4) * 0.5) + "px", class: "m" + ((i * 37) % 9) })); // (21-nov-2026) deriva fija por clase; Neon (23-nov-2026): 10 motas = menos capas GPU sin perder atmósfera
-    const lienzoLuces = h("canvas", { class: "vivo-luces" });
-    setTimeout(() => lucesVivas(lienzoLuces), 0);
-    const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, lienzoLuces, h("div", { class: "vivo-motas" }, motas));
+    const capaLuces = h("div", { class: "vivo-luces" });
+    setTimeout(() => lucesVivas(capaLuces), 0);
+    const fondo = h("div", { class: "fondo-vivo", "aria-hidden": "true" }, capaLuces, h("div", { class: "vivo-motas" }, motas));
     // letras hebreas y griegas que cruzan como meteoritos: lienzo propio, por delante de los contenedores y por detrás del texto
     const lienzoMet = h("div", { class: "meteoros", "aria-hidden": "true" });
     raiz.replaceChildren(fondo, lienzoMet,
@@ -1540,7 +1564,8 @@
         h("div", { class: "autoria" },
           h("span", { text: "Traducción, transliteración y análisis:" }),
           h("strong", { text: "BiEx – Biblia Exacta ©™." }),
-          h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" }))),
+          h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" })),
+          h("span", { class: "pie-jer", id: "fecha-jerusalen" })),
         // AF23 (BiEx, 21-nov-2026): cuenta atrás misteriosa hasta el 16 de julio de 2027 (sin explicación), discreta, solo en la
         // pantalla principal y al leer un capítulo (Análisis, Lectura y Textual)
         h("div", { class: "cuenta-m", id: "cuenta-m", "aria-hidden": "true" }))),
@@ -1924,10 +1949,10 @@
     historial(c, cap, v || null, modo);
     enfocar(v, i);
     juegoCapitulo(c, cap, modo);
-    // Mientras se lee (solo con buena conexión), precarga análisis, léxico y manuscritos del capítulo para abrir palabras al instante sin saltos
+    // Mientras se lee (solo con buena conexión), precarga análisis, referencias, léxico y manuscritos del capítulo para abrir palabras y notas al instante sin saltos
     if (!redLenta()) {
-      if (modo !== "a") setTimeout(() => { if (esc.libro === c && !redLenta()) { analisis(c).catch(() => {}); tablas().catch(() => {}); lexico().catch(() => {}); testigos().catch(() => {}); msCap(c, cap).catch(() => {}); } }, 1800);
-      else setTimeout(() => { if (esc.libro === c && !redLenta()) { lexico().catch(() => {}); testigos().catch(() => {}); msCap(c, cap).catch(() => {}); } }, 350);
+      if (modo !== "a") setTimeout(() => { if (esc.libro === c && !redLenta()) { analisis(c).catch(() => {}); tablas().catch(() => {}); refsDe(c).catch(() => {}); lexico().catch(() => {}); testigos().catch(() => {}); msCap(c, cap).catch(() => {}); } }, 450);
+      else setTimeout(() => { if (esc.libro === c && !redLenta()) { refsDe(c).catch(() => {}); lexico().catch(() => {}); testigos().catch(() => {}); msCap(c, cap).catch(() => {}); } }, 300);
     }
   }
   // Micro-barra rápida sobre el verso en lectura (Neon, 23-nov-2026): una sola capa ligera dentro de .hoja (cero nodos por verso,
@@ -1952,7 +1977,7 @@
       if (m.col) btnMk.style.setProperty("--mkc", "var(--mk-" + m.col + ")"); else btnMk.style.removeProperty("--mkc");
       pal.replaceChildren(...MK.temas().map(([k, nom]) => h("button", { type: "button", class: "vq-dot mk-" + k + (m.col === k ? " sel" : ""), title: nom, "aria-label": nom, "aria-pressed": String(m.col === k),
         onclick: () => { const ya = (MK.get(b.c, cap, vAct) || {}).col === k; MK.poner(b.c, cap, vAct, { col: ya ? null : k }); pintarPal(); avisar(ya ? "Marca quitada" : "Marcado: " + nom); cerrarPal(); } })),
-        h("button", { type: "button", class: "vq-nota-b", title: "Escribir nota de estudio", onclick: () => { const vv = vAct; ocultar(); abrirVerso(b, cap, vv); setTimeout(irANotaEnModal, 220); } }, "Nota"));
+        h("button", { type: "button", class: "vq-nota-b", title: "Escribir nota de estudio", onclick: () => { const vv = vAct; ocultar(); abrirVerso(b, cap, vv, false, null, true); } }, "Nota"));
     };
     btnCop.addEventListener("click", async () => {
       const x = porV.get(vAct); if (!x) return;
@@ -2499,11 +2524,11 @@
         h("a", { class: "enlace", href: "#/" + b.c + "/" + cap + "/l/" + v + "/m", text: "Ver los manuscritos de este verso" })));
   }
   const corcheteAn = (A, lado) => (A && A.entero && (lado ? A.fin : A.ini) ? h("span", { class: "an-cor", "aria-hidden": "true", text: lado ? " ⟧" : "⟦ " }) : null);
-  function abrirVerso(b, cap, v, conManuscritos, toque) {
+  function abrirVerso(b, cap, v, conManuscritos, toque, enfocarNota) {
     const versos = esc.versos || [];
     marcarVerso(v);
     historial(b.c, cap, v, "l");
-    const ctx = { b, cap, v, versos, toque: toque == null ? null : toque };
+    const ctx = { b, cap, v, versos, toque: toque == null ? null : toque, enfocarNota: !!enfocarNota };
     abrirModal(vistaVerso(ctx), () => { ponerHash("#/" + b.c + "/" + cap + "/l/" + (esc.vMarcado || v)); });
     ponerHash("#/" + b.c + "/" + cap + "/l/" + v);
     if (conManuscritos) empujar(vistaManuscritos(ctx));
@@ -2604,30 +2629,149 @@
     return el;
   }
   const marcaDe = (b, cap, v) => MK.get(b.c, cap, v);
+  // Selector de color de estudio BiEx: armonizado con los temas Oscuro y Pergamino (sin diálogos grises del sistema)
+  const PALETA_BIEX = [
+    ["#d86ca4", "Rosa antiguo"], ["#52b8d8", "Zafiro celeste"], ["#a8c957", "Oliva claro"], ["#e38f73", "Terracota"],
+    ["#f06f6c", "Coral"], ["#a97ef5", "Amatista"], ["#49b882", "Esmeralda"], ["#e5ad42", "Miel dorada"],
+    ["#6484e8", "Índigo"], ["#d64f6e", "Carmesí"], ["#38b8a8", "Jade"], ["#cc7a44", "Cobre"]
+  ];
+  function hexAHsv(hex) {
+    const s = HEX_OK(hex) ? hex.trim().slice(1) : "d86ca4";
+    const r = parseInt(s.slice(0, 2), 16) / 255, g = parseInt(s.slice(2, 4), 16) / 255, b = parseInt(s.slice(4, 6), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let hh = 0;
+    if (d > 1e-6) {
+      if (max === r) hh = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+      else if (max === g) hh = ((b - r) / d + 2) * 60;
+      else hh = ((r - g) / d + 4) * 60;
+    }
+    return [hh, max ? d / max : 0, max];
+  }
+  function hsvAHex(hh, s, v) {
+    const c = v * s, x = c * (1 - Math.abs(((hh / 60) % 2) - 1)), m = v - c;
+    let r = 0, g = 0, b = 0;
+    if (hh < 60) [r, g, b] = [c, x, 0];
+    else if (hh < 120) [r, g, b] = [x, c, 0];
+    else if (hh < 180) [r, g, b] = [0, c, x];
+    else if (hh < 240) [r, g, b] = [0, x, c];
+    else if (hh < 300) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    const p = (n) => Math.round(Math.max(0, Math.min(255, (n + m) * 255))).toString(16).padStart(2, "0");
+    return "#" + p(r) + p(g) + p(b);
+  }
+  function vistaSelectorColor(nombreTema, hexIni, alAplicar) {
+    return () => {
+      let [H, S, V] = hexAHsv(hexIni);
+      const puntero = h("span", { class: "mk-cp-pt", "aria-hidden": "true" });
+      const pad = h("div", { class: "mk-cp-pad", role: "slider", tabindex: "0", "aria-label": "Saturación y luminosidad del color" }, puntero);
+      const thumb = h("span", { class: "mk-cp-thumb", "aria-hidden": "true" });
+      const hueBar = h("div", { class: "mk-cp-hue", role: "slider", tabindex: "0", "aria-label": "Matiz del color", "aria-valuemin": "0", "aria-valuemax": "360" }, thumb);
+      const muestraDot = h("span", { class: "mk-cp-chip", "aria-hidden": "true" });
+      const hexIn = h("input", { type: "text", class: "mk-cp-hex", maxlength: "7", spellcheck: "false", autocomplete: "off", "aria-label": "Código hexadecimal del color" });
+      const muestraVerso = h("div", { class: "mk-cp-prev" },
+        h("span", { class: "mk-cp-pv-n", text: "1" }),
+        h("span", { class: "mk-cp-pv-t", text: "En principio era el Lόgος, y el Lόgος era hacia el Dsεός…" }));
+      const swBtns = PALETA_BIEX.map(([hx, nom]) => h("button", { type: "button", class: "mk-cp-sw", style: "--sw:" + hx, title: nom, "aria-label": nom, "data-hex": hx.toLowerCase(),
+        onclick: () => { [H, S, V] = hexAHsv(hx); pintar(true); } }));
+      const pintar = (ponerHex) => {
+        const hex = hsvAHex(H, S, V);
+        pad.style.setProperty("--cp-h", H.toFixed(1) + "deg");
+        puntero.style.left = (S * 100).toFixed(2) + "%";
+        puntero.style.top = ((1 - V) * 100).toFixed(2) + "%";
+        puntero.style.backgroundColor = hex;
+        thumb.style.left = ((H / 360) * 100).toFixed(2) + "%";
+        thumb.style.backgroundColor = "hsl(" + H.toFixed(0) + ", 100%, 50%)";
+        hueBar.setAttribute("aria-valuenow", String(Math.round(H)));
+        muestraDot.style.backgroundColor = hex;
+        muestraVerso.style.setProperty("--mkc", hex);
+        if (ponerHex !== false) hexIn.value = hex.toUpperCase();
+        for (const b of swBtns) b.classList.toggle("sel", b.dataset.hex === hex.toLowerCase());
+      };
+      const moverPad = (e) => {
+        const r = pad.getBoundingClientRect(); if (!r.width || !r.height) return;
+        S = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        V = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height));
+        pintar(true);
+      };
+      const moverHue = (e) => {
+        const r = hueBar.getBoundingClientRect(); if (!r.width) return;
+        H = Math.max(0, Math.min(359.5, ((e.clientX - r.left) / r.width) * 360));
+        pintar(true);
+      };
+      const enlazarArrastre = (el, fn) => {
+        let on = false;
+        el.addEventListener("pointerdown", (e) => { e.preventDefault(); on = true; try { el.setPointerCapture(e.pointerId); } catch (er) {} fn(e); });
+        el.addEventListener("pointermove", (e) => { if (on) fn(e); });
+        const fin = (e) => { if (!on) return; on = false; try { el.releasePointerCapture(e.pointerId); } catch (er) {} };
+        el.addEventListener("pointerup", fin); el.addEventListener("pointercancel", fin);
+      };
+      enlazarArrastre(pad, moverPad);
+      enlazarArrastre(hueBar, moverHue);
+      pad.addEventListener("keydown", (e) => {
+        const p = e.shiftKey ? 0.1 : 0.04;
+        if (e.key === "ArrowRight") S = Math.min(1, S + p);
+        else if (e.key === "ArrowLeft") S = Math.max(0, S - p);
+        else if (e.key === "ArrowUp") V = Math.min(1, V + p);
+        else if (e.key === "ArrowDown") V = Math.max(0, V - p);
+        else return;
+        e.preventDefault(); pintar(true);
+      });
+      hueBar.addEventListener("keydown", (e) => {
+        const p = e.shiftKey ? 18 : 6;
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") H = (H + p) % 360;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowDown") H = (H - p + 360) % 360;
+        else return;
+        e.preventDefault(); pintar(true);
+      });
+      hexIn.addEventListener("input", () => {
+        let v = hexIn.value.trim();
+        if (v && v[0] !== "#") v = "#" + v;
+        if (HEX_OK(v)) { [H, S, V] = hexAHsv(v); pintar(false); }
+      });
+      pintar(true);
+      return cajaModal(cabModal("Seleccionar color", nombreTema || "Color de libre elección"),
+        h("div", { class: "flot-cel mk-cp" },
+          muestraVerso,
+          pad,
+          hueBar,
+          h("div", { class: "mk-cp-hex-fila" }, muestraDot, h("span", { class: "mk-cp-hex-et", text: "Código" }), hexIn),
+          h("div", { class: "mk-cp-pal-bl" },
+            h("span", { class: "mk-cp-pal-tit", text: "Paleta sugerida BiEx" }),
+            h("div", { class: "mk-cp-swatches", role: "group", "aria-label": "Colores sugeridos" }, swBtns))),
+        h("div", { class: "m-pie" },
+          h("button", { class: "btn chico", type: "button", onclick: volver, text: "Cancelar" }),
+          h("button", { class: "btn chico oro", type: "button", onclick: () => { alAplicar(hsvAHex(H, S, V)); volver(); }, text: "Aplicar color" })));
+    };
+  }
   // Nombres de los 12 temas y elección libre del color para los 4 marcadores personalizables (libre1..libre4)
   function abrirEditarTemas(alGuardar) {
+    const draftNom = Object.fromEntries(MK.temas());
+    const draftCol = Object.assign({}, MK.colores());
     const fn = () => {
-      const cols = MK.colores(), filasFijas = [], filasLibres = [], txtInputs = [], colInputs = [];
-      for (const [k, n] of MK.temas()) {
+      const filasFijas = [], filasLibres = [];
+      for (const [k] of TEMAS_BASE) {
+        const n = draftNom[k] || k;
         const i = h("input", { type: "text", maxlength: "40", value: n, "aria-label": "Nombre del tema " + n });
-        i.dataset.k = k; txtInputs.push(i);
+        i.addEventListener("input", () => { draftNom[k] = i.value; });
         if (TEMAS_LIBRES[k]) {
-          const ci = h("input", { type: "color", class: "mk-color-in", value: cols[k], "aria-label": "Color personalizado para " + n, title: "Elegir color libre" });
-          ci.dataset.k = k; colInputs.push(ci);
-          filasLibres.push(h("label", { class: "mk-tema-ed mk-" + k }, ci, i));
+          const hex = draftCol[k] || TEMAS_LIBRES[k];
+          const btnCol = h("button", { type: "button", class: "mk-color-btn", style: "--mkc:" + hex, "aria-label": "Seleccionar color para " + n, title: "Seleccionar color",
+            onclick: () => empujar(vistaSelectorColor(draftNom[k] || n, draftCol[k] || TEMAS_LIBRES[k], (nuevo) => { draftCol[k] = nuevo; })) },
+            h("i", { "aria-hidden": "true" }));
+          filasLibres.push(h("div", { class: "mk-tema-ed mk-" + k }, btnCol, i));
         } else {
           filasFijas.push(h("label", { class: "mk-tema-ed mk-" + k }, h("i", { "aria-hidden": "true" }), i));
         }
       }
       const terminar = () => { if (M.pila.length > 1) volver(); else cerrarModal(); if (alGuardar) alGuardar(); };
       const guardarT = () => {
-        store.set("marcasTemas", Object.fromEntries(txtInputs.map((i) => [i.dataset.k, i.value.trim().slice(0, 40)]).filter(([, t]) => t)));
-        store.set("marcasColores", Object.fromEntries(colInputs.map((c) => [c.dataset.k, HEX_OK(c.value) ? c.value : TEMAS_LIBRES[c.dataset.k]])));
+        store.set("marcasTemas", Object.fromEntries(Object.entries(draftNom).map(([k, v]) => [k, String(v || "").trim().slice(0, 40)]).filter(([, t]) => t)));
+        store.set("marcasColores", Object.fromEntries(Object.keys(TEMAS_LIBRES).map((k) => [k, HEX_OK(draftCol[k]) ? draftCol[k] : TEMAS_LIBRES[k]])));
         MK.aplicarColores(); NUBE.cambio(); terminar(); avisar("Colores y temas guardados");
       };
       return cajaModal(cabModal("Colores y temas", "Personaliza los nombres y elige 4 colores libres a tu gusto"),
         h("div", { class: "mk-temas-ed" },
-          h("p", { class: "mk-temas-sep", text: "4 colores de libre elección" }), ...filasLibres,
+          h("p", { class: "mk-temas-sep", text: "4 colores de libre elección · toca el círculo para elegir" }), ...filasLibres,
           h("p", { class: "mk-temas-sep", text: "8 temas de la casa" }), ...filasFijas),
         h("div", { class: "m-pie" },
           h("button", { class: "btn chico", type: "button", onclick: () => { store.set("marcasTemas", {}); store.set("marcasColores", {}); MK.aplicarColores(); NUBE.cambio(); terminar(); avisar("Colores restablecidos"); }, text: "Restablecer" }),
@@ -3416,10 +3560,15 @@
     }
     return cont;
   }
+  function msVersoSync(c, cap, v) {
+    const mc = MS_CAP_SYNC.get(c + "." + cap);
+    if (!TESTIGOS || !mc) return null;
+    return { Tg: TESTIGOS, X: mc[String(v)] || null };
+  }
   // Resumen breve en la ventana del verso
   function resumenManuscritos(ctx, al) {
-    const caja = h("div", { class: "ms-res" }, h("span", { class: "cargando-mini", text: "Consultando los manuscritos antiguos…" }));
-    msVerso(ctx.b.c, ctx.cap, ctx.v).then(({ Tg, X }) => {
+    const caja = h("div", { class: "ms-res" });
+    const pintar = ({ Tg, X }) => {
       if (!X || !X.w.length) { caja.replaceChildren(h("span", { class: "nota-ui", text: "Ningún manuscrito de antes del año 400 d.H.D. conserva este verso; el texto se apoya en manuscritos posteriores." })); return; }
       const pres = X.w.filter((w) => w[1] > 0);
       const fechas = pres.map((w) => Tg.testigos[w[0]]).filter(Boolean);
@@ -3430,7 +3579,13 @@
         h("p", {}, pres.length ? "Se conserva en " + pres.length + (pres.length === 1 ? " manuscrito antiguo" : " manuscritos antiguos") + (desde ? ", desde " + siglo(desde) : "") + ": " : "", h("span", { class: "ms-sig", lang: "grc", text: sigs })),
         h("p", { class: "nota-ui", text: (aus ? "Hay manuscritos que no lo contienen. " : "") + (nv ? nv + (nv === 1 ? " diferencia" : " diferencias") + " con el texto base, sin contar la ortografía." : "Coinciden con el texto base, salvo detalles de ortografía.") }),
         h("button", { class: "btn chico oro", type: "button", onclick: al }, svg(ICO.manuscrito), "Ver los manuscritos"));
-    }).catch(() => caja.replaceChildren(h("span", { class: "nota-ui", text: "No se pudieron consultar los manuscritos." })));
+    };
+    const syncMs = msVersoSync(ctx.b.c, ctx.cap, ctx.v);
+    if (syncMs) pintar(syncMs);
+    else {
+      caja.append(h("span", { class: "cargando-mini", text: "Consultando los manuscritos antiguos…" }));
+      msVerso(ctx.b.c, ctx.cap, ctx.v).then((r) => conAnclaEnModal(() => pintar(r))).catch(() => conAnclaEnModal(() => caja.replaceChildren(h("span", { class: "nota-ui", text: "No se pudieron consultar los manuscritos." }))));
+    }
     return caja;
   }
   const siglo = (a) => { const s = Math.floor((a - 1) / 100) + 1; return "el siglo " + ["", "I", "II", "III", "IV", "V", "VI", "VII"][s]; };
@@ -3634,8 +3789,30 @@
     }
     return mejor;
   }
+  // Verso iluminado en pantalla: toma primero exactamente el verso que lleva el brillo luminoso de Escudriña (LB.v / R.vf);
+  // si Escudriña no está activo, aplica la misma franja fija de lectura (38–43 % del alto) sobre el número del verso.
+  function versoIluminado() {
+    try {
+      if (window.BiExJuego && typeof BiExJuego.versoActivo === "function") {
+        const jv = BiExJuego.versoActivo(esc.libro, esc.cap);
+        if (jv && document.getElementById("v" + jv)) return jv;
+      }
+    } catch (e) { /* sin juego */ }
+    const a = innerHeight * 0.38, b = innerHeight * 0.43;
+    let cruza = 0;
+    for (const el of document.querySelectorAll("#vista [id^='v']")) {
+      if (!/^v\d+$/.test(el.id)) continue;
+      const num = el.querySelector(".vn, sup") || el;
+      const r = num.getBoundingClientRect();
+      if (!r.height) continue;
+      if (r.top >= b) break;
+      cruza = +el.id.slice(1);
+      if (r.bottom > a) return cruza;
+    }
+    return cruza || versoEnPantalla() || esc.vMarcado || 1;
+  }
   function verPericopaJnm(b, cap, versos) {
-    const v = versoEnPantalla() || 1, ini = versos && versos.length ? iniciosPericopa(versos) : new Set();
+    const v = versoIluminado() || 1, ini = versos && versos.length ? iniciosPericopa(versos) : new Set();
     let a = v, z = v;
     for (const x of versos || []) { if (x.v <= v && ini.has(x.v)) a = x.v; }
     for (const x of versos || []) { if (x.v > v && ini.has(x.v)) break; if (x.v >= v) z = x.v; }
@@ -3670,70 +3847,85 @@
     const b = D && libroDe(LIBROS_REF[li]);
     return h("span", { class: "rx-n" }, h("span", { class: "rx-lib", text: b ? (b.t || b.n) : LIBROS_REF[li] }), b && b.t ? h("span", { class: "rx-es", text: " [" + b.n + "] " }) : " ", h("b", { text: cola }));
   }
-  function bloqueRefs(b, cap, v) {
+  function bloqueRefs(b, cap, v, sinAutoExpandir) {
     const caja = h("div", { class: "rx" }, h("p", { class: "nota-ui", text: "Buscando referencias…" }));
     const cuenta = h("span", { class: "rx-cuenta" });
-    refsDe(b.c).then((R) => {
-      const plano = ((R.c || {})[cap] || {})[v] || [];
-      const lista = []; for (let i = 0; i + 5 < plano.length; i += 6) lista.push(plano.slice(i, i + 6));
-      if (!lista.length) { caja.replaceChildren(h("p", { class: "nota-ui", text: "Este verso todavía no tiene referencias cruzadas." })); return; }
-      lista.forEach((r, i) => { r.nv = nivelRef(r[4], i); });
-      const n1 = lista.filter((r) => r.nv === 1).length, n2 = lista.filter((r) => r.nv <= 2).length;
-      let nivel = String(store.get("refsNivel", "1")); if (nivel === "1" && !n1) nivel = n2 ? "2" : "3"; else if (nivel === "2" && !n2) nivel = "3";
-      cuenta.textContent = fmt(lista.length);
-      const seg = h("div", { class: "seg-mini rx-seg", role: "group", "aria-label": "Nivel de las referencias" });
-      const cuerpo = h("div", { class: "rx-cuerpo" });
-      const pintar = () => {
-        const tope = +nivel, sel = lista.filter((r) => r.nv <= tope);
-        for (const bt of seg.children) bt.setAttribute("aria-pressed", String(bt.dataset.k === nivel));
-        // el aviso del ranking va una sola vez, en la primera categoría con pasajes de la Antigua Voluntad (AA16)
-        const catAV = ORDEN_CAT_REF.find((c) => sel.some((r) => r[5] === c && r[0] < 39));
-        cuerpo.replaceChildren(...ORDEN_CAT_REF.map((cat) => {
-          const it = sel.filter((r) => r[5] === cat); if (!it.length) return null;
-          const ul = h("ul", { class: "rx-lista" });
-          const item = (r) => {
-            const fuerza = h("span", { class: "rx-f n" + r.nv, title: r.nv === 1 ? "Referencia principal" : r.nv === 2 ? "Referencia relacionada" : "Referencia ampliada", "aria-hidden": "true" }, h("i"), h("i"), h("i"));
-            if (r[0] < 39) {
-              // (BiEx, 13-nov-2026) la Antigua Voluntad se lee dentro de BiEx, sin salir del sitio: mientras BiEx la traduce, la
-              // Septuaginta en español de Wilhelm [Guillermo] Jünemann (dominio público), marcada como cita de otra traducción
-              const panel = h("div", { class: "rx-txt rx-av", hidden: true });
-              const bt = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: async () => {
-                const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); if (!ab || panel.dataset.listo) return;
-                panel.replaceChildren(h("span", { class: "nota-ui", text: "Cargando…" }));
-                try { panel.replaceChildren(...textoAV(await cargarAV(LIBROS_REF[r[0]]), r)); panel.dataset.listo = "1"; }
-                catch (e) { panel.replaceChildren(h("span", { class: "nota-ui", text: "No se pudo cargar el texto. Revisa tu conexión." })); }
-              } }, etRef(r), fuerza);
-              return h("li", { class: "rx-it av" }, bt, panel);
-            }
-            const cod = LIBROS_REF[r[0]], prev = h("div", { class: "rx-txt", hidden: true });
-            const ir = h("a", { class: "rx-ir", href: refRuta([cod, r[1], r[2]]), "aria-label": "Abrir en el lector" }, svg(ICO.seguir));
-            const ver = () => {
-              if (prev.dataset.listo) { prev.hidden = !prev.hidden; boton.setAttribute("aria-expanded", String(!prev.hidden)); return; }
-              prev.hidden = false; boton.setAttribute("aria-expanded", "true"); prev.replaceChildren(h("span", { class: "nota-ui", text: "Cargando…" }));
-              lectura(cod).then((LB) => {
-                const vs = (LB.caps || {})[r[1]] || [], fin = r[3] > 0 ? r[3] : r[2];
-                const tr = vs.filter((x) => x.v >= r[2] && x.v <= fin);
-                prev.dataset.listo = "1";
-                prev.replaceChildren(...(tr.length ? tr.map((x) => h("p", {}, tr.length > 1 ? h("sup", { text: String(x.v) }) : null, txtVersoL(x))) : [h("span", { class: "nota-ui", text: "No se halló ese verso." })]));
-                if (prev.animate && document.documentElement.getAttribute("data-mov") !== "no") prev.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
-              }).catch(() => prev.replaceChildren(h("span", { class: "nota-ui", text: "No se pudo cargar el texto." })));
+    const construir = (R, sinc) => {
+      const aplicar = () => {
+        const plano = ((R.c || {})[cap] || {})[v] || [];
+        const lista = []; for (let i = 0; i + 5 < plano.length; i += 6) lista.push(plano.slice(i, i + 6));
+        if (!lista.length) { caja.replaceChildren(h("p", { class: "nota-ui", text: "Este verso todavía no tiene referencias cruzadas." })); return; }
+        lista.forEach((r, i) => { r.nv = nivelRef(r[4], i); });
+        const n1 = lista.filter((r) => r.nv === 1).length, n2 = lista.filter((r) => r.nv <= 2).length;
+        let nivel = String(store.get("refsNivel", "1")); if (nivel === "1" && !n1) nivel = n2 ? "2" : "3"; else if (nivel === "2" && !n2) nivel = "3";
+        cuenta.textContent = fmt(lista.length);
+        const seg = h("div", { class: "seg-mini rx-seg", role: "group", "aria-label": "Nivel de las referencias" });
+        const cuerpo = h("div", { class: "rx-cuerpo" });
+        const pintar = () => {
+          const tope = +nivel, sel = lista.filter((r) => r.nv <= tope);
+          for (const bt of seg.children) bt.setAttribute("aria-pressed", String(bt.dataset.k === nivel));
+          // el aviso del ranking va una sola vez, en la primera categoría con pasajes de la Antigua Voluntad (AA16)
+          const catAV = ORDEN_CAT_REF.find((c) => sel.some((r) => r[5] === c && r[0] < 39));
+          cuerpo.replaceChildren(...ORDEN_CAT_REF.map((cat) => {
+            const it = sel.filter((r) => r[5] === cat); if (!it.length) return null;
+            const ul = h("ul", { class: "rx-lista" });
+            const item = (r) => {
+              const fuerza = h("span", { class: "rx-f n" + r.nv, title: r.nv === 1 ? "Referencia principal" : r.nv === 2 ? "Referencia relacionada" : "Referencia ampliada", "aria-hidden": "true" }, h("i"), h("i"), h("i"));
+              if (r[0] < 39) {
+                // (BiEx, 13-nov-2026) la Antigua Voluntad se lee dentro de BiEx, sin salir del sitio: mientras BiEx la traduce, la
+                // Septuaginta en español de Wilhelm [Guillermo] Jünemann (dominio público), marcada como cita de otra traducción
+                const panel = h("div", { class: "rx-txt rx-av", hidden: true });
+                const bt = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: async () => {
+                  const ab = panel.hidden; panel.hidden = !ab; bt.setAttribute("aria-expanded", String(ab)); if (!ab || panel.dataset.listo) return;
+                  panel.replaceChildren(h("span", { class: "nota-ui", text: "Cargando…" }));
+                  try { panel.replaceChildren(...textoAV(await cargarAV(LIBROS_REF[r[0]]), r)); panel.dataset.listo = "1"; }
+                  catch (e) { panel.replaceChildren(h("span", { class: "nota-ui", text: "No se pudo cargar el texto. Revisa tu conexión." })); }
+                } }, etRef(r), fuerza);
+                return h("li", { class: "rx-it av" }, bt, panel);
+              }
+              const cod = LIBROS_REF[r[0]], prev = h("div", { class: "rx-txt", hidden: true });
+              const ir = h("a", { class: "rx-ir", href: refRuta([cod, r[1], r[2]]), "aria-label": "Abrir en el lector" }, svg(ICO.seguir));
+              const ver = () => {
+                if (prev.dataset.listo) { prev.hidden = !prev.hidden; boton.setAttribute("aria-expanded", String(!prev.hidden)); return; }
+                const pintarPrev = (LB) => {
+                  const vs = (LB.caps || {})[r[1]] || [], fin = r[3] > 0 ? r[3] : r[2];
+                  const tr = vs.filter((x) => x.v >= r[2] && x.v <= fin);
+                  prev.dataset.listo = "1";
+                  prev.replaceChildren(...(tr.length ? tr.map((x) => h("p", {}, tr.length > 1 ? h("sup", { text: String(x.v) }) : null, txtVersoL(x))) : [h("span", { class: "nota-ui", text: "No se halló ese verso." })]));
+                };
+                const lbMem = DATOS_MEM["datos/libros/" + cod + ".json"];
+                conAnclaEnModal(() => {
+                  prev.hidden = false; boton.setAttribute("aria-expanded", "true");
+                  if (lbMem) { indexarAnadidos(lbMem); pintarPrev(lbMem); }
+                  else prev.replaceChildren(h("span", { class: "nota-ui", text: "Cargando…" }));
+                });
+                if (lbMem) return;
+                lectura(cod).then((LB) => {
+                  conAnclaEnModal(() => { pintarPrev(LB); });
+                  if (prev.animate && document.documentElement.getAttribute("data-mov") !== "no") prev.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+                }).catch(() => conAnclaEnModal(() => prev.replaceChildren(h("span", { class: "nota-ui", text: "No se pudo cargar el texto." }))));
+              };
+              const boton = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: ver }, etRef(r), fuerza);
+              const li = h("li", { class: "rx-it" }, h("div", { class: "rx-fila" }, boton, ir), prev);
+              if (!sinAutoExpandir && libroListo(cod) && r.nv === 1) requestAnimationFrame(ver);
+              return li;
             };
-            const boton = h("button", { type: "button", class: "rx-cab", "aria-expanded": "false", onclick: ver }, etRef(r), fuerza);
-            const li = h("li", { class: "rx-it" }, h("div", { class: "rx-fila" }, boton, ir), prev);
-            if (libroListo(cod) && r.nv === 1) requestAnimationFrame(ver);
-            return li;
-          };
-          const mostrar = (desde, n) => { ul.append(...it.slice(desde, desde + n).map(item)); return desde + n; };
-          let k = mostrar(0, 6);
-          const mas = it.length > k ? h("button", { class: "btn chico rx-mas", type: "button", onclick: () => { k = mostrar(k, 12); if (k >= it.length) mas.remove(); else mas.lastChild.textContent = "Ver más (" + fmt(it.length - k) + ")"; } }, svg(ICO.abajo), h("span", { text: "Ver más (" + fmt(it.length - k) + ")" })) : null;
-          return h("section", { class: "rx-cat c" + cat }, h("h5", {}, h("span", { text: CAT_REF[cat] }), h("em", { text: fmt(it.length) })),
-            cat === catAV ? avisoAV() : null, ul, mas);
-        }).filter(Boolean));
+            const mostrar = (desde, n) => { ul.append(...it.slice(desde, desde + n).map(item)); return desde + n; };
+            let k = mostrar(0, 6);
+            const mas = it.length > k ? h("button", { class: "btn chico rx-mas", type: "button", onclick: () => { k = mostrar(k, 12); if (k >= it.length) mas.remove(); else mas.lastChild.textContent = "Ver más (" + fmt(it.length - k) + ")"; } }, svg(ICO.abajo), h("span", { text: "Ver más (" + fmt(it.length - k) + ")" })) : null;
+            return h("section", { class: "rx-cat c" + cat }, h("h5", {}, h("span", { text: CAT_REF[cat] }), h("em", { text: fmt(it.length) })),
+              cat === catAV ? avisoAV() : null, ul, mas);
+          }).filter(Boolean));
+        };
+        seg.append(...NIVELES_REF.map(([k, et]) => { const n = k === "1" ? n1 : k === "2" ? n2 : lista.length; return h("button", { type: "button", "data-k": k, disabled: n ? null : "", onclick: () => { nivel = k; store.set("refsNivel", k); pintar(); } }, et + " · " + fmt(n)); }));
+        caja.replaceChildren(seg, cuerpo, credPleg("Referencias cruzadas: ", h("a", { href: "https://www.openbible.info/labs/cross-references/", target: "_blank", rel: "noopener", text: "OpenBible.info" }), " (CC BY), a partir del Treasury of Scripture Knowledge [Tesoro del Conocimiento de la Escritura]; nivel y categorías de BiEx."));
+        pintar();
       };
-      seg.append(...NIVELES_REF.map(([k, et]) => { const n = k === "1" ? n1 : k === "2" ? n2 : lista.length; return h("button", { type: "button", "data-k": k, disabled: n ? null : "", onclick: () => { nivel = k; store.set("refsNivel", k); pintar(); } }, et + " · " + fmt(n)); }));
-      caja.replaceChildren(seg, cuerpo, credPleg("Referencias cruzadas: ", h("a", { href: "https://www.openbible.info/labs/cross-references/", target: "_blank", rel: "noopener", text: "OpenBible.info" }), " (CC BY), a partir del Treasury of Scripture Knowledge [Tesoro del Conocimiento de la Escritura]; nivel y categorías de BiEx."));
-      pintar();
-    }).catch(() => caja.replaceChildren(h("p", { class: "nota-ui", text: "No se pudieron cargar las referencias cruzadas." })));
+      if (sinc) aplicar(); else if (caja.isConnected) conAnclaEnModal(aplicar);
+    };
+    const rMem = DATOS_MEM["datos/refs/" + b.c + ".json"];
+    if (rMem) construir(rMem, true);
+    else refsDe(b.c).then((R) => construir(R, false)).catch(() => conAnclaEnModal(() => caja.replaceChildren(h("p", { class: "nota-ui", text: "No se pudieron cargar las referencias cruzadas." }))));
     return h("div", { class: "bloque rx-bloque" }, h("h4", {}, svg(ICO.refs), h("span", { text: "Referencias cruzadas" }), cuenta), caja);
   }
   function vistaVerso(ctx) {
@@ -3758,9 +3950,11 @@
       const nav = { prev: k > 0 ? () => mover(k - 1) : null, next: k >= 0 && k < versos.length - 1 ? () => mover(k + 1) : null, etiqueta: ["Verso anterior", "Verso siguiente"] };
       M.nav = nav;
       const { btnRef, panIr } = selectorCapVerso(b, cap, ctx.v, irAVerso);
-      // Si se abrió tocando una palabra, se marca M.centrada antes de restaurarScrollM() para evitar el doble brinco
+      // Si se abrió tocando una palabra o directo a Nota, se marca M.centrada antes de restaurarScrollM() para evitar sobresaltos
       const habiaToque = ctx.toque != null;
-      if (habiaToque) M.centrada = performance.now();
+      const vaANota = !!ctx.enfocarNota;
+      if (habiaToque || vaANota) M.centrada = performance.now();
+      if (vaANota) M.anclaNota = performance.now() + 2600;
       const zona = h("div", { class: "palabras" });
       let elToque = null;
       const alinearToque = (toks) => {
@@ -3771,7 +3965,10 @@
         return zona.children[idx] || null;
       };
       const llenar = (toks, sinc) => {
-        zona.replaceChildren(...toks.map((t, i) => tarjetaPalabra(t, () => empujar(vistaPalabra({ b, cap, v: ctx.v, toks, i, L, desde: "verso" })))));
+        const poner = () => {
+          zona.replaceChildren(...toks.map((t, i) => tarjetaPalabra(t, () => empujar(vistaPalabra({ b, cap, v: ctx.v, toks, i, L, desde: "verso" })))));
+        };
+        if (sinc) poner(); else conAnclaEnModal(poner);
         const el = alinearToque(toks);
         if (el) {
           el.setAttribute("aria-pressed", "true");
@@ -3786,9 +3983,11 @@
         zona.append(cargando("Cargando el griego…"));
         const vEsperado = ctx.v;
         versoTokens(b.c, cap, ctx.v).then((toks) => { if (ctx.v !== vEsperado) return; ctx.toks = toks; if (zona.isConnected) llenar(toks, false); })
-          .catch(() => zona.replaceChildren(fallo("No se pudo cargar el griego del verso.")));
+          .catch(() => conAnclaEnModal(() => zona.replaceChildren(fallo("No se pudo cargar el griego del verso."))));
       }
-      fn.alMostrar = elToque ? () => { if (elToque && elToque.isConnected) { enfocarEnModal(elToque); destello(elToque); } } : null;
+      fn.alMostrar = elToque
+        ? () => { if (elToque && elToque.isConnected) { enfocarEnModal(elToque); destello(elToque); } }
+        : vaANota ? () => { ctx.enfocarNota = false; irANotaEnModal(); } : null;
       return cajaModal(cabModal(btnRef, b.t ? b.t + " " + cap + ":" + ctx.v : "", nav),
         [panIr, h("div", { class: "fv" },
           avisoAnadido(b, cap, ctx.v, anadido(b.c, cap, ctx.v), true),
@@ -3835,7 +4034,7 @@
               const ops = [op("verso", ctx.v, ctx.v, "verso"), a !== z ? op("perícopa " + a + "–" + z, a, z, "pericopa") : null, op("capítulo " + cap, 1, 1e4, "capitulo")].filter(Boolean);
               return h("div", { class: "fv-cg" }, h("p", { class: "fv-cg-t" }, svg(ICO.copiar), h("span", { text: "Copiar el griego" })), h("div", { class: "fv-cg-op", style: "--n:" + ops.length }, ops));
             })()),
-          bloqueRefs(b, cap, ctx.v),
+          bloqueRefs(b, cap, ctx.v, vaANota),
           bloqueEstudio(b, cap, ctx.v, irAVerso),
           h("div", { class: "bloque" }, h("h4", { text: "En los manuscritos antiguos" }), resumenManuscritos({ b, cap, v: ctx.v }, () => empujar(vistaManuscritos(ctx)))),
           enlaceFuenteQ(b.c, cap, ctx.v))],
@@ -3861,7 +4060,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "da87aa8dcc", juego: "54c7ec81ca", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "da87aa8dcc", juego: "93e288e3c9", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5133,8 +5332,8 @@
       };
       const pista = h("div", { class: "q-pista", role: "img", "aria-label": Q_LIB[c] + ": " + segs.map(([kk, t]) => t + " " + Math.round(pc(k[kk])) + " %").join("; ") },
         segs.map(([kk, t, cl]) => {
-          const p = pc(k[kk]);
-          return h("span", { class: "q-tramo q-" + cl, "data-cl": cl, style: "flex-basis:" + p.toFixed(2) + "%", title: t + ": " + (k[kk] || 0) + " versos (" + Math.round(p) + " %)",
+          const cnt = k[kk] || 0, p = pc(cnt);
+          return h("span", { class: "q-tramo q-" + cl + (p < 13 ? " angosto" : ""), "data-cl": cl, style: "flex:" + (p >= 8.5 ? Math.max(p, 11.5) : Math.max(p, 5.5)).toFixed(2) + " 1 0%", title: t + ": " + cnt + " versos (" + Math.round(p) + " %)",
             onpointerenter: () => marcarSeg(cl), onpointerleave: () => marcarSeg(fijoCl),
             onclick: () => { fijoCl = fijoCl === cl ? null : cl; marcarSeg(fijoCl); } },
           p >= 8.5 ? h("i", { text: Math.round(p) + " %" }) : null);
@@ -6101,7 +6300,7 @@
           "Elige «BiEx · Verso del día»: muestra el pasaje del día y tu nivel en Escudriña, actualizándose incluso sin conexión con tu copia local."
         ], esWin),
         guiaWd("Android", "App + accesos", [
-          "Instala BiEx desde Chrome, Firefox, Vivaldi, Edge, Brave, Samsung Internet, Opera u otro navegador compatible («Instalar aplicación» o «Agregar a la pantalla de inicio») para fijarla en tu pantalla de inicio.",
+          "Instala BiEx desde Chrome, Vivaldi, Edge, Brave, Samsung Internet, Opera u otro navegador compatible («Instalar aplicación» o «Agregar a la pantalla de inicio») para fijarla en tu pantalla de inicio.",
           "Mantén pulsado el ícono de BiEx para saltar al instante a Escudriña, Buscar o tu última lectura.",
           "Los navegadores de Android aún no permiten widgets de escritorio desde aplicaciones web; en cuanto lo habiliten, el mismo widget quedará listo."
         ], !esWin && !ios && /Android/i.test(navigator.userAgent || "")),
@@ -6248,23 +6447,41 @@
       secLista.hidden = false; secBtn.setAttribute("aria-expanded", "true");
       if (secLista.animate && !quieto()) secLista.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: "ease-out" });
     }
-    // Marcador rápido flotante encima de Compartir (.sr-mk): permite marcar con los 12 colores, copiar o anotar el verso en
-    // pantalla sin interferir jamás con la selección de texto nativa del teléfono.
+    // Marcador rápido flotante encima de Compartir (.sr-mk): siempre sincronizado con el verso iluminado en pantalla
+    // (el mismo verso activo del brillo luminoso de Escudriña), sin interferir jamás con la selección de texto nativa.
     const leyendoCap = () => !!(esc.libro && esc.cap && esc.modo !== "a" && esc.versos && esc.versos.length);
     const mkPan = h("div", { class: "sr-mk-pan", hidden: true, role: "dialog", "aria-label": "Marcar verso" });
-    let mkV = 1;
+    let mkV = 1, mkManual = false;
     const mkBtn = h("button", { type: "button", class: "sr-btn sr-mk", hidden: true, "aria-label": "Marcar el verso actual", title: "Marcar verso", "aria-expanded": "false", "aria-haspopup": "dialog",
       onclick: (e) => { e.stopPropagation(); alternarMk(); mostrar(); } }, svg(ICO.marcador));
     function actualizarBtnMk() {
       const enCap = leyendoCap();
       mkBtn.hidden = !enCap;
       if (!enCap) { alternarMk(false); return; }
-      const v = mkPan.hidden ? (versoEnPantalla() || esc.vMarcado || 1) : mkV;
+      const vAct = versoIluminado();
+      if (mkPan.hidden || !mkManual) mkV = vAct;
+      const v = mkV;
+      const b = libroDe(esc.libro);
+      const ref = b ? (b.t || b.n) + " " + esc.cap + ":" + v : esc.cap + ":" + v;
+      mkBtn.title = "Marcar " + ref;
+      mkBtn.setAttribute("aria-label", "Marcar " + ref);
       const m = MK.get(esc.libro, esc.cap, v) || {};
       mkBtn.classList.toggle("on", !!m.col);
       if (m.col) mkBtn.style.setProperty("--mkc", "var(--mk-" + m.col + ")"); else mkBtn.style.removeProperty("--mkc");
+      if (!mkPan.hidden && !mkManual) pintarMkPan();
     }
     syncMkRapido = actualizarBtnMk;
+    document.addEventListener("biex:verso-activo", (ev) => {
+      const d = ev && ev.detail;
+      if (!d || !leyendoCap()) return;
+      if (d.c === esc.libro && d.cap === esc.cap && d.v) {
+        if (mkPan.hidden || !mkManual) {
+          const cambio = mkV !== d.v;
+          mkV = d.v;
+          if (cambio) actualizarBtnMk();
+        }
+      }
+    });
     function pintarMkPan() {
       if (!leyendoCap()) { alternarMk(false); return; }
       const b = libroDe(esc.libro), vs = esc.versos || [];
@@ -6273,8 +6490,17 @@
       if (idx < 0) { idx = 0; mkV = vs[0].v; }
       const x = vs[idx], m = MK.get(b.c, esc.cap, x.v) || {};
       const sub = h("small", { class: m.col ? "mk-" + m.col : "", text: m.col ? MK.nombre(m.col) : "Sin marca" });
-      const bPrev = h("button", { type: "button", "aria-label": "Verso anterior", title: "Verso anterior", disabled: idx <= 0, onclick: () => { mkV = vs[idx - 1].v; marcarVerso(mkV); pintarMkPan(); actualizarBtnMk(); } }, svg(ICO.izq));
-      const bNext = h("button", { type: "button", "aria-label": "Verso siguiente", title: "Verso siguiente", disabled: idx >= vs.length - 1, onclick: () => { mkV = vs[idx + 1].v; marcarVerso(mkV); pintarMkPan(); actualizarBtnMk(); } }, svg(ICO.der));
+      const irPaso = (nuevoV) => {
+        mkManual = true; mkV = nuevoV; marcarVerso(mkV);
+        const elV = document.getElementById("v" + mkV);
+        if (elV) {
+          const r = elV.getBoundingClientRect();
+          if (r.top < 90 || r.bottom > window.innerHeight - 80) elV.scrollIntoView({ block: "center", behavior: quieto() ? "auto" : "smooth" });
+        }
+        pintarMkPan(); actualizarBtnMk();
+      };
+      const bPrev = h("button", { type: "button", "aria-label": "Verso anterior", title: "Verso anterior", disabled: idx <= 0, onclick: () => irPaso(vs[idx - 1].v) }, svg(ICO.izq));
+      const bNext = h("button", { type: "button", "aria-label": "Verso siguiente", title: "Verso siguiente", disabled: idx >= vs.length - 1, onclick: () => irPaso(vs[idx + 1].v) }, svg(ICO.der));
       const grid = h("div", { class: "sr-mk-grid", role: "group", "aria-label": "Elegir color" }, MK.temas().map(([k, nom]) =>
         h("button", { type: "button", class: "vq-dot mk-" + k + (m.col === k ? " sel" : ""), title: nom, "aria-label": nom, "aria-pressed": String(m.col === k),
           onclick: () => {
@@ -6295,7 +6521,7 @@
         alternarMk(false);
       } }, svg(ICO.copiar), h("span", { text: "Copiar" }));
       const bNota = h("button", { type: "button", class: "fv-rap-b", onclick: () => {
-        const vv = x.v; alternarMk(false); abrirVerso(b, esc.cap, vv); setTimeout(irANotaEnModal, 220);
+        const vv = x.v; alternarMk(false); abrirVerso(b, esc.cap, vv, false, null, true);
       } }, svg(ICO.nota), h("span", { text: "Nota" }));
       mkPan.replaceChildren(
         h("div", { class: "sr-mk-cab" },
@@ -6306,9 +6532,12 @@
     }
     function alternarMk(abrir) {
       const ab = abrir != null ? abrir : mkPan.hidden;
-      if (!ab || !leyendoCap()) { mkPan.hidden = true; mkBtn.setAttribute("aria-expanded", "false"); return; }
+      if (!ab || !leyendoCap()) { mkManual = false; mkPan.hidden = true; mkBtn.setAttribute("aria-expanded", "false"); return; }
       alternarSecs(false);
-      mkV = versoEnPantalla() || esc.vMarcado || 1;
+      mkManual = false;
+      mkV = versoIluminado();
+      // Precarga silenciosa del análisis, referencias y manuscritos del capítulo actual para que «Nota» abra al instante y sin saltos
+      if (esc.libro) { analisis(esc.libro).catch(() => {}); tablas().catch(() => {}); refsDe(esc.libro).catch(() => {}); testigos().catch(() => {}); msCap(esc.libro, esc.cap).catch(() => {}); }
       pintarMkPan();
       mkPan.hidden = false; mkBtn.setAttribute("aria-expanded", "true");
       if (mkPan.animate && !quieto()) mkPan.animate([{ opacity: 0, transform: "translate3d(8px,0,0)" }, { opacity: 1, transform: "none" }], { duration: 170, easing: "ease-out" });
@@ -6774,48 +7003,50 @@
   // (texto y degradados CSS) y lo anima el compositor (Web Animations, solo transform y opacidad): nítido a cualquier
   // densidad y sin trabajo del hilo principal mientras se desplaza la página. Se apaga con «Sin animaciones» o
   // prefers-reduced-motion; no lanza con la pestaña oculta ni con una ventana abierta.
-  // Luces del fondo (tres resplandores que derivan muy despacio). Antes eran tres capas de hasta 120 vmax (unos 85 MB de
-  // texturas en un teléfono a 3×, que la GPU mezclaba en cada cuadro); ahora se dibujan en un lienzo diminuto (1 píxel por
-  // cada 8 de pantalla) que la GPU amplía: al ser degradados suaves se ven igual, cuestan casi nada y ya no hace falta
-  // detenerlas al desplazar (BiEx, 9-nov-2026: movimiento siempre disponible y fluido).
-  function lucesVivas(cv) {
-    const cx = cv && cv.getContext && cv.getContext("2d"); if (!cx) return;
-    const F = 8, red = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  // Argon (23-nov-2026) · Luces del fondo (tres halos precargados en caché de textura GPU): cada halo se pinta UNA sola vez en un lienzo diminuto
+  // de 128×128 px (~64 KB en VRAM, ~192 KB en total frente a los ~85 MB de las capas de pantalla completa) y la caché solo se
+  // renueva si cambia el tema (Oscuro ↔ Pergamino). El desplazamiento lo ejecuta íntegramente el compositor GPU mediante CSS
+  // (transform: translate3d y opacidad) a 60/120 Hz con 0 % de CPU, sin saltos al desplazar, abrir ventanas ni volver a la pestaña.
+  function lucesVivas(capa) {
+    if (!capa) return;
+    const S = 128, R = S / 2;
     const LUZ = {
-      dark: [[[214, 178, 104], [[0, 0.13], [0.45, 0.045], [0.72, 0]]], [[86, 112, 190], [[0, 0.12], [0.48, 0.04], [0.72, 0]]], [[150, 102, 170], [[0, 0.07], [0.7, 0]]]],
-      light: [[[176, 130, 48], [[0, 0.12], [0.45, 0.04], [0.72, 0]]], [[70, 100, 170], [[0, 0.08], [0.7, 0]]], [[150, 100, 150], [[0, 0.05], [0.7, 0]]]],
+      dark: [
+        [[214, 178, 104], [[0, 0.14], [0.44, 0.048], [0.76, 0]]],
+        [[86, 112, 190], [[0, 0.13], [0.46, 0.042], [0.76, 0]]],
+        [[150, 102, 170], [[0, 0.08], [0.45, 0.025], [0.76, 0]]],
+      ],
+      light: [
+        [[176, 130, 48], [[0, 0.125], [0.44, 0.042], [0.76, 0]]],
+        [[70, 100, 170], [[0, 0.085], [0.46, 0.028], [0.76, 0]]],
+        [[150, 100, 150], [[0, 0.055], [0.45, 0.018], [0.76, 0]]],
+      ],
     };
-    let W = 0, H = 0, vw = 0, vh = 0, vmax = 0;
-    const medir = () => { vw = window.innerWidth / 100; vh = window.innerHeight / 100; vmax = Math.max(vw, vh); W = Math.max(8, Math.round(window.innerWidth / F)); H = Math.max(8, Math.round(window.innerHeight / F)); if (cv.width !== W) cv.width = W; if (cv.height !== H) cv.height = H; };
-    const suave = (x) => 0.5 - 0.5 * Math.cos(Math.PI * x);
-    // ciclo de ida y vuelta por tres puntos (0 %, 50 %, 100 %), con entrada y salida suaves en cada tramo
-    const en = (t, dur, a, b, c) => { let q = (t / dur) % 2; if (q > 1) q = 2 - q; return q < 0.5 ? a + (b - a) * suave(q * 2) : b + (c - b) * suave((q - 0.5) * 2); };
-    function pintar(ms) {
-      // (15-nov-2026, fluidez) sin leer innerWidth/innerHeight en cada dibujo: las medidas de la ventana vienen de medir()
-      const t = ms / 1000, tema = document.documentElement.getAttribute("data-theme") === "light" ? LUZ.light : LUZ.dark;
-      const discos = [
-        [en(t, 74, 0, 22, 8) * vw, -2 * vmax + en(t, 74, 0, 14, 34) * vh, 60 * vmax, 1],
-        [vw * 100 + 4 * vmax + en(t, 96, 0, -26, -10) * vw, vh * 100 + 6 * vmax + en(t, 96, 0, -10, -30) * vh, 60 * vmax, 1],
-        [35 * vmax + en(t, 118, 0, 30, -12) * vw, 18 * vh + 45 * vmax + en(t, 118, 0, -12, 20) * vh, 45 * vmax, en(t, 118, 0.6, 1, 0.7)],
-      ];
-      cx.clearRect(0, 0, W, H);
-      discos.forEach(([x, y, r, op], i) => {
-        const g = cx.createRadialGradient(x / F, y / F, 0, x / F, y / F, r / F);
-        for (const [pos, a] of tema[i][1]) g.addColorStop(pos, "rgba(" + tema[i][0].join(",") + "," + (a * op).toFixed(4) + ")");
-        cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+    const sprites = [0, 1, 2].map((i) => {
+      const c = h("canvas", { class: "vivo-halo h" + (i + 1), width: String(S), height: String(S) });
+      capa.append(c);
+      return c;
+    });
+    let temaPintado = "";
+    function renovarCache() {
+      const clave = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+      if (clave === temaPintado) return;
+      temaPintado = clave;
+      const pal = LUZ[clave];
+      sprites.forEach((c, i) => {
+        const cx = c.getContext && c.getContext("2d"); if (!cx) return;
+        cx.clearRect(0, 0, S, S);
+        const g = cx.createRadialGradient(R, R, 0, R, R, R);
+        for (const [pos, a] of pal[i][1]) g.addColorStop(pos, "rgba(" + pal[i][0].join(",") + "," + a + ")");
+        cx.fillStyle = g;
+        cx.fillRect(0, 0, S, S);
       });
     }
-    // (R10, 12-nov-2026) reloj propio que se detiene mientras la página está oculta: al volver, las luces siguen donde estaban
-    let pausa = 0, ocultaDesde = 0;
-    const reloj = () => performance.now() - pausa;
-    document.addEventListener("visibilitychange", () => { if (document.hidden) ocultaDesde = performance.now(); else if (ocultaDesde) { pausa += performance.now() - ocultaDesde; ocultaDesde = 0; } });
-    medir(); pintar(0);
-    let tr = 0;
-    window.addEventListener("resize", () => { clearTimeout(tr); tr = setTimeout(() => { medir(); pintar(reloj()); }, 200); });
-    // Neon (23-nov-2026): derivan a menos de 4 px/s; a ~4 cuadros/s y en pausa mientras se desplaza se evita re-desenfocar
-    // las barras fijas (backdrop-filter) durante el gesto táctil, manteniendo exactamente la misma suavidad visual
-    setInterval(() => { const cl = document.documentElement.classList; if (document.hidden || ap.mov === "no" || red.matches || cl.contains("con-modal") || cl.contains("desplazando")) return; pintar(reloj()); }, 260);
-    try { new MutationObserver(() => pintar(reloj())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { /* sin observador */ }
+    renovarCache();
+    const syncVis = () => document.documentElement.classList.toggle("tab-oculta", !!document.hidden);
+    document.addEventListener("visibilitychange", syncVis);
+    syncVis();
+    try { new MutationObserver(renovarCache).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) { /* sin observador */ }
   }
   function meteoros(capa) {
     if (!capa || !capa.animate) return null;
@@ -7124,11 +7355,21 @@
   Promise.all([cargar("datos/avance.json"), cargar("datos/destacados.json").catch(() => []), cargar("datos/cronologia.json").catch(() => null)]).then(([d, dest, cr]) => {
     D = d; DEST = Array.isArray(dest) ? dest : [];
     CRONO = cr && cr.ordenes && cr.libros ? cr : null;
-    const act = $("#actualizado");
+    const act = $("#actualizado"), jer = $("#fecha-jerusalen");
     const FECHA_ACT = "2026-11-23T12:00:00Z";
     const ponerFechaAct = (ms) => { if (act && ms) act.textContent = " · Actualizado el " + new Date(ms).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" }) + "."; };
+    const ponerFechaJer = () => {
+      if (!jer) return;
+      try {
+        const txt = new Intl.DateTimeFormat("es", { timeZone: "Asia/Jerusalem", day: "numeric", month: "long", year: "numeric" }).format(new Date());
+        jer.textContent = "Hoy en Yᵉrūshāláyim [Jerusalén]: " + txt + " " + ERA_D;
+      } catch (e) { /* sin zona horaria */ }
+    };
     let msAct = Math.max(Date.parse(D.generado) || 0, Date.parse(FECHA_ACT) || 0);
     ponerFechaAct(msAct);
+    ponerFechaJer();
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) ponerFechaJer(); });
+    setInterval(ponerFechaJer, 15 * 60e3);
     cargar("datos/archivos.json").then((ar) => { const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0; if (f > msAct) { msAct = f; ponerFechaAct(msAct); } }).catch(() => {});
     botonAdelante();
     window.addEventListener("hashchange", () => {
