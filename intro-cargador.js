@@ -42,7 +42,7 @@
     setTimeout(quitar, 30000);
     setTimeout(function () { if (sb.parentNode) sb.remove(); }, 60000); // salvaguarda: la página nunca queda sin desplazamiento
     var s = document.createElement("script");
-    s.src = "intro.js?v=0b4f8d3df5";
+    s.src = "intro.js?v=ae4dd5f4e6";
     s.async = true;
     s.setAttribute("data-modo", modo);
     s.onerror = quitar;

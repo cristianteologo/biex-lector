@@ -1,0 +1,45 @@
+# Revisión automática de cada propuesta (pull request) hacia main (BiEx, 22-nov-2026). La regla de la rama exige que pase
+# antes de poder aprobarla: sintaxis de los scripts, datos JSON válidos, sello de versiones y de la política de seguridad al día
+# (python3 wix/sellar.py no debe cambiar nada) y una prueba de humo en el navegador (sin errores de consola ni desplazamiento
+# lateral, en teléfono y en escritorio). No usa secretos.
+name: Revisión
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: revision-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  revision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sintaxis de los scripts
+        run: |
+          for f in app.js juego.js busqueda.js intro.js intro-cargador.js sw.js $(git ls-files 'functions/*.js'); do node --check "$f" || exit 1; done
+          echo "scripts correctos"
+      - name: Datos JSON válidos
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, sys
+          malos = []
+          for f in subprocess.check_output(["git", "ls-files", "*.json", "*.webmanifest"]).decode().split():
+              try:
+                  json.load(open(f, encoding="utf-8"))
+              except Exception as e:
+                  malos.append(f + ": " + str(e)[:160])
+          print("\n".join(malos) or "todos los JSON son válidos")
+          sys.exit(1 if malos else 0)
+          PY
+      - name: Sello al día (corre python3 wix/sellar.py antes de proponer)
+        run: python3 wix/sellar.py && git diff --exit-code --stat
+      - name: Prueba de humo en el navegador
+        run: |
+          npm i --no-save --no-audit --no-fund playwright@1 > /dev/null 2>&1
+          npx playwright install --with-deps chromium > /dev/null 2>&1
+          (python3 -m http.server 8766 > /dev/null 2>&1 &)
+          sleep 1
+          node .github/pruebas/humo.js

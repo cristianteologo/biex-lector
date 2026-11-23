@@ -6,7 +6,10 @@
   if (window.BiExJuego) return;
   let A = null; // lo que el lector presta: h, svg, ICO, avisar, store, ventanas, nombres de libros…
   const MIN = 60e3;
-  const API = String(window.BIEX_JUEGO_API || (/(^|\.)bibliaexacta\.pages\.dev$/.test(location.hostname) ? "/api/juego" : "https://bibliaexacta.pages.dev/api/juego")).replace(/\/$/, "");
+  // AL15 (BiEx, 22-nov-2026): solo el sitio publicado usa su propia puerta (/api/juego); las vistas previas de las ramas
+  // (<rama>.bibliaexacta.pages.dev) y las copias usan la puerta publicada, así el código de una rama nunca habla por su cuenta
+  // con el servidor del juego
+  const API = String(window.BIEX_JUEGO_API || (location.hostname === "bibliaexacta.pages.dev" ? "/api/juego" : "https://bibliaexacta.pages.dev/api/juego")).replace(/\/$/, "");
   const API_ABS = /^https?:\/\//.test(API) ? API : location.origin + API;
   const OFICIAL = "https://bibliaexacta.wixsite.com/biex";
   const S = { token: null, yo: null, cfg: null, codigoNuevo: null, cont: null, sub: [] };
@@ -809,6 +812,10 @@ html[data-dal="mono"] .jg-qz .jg-op.mal::before{border-color:var(--tenue);backgr
 .jg-vc{position:relative;z-index:1;display:grid;gap:6px;margin-top:2px;padding:12px 14px 13px;border-radius:14px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 11%,transparent),color-mix(in srgb,var(--oro) 3%,transparent));border:1px solid color-mix(in srgb,var(--oro) 30%,transparent);box-shadow:inset 0 1px 0 rgba(255,246,214,.18)}
 .jg-vc-et{font:500 .66rem/1.2 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--oro)}
+.jg-vc-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.jg-vc-sel{display:inline-flex;gap:2px;padding:2px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,transparent)}
+.jg-vc-b{font:500 .62rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:0;background:none;color:var(--tenue);cursor:pointer}
+.jg-vc-b[aria-pressed="true"]{background:color-mix(in srgb,var(--oro) 22%,transparent);color:var(--oro-vivo,var(--oro))}
 .jg-vc-t{margin:0;font:400 1rem/1.65 var(--f-texto);color:var(--tinta)}
 /* resultado: medalla con anillo de luz */
 .jg-qz-res{display:grid;justify-items:center;gap:10px;padding:20px 16px 18px;text-align:center}
@@ -888,7 +895,7 @@ button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px
 .jg-comp-ico{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--linea);color:var(--oro);flex:none}
 .jg-comp-ico svg{width:20px;height:20px}
 .jg-mis-t{font-size:1.12rem}
-.jg-sala-p{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 120px);padding:9px 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--hoja) 72%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);color:var(--tinta);font:500 .8rem/1 var(--f-ui);cursor:pointer;box-shadow:var(--vidrio-sombra,0 8px 30px rgba(0,0,0,.3));white-space:nowrap}
+.jg-sala-p{position:sticky;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 120px);height:34px;box-sizing:border-box;margin:-34px auto 0;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--hoja) 72%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);color:var(--tinta);font:500 .8rem/1 var(--f-ui);cursor:pointer;box-shadow:var(--vidrio-sombra,0 8px 30px rgba(0,0,0,.3));white-space:nowrap}
 .jg-sala-p span{overflow:hidden;text-overflow:ellipsis}
 .jg-sala-p b{font-weight:400;color:var(--tenue)}
 .jg-sala-p i{position:relative;width:8px;height:8px;border-radius:50%;background:var(--tenue);flex:none}
@@ -1141,9 +1148,9 @@ html.con-modal .jg-muelle{opacity:0;pointer-events:none}
 html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
-/* (15-nov-2026, fluidez) clase en html en vez de html:has(.jg-sala-p): cualquier cambio en la página volvía a calcular su estilo */html.jg-con-muelle.jg-con-sala body{padding-bottom:calc(148px + env(safe-area-inset-bottom,0px))}
-html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:7px 12px;font-size:.84rem}
-html.jg-con-muelle .jg-sala-p~.aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
+/* AL6 (22-nov-2026): la píldora de la Sala ya no pide espacio extra al final: se acomoda en su hueco del pie */
+html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:0 12px;font-size:.84rem}
+html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 .jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
 .jg-ayuda{display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);text-decoration:none;font:500 .78rem/1 var(--f-ui);letter-spacing:.03em;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .jg-ayuda svg{width:16px;height:16px}
@@ -2176,6 +2183,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     };
     insignia("hoy", faltan ? "m:" + dia : "", String(faltan), "Misiones por cumplir");
     insignia("mas", y && !y.asegurado ? "a:" + dia : "", "!", "Asegura tu avance");
+    insigniaSalas();
   }
   function resaltarZona(k) {
     setTimeout(() => {
@@ -5124,6 +5132,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function chispas(n, desde, estilos, color) {
     if (sinAnim() || document.hidden || !document.body.animate) return;
     const ref = MED.el && MED.el.isConnected && !desde ? MED.el : desde && desde.isConnected ? desde : MED.el && MED.el.isConnected ? MED.el : null; if (!ref) return;
+    // AL12: las chispas que salen del escudo no se dibujan sobre otra vista ni sobre una ventana que lo tapa
+    if (ref === MED.el && !escudoVisible()) return;
     const r = ref.getBoundingClientRect(); if (!r.width) return;
     const cx = r.left + r.width / 2, cy = r.top + r.height * 0.46, capa = h("div", { class: "jg-chispas", "aria-hidden": "true" });
     document.body.append(capa);
@@ -5175,10 +5185,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     }
     if (!vivas) capa.remove();
   }
+  // el escudo está a la vista: en la página, sin una ventana abierta encima y sin ocultarse por el estilo
+  const escudoVisible = () => !!(MED.el && MED.el.isConnected && !document.querySelector("dialog[open]") && MED.el.getClientRects().length && getComputedStyle(MED.el).visibility !== "hidden");
   function chispasAzar() {
     clearTimeout(MED.tz);
     if (!MED.el) return;
-    MED.tz = setTimeout(() => { if (MED.el && !document.hidden) chispas(3 + Math.floor(Math.random() * 5)); chispasAzar(); }, 14000 + Math.random() * 30000);
+    // AL12 (BiEx, 22-nov-2026, 18:53): las chispas al azar solo donde el escudo se ve (no detrás de una ventana como la de una palabra)
+    MED.tz = setTimeout(() => { if (MED.el && !document.hidden && escudoVisible()) chispas(3 + Math.floor(Math.random() * 5)); chispasAzar(); }, 14000 + Math.random() * 30000);
   }
   const LAURO_M = '<path d="M11.5 44.5c1.6 5.6 5.6 10 11 12.4" fill="none" stroke="url(#jgm-m)" stroke-width="1.3" stroke-linecap="round"/><path d="M10.6 40.2c-1.9 1.4-2.1 3.6-.9 5.6 1.9-1 2.4-3.3.9-5.6zM12.4 47.6c-2.3.5-3.2 2.6-2.6 4.8 2.2-.3 3.4-2.4 2.6-4.8zM16 53c-2.2-.2-3.8 1.4-3.8 3.6 2.2.3 3.9-1.3 3.8-3.6zM20.6 56.6c-1.9-.9-4-.2-4.8 1.8 2 .9 4.1.1 4.8-1.8z" fill="url(#jgm-m)" opacity=".9"/>';
   const SVG_MED = '<defs><linearGradient id="jgm-m" x1="0" y1="0" x2=".85" y2="1"><stop offset="0" style="stop-color:var(--m1)"/><stop offset=".5" style="stop-color:var(--m2)"/><stop offset="1" style="stop-color:var(--m3)"/></linearGradient>' +
@@ -5447,7 +5460,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
           pintarListo();
         } }, h("span", { text: o })));
       const bien = resultado && resp[i] === resultado.correctas[i];
-      const vc = resultado && completos[i] ? h("div", { class: "jg-vc" }, h("span", { class: "jg-vc-et", text: "Verso completo · Textual de BiEx" }), h("p", { class: "jg-vc-t vt" }, completos[i]())) : null;
+      // AL8 (BiEx, 22-nov-2026): el verso completo va por defecto en la Lectura (la más inteligible); un toque muestra la Textual,
+      // donde está la palabra de la pregunta tal como se preguntó
+      const vc = resultado && completos[i] && (completos[i][0] || completos[i][1]) ? (() => {
+        const [fL, fT] = completos[i], tx = h("p", { class: "jg-vc-t vt" }), et = h("span", { class: "jg-vc-et" });
+        const bts = [["Lectura", fL], ["Textual", fT]].filter((x) => x[1]).map(([t, f]) => h("button", { type: "button", class: "jg-vc-b", "aria-pressed": "false", text: t, onclick: () => poner(t, f) }));
+        const poner = (t, f) => { et.textContent = "Verso completo · " + t + " de BiEx"; tx.replaceChildren(f()); for (const b of bts) b.setAttribute("aria-pressed", String(b.textContent === t)); };
+        const caja = h("div", { class: "jg-vc" }, h("div", { class: "jg-vc-cab" }, et, bts.length > 1 ? h("span", { class: "jg-vc-sel", role: "group", "aria-label": "Formato del verso" }, bts) : null), tx);
+        poner(fL ? "Lectura" : "Textual", fL || fT); return caja;
+      })() : null;
       return h("section", { class: "jg-preg jg-vid" + (resultado ? (bien ? " bien" : " fallo") : ""), style: "--i:" + i },
         h("div", { class: "jg-preg-cab" }, h("span", { class: "ref", text: nombreLibro(lib) + " " + cap + ":" + p.v }), h("span", { class: "num", text: resultado ? (bien ? "Acertaste" : "La palabra era otra") : (i + 1) + " de " + n })),
         h("p", { class: "t" }, partes[0], hueco, partes.slice(1).join("_____")),
@@ -5485,7 +5506,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           if (x.aciertos === n) sonar("nivel"); else if (x.aciertos) sonar("chispa");
           for (const m of x.misiones || []) A.avisar("Misión cumplida: " + textoMision(m) + " · +" + m.xp);
           // V23: el verso completo de cada pregunta, en la Textual de BiEx
-          completos = await Promise.all(r.preguntas.map((p) => (A.versoTextual ? A.versoTextual(lib, cap, p.v).catch(() => null) : null)));
+          completos = await Promise.all(r.preguntas.map((p) => Promise.all([A.versoLectura ? A.versoLectura(lib, cap, p.v).catch(() => null) : null, A.versoTextual ? A.versoTextual(lib, cap, p.v).catch(() => null) : null])));
           A.reemplazarModal(vistaP);
           setTimeout(() => { const c = document.querySelector(".modal[open] .jg-qz-res"); if (c) c.scrollIntoView({ block: "start", behavior: sinAnim() ? "auto" : "smooth" }); }, 140);
           if (x.aciertos === n) setTimeout(() => { const m = document.querySelector(".modal[open] .jg-qz-med"); if (m) chispas(16, m, ["aro", "polvo"]); }, 700);
@@ -6071,7 +6092,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     let p = document.querySelector(".jg-sala-p");
     document.documentElement.classList.toggle("jg-con-sala", !!SL.cod);
     if (!SL.cod) { if (p) p.remove(); return; }
-    if (!p) { p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala }); document.body.append(p); }
+    // AL6 (BiEx, 22-nov-2026): la píldora vive entre las dos partes del pie (pegada al borde mientras se lee; en su hueco al final)
+    if (!p) p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala });
+    const anclaP = document.getElementById("pie-b");
+    if (anclaP ? p.nextElementSibling !== anclaP : !p.isConnected) anclaP ? anclaP.before(p) : document.body.append(p);
     const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1;
     p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: "Sala " + SL.cod }), h("b", { text: conectada ? plural(n, "persona", "personas") : "conectando…" }));
     p.setAttribute("aria-label", "Sala de lectura " + SL.cod + ": " + (conectada ? plural(n, "persona", "personas") : "conectando"));
@@ -6102,8 +6126,19 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (!forzar && VIVO.salas && Date.now() - VIVO.ts < 30e3) return VIVO.salas;
     const r = await pedir("/salas", { sin: true }); if (r.error) return VIVO.salas || [];
     VIVO.salas = r.salas || []; VIVO.ts = Date.now();
-    const j = MU && MU.querySelector('a[data-s="juntos"]'); if (j) { if (VIVO.salas.length) j.setAttribute("data-n", String(VIVO.salas.length)); else j.removeAttribute("data-n"); }
+    insigniaSalas();
     return VIVO.salas;
+  }
+  // AL16 (BiEx, 22-nov-2026, 19:02): el número de «Juntos» son las salas abiertas de otras personas (la propia no cuenta). Se apaga al
+  // entrar en Juntos, donde «Salas abiertas» dice cuántas hay, y vuelve solo si se abre una sala nueva (como las demás insignias)
+  function insigniaSalas() {
+    const j = MU && MU.querySelector('a[data-s="juntos"]'); if (!j) return;
+    const otras = (VIVO.salas || []).filter((x) => x.c !== SL.cod), firma = otras.map((x) => x.c).sort().join(",");
+    const visto = A.store.get("jg:insig", null) || {};
+    if (!otras.length) { j.removeAttribute("data-n"); j.removeAttribute("title"); return; }
+    if (j.classList.contains("act")) { j.removeAttribute("data-n"); if (visto.juntos !== firma) { visto.juntos = firma; A.store.set("jg:insig", visto); } return; }
+    if (visto.juntos === firma) { j.removeAttribute("data-n"); j.removeAttribute("title"); return; }
+    j.setAttribute("data-n", String(otras.length)); j.title = otras.length === 1 ? "Hay 1 sala abierta para leer en compañía" : "Hay " + otras.length + " salas abiertas para leer en compañía";
   }
   async function presentes(lib) {
     const k = lib || "", c = VIVO.pres.get(k); if (c && Date.now() - c.t < 30e3) return c.r;
@@ -6133,7 +6168,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (!zona.isConnected && zona.dataset.ok) return;
       zona.dataset.ok = "1";
       if (!L.length) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Ahora no hay salas abiertas. Crea una y aparecerá aquí para que cualquiera pueda acompañarte." }));
-      zona.replaceChildren(h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb);
+      // AL16: lo que cuenta el número de «Juntos», dicho aquí
+      const otras = L.filter((x) => x.c !== SL.cod).length;
+      zona.replaceChildren(...(otras ? [h("p", { class: "jg-mini jg-salas-n", text: otras === 1 ? "Ahora hay 1 sala abierta de otra persona." : "Ahora hay " + otras + " salas abiertas de otras personas." })] : []), h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb);
         return h("li", { class: x.c === SL.cod ? "yo" : "" }, emblema(l, c, 0), h("span", { class: "n" }, h("b", { text: nombreLC(x.lc) }), h("small", { text: "Sala de " + (x.anf || "un lector") + " · " + plural(x.n, "persona", "personas") })),
           x.c === SL.cod ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
             : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; entrarSala(x.c); A.avisar("Entraste a la sala " + x.c); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: "Entrar" }))); })));

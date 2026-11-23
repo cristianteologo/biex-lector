@@ -2056,7 +2056,7 @@ html[data-mov="no"] .btn::after { animation: none !important; }
 .cargando.inicio { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; margin: 0; pointer-events: none;
   font: 400 15px/1.4 "Cormorant Garamond", Georgia, serif; letter-spacing: .2em; text-transform: uppercase; color: #9d968a; }
 .cargando.inicio::before { width: 32px; height: 32px; margin: 0; border-color: rgba(201, 168, 101, .26); border-top-color: #c9a865; }
-.pagina:has(> .cargando.inicio) + .pie { visibility: hidden; }
+.pagina:has(> .cargando.inicio) ~ .pie { visibility: hidden; }
 /* Fluidez de Herramientas y de toda ventana (10-nov-2026): la ventana ya no desenfoca lo de atrás por su cuenta (lo hace su
    velo, que no cambia al desplazar por dentro): con un fondo del 95 % el desenfoque de 28 px no se veía y en el teléfono
    se recalculaba en cada cuadro del desplazamiento interno */
@@ -2526,7 +2526,8 @@ html[data-mov="no"] .cc-pop { transition: none; }
 /* (BiEx, 22-nov-2026, 15:59) palabras casi exóticas: en Lectura y en Textual, un subrayado de punto y raya (· — ·), con un 20 % más
    de contraste que el punteado anterior y sin teñir la palabra; dibujado con un degradado (nítido a cualquier densidad) y repetido en
    cada renglón si la palabra se parte */
-:root { --rara-sub: color-mix(in srgb, var(--rara) 80%, transparent); }
+/* AL7 (BiEx, 22-nov-2026, 18:53): el subrayado de punto y raya en un verde más oscuro y sereno (jade), sin el turquesa brillante */
+:root { --rara-sub: #2e8a64; } :root[data-theme="light"] { --rara-sub: #17694b; }
 .rara-l, .rara-t { text-decoration: none; background-image: linear-gradient(90deg, var(--rara-sub) 0 14%, transparent 14% 32%, var(--rara-sub) 32% 82%, transparent 82%); background-repeat: repeat-x; background-size: .86em max(1.25px, .072em); background-position: 0 calc(100% - .04em); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .rara-l.tk, .rara-t.tk { background-image: none; }
 /* AF43: Herramientas en cuatro categorías; una tarjeta impar al final de su categoría ocupa las dos columnas */
@@ -2542,13 +2543,8 @@ html[data-mov="no"] .cc-pop { transition: none; }
 .modal.flot .m-cab .m-tit b { font-size: 1rem; letter-spacing: .08em; text-wrap: balance; }
 
 /* ------------------------------------------------------------------ 22-nov-2026 (23.ª conversación) */
-/* O45: en el teléfono, los saltos rápidos (a la derecha) y «Adelante» (a la izquierda) ya no tapan los créditos del pie:
-   los créditos van centrados con el mismo margen a cada lado (simetría) y el pie deja aire bajo su última línea */
-@media (max-width: 760px) {
-  .pie .creditos-det, .pie .creditos { text-align: center; }
-  .pie .creditos-det { padding-inline: 46px; }
-  .pie .in { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
-}
+/* O45 se revirtió el 22-nov-2026 por la noche (AL5): los créditos vuelven a su diseño, a la derecha; los saltos rápidos se
+   apartan solos al final de la página (se ocultan antes y con un toque en el pie) */
 
 /* (BiEx, 22-nov-2026, 15:59) la perícopa en Jünemann: el ícono va al final de la franja del libro (fuera del flujo: el título sigue
    centrado) y la ventana flota centrada */
@@ -2561,3 +2557,30 @@ html[data-mov="no"] .cc-pop { transition: none; }
 .jnm-v.act { background: color-mix(in srgb, var(--oro) 7%, transparent); border-radius: 10px; padding: 4px 8px; margin-inline: -8px; }
 .jnm-pie { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--linea-2); font: 400 .74rem/1.55 var(--f-ui); color: var(--tenue); text-align: center; }
 .jnm-pie small { display: block; margin-top: 4px; font-size: .9em; opacity: .85; }
+/* AL13: las citas de la nota, centradas y enteras; en pantallas estrechas, una debajo de la otra (sin separador colgando) */
+.jnm-pie p { margin: 0; text-wrap: balance; }
+.jnm-pie .jnm-citas { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 2px 10px; margin-top: 6px; }
+.jnm-pie .jnm-citas a { white-space: nowrap; }
+.jnm-pie .jnm-sep { color: var(--oro); opacity: .7; }
+@media (max-width: 560px) { .jnm-pie .jnm-citas { flex-direction: column; align-items: center; } .jnm-pie .jnm-sep { display: none; } }
+
+/* ------------------------------------------------------------------ 22-nov-2026 (24.ª conversación) */
+/* AL6: el pie en dos partes hermanas (pie-a y pie-b) que se ven como una sola; entre ellas vive la píldora de la Sala (juego.js),
+   pegada al borde inferior mientras se lee y acomodada en su hueco, entre la cuenta atrás y los créditos, al llegar al final */
+.pie.pie-a .in { padding-bottom: 0; }
+.pie.pie-b { margin-top: 0; border-top: 0; }
+.pie.pie-b .in { padding-top: 10px; }
+html.jg-con-sala .pie.pie-a .in { padding-bottom: 56px; }
+/* AL9: «Los 27 libros» por categorías (las del orden elegido); la última fila de cada categoría se reparte el ancho */
+.nav-libros.por-grupos { display: grid; gap: 16px; }
+.libs-g[hidden] { display: none; }
+.libs-gt { display: grid; justify-items: center; gap: 3px; margin: 0 0 8px; font: 500 .66rem/1.3 var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro); text-align: center; }
+.libs-gt > span { display: inline-flex; align-items: center; justify-content: center; gap: 10px; max-width: 100%; }
+.libs-gt > span::before, .libs-gt > span::after { content: ""; flex: 0 0 clamp(14px, 6vw, 56px); height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--oro) 45%, transparent)); }
+.libs-gt > span::after { background: linear-gradient(90deg, color-mix(in srgb, var(--oro) 45%, transparent), transparent); }
+.libs-gt small { font-size: .9em; letter-spacing: .06em; text-transform: none; color: var(--tenue); }
+.nav-libros.por-grupos .libs { display: flex; flex-wrap: wrap; gap: 6px; }
+.nav-libros.por-grupos .lib-chip { flex: 1 1 calc(50% - 3px); min-width: 0; }
+@media (min-width: 700px) { .nav-libros.por-grupos .lib-chip { flex-basis: calc(33.333% - 4px); } }
+/* AL10: una ventana que vuelve con «Atrás» aparece ya puesta (sin la entrada), con su velo de fondo también quieto */
+.modal.sin-entrada[open], .modal.sin-entrada[open]::backdrop { animation: none !important; }

@@ -1,0 +1,8 @@
+{
+  "name": "main y gh-pages: nadie borra ni reescribe la historia",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/heads/main", "refs/heads/gh-pages"], "exclude": [] } },
+  "bypass_actors": [],
+  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" } ]
+}

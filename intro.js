@@ -229,6 +229,7 @@
   const F_RO = '"BiEx Rotulo", Jost, "BiEx Codice", system-ui, sans-serif';
 
   // La traducción principal sin las alternativas entre corchetes (en la presentación no caben; en el lector se ven completas)
+  // AL8 (BiEx, 22-nov-2026): cada palabra lleva su forma de la Lectura («lo», de datos/destacados.json) cuando difiere de la Textual
   const glosaPrincipal = (t) => {
     let s = String(t || "").trim(), r = s;
     for (let i = 0; i < 4 && /\[[^\[\]]*\]/.test(r); i++) r = r.replace(/\s*\[[^\[\]]*\]/g, "");
@@ -238,7 +239,7 @@
   const unciales = (g) => g.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\p{L}]/gu, "").toUpperCase().replace(/Σ/g, "Ϲ");
   function elegirVerso(lista) {
     const [pMin, pMax] = lista2(CFG.palabras, CFG_BASE.palabras);
-    const ok = (Array.isArray(lista) ? lista : []).filter((d) => d && Array.isArray(d.p) && d.p.length >= pMin && d.p.length <= pMax && d.p.every((w) => w && w.g && glosaPrincipal(w.tr).trim()));
+    const ok = (Array.isArray(lista) ? lista : []).filter((d) => d && Array.isArray(d.p) && d.p.length >= pMin && d.p.length <= pMax && d.p.every((w) => w && w.g && glosaPrincipal(w.lo || w.tr).trim()));
     if (!ok.length) return null;
     const clave = (d) => d.c + d.cap + ":" + d.v;
     const vistos = LS.get("biex:intro:versos", []);
@@ -484,7 +485,7 @@
           const gS = sprite(w.g, fuenteG, P.nucleo, fg * 0.12, { colorHalo: P.oro });
           const uS = sprite(ws[j], "400 " + Math.round(fg) + "px " + F_GR, P.luz, fg * 0.14, { colorHalo: P.oro });
           const tS = sprite(w.tl || "", fuenteT, P.tenue, 0);
-          const eS = sprite(glosaPrincipal(w.tr), fuenteE, P.oro, fg * 0.1);
+          const eS = sprite(glosaPrincipal(w.lo || w.tr), fuenteE, P.oro, fg * 0.1);
           const ancho = Math.max(gS.w, uS.w, tS.w, eS.w);
           return { j, gS, uS, tS, eS, ancho };
         });
@@ -1129,7 +1130,7 @@
       }
       componer();
       planear();
-      sr.textContent = CFG.marca.nombre + ". " + (V ? V.n + " " + V.cap + ":" + V.v + ": " + V.p.map((w) => w.g + " (" + glosaPrincipal(w.tr) + ")").join(" ") + ". " : "") + CFG.marca.lema + ".";
+      sr.textContent = CFG.marca.nombre + ". " + (V ? V.n + " " + V.cap + ":" + V.v + ": " + V.p.map((w) => w.g + " (" + glosaPrincipal(w.lo || w.tr) + ")").join(" ") + ". " : "") + CFG.marca.lema + ".";
       ui.classList.add("v");
       puerta.querySelector(".pu-tx").textContent = CFG.textos.entrar || "Entrar";
       puerta.querySelector(".pu-nota span").textContent = CFG.textos.nota || "";
