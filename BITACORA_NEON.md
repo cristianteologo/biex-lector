@@ -671,3 +671,43 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check` en todos los scripts (`app.js`, `juego.js`, `busqueda.js`, `intro.js`, `intro-cargador.js`, `sw.js`): **correcto**.
 - Suite Playwright 3× HD (`280 / 360 / 390 / 1280 px`, temas oscuro y Pergamino, impacto en vivo de `Fuerza plena`, retorno real `Compañía → ‹ Escudriña → Juntos`, contraste `+3 %`, simetría de píldoras inferiores en Contemplar): **0 errores de consola, 0 px de desborde, todas las aserciones en verde**.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #11 — 24 de noviembre de 2026 (PR #11 · Sección D completa: Constelación del léxico y notas, Mesa sinóptica libre, Pulso del texto, Tarjetas HD 3× y Diario de estudio)
+
+**Rama:** `neon/pr11-seccion-d-constelacion-obsidian` (desde `main` en `847fd14`, que incluye PR #10 fusionado)
+**Archivos modificados:** `app.css`, `app.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados
+
+1. **Constelación del léxico, referencias y notas (`#/constelacion` + minigrafos en `#/raiz/:id`, `#/lema/:id` y `#/marcadores`, `app.js` + `app.css`):**
+   - **Motor `<canvas>` 2D HiDPI a 0 % CPU en reposo (`motorConstelacion`):** simulación física de fuerzas con repulsión anticolisión, gravedad proporcional a la orientación de la pantalla, 95 pasos de pre-asentamiento instantáneo y congelamiento automático en estado `reposo` (0 cuadros/s hasta que el lector arrastre un nodo o toque/acerque la vista).
+   - **Acabado cartográfico de museo:** polvo estelar estático determinista, anillos concéntricos de astrolabio, filamentos curvos de Bézier con doble pase de resplandor al enfocar un nodo, orbes con brillo especular, capa de etiquetas priorizada **sin solapamientos** en tipografía local `"BiEx Texto"` / `"BiEx Interfaz"`, HUD dividido en esquinas opuestas (`zoom` arriba a la derecha, indicador de estado abajo a la izquierda) y soporte completo para tema oscuro y tema claro *Pergamino*.
+   - **3 capas conmutables:**
+     1. *Léxico y raíces:* panorama de los **27 libros** (garantizando conexión léxica en todos sin islas sueltas) + 22 grandes familias conceptuales + 8 accesos directos (`λέγω`, `ἀγαπάω`, `πείθω`, `πνέω`, `χαίρω`, `ζωή`, `ἀληθής`, `βασιλεύς`) y buscador vivo tolerante a griego, transliteración y español (`llanoCn` + `busq`).
+     2. *Referencias cruzadas:* red de ecos de cualquier libro de la Nueva Voluntad hacia sus capítulos más densos y libros de la Nueva y Antigua Voluntad.
+     3. *Mis notas (12 colores):* mapa personal vivo de libros, temas de color y versos marcados.
+   - **Minigrafos interactivos integrados (`tarjetaMinigrafo`):** embebidos directamente en `vistaRaiz`, `vistaLema` y `vistaMarcadores`, con botón «Pantalla completa» hacia `#/constelacion`.
+2. **Mesa sinóptica libre (`#/sinopsis`, `vistaSinopsis`):**
+   - Comparación palabra por palabra en griego de cualquier par de versos de la Nueva Voluntad (accesible desde *Herramientas › Leer y guardar* y desde `vistaVerso`).
+   - Iluminación sincronizada al toque: lemas compartidos en oro, raíces comunes en azul, barra de afinidad léxica (%), 6 pares clásicos de ejemplo, intercambio rápido y guardado directo en el Diario de estudio.
+3. **Pulso del texto al cerrar cada capítulo (`.ps-cap`, `bloquePulsoCapitulo`):**
+   - Tarjeta desplegable de carga perezosa (`IntersectionObserver`) al pie de cada capítulo con las 5 raíces conceptuales dominantes, las joyas singulares (`≤ 3` apariciones en la Nueva Voluntad), la barra proporcional de pulso verbal (*Aoristo, Presente, Participios, Imperativos, Otros*) y saltos directos a *Constelación* y *Sinopsis*. Oculta automáticamente en **Modo Contemplar**.
+4. **Tarjetas compartibles HD 3× (`vistaTarjetaVerso` desde `vistaVerso`):**
+   - Exportador nativo en `<canvas>` a **`1080 × 1350 px`** (formato 4:5 de alta nitidez) con marco doble de códice, rombos geométricos en esquinas (cero cruces/estrellas/rayos), 3 acabados (*Obsidiana y Oro*, *Pergamino*, *Zafiro Nocturno*), opción de incluir texto griego original y tipografía de la casa (`"BiEx Texto"`, `"BiEx Titular"`, `"BiEx Interfaz"`), con descarga PNG directa y `navigator.share`.
+5. **Diario de estudio y sincronización en la nube (`#/marcadores`, `NUBE_DAT.unirObj`):**
+   - Conmutador *Por libro / Diario de estudio* con reflexiones libres (título, cita opcional y nota), pares sinópticos guardados, línea cronológica agrupada por día y exportación `.md`.
+   - `NUBE_DAT.unirObj` ampliado con fusión profunda por marca de tiempo `t` para mapas anidados (`estudio.diario`, `estudio.pares`) sin pérdida entre dispositivos.
+
+### 2. Aprendizajes clave (Entrada #11)
+1. **Normalización de sigma final en `claveGr`:** `claveGr` sustituye `ς → σ`; los catálogos internos de búsqueda griega (como `CN_PRESETS_GR`) deben declararse siempre con `σ` medial (`λογοσ`, `πιστισ`, `χαρισ`) y combinar un normalizador griego→latín (`llanoCn`) para que búsquedas como `"logos"` o `"pistis"` coincidan de inmediato contra las transliteraciones mixtas del catálogo (`lόgος`, `pίsτις`).
+2. **Tipografía de la casa en `<canvas>` sin red:** usar los nombres `@font-face` locales `"BiEx Texto"`, `"BiEx Titular"` y `"BiEx Interfaz"` (servidos desde `fuentes/`) garantiza acentos politónicos griegos y signos combinables (`YÔḥānā́n`, `ʾĔlōhî́m`) impecables tanto en la Constelación como en las Tarjetas HD `1080 × 1350`, incluso sin conexión a internet.
+3. **Motor de etiquetas sin solapamientos + cero nodos huérfanos:** en grafos de 45–55 nodos, garantizar ≥ 2 aristas reales por libro evita que libros breves se disparen al borde y compriman el núcleo; y renderizar etiquetas en un pase final ordenado por prioridad con prueba de colisión de cajas elimina por completo el apilamiento de texto.
+
+### 3. Comprobaciones pasadas (Entrada #11)
+- `node --check` en `app.js`, `juego.js`, `busqueda.js`, validación de todos los `.json` / `.webmanifest` y balance de llaves CSS (`2953` bloques): **correcto**.
+- Auditoría editorial y de pureza iconográfica (0 palabras prohibidas, 0 cruces/estrellas/rayos, prefijos CSS `.cn-*`/`.sn-*`/`.ps-*`/`.tc-*`/`.di-*` sin colisión): **CLEAN**.
+- Suite Playwright 3× HD (`280 / 390 / 1280 px`, temas oscuro y Pergamino, reposo `0 % CPU`, foco por búsqueda `"logos"`, capas *Léxico / Referencias / Notas*, minigrafo en `#/raiz/539`, *Sinopsis*, *Pulso* oculto en *Contemplar*, *Tarjeta HD* `1080×1350`, *Diario* y estrés en `280 px`): **0 errores de consola/página, 0 px de desborde, 13/13 capturas inspeccionadas a 10/10**.
+- `python3 wix/sellar.py`: **al día**.
