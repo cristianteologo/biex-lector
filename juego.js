@@ -165,8 +165,42 @@
       if (nuevos.length) setTimeout(() => { for (const a of nuevos.reverse()) { if (a.k === "liga" && a.nvNuevo > a.nv) celebracion(Object.assign({ tipo: "liga" }, a)); else A.avisar(NOVEDAD[a.k](a)); } }, 1300);
     }
     if (yo.inv) A.store.set("jg:mio", yo.inv);
+    registrarPoder(yo, yo.av);
     A.store.set("jg:inv", null);
     if (yo.rpMig === false) migrarRepasos();
+  }
+  // Neon (23-nov-2026): historial local de puntajes de Poder para consciencia de evolución (0 peticiones extra al servidor)
+  function registrarPoder(yo, av) {
+    if (!A || !A.store || !yo) return [];
+    const p = (av && av.poder != null ? av.poder : yo.av && yo.av.poder) | 0;
+    const nv = yo.nivel | 0, inv = yo.inv || "";
+    if (!p && !nv) return [];
+    let st = A.store.get("jg:poderHist", null);
+    if (!st || typeof st !== "object" || st.inv !== inv || !Array.isArray(st.l)) st = { inv, l: [] };
+    const ult = st.l[st.l.length - 1];
+    if (!ult || ult.p !== p || ult.nv !== nv) {
+      st.l.push({ t: Date.now(), p, nv });
+      if (st.l.length > 36) st.l = [st.l[0], ...st.l.slice(-35)];
+      A.store.set("jg:poderHist", st);
+    }
+    return st.l;
+  }
+  // Pausa automática de animaciones flotantes fuera de pantalla (0 % CPU al desplazarse lejos)
+  let IO_FLOT = null;
+  function observarFlotantes(el) {
+    if (!el || !("IntersectionObserver" in window)) return el;
+    if (!IO_FLOT) IO_FLOT = new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("jg-pausa-vis", !e.isIntersecting); }, { rootMargin: "40px 0px" });
+    IO_FLOT.observe(el);
+    return el;
+  }
+  // Estadísticas públicas de jugadores (se muestran automáticamente en clasificaciones, ligas, compañías y salas en cuanto el servidor exponga poder/pers/vc)
+  function resumenStatsPub(x) {
+    if (!x) return "";
+    const p = [];
+    if (x.poder != null) p.push("poder " + fmt(x.poder | 0));
+    if (x.pers > 0) p.push(fmt(x.pers | 0) + " d");
+    if (x.vc > 0) p.push(fmt(x.vc | 0) + " v.");
+    return p.join(" · ");
   }
   // AD2: una sola vez por cuenta, las marcas dobles guardadas en este dispositivo (jg:rp) pasan a la cuenta del servidor
   async function migrarRepasos() {
@@ -2001,6 +2035,102 @@ html[data-mov="no"] .ap-savia{display:none!important}
 .jg-cerrar:hover{border-color:color-mix(in srgb,var(--oro-vivo) 50%,transparent)}.jg-cerrar:active{transform:scale(.94)}
 .jg-cerrar svg{width:18px;height:18px}
 .jg-cerrar::after{content:"";position:absolute;inset:-6px}
+/* Neon (23-nov-2026): bloques flotantes en Hallazgos, cantos en Liga y Papiro épico (100 % compositor transform+opacity, pausa fuera de vista/modal) */
+@keyframes jg-flota{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5px,0)}}
+@keyframes jg-sombra{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.74);opacity:.22}}
+@keyframes jg-pp-flota{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5.5px,0)}}
+@keyframes jg-pp-luz{0%,14%{transform:translate3d(-130%,0,0);opacity:0}38%{opacity:.34}62%{transform:translate3d(250%,0,0);opacity:0}100%{transform:translate3d(250%,0,0);opacity:0}}
+.jg-piedras{gap:12px 5px}
+@media (max-width:330px){.jg-piedras{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.jg-piedra{position:relative;gap:4px;padding:7px 2px 6px;border-radius:14px;border:1px solid transparent;min-width:0;transition:border-color .22s ease,background-color .22s ease}
+.jg-piedra>span:not(.jg-pd-esc){max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:clamp(.62rem,2.6vw,.73rem);line-height:1.2;letter-spacing:-.01em;white-space:nowrap}
+.jg-piedra.tiene{background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 14%,transparent),transparent 72%);border-color:color-mix(in srgb,var(--pg,var(--oro)) 22%,transparent)}
+.jg-piedra.tiene:hover{border-color:color-mix(in srgb,var(--pg,var(--oro)) 54%,transparent);background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 22%,transparent),transparent 74%)}
+.jg-piedra:not(.tiene){opacity:.68}
+.jg-pd-esc{position:relative;width:50px;height:54px;display:grid;place-items:center;margin-bottom:2px}
+.jg-pd-halo{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;opacity:.55;background:radial-gradient(closest-side,color-mix(in srgb,var(--pg,var(--oro)) 38%,transparent),color-mix(in srgb,var(--pg,var(--oro)) 10%,transparent) 58%,transparent 100%)}
+.jg-pd-gema{position:relative;z-index:1;width:44px;height:44px;display:grid;place-items:center;will-change:transform}
+.jg-piedra.tiene .jg-pd-gema{animation:jg-flota var(--ft,5.1s) ease-in-out var(--fd,0s) infinite}
+.jg-piedra.tiene:hover .jg-pd-gema{animation-play-state:paused;transform:translate3d(0,-6px,0) scale(1.06)}
+.jg-pd-gema svg{width:100%;height:100%;max-width:44px;display:block}
+.jg-pd-sombra{position:absolute;left:50%;bottom:0;width:30px;height:7px;margin-left:-15px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.62),transparent);will-change:transform,opacity;animation:jg-sombra var(--ft,5.1s) ease-in-out var(--fd,0s) infinite}
+:root[data-theme="light"] .jg-pd-sombra{background:radial-gradient(closest-side,rgba(45,30,10,.34),transparent)}
+.jg-cel .arte.jg-pd-modal{position:relative;display:grid;place-items:center;width:108px;height:114px;margin:0 auto}
+.jg-cel .arte.jg-pd-modal .jg-pd-halo{inset:-14px;opacity:.72}
+.jg-cel .arte.jg-pd-modal .jg-pd-gema{width:84px;height:84px;animation:jg-flota 4.9s ease-in-out infinite}
+.jg-cel .arte.jg-pd-modal .jg-pd-gema svg{max-width:84px}
+.jg-cel .arte.jg-pd-modal .jg-pd-sombra{width:54px;height:11px;margin-left:-27px;animation:jg-sombra 4.9s ease-in-out infinite}
+/* Cantos en Liga de la semana: piedra protagonista flotante y peldaños con profundidad */
+.jg-gema-viva{position:relative;width:68px;height:74px;display:grid;place-items:center;filter:none}
+.jg-gv-halo{position:absolute;inset:-8px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--g,var(--oro)) 46%,transparent),color-mix(in srgb,var(--g,var(--oro)) 12%,transparent) 60%,transparent 100%);animation:ap-respira 4.6s ease-in-out infinite}
+.jg-gv-wrap{position:relative;z-index:1;width:60px;height:60px;display:grid;place-items:center;will-change:transform;animation:jg-flota 5.2s ease-in-out infinite}
+.jg-gv-wrap svg{width:100%;height:100%;display:block}
+.jg-gv-som{position:absolute;left:50%;bottom:1px;width:40px;height:8px;margin-left:-20px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.64),transparent);animation:jg-sombra 5.2s ease-in-out infinite}
+:root[data-theme="light"] .jg-gv-som{background:radial-gradient(closest-side,rgba(45,30,10,.34),transparent)}
+.jg-pel{position:relative;display:grid;justify-items:center;padding-bottom:6px}
+.jg-pel-g{display:block;width:100%;will-change:transform;transition:transform .24s cubic-bezier(.2,.8,.2,1)}
+.jg-pel.ya .jg-pel-g{animation:jg-flota var(--ft,5.5s) ease-in-out var(--fd,0s) infinite}
+.jg-pel.act .jg-pel-g{animation:jg-flota 4.5s ease-in-out infinite}
+.jg-pel.ver .jg-pel-g{transform:translate3d(0,-3px,0) scale(1.08)}
+.jg-pel-s{display:block;width:62%;height:4px;margin-top:2px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent);opacity:.45;pointer-events:none}
+.jg-pel.ya .jg-pel-s,.jg-pel.act .jg-pel-s{animation:jg-sombra var(--ft,5.5s) ease-in-out var(--fd,0s) infinite}
+:root[data-theme="light"] .jg-pel-s{background:radial-gradient(closest-side,rgba(45,30,10,.3),transparent)}
+/* Papiro y fragmentos: escena relicario flotante con aura cálida y barrido de luz por compositor */
+.jg-pp-escena{position:relative;display:grid;place-items:center;padding:12px 6px 20px;margin:2px auto 4px;width:100%;max-width:460px;contain:layout style}
+.jg-pp-halo{position:absolute;inset:2% 6% 10%;border-radius:50%;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,color-mix(in srgb,var(--oro-vivo) 28%,transparent),color-mix(in srgb,var(--oro) 9%,transparent) 52%,transparent 76%);opacity:.82;animation:ap-respira 5.8s ease-in-out infinite}
+:root[data-theme="light"] .jg-pp-halo{background:radial-gradient(ellipse at 50% 48%,color-mix(in srgb,var(--oro) 22%,transparent),transparent 72%)}
+.jg-pp{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;aspect-ratio:2/1;border-radius:14px;overflow:hidden;will-change:transform;animation:jg-pp-flota 6.4s ease-in-out infinite}
+.jg-pp svg{width:100%;height:100%;display:block;filter:none}
+.jg-pp-brillo{position:absolute;inset:-10% 7%;width:34%;pointer-events:none;background:linear-gradient(108deg,transparent 14%,rgba(255,248,220,.44) 50%,transparent 86%);transform:translate3d(-130%,0,0);opacity:0;animation:jg-pp-luz 9.4s ease-in-out 1.4s infinite;will-change:transform,opacity}
+.jg-pp-sombra{position:absolute;left:14%;right:14%;bottom:4px;height:14px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.62),rgba(0,0,0,.18) 56%,transparent 100%);will-change:transform,opacity;animation:jg-sombra 6.4s ease-in-out infinite}
+:root[data-theme="light"] .jg-pp-sombra{background:radial-gradient(closest-side,rgba(54,36,12,.3),rgba(54,36,12,.08) 58%,transparent 100%)}
+.jg-pp-prox{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 11px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--oro) 13%,transparent),transparent 70%),color-mix(in srgb,var(--hoja-2) 84%,transparent)}
+.jg-pp-prox-ico{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:radial-gradient(circle at 40% 32%,color-mix(in srgb,var(--oro) 24%,#1a150e),#090806 80%)}
+.jg-pp-prox-ico svg{width:34px;height:34px;display:block}
+.jg-pp-prox-t{display:grid;gap:2px;min-width:0}.jg-pp-prox-t small{font:600 .58rem/1.15 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--oro)}.jg-pp-prox-t b{font:600 .84rem/1.25 var(--f-ui);color:var(--tinta);text-wrap:balance}
+.jg-pp-prox-n{font:600 .72rem/1.1 var(--f-ui);padding:4px 8px;border-radius:999px;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);background:color-mix(in srgb,var(--oro) 11%,transparent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.jg-pausa-vis .jg-pd-gema,.jg-pausa-vis .jg-pd-sombra,.jg-pausa-vis .jg-gv-wrap,.jg-pausa-vis .jg-gv-som,.jg-pausa-vis .jg-gv-halo,.jg-pausa-vis .jg-pel-g,.jg-pausa-vis .jg-pel-s,.jg-pausa-vis .jg-pp,.jg-pausa-vis .jg-pp-sombra,.jg-pausa-vis .jg-pp-halo,.jg-pausa-vis .jg-pp-brillo,
+html.con-modal #vista .jg-pd-gema,html.con-modal #vista .jg-pd-sombra,html.con-modal #vista .jg-gv-wrap,html.con-modal #vista .jg-gv-som,html.con-modal #vista .jg-gv-halo,html.con-modal #vista .jg-pel-g,html.con-modal #vista .jg-pel-s,html.con-modal #vista .jg-pp,html.con-modal #vista .jg-pp-sombra,html.con-modal #vista .jg-pp-halo,html.con-modal #vista .jg-pp-brillo,
+html.tab-oculta .jg-pd-gema,html.tab-oculta .jg-pd-sombra,html.tab-oculta .jg-gv-wrap,html.tab-oculta .jg-gv-som,html.tab-oculta .jg-gv-halo,html.tab-oculta .jg-pel-g,html.tab-oculta .jg-pel-s,html.tab-oculta .jg-pp,html.tab-oculta .jg-pp-sombra,html.tab-oculta .jg-pp-halo,html.tab-oculta .jg-pp-brillo{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.jg-pd-gema,.jg-pd-sombra,.jg-gv-wrap,.jg-gv-som,.jg-gv-halo,.jg-pel-g,.jg-pel-s,.jg-pp,.jg-pp-sombra,.jg-pp-halo,.jg-pp-brillo{animation:none!important}}
+html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov="no"] .jg-gv-wrap,html[data-mov="no"] .jg-gv-som,html[data-mov="no"] .jg-gv-halo,html[data-mov="no"] .jg-pel-g,html[data-mov="no"] .jg-pel-s,html[data-mov="no"] .jg-pp,html[data-mov="no"] .jg-pp-sombra,html[data-mov="no"] .jg-pp-halo,html[data-mov="no"] .jg-pp-brillo{animation:none!important}
+/* Progresión de Poder: comparativa 3 tiempos (Antes → Hoy → Nivel siguiente), rutas de salto y delta en chipPoder */
+.ap-pd-delta{font:700 .62rem/1 var(--f-ui);padding:2.5px 6px;border-radius:999px;background:color-mix(in srgb,#6fbf8f 22%,transparent);color:#9be7b6;border:1px solid color-mix(in srgb,#6fbf8f 48%,transparent);font-variant-numeric:tabular-nums;white-space:nowrap}
+:root[data-theme="light"] .ap-pd-delta{color:#1b683c;background:color-mix(in srgb,#6fbf8f 18%,transparent)}
+.ap-vp-evo{display:grid;gap:9px;padding:12px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 32%,var(--linea-2));background:radial-gradient(120% 95% at 100% 0%,color-mix(in srgb,var(--oro) 11%,transparent),transparent 66%),color-mix(in srgb,var(--hoja-2) 84%,transparent);contain:layout style}
+.ap-vp-3t{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap-vp-3c{display:grid;justify-items:center;align-content:center;gap:2px;padding:9px 6px;border-radius:12px;text-align:center;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 76%,transparent);min-width:0}
+.ap-vp-3c.hoy{border-color:color-mix(in srgb,var(--oro) 58%,transparent);background:radial-gradient(110% 90% at 50% 0%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 72%),color-mix(in srgb,var(--hoja) 88%,transparent)}
+.ap-vp-3c.sig{border-color:color-mix(in srgb,#7cb8f2 48%,transparent);background:radial-gradient(110% 90% at 50% 0%,color-mix(in srgb,#7cb8f2 14%,transparent),transparent 72%),color-mix(in srgb,var(--hoja) 88%,transparent)}
+.ap-vp-3c small{font:600 .56rem/1.15 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
+.ap-vp-3c b{font:600 1.15rem/1.1 var(--f-display);color:var(--tinta);font-variant-numeric:lining-nums tabular-nums}
+.ap-vp-3c.hoy b{color:var(--oro-vivo)}.ap-vp-3c.sig b{color:var(--vp-c2)}
+.ap-vp-3c em{font:600 .62rem/1.15 var(--f-ui);font-style:normal;color:#7cd99e;font-variant-numeric:tabular-nums}
+:root[data-theme="light"] .ap-vp-3c em{color:#1d6f42}
+.ap-vp-3c span{font:400 .6rem/1.2 var(--f-ui);color:var(--tenue);text-wrap:balance}
+.ap-vp-hist{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.ap-vp-hchip{font:500 .64rem/1.1 var(--f-ui);padding:4px 8px;border-radius:999px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 74%,transparent);color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.ap-vp-hchip b{color:var(--oro-vivo);font-weight:600}
+.ap-vp-rutas{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ap-vp-ruta{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja) 78%,transparent)}
+.ap-vp-ruta.cerca{border-color:color-mix(in srgb,var(--oro) 55%,transparent);background:linear-gradient(90deg,color-mix(in srgb,var(--oro) 12%,transparent),color-mix(in srgb,var(--hoja) 82%,transparent) 68%)}
+.ap-vp-ruta b{display:block;font:600 .76rem/1.2 var(--f-ui);color:var(--tinta)}
+.ap-vp-ruta small{display:block;font:400 .68rem/1.3 var(--f-ui);color:var(--tinta-2);margin-top:2px}
+.ap-vp-rgan{font:700 .74rem/1 var(--f-display);padding:4px 8px;border-radius:999px;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 12%,transparent);white-space:nowrap;font-variant-numeric:lining-nums tabular-nums}
+.ap-vp-etprox{margin:0;padding:8px 10px;border-radius:11px;border:1px dashed color-mix(in srgb,var(--vp-et,var(--oro)) 44%,transparent);background:color-mix(in srgb,var(--vp-et,var(--oro)) 7%,transparent);font:400 .73rem/1.4 var(--f-ui);color:var(--tinta-2)}
+.ap-vp-etprox b{color:var(--oro-vivo)}
+@media (max-width:350px){.ap-vp-3t{grid-template-columns:1fr}}
+/* Salas abiertas: barra superior con contador, refresco y controles accesibles estando ya en una sala */
+.jg-salas-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
+.jg-salas-cab .jg-salas-n{margin:0}
+.jg-salas-ref{font-size:.72rem;padding:4px 9px;min-height:28px}
+.jg-sala-est{display:inline-block;margin-left:6px;padding:1.5px 6px;border-radius:999px;font:600 .62rem/1.2 var(--f-ui);letter-spacing:.04em;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 16%,transparent);border:1px solid color-mix(in srgb,var(--oro) 34%,transparent);vertical-align:1px}
+.jg-sala-extra{margin-top:10px;border-top:1px solid var(--linea-2);padding-top:9px}
+.jg-sala-extra summary{cursor:pointer;font:500 .8rem/1.3 var(--f-ui);color:var(--oro);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.jg-sala-extra summary::-webkit-details-marker{display:none}
+.jg-sala-extra summary::after{content:"▾";opacity:.75;transition:transform .2s}
+.jg-sala-extra[open] summary::after{transform:rotate(180deg)}
+.jg-sala-extra-c{display:grid;gap:10px;margin-top:10px}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -2417,7 +2547,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       // los distintivos van en su propia fila, centrados: ya no chocan con el sello del nivel (simetría, BiEx 10-nov-2026)
       chips.length ? h("div", { class: "jg-chips jg-chips-yo" }, chips) : null,
       h("div", {}, barraEpica(y, pct),
-        h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }), h("span", { text: fmt(y.xp) + " en total" }))));
+        h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }))));
     t.classList.add("jg-yo");
     // P24 + V18 (BiEx, 11 y 12-nov-2026): la tarjeta crece por etapas con tu poder (Semilla, Brote, Raíz honda, Copa, Fruto;
     // Tehillim [Salmos] 1:3): marco con filigrana de vid en las esquinas, cada etapa con su metal; desde la segunda, un aura que
@@ -2595,11 +2725,20 @@ html[data-mov="no"] .ap-savia{display:none!important}
       setTimeout(() => { for (const z of zs) if (z.li) z.li.remove(); }, 380);
     }
   }
+  const FT_PD = [4.3, 4.9, 5.3, 5.7, 6.1, 4.7, 5.5, 6.3, 5.1, 5.9, 6.5, 4.6];
   function tarjetaHallazgos(y) {
     const p = y.piedras || [], n = p.filter((x) => x > 0).length;
-    return tarjeta("Hallazgos", null,
-      h("div", { class: "jg-piedras" }, PIEDRAS.map((pd, i) => h("button", { class: "jg-piedra", type: "button", "aria-label": pd[3] + " [" + pd[1] + "]" + (p[i] ? ", hallada " + p[i] + (p[i] === 1 ? " vez" : " veces") : ", aún no hallada"),
-        onclick: () => verPiedra(i, p[i] || 0) }, gema(i, p[i] > 0), h("span", { text: pd[3] }), p[i] > 1 ? h("b", { text: "×" + p[i] }) : null))),
+    const rejilla = observarFlotantes(h("div", { class: "jg-piedras" }, PIEDRAS.map((pd, i) => {
+      const tiene = (p[i] | 0) > 0;
+      const esc = h("span", { class: "jg-pd-esc", "aria-hidden": "true" },
+        tiene ? h("span", { class: "jg-pd-halo" }) : null,
+        h("span", { class: "jg-pd-gema" }, gema(i, tiene)),
+        tiene ? h("span", { class: "jg-pd-sombra" }) : null);
+      return h("button", { class: "jg-piedra" + (tiene ? " tiene" : ""), type: "button", style: "--pg:" + pd[2] + ";--ft:" + FT_PD[i] + "s;--fd:-" + (i * 0.47).toFixed(2) + "s",
+        "aria-label": pd[3] + " [" + pd[1] + "]" + (p[i] ? ", hallada " + p[i] + (p[i] === 1 ? " vez" : " veces") : ", aún no hallada"),
+        onclick: () => verPiedra(i, p[i] || 0) }, esc, h("span", { text: pd[3] }), p[i] > 1 ? h("b", { text: "×" + p[i] }) : null);
+    })));
+    return tarjeta("Hallazgos", null, rejilla,
       h("div", { class: "jg-tesoros" },
         h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
@@ -2614,7 +2753,11 @@ html[data-mov="no"] .ap-savia{display:none!important}
   function verPiedra(i, veces) {
     const pd = PIEDRAS[i];
     A.abrirModal(() => A.cajaModal(A.cabModal("Las doce piedras", "Ἀpοκάlυpsις 21:19-20"), h("div", { class: "jg-cel" },
-      h("div", { class: "arte" }, gema(i, veces > 0)), h("h3", { text: piedraNombre(i) }), h("p", { class: "jg-mini", lang: "grc", text: pd[0] }),
+      h("div", { class: "arte jg-pd-modal", style: "--pg:" + pd[2] },
+        veces > 0 ? h("span", { class: "jg-pd-halo", "aria-hidden": "true" }) : null,
+        h("span", { class: "jg-pd-gema" }, gema(i, veces > 0)),
+        h("span", { class: "jg-pd-sombra", "aria-hidden": "true" })),
+      h("h3", { text: piedraNombre(i) }), h("p", { class: "jg-mini", lang: "grc", text: pd[0] }),
       h("p", { text: "La " + ORDINAL[i] + " piedra del fundamento del muro de la ciudad. " + (veces ? "La hallaste " + plural(veces, "vez", "veces") + "." : "Aún no la hallas: sigue leyendo.") }),
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
   }
@@ -2848,8 +2991,8 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const lugar = y.lugar || {}, zona = h("div", { class: "jg-cl2-z", "aria-live": "polite" }, h("p", { class: "cargando", text: "Cargando…" }));
     let vista = A.store.get("jg:clVista", "clas") === "pres" ? "pres" : "clas", alto = 0;
     const icoCiu = () => h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'));
-    const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, h("b", { text: x.apodo }), h("small", { text: "nivel " + x.nivel + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
+    const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+      h("span", { class: "n" }, h("b", { text: x.apodo }), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
     const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), icoCiu(),
       h("span", { class: "n" }, h("b", { text: x.ciudad }), h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x" }, fmt(x.pr), h("small", { text: "pts." })));
     const pie = (href, t) => h("a", { class: "btn chico jg-cl2-mas", href }, h("span", { text: t }), A.svg(A.ICO.der));
@@ -3333,12 +3476,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
     });
     // corazón: emblema o foto, aro del nivel
     const e = y.emb || {}, col = COLORES[e.c] || COLORES[0], p = y.xpSig ? Math.max(0, Math.min(1, y.xpNivel / y.xpSig)) : 0, foto = y.foto ? fotoUrl(y.inv + "." + y.foto) : "", id = "apf" + (++FOTO_N);
+    const txtPoder = fmt(av.poder | 0), wPod = Math.max(166, 138 + 15.5 * txtPoder.length);
     const corazon = '<circle cx="500" cy="640" r="96" fill="url(#ap-halo2)"/><circle cx="500" cy="640" r="74" fill="#0d0b08" stroke="' + col + '" stroke-width="4"/>' +
       (foto ? '<clipPath id="' + id + '"><circle cx="500" cy="640" r="68"/></clipPath><image href="' + esc(foto) + '" x="432" y="572" width="136" height="136" clip-path="url(#' + id + ')" preserveAspectRatio="xMidYMid slice"/>'
         : '<text x="500" y="' + (/[֐-׿]/.test(e.l || "") ? 664 : 670) + '" text-anchor="middle" font-size="78" fill="' + col + '" style="font-family:' + (/[֐-׿]/.test(e.l || "") ? "'Frank Ruhl Libre'," : "") + "'BiEx Texto','Gentium Book Plus',serif\">" + esc(e.l || "α") + "</text>") +
       '<circle cx="500" cy="640" r="86" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/><circle class="ap-aro" cx="500" cy="640" r="86" fill="none" stroke="url(#ap-oro)" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="' + (p * 100).toFixed(1) + ' 100" transform="rotate(-90 500 640)"/>' +
-      '<g transform="translate(500 752)"><rect x="' + (-(134 + 15.5 * String(nivel).length) / 2).toFixed(1) + '" y="-20" width="' + (134 + 15.5 * String(nivel).length).toFixed(1) + '" height="40" rx="20" fill="url(#ap-oro)"/><text y="9" text-anchor="middle" font-size="25" font-weight="700" fill="#16120b" style="font-family:var(--f-ui);letter-spacing:.06em">NIVEL ' + nivel + "</text></g>";
-    // P25 (22-nov-2026): el botoncito de «NIVEL n» se ensancha con el número (medido: «NIVEL 12» ocupaba 123 de 124 px)
+      '<g transform="translate(500 752)"><rect x="' + (-wPod / 2).toFixed(1) + '" y="-20" width="' + wPod.toFixed(1) + '" height="40" rx="20" fill="url(#ap-oro)"/><text y="9" text-anchor="middle" font-size="25" font-weight="700" fill="#16120b" style="font-family:var(--f-ui);letter-spacing:.06em">PODER ' + txtPoder + "</text></g>";
+    // BiEx (23-nov-2026): el medallón bajo el corazón muestra el poder actual (en vez de repetir el nivel que ya aparece debajo)
     // Vida del árbol fuera del SVG (BiEx, 10-nov-2026: «está borroso»): el dibujo queda quieto y se rasteriza una sola vez a la
     // densidad real; los destellos de la copa, los frutos y las motas son capas pequeñas que solo cambian opacidad y posición
     // (las mueve el compositor, sin volver a pintar el árbol) y se detienen cuando el árbol sale de la pantalla.
@@ -3386,7 +3530,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       ramita + '<g class="ap-granada" transform="translate(' + GR_X + " " + GR_Y + ')">' + gr.cuerpo + "</g>" + ramasFrente +
       '<line x1="40" y1="812" x2="960" y2="812" stroke="url(#ap-oro)" stroke-opacity=".35" stroke-width="2"/>' + raices + med + corazon, "0 0 1000 1110");
     el.setAttribute("class", "ap-svg"); el.setAttribute("role", "img");
-    el.setAttribute("aria-label", "Tu árbol: nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : "") + "; en la copa, la granada del fruto del espíritu con " + plural(gr.tot, "nivel", "niveles"));
+    el.setAttribute("aria-label", "Tu árbol: poder " + txtPoder + ", nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : "") + "; en la copa, la granada del fruto del espíritu con " + plural(gr.tot, "nivel", "niveles"));
     // Savia (BiEx, 10-nov-2026: «me gustaba el movimiento de las raíces; vuélvelo más espectacular»): luces del color de cada
     // atributo suben por su raíz desde el medallón hasta el tronco, con su estela; cuantos más puntos tiene el atributo, más
     // luces y más rápidas. Capa aparte en las coordenadas del dibujo (offset-path): el árbol sigue quieto y nítido.
@@ -3906,19 +4050,42 @@ html[data-mov="no"] .ap-savia{display:none!important}
   // AC12 (BiEx, 15-nov-2026: «no puedo ver en dónde se almacenan ni cuántos tengo ni cómo lucen»): los fragmentos de papiro se
   // guardan en Tesoro, en un rollo de 70 piezas que se va completando (las que tienes, en papiro iluminado; las que faltan,
   // apenas trazadas). Al reunir 70 se abre un accesorio raro de la vitrina del Árbol; luego empieza otro rollo.
+  const CACHE_PAPIRO = new Map();
   function papiroSVG(c, meta) {
-    const N = meta || 70, cols = 10, filas = Math.ceil(N / cols), W = 300, H = 150, x0 = 26, y0 = 22, w = (W - 2 * x0) / cols, hh = (H - 2 * y0) / filas;
-    let piezas = "";
-    for (let i = 0; i < N; i++) {
-      const cx = x0 + (i % cols) * w, cy = y0 + Math.floor(i / cols) * hh, j = ((i * 37) % 11) / 11, k = ((i * 53) % 7) / 7, si = i < c;
-      // cada pieza con su borde roto propio (determinista)
-      const d = "M" + (cx + 1.5 + j * 2).toFixed(1) + " " + (cy + 1.2).toFixed(1) + "L" + (cx + w - 1.2).toFixed(1) + " " + (cy + 1 + k * 2).toFixed(1) + "L" + (cx + w - 1.6 - j * 1.5).toFixed(1) + " " + (cy + hh - 1.4).toFixed(1) + "L" + (cx + 1 + k * 1.8).toFixed(1) + " " + (cy + hh - 1).toFixed(1) + "Z";
-      piezas += '<path d="' + d + '" ' + (si ? 'fill="url(#pp-f)" stroke="#7a5326" stroke-opacity=".55" stroke-width=".6"' : 'fill="none" stroke="#c9a46a" stroke-opacity=".22" stroke-width=".7" stroke-dasharray="2 2"') + "/>";
-      if (si && (i * 7) % 3 === 0) piezas += '<path d="M' + (cx + 3).toFixed(1) + " " + (cy + hh / 2).toFixed(1) + "h" + (w - 7).toFixed(1) + '" stroke="#5d3b16" stroke-opacity=".35" stroke-width=".7"/>';
+    const N = meta || 70, clave = c + ":" + N;
+    if (CACHE_PAPIRO.has(clave)) return CACHE_PAPIRO.get(clave);
+    const cols = 10, filas = Math.ceil(N / cols), W = 300, H = 150, x0 = 26, y0 = 22, w = (W - 2 * x0) / cols, hh = (H - 2 * y0) / filas;
+    let piezas = "", lineas = "";
+    for (let r = 0; r < filas; r++) {
+      const ly = (y0 + r * hh + hh * 0.5).toFixed(1);
+      lineas += '<line x1="25" y1="' + ly + '" x2="275" y2="' + ly + '" stroke="#c9a46a" stroke-opacity=".1" stroke-width=".5"/>';
     }
-    return '<defs><linearGradient id="pp-f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfaf"/><stop offset=".55" stop-color="#ddb979"/><stop offset="1" stop-color="#b98a4b"/></linearGradient>' +
-      '<linearGradient id="pp-r" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8b5e2b"/><stop offset=".5" stop-color="#e3c48b"/><stop offset="1" stop-color="#7a4f22"/></linearGradient></defs>' +
-      '<rect x="18" y="14" width="264" height="122" rx="6" fill="#2a1d10" fill-opacity=".35"/>' + piezas + rolloPapiro(4, false) + rolloPapiro(280, true);
+    for (let i = 0; i < N; i++) {
+      const cx = x0 + (i % cols) * w, cy = y0 + Math.floor(i / cols) * hh, j = ((i * 37) % 11) / 11, k = ((i * 53) % 7) / 7, si = i < c, ult = si && i === c - 1;
+      // cada pieza con su borde roto propio (determinista); la pieza más reciente lleva un destello de oro fino
+      const x1 = (cx + 1.4 + j * 1.8).toFixed(1), y1 = (cy + 1.1).toFixed(1);
+      const x2 = (cx + w - 1.1).toFixed(1), y2 = (cy + 0.9 + k * 1.9).toFixed(1);
+      const x3 = (cx + w - 1.5 - j * 1.4).toFixed(1), y3 = (cy + hh - 1.3).toFixed(1);
+      const x4 = (cx + 1 + k * 1.6).toFixed(1), y4 = (cy + hh - 1).toFixed(1);
+      const d = "M" + x1 + " " + y1 + "L" + x2 + " " + y2 + "L" + x3 + " " + y3 + "L" + x4 + " " + y4 + "Z";
+      if (si) {
+        const tono = (i + Math.floor(i / cols)) % 3 === 0 ? "pp-f2" : "pp-f";
+        piezas += '<path d="' + d + '" fill="url(#' + tono + ')" stroke="' + (ult ? "#fff1be" : "#785022") + '" stroke-opacity="' + (ult ? ".92" : ".58") + '" stroke-width="' + (ult ? "1.1" : ".6") + '"/>';
+        piezas += '<path d="M' + x1 + " " + y1 + "L" + x2 + " " + y2 + '" stroke="#fff7df" stroke-opacity="' + (ult ? ".72" : ".32") + '" stroke-width=".55" fill="none"/>';
+        const l1 = (w - 6.5 - j * 3).toFixed(1), l2 = (w - 8.5 - k * 3).toFixed(1);
+        piezas += '<path d="M' + (cx + 3.2).toFixed(1) + " " + (cy + hh * 0.42).toFixed(1) + "h" + l1 + ((i * 7) % 2 === 0 ? "M" + (cx + 3.6).toFixed(1) + " " + (cy + hh * 0.68).toFixed(1) + "h" + l2 : "") + '" stroke="#523311" stroke-opacity=".34" stroke-width=".62" stroke-linecap="round"/>';
+      } else {
+        piezas += '<path d="' + d + '" fill="#1f150b" fill-opacity=".22" stroke="#c9a46a" stroke-opacity=".22" stroke-width=".65" stroke-dasharray="2 2"/>';
+      }
+    }
+    const svg = '<defs><linearGradient id="pp-f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7e7bf"/><stop offset=".52" stop-color="#e1bd7d"/><stop offset="1" stop-color="#b68545"/></linearGradient>' +
+      '<linearGradient id="pp-f2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2dda9"/><stop offset=".58" stop-color="#d5ae6c"/><stop offset="1" stop-color="#a8793c"/></linearGradient>' +
+      '<radialGradient id="pp-fondo" cx=".5" cy=".46" r=".62"><stop offset="0" stop-color="#4e3418" stop-opacity=".54"/><stop offset="1" stop-color="#191008" stop-opacity=".68"/></radialGradient></defs>' +
+      '<rect x="18" y="13" width="264" height="124" rx="7" fill="url(#pp-fondo)" stroke="#c9a46a" stroke-opacity=".24" stroke-width=".75"/>' +
+      lineas + piezas + rolloPapiro(4, false) + rolloPapiro(280, true);
+    if (CACHE_PAPIRO.size > 12) CACHE_PAPIRO.clear();
+    CACHE_PAPIRO.set(clave, svg);
+    return svg;
   }
   // (BiEx, 15-nov-2026, adjunto 1: «que las hojas de los lados se vean fotorrealistas») los dos extremos enrollados del rollo:
   // cilindro de papiro con su sombreado, fibras horizontales y verticales, bordes que no son rectos, las vueltas del rollo en
@@ -3950,12 +4117,23 @@ html[data-mov="no"] .ap-savia{display:none!important}
       '<path d="M' + (x + 1) + " " + (y1 - 2.2) + "Q" + cx + " " + (y1 + 0.9) + " " + (x + w - 1) + " " + (y1 - 2.2) + '" fill="none" stroke="#2a1806" stroke-opacity=".6" stroke-width=".8"/>';
   }
   function tarjetaPapiros(y) {
-    const f = y.frag || { n: 0, c: 0, meta: 70 }, meta = f.meta || 70, c = Math.min(meta, f.c || 0);
+    const f = y.frag || { n: 0, c: 0, meta: 70 }, meta = f.meta || 70, c = Math.min(meta, f.c || 0), faltan = Math.max(0, meta - c);
     const raros = (S.cfg && S.cfg.raros) || RAROS_C, inv = (y.av && y.av.inv) || [], sig = raros.find((x) => !inv.includes(x[0])) || null; // el servidor abre el primer raro que aún no tienes
-    const arte = h("div", { class: "jg-pp", role: "img", "aria-label": "Rollo de papiro: " + c + " de " + meta + " fragmentos" }, A.svg(papiroSVG(c, meta), "0 0 300 150"));
-    return tarjeta("Tus fragmentos de papiro", ico("liga"), arte,
+    const arte = h("div", { class: "jg-pp", role: "img", "aria-label": "Rollo de papiro: " + c + " de " + meta + " fragmentos" },
+      A.svg(papiroSVG(c, meta), "0 0 300 150"),
+      h("span", { class: "jg-pp-brillo", "aria-hidden": "true" }));
+    const escena = observarFlotantes(h("div", { class: "jg-pp-escena" },
+      h("span", { class: "jg-pp-halo", "aria-hidden": "true" }),
+      arte,
+      h("span", { class: "jg-pp-sombra", "aria-hidden": "true" })));
+    const prox = sig ? h("div", { class: "jg-pp-prox" },
+      h("span", { class: "jg-pp-prox-ico", "aria-hidden": "true" }, A.svg(muestraAcc(sig[0], sig[1]), "0 0 48 48")),
+      h("div", { class: "jg-pp-prox-t" }, h("small", { text: "Próximo accesorio raro · +25 poder" }), h("b", { text: sig[2] })),
+      h("span", { class: "jg-pp-prox-n", text: faltan ? "Faltan " + fmt(faltan) : "¡Listo!" })) : null;
+    return tarjeta("Tus fragmentos de papiro", ico("liga"), escena,
       h("p", { class: "jg-pp-c" }, h("b", { text: fmt(c) }), h("span", { text: " de " + meta }), h("small", { text: "fragmentos en este rollo" + (f.n > c ? " · " + fmt(f.n) + " en total" : "") })),
       h("div", { class: "jg-barra oro", "aria-hidden": "true" }, h("i", { style: "width:" + (100 * c / meta).toFixed(1) + "%" })),
+      prox,
       h("p", { class: "jg-mini", text: "Salen al marcar «Leído» en los versos (cada vez hay más probabilidad hasta que sale uno). Al reunir " + meta + " se abre " + (sig ? "un accesorio raro: «" + sig[2] + "»" : "un premio: 100 dracmas y 1 hora de experiencia doble") + ", y empieza otro rollo. Cada hallazgo queda en tus Novedades." }));
   }
   // AC5 y AC6 (BiEx, 15-nov-2026): un verso aleatorio de la Lectura acompaña la cosecha y el reparto de atributos. Solo versos
@@ -4081,8 +4259,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
         '<path d="M12 12L19.2 12L12 21.6Z" fill="#2e67ad"/><path d="M12 12L4.8 12L12 21.6Z" fill="#4f93db" opacity=".85"/>' +
         '<path d="M12 6.8L15.4 12L12 17.2L8.6 12Z" fill="#ffffff" opacity=".48"/>', "0 0 24 24"));
     const corte = h("span", { class: "ap-pd-corte", "aria-hidden": "true" }, h("i", { class: "ap-pd-brillo" }));
-    const chip = h("button", { class: "ap-poder", type: "button", title: "Abrir la ventana del poder", "aria-label": "Poder " + fmt(valor) + ": abrir detalles y estadísticas", onclick: alTocar },
-      aura, corte, gema, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }), h("span", { class: "ap-pd-ir", "aria-hidden": "true", text: "›" }), capa);
+    const inv = (S.yo && S.yo.inv) || "", vis = A && A.store ? A.store.get("jg:poderVis", null) : null;
+    const delta = vis && vis.inv === inv && (valor | 0) > (vis.p | 0) ? (valor | 0) - (vis.p | 0) : 0;
+    const chip = h("button", { class: "ap-poder", type: "button", title: "Abrir la ventana del poder", "aria-label": "Poder " + fmt(valor) + (delta > 0 ? " (+" + fmt(delta) + " nuevo)" : "") + ": abrir detalles y estadísticas", onclick: alTocar },
+      aura, corte, gema, h("span", { class: "ap-pd-t", text: "Poder" }), h("b", { text: fmt(valor) }),
+      delta > 0 ? h("span", { class: "ap-pd-delta", title: "Aumento de poder desde tu última visita", text: "+" + fmt(delta) }) : null,
+      h("span", { class: "ap-pd-ir", "aria-hidden": "true", text: "›" }), capa);
     let t = 0, visible = true;
     const io = "IntersectionObserver" in window ? new IntersectionObserver((e) => { visible = e.some((x) => x.isIntersecting); }) : null; if (io) io.observe(chip);
     const al = (a, b) => a + Math.random() * (b - a);
@@ -4228,6 +4410,100 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "ap-vp-tramo", role: "progressbar", "aria-valuemin": String(inicio), "aria-valuemax": String(meta || poder || 2400), "aria-valuenow": String(poder), "aria-label": "Avance de poder hacia la siguiente etapa", style: "--p:" + (fracEt * 100).toFixed(1) }, barraEt),
       h("ol", { class: "ap-vp-etapas", "aria-label": "Etapas del poder" }, ET.map(([n, rom, nom, ini, , col]) =>
         h("li", { class: n < cur[0] ? "ok" : n === cur[0] ? "act" : "", style: "--ec:" + col }, h("em", { text: rom }), h("i", { "aria-hidden": "true" }), h("b", { text: nom }), h("small", { text: fmt(ini) })))));
+    // Neon (23-nov-2026): consciencia de progresión — comparativa Antes → Hoy → Nivel N+1, puntajes previos, rutas de costo/ganancia y vista de próxima etapa
+    const histP = registrarPoder(yy, av);
+    A.store.set("jg:poderVis", { inv: yy.inv || "", p: poder });
+    for (const dEl of document.querySelectorAll("#vista .ap-pd-delta")) dEl.remove();
+    const ptsNivel = (P && P.def && P.def.ptsNivel) || 3;
+    const saltoTotal = 15 + ptsNivel * 10;
+    const faltaXp = yy.enTope ? 0 : Math.max(0, (yy.xpSig | 0) - (yy.xpNivel | 0));
+    const versosEst = faltaXp > 0 ? Math.max(1, Math.ceil(faltaXp / 10)) : 0;
+    let prevP = null;
+    for (let k = histP.length - 2; k >= 0; k--) { if (histP[k].p !== poder) { prevP = histP[k]; break; } }
+    if (!prevP && histP.length > 1) prevP = histP[histP.length - 2];
+    const fmtDiaP = (ts) => { try { return new Intl.DateTimeFormat("es", { day: "numeric", month: "short" }).format(new Date(ts)); } catch (e) { return ""; } };
+    const deltaPrev = prevP ? poder - prevP.p : poder;
+    const colAntes = prevP
+      ? h("div", { class: "ap-vp-3c" },
+          h("small", { text: "Previo" }),
+          h("b", { text: fmt(prevP.p) }),
+          h("em", { text: (deltaPrev >= 0 ? "+" : "") + fmt(deltaPrev) + " desde entonces" }),
+          h("span", { text: "Nv. " + fmt(prevP.nv) + (prevP.t ? " · " + fmtDiaP(prevP.t) : "") }))
+      : h("div", { class: "ap-vp-3c" },
+          h("small", { text: "Inicio" }),
+          h("b", { text: "0" }),
+          h("em", { text: poder > 0 ? "+" + fmt(poder) + " ganados" : "Punto de partida" }),
+          h("span", { text: "Base al comenzar" }));
+    const colHoy = h("div", { class: "ap-vp-3c hoy" },
+      h("small", { text: "Hoy" }),
+      h("b", { text: fmt(poder) }),
+      h("em", { text: "Nivel " + fmt(niv) }),
+      h("span", { text: "Etapa " + cur[1] + " · " + cur[2] }));
+    const colSig = h("div", { class: "ap-vp-3c sig" },
+      h("small", { text: "Al nivel " + fmt(niv + 1) }),
+      h("b", { text: fmt(poder + saltoTotal) }),
+      h("em", { text: "+15 directo · +" + (ptsNivel * 10) + " con " + ptsNivel + " pts" }),
+      h("span", { text: yy.enTope ? "Al abrirse el mes · reserva " + fmt(yy.reserva) : (faltaXp ? "Faltan " + fmt(faltaXp) + " XP (~" + plural(versosEst, "verso", "versos") + ")" : "¡Listo para subir!") }));
+    const prevLista = histP.slice(0, -1).slice(-4);
+    const histBl = prevLista.length
+      ? h("div", { class: "ap-vp-hist", "aria-label": "Puntajes de poder previos" }, prevLista.map((x) =>
+          h("span", { class: "ap-vp-hchip" }, "Nv. " + fmt(x.nv) + " · ", h("b", { text: fmt(x.p) }), x.t ? " · " + fmtDiaP(x.t) : "")))
+      : h("p", { class: "jg-mini", style: "margin:0;text-align:center", text: "Tus puntajes previos de poder se guardarán aquí automáticamente al subir para que compares tu avance." });
+    // Rutas reales de costo vs ganancia de poder
+    const rutas = [];
+    if ((av.pts | 0) > 0) {
+      rutas.push({ ord: 1.2, cerca: true, tit: "Repartir " + plural(av.pts | 0, "punto libre", "puntos libres"),
+        sub: "Sin costo · ya disponibles en Atributos de tu Árbol", gan: "+" + fmt((av.pts | 0) * 10) });
+    }
+    if (!yy.enTope) {
+      const rNv = yy.xpSig ? Math.min(1, (yy.xpNivel | 0) / Math.max(1, yy.xpSig | 0)) : 0;
+      rutas.push({ ord: rNv, cerca: rNv >= 0.72, tit: "Subir al nivel " + fmt(niv + 1),
+        sub: (faltaXp ? "Faltan " + fmt(faltaXp) + " XP (~" + plural(versosEst, "verso", "versos") + ")" : "¡Listo para subir!") + " · +15 al subir y +" + (ptsNivel * 10) + " al repartir " + ptsNivel + " pts", gan: "+" + saltoTotal });
+    }
+    if (P && P.def && P.def.forja && Array.isArray(P.def.piezas)) {
+      let mej = null;
+      for (const [pid, pnom] of P.def.piezas) {
+        const gr = (av.eq && av.eq[pid]) | 0, s = P.def.forja[gr + 1];
+        if (!s) continue;
+        const ok = dr >= s.dr && cantos >= s.cantos;
+        const ratio = Math.min(1, dr / Math.max(1, s.dr)) * (s.cantos ? Math.min(1, cantos / s.cantos) : 1);
+        if (!mej || (ok && !mej.ok) || (ok === mej.ok && (s.dr < mej.s.dr || (s.dr === mej.s.dr && s.cantos < mej.s.cantos)))) {
+          mej = { pnom, gr, s, ok, ratio, grado: (P.def.grados && P.def.grados[gr + 1]) || ("grado " + (gr + 1)) };
+        }
+      }
+      if (mej) {
+        const falDr = Math.max(0, mej.s.dr - dr), falCa = Math.max(0, mej.s.cantos - cantos);
+        const detF = mej.ok ? "¡Ya puedes forjarla en Tu ser interior!"
+          : "Cuesta " + fmt(mej.s.dr) + " dr." + (mej.s.cantos ? " + " + plural(mej.s.cantos, "canto", "cantos") : "") + " · faltan " + [falDr ? fmt(falDr) + " dr." : "", falCa ? plural(falCa, "canto", "cantos") : ""].filter(Boolean).join(" y ");
+        rutas.push({ ord: mej.ok ? 1.05 : mej.ratio, cerca: mej.ok || mej.ratio >= 0.72, tit: "Forjar " + mej.pnom + " (" + mej.grado + ")", sub: detF, gan: "+20" });
+      }
+    }
+    if (av.precioPunto > 0) {
+      const pr = av.precioPunto | 0, okP = dr >= pr, rP = Math.min(1, dr / Math.max(1, pr));
+      rutas.push({ ord: okP ? 1.0 : rP, cerca: okP || rP >= 0.75, tit: "Comprar 1 punto de atributo",
+        sub: okP ? "Cuesta " + fmt(pr) + " dracmas · ya tienes suficientes en Atributos" : "Cuesta " + fmt(pr) + " dracmas · te faltan " + fmt(pr - dr) + " dr.", gan: "+10" });
+    }
+    const fg = yy.frag || null, raros = (S.cfg && S.cfg.raros) || RAROS_C, invA = Array.isArray(av.inv) ? av.inv : [];
+    const sigRaro = raros.find((x) => !invA.includes(x[0])) || null;
+    if (fg && sigRaro) {
+      const mF = fg.meta || 70, cF = Math.min(mF, fg.c || 0), rF = cF / Math.max(1, mF);
+      rutas.push({ ord: rF, cerca: rF >= 0.72, tit: "Rollo de papiro · «" + sigRaro[2] + "»",
+        sub: fmt(cF) + " de " + mF + " fragmentos · faltan " + fmt(Math.max(0, mF - cF)) + " marcando «Leído»", gan: "+25" });
+    }
+    rutas.sort((a, b) => b.ord - a.ord);
+    if (rutas.length && !rutas.some((r) => r.cerca)) rutas[0].cerca = true;
+    const ET_DESC = { 2: "marco plateado y aura viva tras tu emblema", 3: "filigrana de oro bruñido en tu tarjeta", 4: "oro radiante y motas de luz ascendentes", 5: "destellos rubí y corona plena del poder" };
+    const etProx = sig
+      ? h("p", { class: "ap-vp-etprox" }, "Próxima etapa · ", h("b", { text: sig[2] + " (" + fmt(meta) + ")" }), ": faltan ", h("b", { text: fmt(Math.max(0, meta - poder)) }), " de poder → desbloquea " + ET_DESC[sig[0]] + ".")
+      : h("p", { class: "ap-vp-etprox" }, h("b", { text: "Etapa máxima alcanzada (Fruto)" }), ": llevas todos los distintivos visuales activos y cada punto sigue elevando tu poder.");
+    const evoBox = h("div", { class: "ap-vp-evo" },
+      h("div", { class: "ap-vp-3t" }, colAntes, colHoy, colSig),
+      histBl,
+      rutas.length ? h("ul", { class: "ap-vp-rutas", "aria-label": "Rutas más cercanas para subir poder" }, rutas.slice(0, 4).map((rt) =>
+        h("li", { class: "ap-vp-ruta" + (rt.cerca ? " cerca" : "") },
+          h("div", {}, h("b", { text: rt.tit }), h("small", { text: rt.sub })),
+          h("span", { class: "ap-vp-rgan", text: rt.gan })))) : null,
+      etProx);
     // Pilares interactivos resonantes con la esfera (2 × 2 simétrico)
     const foco = h("p", { class: "ap-vp-foco", "aria-live": "polite" });
     const ulPil = h("ul", { class: "ap-vp-pilares" });
@@ -4305,6 +4581,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const pie = h("div", { class: "ap-vp-pie" }, "Potencia de ʾĔlōhî́m en el ser interior · ", mkCita("2CO", 4, 7), mkCita("EPH", 3, 16));
     cuerpo = h("div", { class: "flot-cel ap-vp", style: "--vp-et:" + cur[5] + ";--vp-luz:" + PILARES[0].luz },
       marco, banda,
+      h("p", { class: "ap-vp-sec", text: "Evolución y próximo salto" }), evoBox,
       h("p", { class: "ap-vp-sec", text: "Composición del poder" }), ulPil, foco,
       h("p", { class: "ap-vp-sec", text: "Estadísticas del ser interior" }), ulStats, stNota,
       pie, panelV);
@@ -4431,8 +4708,12 @@ html[data-mov="no"] .ap-savia{display:none!important}
     let vista = A.store.get("jg:avVista", null) || "dia";
     let met = A.store.get("jg:avMet", null) || "xp";
     if (!MET.some((x) => x[0] === met)) met = "xp";
+    let selGuardado = -1;
     function pintar(soloGraf) {
-      const V = VISTAS[vista](), l = V.l, cur = l[l.length - 1] || {}, prev = l[l.length - 2] || null;
+      const V = VISTAS[vista](), l = V.l;
+      let selIdx = soloGraf && selGuardado >= 0 && selGuardado < l.length ? selGuardado : Math.max(0, l.length - 1);
+      selGuardado = selIdx;
+      const cur = l[selIdx] || {}, prev = selIdx > 0 ? l[selIdx - 1] : null;
       const metInfo = MET.find((x) => x[0] === met) || MET[0];
       const vals = l.map((d) => d[met] | 0);
       const max = Math.max(1, ...vals), totP = vals.reduce((a, b) => a + b, 0);
@@ -4440,48 +4721,63 @@ html[data-mov="no"] .ap-savia{display:none!important}
       const med = vals.length ? Math.round(totP / vals.length) : 0;
       let iMax = vals.length - 1;
       for (let i = 0; i < vals.length; i++) if (vals[i] >= vals[iMax]) iMax = i;
-      const curV = cur[met] | 0, prevV = prev ? prev[met] | 0 : 0;
-      const subeM = prev && curV > prevV && prevV > 0 ? Math.round((100 * (curV - prevV)) / prevV) : 0;
-      const esPico = curV > 0 && curV >= max && vals.length > 1;
-      const badge = subeM > 0 ? h("span", { class: "av-badge sube", text: "▲ +" + subeM + " % frente a " + V.antes })
-        : esPico ? h("span", { class: "av-badge pico", text: "Mejor marca del período" })
-        : h("span", { class: "av-badge", text: "Media: " + fmt(med) + " " + metInfo[1] });
-      const focoTit = h("span", { class: "av-tit", text: (cur.et || V.ahora) + " · " + metInfo[2] });
-      const focoNum = h("b", { class: "av-tot", text: fmt(curV) });
-      const focoSub = h("small", { "aria-live": "polite", text: prev ? V.antes + ": " + fmt(prevV) + " " + metInfo[1] + " · mejor: " + fmt(max) : "Mejor marca: " + fmt(max) + " " + metInfo[1] });
+      const badge = h("span", { class: "av-badge" });
+      const focoTit = h("span", { class: "av-tit" });
+      const focoNum = h("b", { class: "av-tot" });
+      const focoSub = h("small", { "aria-live": "polite" });
       const cab = h("div", { class: "jg-av-cab" },
         h("div", { class: "jg-av-izq" }, focoTit, focoNum, focoSub),
         h("div", { class: "jg-av-der" },
           badge,
           h("span", { class: "av-foco-v", text: "Total (" + V.serie + "): " + fmt(totP) }),
           h("span", { class: "av-meta-r", text: activosN + " de " + vals.length + (vista === "dia" ? " días activos" : vista === "semana" ? " sem. activas" : " meses activos") + " · media " + fmt(med) })));
+      const tarjetasMet = [];
+      const initIdx = selIdx;
+      let tocoUsuario = false;
       const cifras = h("ul", { class: "av-cif", role: "group", "aria-label": "Elegir magnitud del gráfico" }, MET.map(([k, nom, tit]) => {
-        const a = cur[k] | 0, b = prev ? prev[k] | 0 : 0, sube = prev && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
+        const a = cur[k] | 0;
         const num = h("b", { text: soloGraf ? fmt(a) : "0" });
-        if (!soloGraf) setTimeout(() => contarRapido(num, a, 760), 40);
-        return h("li", { class: k === met ? "sel" : "" },
-          h("button", { type: "button", class: "av-cif-b", "aria-pressed": String(k === met), "aria-label": tit + ": " + fmt(a), onclick: () => { if (met === k) return; met = k; A.store.set("jg:avMet", k); vibrar(6); pintar(true); } },
-            num, h("small", { text: nom }),
-            sube > 0 ? h("span", { class: "av-sube", text: "▲ " + sube + " %" }) : prev ? h("span", { class: "av-antes", text: V.antes + ": " + fmt(b) }) : null));
+        const cmp = h("span", { class: "av-antes" });
+        if (!soloGraf) setTimeout(() => { if (!tocoUsuario && selIdx === initIdx && num.isConnected) contarRapido(num, a, 760); }, 40);
+        const btn = h("button", { type: "button", class: "av-cif-b", "aria-pressed": String(k === met), "aria-label": tit + ": " + fmt(a), onclick: () => { if (met === k) return; met = k; A.store.set("jg:avMet", k); vibrar(6); pintar(true); } },
+          num, h("small", { text: nom }), cmp);
+        tarjetasMet.push({ k, tit, num, cmp, btn });
+        return h("li", { class: k === met ? "sel" : "" }, btn);
       }));
       const cols = [];
-      let selIdx = l.length - 1;
-      const seleccionar = (idx) => {
-        selIdx = idx;
-        cols.forEach((cEl, j) => cEl.classList.toggle("sel", j === idx));
-        const d = l[idx], ant = idx > 0 ? l[idx - 1] : null;
-        if (d) {
-          focoTit.textContent = d.et + " · " + metInfo[2];
-          focoNum.textContent = fmt(d[met] | 0);
-          focoSub.textContent = (ant ? "Anterior: " + fmt(ant[met] | 0) + " · " : "") + "Mejor: " + fmt(max) + " " + metInfo[1];
+      const aplicarSeleccion = (idx, animarNum) => {
+        selIdx = idx; selGuardado = idx;
+        cols.forEach((cEl, j) => { cEl.classList.toggle("sel", j === idx); cEl.setAttribute("aria-pressed", String(j === idx)); });
+        const d = l[idx]; if (!d) return;
+        const ant = idx > 0 ? l[idx - 1] : null, esUlt = idx === l.length - 1;
+        const etAnt = esUlt ? V.antes : (vista === "dia" ? "día ant." : vista === "semana" ? "sem. ant." : "mes ant.");
+        const dV = d[met] | 0, antV = ant ? ant[met] | 0 : 0;
+        const subeM = ant && dV > antV && antV > 0 ? Math.round((100 * (dV - antV)) / antV) : 0;
+        const esPico = dV > 0 && dV >= max && vals.length > 1;
+        if (subeM > 0) { badge.className = "av-badge sube"; badge.textContent = "▲ +" + subeM + " % frente a " + etAnt; }
+        else if (esPico) { badge.className = "av-badge pico"; badge.textContent = "Mejor marca del período"; }
+        else { badge.className = "av-badge"; badge.textContent = "Media: " + fmt(med) + " " + metInfo[1]; }
+        focoTit.textContent = (d.et || V.ahora) + " · " + metInfo[2];
+        focoNum.textContent = fmt(dV);
+        focoSub.textContent = (ant ? etAnt + ": " + fmt(antV) + " " + metInfo[1] + " · " : "") + "mejor: " + fmt(max) + " " + metInfo[1];
+        // Todas las tarjetas de métricas reflejan directamente la fecha seleccionada (BiEx, 23-nov-2026)
+        for (const m of tarjetasMet) {
+          const a = d[m.k] | 0, b = ant ? ant[m.k] | 0 : 0;
+          const sube = ant && a > b && b > 0 ? Math.round((100 * (a - b)) / b) : 0;
+          if (!animarNum) m.num.textContent = fmt(a);
+          m.btn.setAttribute("aria-label", m.tit + " (" + (d.et || V.ahora) + "): " + fmt(a));
+          if (sube > 0) { m.cmp.className = "av-sube"; m.cmp.textContent = "▲ " + sube + " %"; m.cmp.hidden = false; }
+          else if (ant) { m.cmp.className = "av-antes"; m.cmp.textContent = etAnt + ": " + fmt(b); m.cmp.hidden = false; }
+          else { m.cmp.textContent = ""; m.cmp.hidden = true; }
         }
       };
+      const seleccionar = (idx) => { tocoUsuario = true; aplicarSeleccion(idx, false); };
       const pctMed = Math.max(4, Math.min(96, (100 * med) / max));
-      const barras = h("div", { class: "av-bar" + (l.length > 8 ? " denso" : ""), role: "img", "aria-label": metInfo[2] + ": " + l.map((d) => d.et + " " + fmt(d[met] | 0)).join(", ") },
+      const barras = h("div", { class: "av-bar" + (l.length > 8 ? " denso" : ""), role: "group", "aria-label": metInfo[2] + " por fecha: toca una barra para ver todas las cifras de ese período" },
         l.map((d, i) => {
           const val = d[met] | 0, hp = val > 0 ? Math.max(5, (100 * val) / max) : 2;
           const esTope = val > 0 && i === iMax && vals.some((x) => x > 0);
-          const col = h("button", { type: "button", class: "av-col" + (i === l.length - 1 ? " ya" : "") + (esTope ? " tope" : "") + (i === selIdx ? " sel" : ""), "aria-label": d.et + ": " + fmt(val) + " " + metInfo[1],
+          const col = h("button", { type: "button", class: "av-col" + (i === l.length - 1 ? " ya" : "") + (esTope ? " tope" : "") + (i === selIdx ? " sel" : ""), "aria-pressed": String(i === selIdx), "aria-label": d.et + ": " + fmt(val) + " " + metInfo[1],
             onclick: () => { vibrar(5); seleccionar(i); }, onpointerenter: (e) => { if (e.pointerType === "mouse") seleccionar(i); } },
             h("span", { class: "av-pozo" }, h("i", { style: "height:" + hp.toFixed(1) + "%;--i:" + i }), esTope ? h("em", { class: "av-pico", "aria-hidden": "true" }) : null),
             h("small", {},
@@ -4490,6 +4786,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
           cols.push(col);
           return col;
         }));
+      aplicarSeleccion(selIdx, !soloGraf);
       const rej = h("div", { class: "av-rej", "aria-hidden": "true" },
         h("span", { class: "av-ln av-ln-max" }, h("em", { text: fmt(max) })),
         h("span", { class: "av-ln av-ln-mid" }, h("em", { text: fmt(Math.round(max / 2)) })),
@@ -4498,7 +4795,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       zona.replaceChildren(cab, cifras, graf);
     }
     const seg = h("div", { class: "jg-seg fila", role: "group" }, [["dia", "Día"], ["semana", "Semana"], ["mes", "Mes"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(vista === k), onclick: (e) => {
-      vista = k; A.store.set("jg:avVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintar(false); } }, t)));
+      vista = k; selGuardado = -1; A.store.set("jg:avVista", k); for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintar(false); } }, t)));
     pintar(false);
     return tarjeta("Tu avance", ico("arbol"), seg, zona);
   }
@@ -4971,6 +5268,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
     // repiten su entrada y las cifras que cambian cuentan del valor anterior al nuevo
     const rehacer = () => { PODER = null; pintarPoder(zona, S.yo || y, true); };
     const yy = S.yo || y, av = P.av, pct = yy.xpSig ? Math.max(0, Math.min(100, (100 * yy.xpNivel) / yy.xpSig)) : 0;
+    registrarPoder(yy, av);
     const datos = h("div", { class: "ap-datos" },
       h("p", { class: "ap-ap" }, h("b", { text: yy.apodo }), h("span", { text: yy.rangoNombre + " · nivel " + yy.nivel })),
       h("div", { class: "jg-barra ap-nivel-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(yy.xpSig), "aria-valuenow": String(yy.xpNivel), "aria-label": "Experiencia hacia el nivel siguiente" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
@@ -4986,7 +5284,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
       h("div", { class: "jg-acciones ap-foto" }, h("button", { class: "btn", type: "button", onclick: () => elegirFoto(rehacer) }, ico("persona"), h("span", { text: yy.foto ? "Cambiar mi imagen personalizada" : "Subir mi imagen personalizada" })),
         yy.foto ? h("button", { class: "btn", type: "button", onclick: async () => { const r = await accionPoder("/foto/quitar", {}, "Quitaste tu imagen personalizada"); if (r) rehacer(); } }, h("span", { text: "Quitar mi imagen personalizada" })) : null,
         yy.fotoOculta ? h("p", { class: "jg-mini", text: "Tu imagen personalizada está oculta mientras el equipo la revisa." }) : null));
-    const frutos = (yy.invi && yy.invi.unidos) || 0, sigA = JSON.stringify([yy.inv, yy.nivel, yy.vt, yy.xpNivel, yy.xpSig, yy.emb, yy.foto, av.ef, av.fr, frutos]);
+    const frutos = (yy.invi && yy.invi.unidos) || 0, sigA = JSON.stringify([yy.inv, yy.nivel, av.poder | 0, yy.vt, yy.xpNivel, yy.xpSig, yy.emb, yy.foto, av.ef, av.fr, frutos]);
     const lienzoV = suave ? zona.querySelector(".ap-lienzo") : null, cifrasV = suave ? [...zona.querySelectorAll(".ap-cifras b")].map((b) => b.textContent) : null;
     FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
     const lienzo = (lienzoV && lienzoV.dataset.sig === sigA) ? lienzoV : (CACHE_ARBOL.sig === sigA && CACHE_ARBOL.el && !CACHE_ARBOL.el.isConnected) ? CACHE_ARBOL.el : (CACHE_ARBOL = { sig: sigA, el: h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos)) }).el;
@@ -5468,13 +5766,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
       comprobarAdelantamientos("clas:" + q.ambito + ":" + q.periodo + ":" + r.rango, r.lista, ambTxt, "#/escudrina/clasificacion", r.yo);
       const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
-      const fila = (x) => { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-        h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
+      const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+        h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
       zona.replaceChildren(...[titulo, h("ol", { class: "jg-lista" }, r.lista.map(fila)),
         r.yo && !r.lista.some((x) => x.yo) ? h("p", { class: "jg-mini", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia." }) : null].filter(Boolean));
     }
-    function filaDe(x) { const [l, c] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); }
+    function filaDe(x) { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); }
     async function cargarTodos() {
       const rs = await Promise.all(RANGOS.map((_, i) => pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(i) }))));
       if (q.rango !== -1) return;
@@ -5745,7 +6043,13 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   function capitulo(lib, cap, modo) {
     if (!S.token) S.token = A.store.get("jg:t", null);
-    if (!S.token || modo !== "l") { salir(); return; }
+    const lc = lib && cap ? lib + "." + cap : "";
+    if (!S.token || modo !== "l") {
+      salir(!!(S.token && lc));
+      if (S.token && lc) { SL.lcAct = lc; retomarSala(); if (SL.cod) setTimeout(() => posSala(true), 250); }
+      return;
+    }
+    SL.lcAct = lc;
     estilos(); escuchar(); recuperarCola(); medidor(true);
     if (R.lib !== lib || R.cap !== cap) {
       soltar();
@@ -5778,14 +6082,15 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const p = document.querySelector(".jg-pres"); if (p) p.remove();
     for (const s of document.querySelectorAll(".jg-sello")) s.remove();
   }
-  function salir() {
+  function salir(conservarCap) {
     guardarCola(true);
     soltar(); medidor(false);
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
+    if (!conservarCap) SL.lcAct = "";
     guardarDw(true);
     Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false, dw: new Map() });
-    // fuera de los capítulos, lo pendiente sale a su hora (o al volver a leer)
-    if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && Date.now() - R.ultEnvio > CADA) enviar(false); }, 1000);
+    // fuera de los capítulos, lo pendiente sale pronto si no se ha enviado aún en esta lectura (mantiene la presencia al día)
+    if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && (Date.now() - R.ultEnvio > CADA || R.tPres)) enviar(false); }, 1000);
   }
   function observar() {
     if (R.io) R.io.disconnect();
@@ -6416,12 +6721,17 @@ html[data-mov="no"] .ap-savia{display:none!important}
     const lc = lib + "." + cap, cD = +(R.hoy[v - 1] || 0), sie = sieDe(lc);
     const nuevo = !conf && !(+(sie[v - 1] || 0) > 0) && !(A.leido && A.leido(lib, cap, v));
     if (!conf) { R.hoy = pon(R.hoy, v - 1, String(Math.min(9, cD + 1))); const e = espejo(); e.m[lc] = R.hoy; A.store.set("jg:hoy", e); }
+    const fresco = !R.ultEnvio || Date.now() - R.ultEnvio > 120e3;
     R.cola.push([lib, cap, v, ms, a == null ? 1 : a]);
     if (!R.ultEnvio) R.ultEnvio = Date.now();
     guardarCola(false);
     const antes = R.pred ? R.pred.xp : 0, suceso = predecir(lib, cap, v, ms, nuevo, conf ? Math.max(0, cD - 1) : cD, a === 0 ? 0.3 : conf ? 0.7 : 1, a === 0 ? "auto" : conf ? "conf" : "completo");
     pulsoMedidor((R.pred ? R.pred.xp : 0) - antes);
     if (suceso) enviar(false);
+    else if (fresco && !R.tPres) {
+      // Neon (23-nov-2026): primer envío temprano (25 s) para que /presentes, /vivo y /arbol/vivo muestren de inmediato qué lees
+      R.tPres = setTimeout(() => { R.tPres = 0; if (R.cola.length && !R.enviando) enviar(false); }, 25000);
+    }
   }
   // ¿Va a ocurrir un suceso con este verso? (estimación local; el servidor decide). modo: «auto» (leído con su tiempo,
   // 30 %), «conf» (marcado después: su 70 %) o «completo» (marcado antes de cumplir su tiempo: todo al cumplirlo). Desde el
@@ -6468,6 +6778,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
   }
   const REINT = new Map();
   async function enviar(final) {
+    if (R.tPres) { clearTimeout(R.tPres); R.tPres = 0; }
     if (R.enviando || !R.cola.length || !S.token) return;
     R.enviando = true; R.ultEnvio = Date.now();
     const lote = R.cola.splice(0, 400), tl = {};
@@ -7189,13 +7500,16 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   const PREMIOS_LIGA = "Premios de la semana: 1.º, 3 h de experiencia doble y 30 dracmas · 2.º, 2 h y 20 · 3.º, 1 h 30 min y 15 · 4.º a 7.º, 1 h y 10 · quien lee algo, 15 min y 3. Los 7 primeros suben de fundamento; nadie baja: lo ganado se queda.";
   // La escalera de las doce piedras; con «alTocar» (BiEx, 21-nov-2026) cada piedra es un botón que muestra a quienes leen esta
   // semana en ese fundamento
+  const FT_LIGA = [4.7, 5.3, 5.9, 6.1, 5.1, 6.5, 4.9, 6.3, 5.7, 6.7, 5.5, 6.1];
   function escaleraPiedras(nv, alTocar) {
-    if (!alTocar) return h("div", { class: "jg-escalera-p", role: "img", "aria-label": "Liga " + ligaNombre(nv) + ": " + ORDF[nv - 1] + " fundamento de 12" },
-      PIEDRAS.map((p, i) => h("span", { class: "jg-pel" + (i + 1 === nv ? " act" : i + 1 < nv ? " ya" : "") , title: "Liga " + ligaNombre(i + 1) }, gema(i, i + 1 <= nv))));
-    return h("div", { class: "jg-escalera-p", role: "group", "aria-label": "Las doce ligas: toca una piedra para ver quiénes leen en ese fundamento" },
-      PIEDRAS.map((p, i) => h("button", { type: "button", class: "jg-pel" + (i + 1 === nv ? " act ver" : i + 1 < nv ? " ya" : ""), "aria-pressed": i + 1 === nv ? "true" : "false",
+    const cuerpo = (i) => [h("span", { class: "jg-pel-g", "aria-hidden": "true" }, gema(i, i + 1 <= nv)), h("span", { class: "jg-pel-s", "aria-hidden": "true" })];
+    const st = (i) => "--ft:" + FT_LIGA[i] + "s;--fd:-" + (i * 0.43).toFixed(2) + "s";
+    if (!alTocar) return observarFlotantes(h("div", { class: "jg-escalera-p", role: "img", "aria-label": "Liga " + ligaNombre(nv) + ": " + ORDF[nv - 1] + " fundamento de 12" },
+      PIEDRAS.map((p, i) => h("span", { class: "jg-pel" + (i + 1 === nv ? " act" : i + 1 < nv ? " ya" : ""), style: st(i), title: "Liga " + ligaNombre(i + 1) }, ...cuerpo(i)))));
+    return observarFlotantes(h("div", { class: "jg-escalera-p", role: "group", "aria-label": "Las doce ligas: toca una piedra para ver quiénes leen en ese fundamento" },
+      PIEDRAS.map((p, i) => h("button", { type: "button", class: "jg-pel" + (i + 1 === nv ? " act ver" : i + 1 < nv ? " ya" : ""), style: st(i), "aria-pressed": i + 1 === nv ? "true" : "false",
         "aria-label": "Liga " + ligaNombre(i + 1) + ", " + ORDF[i] + " fundamento" + (i + 1 === nv ? " (la tuya)" : ""), title: "Liga " + ligaNombre(i + 1),
-        onclick: (e) => { const yo = e.currentTarget; for (const b of yo.parentNode.children) { const sel = b === yo; b.classList.toggle("ver", sel); b.setAttribute("aria-pressed", sel ? "true" : "false"); } alTocar(i + 1); } }, gema(i, i + 1 <= nv))));
+        onclick: (e) => { const yo = e.currentTarget; for (const b of yo.parentNode.children) { const sel = b === yo; b.classList.toggle("ver", sel); b.setAttribute("aria-pressed", sel ? "true" : "false"); } alTocar(i + 1); } }, ...cuerpo(i)))));
   }
   // Quienes leen esta semana en otro fundamento: los 40 de más experiencia de toda la liga
   function tarjetaFundamento(k, v) {
@@ -7208,16 +7522,20 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       h("p", { class: "jg-mini", text: (v.n > v.lista.length ? "Se ven los " + v.lista.length + " de más experiencia de la semana en toda la liga. " : "") + "Para subir cuenta el puesto dentro de cada grupo de hasta " + (v.tam || 30) + " personas." }));
   }
   function filaLiga(x, suben) {
-    const [l, c] = embDe(x.emb);
+    const [l, c] = embDe(x.emb), ex = resumenStatsPub(x);
     return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= suben && x.xp > 0 ? " sube" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (x.n ? " · Primicia n.º " + x.n : "") })), h("span", { class: "x", text: fmt(x.xp) }));
+      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") })), h("span", { class: "x", text: fmt(x.xp) }));
   }
   function resumenLiga(r, mini) {
     const nv = r.nv || 1, i = nv - 1, yo = (r.lista || []).find((x) => x.yo);
     if (r.enGrupo && Array.isArray(r.lista) && r.lista.length) {
       comprobarAdelantamientos("liga:" + (r.sem || semanaClave()) + ":" + nv, r.lista, "la liga " + ligaNombre(nv), "#/escudrina/liga");
     }
-    const cab = h("div", { class: "jg-liga-cab" }, h("span", { class: "jg-gema-viva", style: "--g:" + PIEDRAS[i][2] }, gema(i, true)),
+    const gemaViva = observarFlotantes(h("span", { class: "jg-gema-viva", style: "--g:" + PIEDRAS[i][2] },
+      h("span", { class: "jg-gv-halo", "aria-hidden": "true" }),
+      h("span", { class: "jg-gv-wrap" }, gema(i, true)),
+      h("span", { class: "jg-gv-som", "aria-hidden": "true" })));
+    const cab = h("div", { class: "jg-liga-cab" }, gemaViva,
       h("div", {}, h("p", { class: "jg-tit", text: "Liga " + ligaNombre(nv) }),
         h("p", { class: "jg-mini" }, h("span", { lang: "grc", text: PIEDRAS[i][0] }), " · " + ORDF[i] + " fundamento de 12 · termina en " + restaTexto(r.fin))));
     const partes = [cab];
@@ -7324,8 +7642,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => copiar(c.cod, "Código copiado") }, ico("copiar"), h("span", { text: "Copiar el código" })),
           h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + c.nombre + "»", "Únete a mi compañía «" + c.nombre + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
         c.mia ? h("button", { class: "btn chico jg-cod-nuevo", type: "button", onclick: async () => { const x = await pedir("/compania/codigo", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x)); actualizarYo(x.yo); A.avisar("Código nuevo: el anterior ya no sirve"); repintar(); } }, "Cambiar el código") : null),
-      tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
-        h("span", { class: "n" }, x.apodo, h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel })), h("span", { class: "x", text: fmt(x.x) })); })),
+      tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
+        h("span", { class: "n" }, x.apodo, h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel + (ex ? " · " + ex : "") })), h("span", { class: "x", text: fmt(x.x) })); })),
         h("p", { class: "jg-mini", text: "Se actualiza cada media hora mientras leen, y al cerrar la lectura." })),
       h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" })), salir));
     animarCifras(zona);
@@ -7452,7 +7770,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
 
   // ================================================================== lectura en compañía (salas en tiempo real)
-  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map() };
+  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "" };
   function entrarSala(cod) {
     cod = String(cod || "").toUpperCase(); if (!/^[2-9A-HJKMNP-Z]{6}$/.test(cod) || !S.token) return false;
     if (SL.cod === cod && SL.ws && SL.ws.readyState <= 1) return true;
@@ -7482,7 +7800,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         if (Date.now() - SL.pong > 65000) { try { ws.close(); } catch (e) { /* ignorar */ } return; } // sin respuesta: la conexión está muerta
         try { if (ws.readyState === 1) ws.send("ping"); } catch (e) { /* ignorar */ }
       }, 25000);
-      posSala(true); pintarSalaPildora();
+      posSala(true); pintarSalaPildora(); syncSalasTrasEvento();
     };
     ws.onmessage = (ev) => { SL.pong = Date.now(); if (ev.data === "pong") return; let m; try { m = JSON.parse(ev.data); } catch (e) { return; } mensajeSala(m); };
     ws.onclose = (ev) => {
@@ -7502,17 +7820,20 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   function salirSala(silencio) {
     SL.cerrada = true; clearInterval(SL.t);
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
-    SL.ws = null; SL.cod = null; SL.miembros = []; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
-    if (!silencio) A.avisar("Saliste de la sala");
+    SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
+    VIVO.salas = null;
+    if (!silencio) { A.avisar("Saliste de la sala"); syncSalasTrasEvento(); }
   }
   function mensajeSala(m) {
-    if (m.t === "abierta") { SL.pub = !!m.on; if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } return; }
+    if (m.t === "abierta") { SL.pub = !!m.on; if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } syncSalasTrasEvento(); return; }
     if (m.t === "estado") {
+      const antesN = SL.miembros.length, antesPub = SL.pub;
       if (m.abierta !== undefined) SL.pub = !!m.abierta;
       SL.miembros = m.miembros || []; SL.anf = m.anf || ""; if (m.yo) SL.yo6 = m.yo;
       const yo = SL.miembros.find((x) => x.j === SL.yo6); SL.guia = !!(yo && yo.guia);
       pintarSalaPildora(); pintarMarcas(); if (S.yo) pintarMedidor();
       if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } }
+      if (antesN !== SL.miembros.length || antesPub !== SL.pub) syncSalasTrasEvento();
     } else if (m.t === "pos") {
       const x = SL.miembros.find((y) => y.j === m.j); const antes = bonoSalaVivo(); if (x) { x.lc = m.lc; x.v = m.v; x.guia = !!m.guia; }
       pintarMarcas(); if (S.yo && antes !== bonoSalaVivo()) pintarMedidor();
@@ -7529,11 +7850,12 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     return 0;
   }
   function posSala(ya) {
-    if (!SL.ws || SL.ws.readyState !== 1 || !R.lib) return;
-    const v = versoVisible(); const k = R.lib + "." + R.cap + ":" + v;
+    const lc = R.lib ? R.lib + "." + R.cap : SL.lcAct;
+    if (!SL.ws || SL.ws.readyState !== 1 || !lc) return;
+    const v = R.lib ? versoVisible() : 0; const k = lc + ":" + v;
     if (k === SL.pos || (!ya && Date.now() - SL.ultPos < 3000)) return;
     SL.pos = k; SL.ultPos = Date.now();
-    try { SL.ws.send(JSON.stringify({ t: "pos", lc: R.lib + "." + R.cap, v })); } catch (e) { /* ignorar */ }
+    try { SL.ws.send(JSON.stringify({ t: "pos", lc, v })); } catch (e) { /* ignorar */ }
   }
   function seguirA(x) {
     const [lib, cap] = x.lc.split(".");
@@ -7577,7 +7899,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const vistaS = () => {
       const anf = SL.miembros.find((x) => x.anf);
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
-        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco), h("span", { class: "n" }, x.apodo, h("small", { text: (x.anf ? "anfitrión · " : "") + (x.pais ? nombrePais(x.pais) + " · " : "") + (x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo") })),
+        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, x.apodo, h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = anf && anf.j === SL.yo6;
       return A.cajaModal(A.cabModal("Sala " + SL.cod, "Lectura en compañía"), h("div", { class: "jg" },
@@ -7594,11 +7916,23 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     A.abrirModal(vistaS, () => { SL.abierta = false; });
   }
   // ================================================================== salas abiertas y quién está leyendo (tanda 3)
-  const VIVO = { salas: null, ts: 0, pres: new Map() };
+  // Neon (23-nov-2026): salvaguarda de visibilidad total de salas abiertas — refresco inmediato al abrir WS/cambiar visibilidad,
+  // salto de caché de borde en recargas explícitas y respaldo optimista de la sala propia abierta si el servidor aún no la devuelve.
+  const VIVO = { salas: null, ts: 0, err: false, pres: new Map(), onSalas: null, tSync: 0 };
+  function syncSalasTrasEvento() {
+    VIVO.salas = null;
+    clearTimeout(VIVO.tSync);
+    const run = () => salasAbiertas("fresco").then((L) => { if (VIVO.onSalas) VIVO.onSalas(L); });
+    run();
+    VIVO.tSync = setTimeout(run, 1800);
+  }
   async function salasAbiertas(forzar) {
+    const fresco = forzar === "fresco";
     if (!forzar && VIVO.salas && Date.now() - VIVO.ts < 30e3) return VIVO.salas;
-    const r = await pedir("/salas", { sin: true }); if (r.error) return VIVO.salas || [];
-    VIVO.salas = r.salas || []; VIVO.ts = Date.now();
+    const r = await pedir("/salas" + (fresco ? "?_=" + Date.now() : ""), { sin: true });
+    if (r.error) { VIVO.err = true; return VIVO.salas || []; }
+    VIVO.err = false;
+    VIVO.salas = Array.isArray(r.salas) ? r.salas : []; VIVO.ts = Date.now();
     insigniaSalas();
     return VIVO.salas;
   }
@@ -7630,27 +7964,65 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const p = await presentes(lc.split(".")[0]), ya = p && p.salas && p.salas[lc] && p.salas[lc].sort((a, b) => b.n - a.n)[0];
       if (SL.cod && (!ya || ya.c === SL.cod)) { abrirSala(); return; }
       if (ya) { entrarSala(ya.c); A.avisar("Entraste a la sala " + ya.c + " · " + nombreLC(lc)); }
-      else { const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: true, lc } }); if (r.error) return A.avisar(mensaje(r)); SL.pub = true; entrarSala(r.cod); A.avisar("Abriste una sala en " + nombreLC(lc) + ": quien lea aquí puede acompañarte"); }
-      VIVO.salas = null; VIVO.pres.clear();
+      else { const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: true, lc } }); if (r.error) return A.avisar(mensaje(r)); SL.pub = true; SL.lcCreada = lc; entrarSala(r.cod); A.avisar("Abriste una sala en " + nombreLC(lc) + ": quien lea aquí puede acompañarte"); }
+      VIVO.salas = null; VIVO.pres.clear(); syncSalasTrasEvento();
       const [lib, cap] = lc.split("."); if (R.lib !== lib || R.cap !== +cap) A.irA("#/" + lib + "/" + cap);
     } finally { if (boton) boton.disabled = false; }
   }
   function tarjetaSalasAbiertas() {
     const zona = h("div", { class: "jg-salas" }, h("p", { class: "jg-mini", text: "Buscando salas abiertas…" }));
-    const pintar = (L) => {
+    const combinarSalas = (srv) => {
+      const lista = Array.isArray(srv) ? srv.slice() : [];
+      // Salvaguarda optimista: si tu propia sala está abierta y el servidor aún no la incluyó (caché o apertura en curso), se muestra siempre
+      if (SL.cod && SL.pub !== false && !lista.some((x) => x.c === SL.cod)) {
+        const y = S.yo || {}, e = y.emb || {};
+        const anf = SL.miembros.find((m) => m.anf);
+        lista.unshift({
+          c: SL.cod,
+          lc: (anf && anf.lc) || (R.lib ? R.lib + "." + R.cap : SL.lcAct || SL.lcCreada || ultimoLC() || ""),
+          anf: (anf && anf.apodo) || y.apodo || "Tú",
+          emb: (e.l || "α") + String(e.c || 0),
+          marco: marcoVisible(y),
+          foto: y.foto ? y.inv + "." + y.foto : "",
+          poder: y.av && y.av.poder != null ? y.av.poder : null,
+          n: Math.max(1, SL.miembros.length || 1),
+          _loc: true,
+        });
+      }
+      return lista;
+    };
+    const pintar = (srv) => {
       if (!zona.isConnected && zona.dataset.ok) return;
       zona.dataset.ok = "1";
-      if (!L.length) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Ahora no hay salas abiertas. Crea una y aparecerá aquí para que cualquiera pueda acompañarte." }));
-      // AL16: lo que cuenta el número de «Juntos», dicho aquí
+      const L = combinarSalas(srv);
+      const btnRef = h("button", { class: "btn chico jg-salas-ref", type: "button", onclick: async (e) => {
+        const b = e.currentTarget; b.disabled = true;
+        const fresh = await salasAbiertas("fresco");
+        b.disabled = false; pintar(fresh);
+      } }, h("span", { text: "Actualizar" }));
+      if (!L.length) {
+        const msg = VIVO.err ? "No se pudo consultar la lista de salas ahora. Toca «Actualizar» para reintentarlo."
+          : "Ahora no hay salas abiertas. Crea una y aparecerá aquí para que cualquiera pueda acompañarte.";
+        return zona.replaceChildren(h("div", { class: "jg-salas-cab" }, h("p", { class: "jg-mini jg-salas-n", text: msg }), btnRef));
+      }
       const otras = L.filter((x) => x.c !== SL.cod).length;
-      zona.replaceChildren(...(otras ? [h("p", { class: "jg-mini jg-salas-n", text: otras === 1 ? "Ahora hay 1 sala abierta de otra persona." : "Ahora hay " + otras + " salas abiertas de otras personas." })] : []), h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb);
-        return h("li", { class: x.c === SL.cod ? "yo" : "" }, emblema(l, c, 0), h("span", { class: "n" }, h("b", { text: nombreLC(x.lc) }), h("small", { text: "Sala de " + (x.anf || "un lector") + " · " + plural(x.n, "persona", "personas") })),
-          x.c === SL.cod ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
-            : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; entrarSala(x.c); A.avisar("Entraste a la sala " + x.c); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: "Entrar" }))); })));
+      const totTxt = L.length === 1
+        ? (otras ? "Ahora hay 1 sala abierta de otra persona." : "Tu sala está abierta ahora.")
+        : "Ahora hay " + fmt(L.length) + " salas abiertas" + (otras && SL.cod && L.some((x) => x.c === SL.cod) ? " (" + plural(otras, "otra disponible para cambiar", "otras disponibles para cambiar") + ")." : ".");
+      zona.replaceChildren(
+        h("div", { class: "jg-salas-cab" }, h("p", { class: "jg-mini jg-salas-n", text: totTxt }), btnRef),
+        h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb); const esMia = x.c === SL.cod;
+          return h("li", { class: esMia ? "yo" : "" }, emblema(l, c, x.marco || 0, x.foto),
+            h("span", { class: "n" },
+              h("b", {}, nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
+              h("small", { text: "Sala " + x.c + " · de " + (x.anf || "un lector") + (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + plural(x.n, "persona", "personas") })),
+            esMia ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
+              : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; const cambiaba = !!SL.cod; entrarSala(x.c); A.avisar((cambiaba ? "Cambiaste a la sala " : "Entraste a la sala ") + x.c); syncSalasTrasEvento(); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" }))); })));
     };
-    salasAbiertas(true).then(pintar);
+    VIVO.onSalas = (L) => { if (zona.isConnected) pintar(L); else VIVO.onSalas = null; };
+    salasAbiertas("fresco").then(pintar);
     enVivo(zona, 30e3, () => salasAbiertas(true).then(pintar));
-    return tarjeta("Salas abiertas", ico("sala"), h("p", { class: "jg-mini", text: "Salas de lectura que cualquiera puede ver y en las que puedes entrar sin enlace. Se actualiza en vivo mientras la miras." }), zona);
+    return tarjeta("Salas abiertas", ico("sala"), h("p", { class: "jg-mini", text: "Todas las salas de lectura abiertas aparecen aquí aunque ya estés en una, para que puedas entrar o cambiarte en cualquier momento." }), zona);
   }
   // Mundo: las luces de los 27 libros (quién lee ahora) y los lectores con «Acompañar»
   function tarjetaQuienLee() {
@@ -7659,7 +8031,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const ver = async (lib, vivo) => {
       libSel = lib || "";
       const r = await presentes(lib || ""); if (r.error) { if (!vivo) zona.replaceChildren(h("p", { class: "jg-mini", text: mensaje(r) })); return; }
-      const f = JSON.stringify([lib, r.libros, r.caps, (r.lectores || []).map((x) => [x.a, x.l]), r.salas]); if (vivo && f === firma) return; firma = f;
+      const f = JSON.stringify([lib, r.libros, r.caps, (r.lectores || []).map((x) => [x.a, x.l, x.act]), r.salas]); if (vivo && f === firma) return; firma = f;
       const libros = (S.cfg && S.cfg.orden) || Object.keys(r.libros || {}), max = Math.max(1, ...Object.values(r.libros || { x: 1 }));
       const mapa = h("div", { class: "jg-luces", role: "list" }, (libros.length ? libros : Object.keys(r.libros || {})).map((b) => { const n = (r.libros || {})[b] || 0;
         return h("button", { class: "jg-lz" + (n ? " on" : "") + (b === lib ? " sel" : ""), type: "button", role: "listitem", style: "--k:" + (n ? (0.35 + 0.65 * n / max).toFixed(2) : 0), "aria-label": nombreLibro(b) + ": " + plural(n, "persona", "personas"), title: nombreLibro(b), onclick: () => ver(b === lib ? "" : b) },
@@ -7667,8 +8039,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const caps = Object.entries(r.caps || {}).sort((a, b) => b[1] - a[1]).slice(0, 12);
       const filas = caps.map(([lc, n]) => h("li", {}, h("span", { class: "n" }, h("b", { text: nombreLC(lc) }), h("small", { text: plural(n, "persona lee", "personas leen") + ((r.salas || {})[lc] ? " · sala abierta" : "") })),
         h("button", { class: "btn chico oro", type: "button", onclick: (e) => acompanar(lc, e.currentTarget) }, h("span", { text: "Acompañar" }))));
-      const quien = (r.lectores || []).slice(0, 12).map((x) => { const [l, c] = embDe(x.e); return h("li", {}, emblema(l, c, x.m, x.f), h("span", { class: "n" }, h("b", { text: x.a || "Lector" }), h("small", { text: "nivel " + x.nv + " · " + nombreLC(x.l) })),
-        h("button", { class: "btn chico", type: "button", onclick: (e) => acompanar(x.l, e.currentTarget) }, h("span", { text: "Acompañar" }))); });
+      const quien = (r.lectores || []).slice(0, 12).map((x) => { const [l, c] = embDe(x.e), actTxt = x.act ? x.act + (x.l ? " · " + nombreLC(x.l) : "") : nombreLC(x.l);
+        return h("li", {}, emblema(l, c, x.m, x.f), h("span", { class: "n" }, h("b", { text: x.a || "Lector" }), h("small", { text: "nivel " + x.nv + (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + actTxt })),
+          x.l ? h("button", { class: "btn chico", type: "button", onclick: (e) => acompanar(x.l, e.currentTarget) }, h("span", { text: "Acompañar" })) : null); });
       zona.replaceChildren(h("p", { class: "jg-total" }, cifra(r.total || 0), " " + (r.total === 1 ? "persona lee" : "personas leen") + " ahora" + (lib ? " · " + nombreLibro(lib) : "")), mapa,
         filas.length ? h("ul", { class: "jg-salas-l" }, filas) : h("p", { class: "jg-mini", text: lib ? "Nadie lee " + nombreLibro(lib) + " en este momento." : "Cuando alguien lea, su libro se encenderá aquí." }),
         quien.length ? h("details", { class: "jg-pc", open: detAb || null, ontoggle: (e) => { detAb = e.currentTarget.open; } }, h("summary", {}, h("span", { text: "Quiénes leen" }), h("small", { text: plural(quien.length, "lector", "lectores") })), h("ul", { class: "jg-salas-l quien" }, quien)) : null);
@@ -7682,15 +8055,31 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const cod = h("input", { type: "text", maxlength: "8", autocapitalize: "characters", placeholder: "Código de sala (6)", "aria-label": "Código de la sala", spellcheck: "false" });
     const pista = h("p", { class: "jg-pista", role: "status" });
     const ab = h("input", { type: "checkbox", checked: true });
-    const crear = async (e) => { const bt = e.currentTarget; bt.disabled = true; const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: ab.checked, lc: R.lib ? R.lib + "." + R.cap : ultimoLC() } }); bt.disabled = false;
-      if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; } SL.pub = r.abierta !== false; entrarSala(r.cod); A.avisar("Sala " + r.cod + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace")); repintar(); };
-    if (SL.cod) return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás en la sala ", h("b", { text: SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + "."),
-      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))));
+    const crear = async (e) => {
+      const bt = e.currentTarget; bt.disabled = true;
+      const lc = R.lib ? R.lib + "." + R.cap : (SL.lcAct || ultimoLC());
+      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: ab.checked, lc } });
+      bt.disabled = false;
+      if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; }
+      SL.pub = r.abierta !== false; SL.lcCreada = lc || ""; VIVO.salas = null;
+      entrarSala(r.cod);
+      A.avisar("Sala " + r.cod + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace"));
+      repintar();
+      syncSalasTrasEvento();
+    };
+    const formEntrar = h("div", { class: "jg-form" }, cod, h("button", { class: "btn", type: "button", onclick: async () => { const c = cod.value.trim().toUpperCase(); const i = await pedir("/sala/info?c=" + encodeURIComponent(c), { sin: true });
+      if (i.error) { pista.textContent = "Esa sala no existe o ya venció."; pista.className = "jg-pista mal"; return; } entrarSala(c); repintar(); syncSalasTrasEvento(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" })));
+    if (SL.cod) return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás activo en la sala ", h("b", { text: SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + ". El bono del +25 % suma únicamente por tu sala activa."),
+      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))),
+      h("details", { class: "jg-sala-extra" }, h("summary", { text: "Crear otra sala o entrar por código" }),
+        h("div", { class: "jg-sala-extra-c" },
+          h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
+          h("div", { class: "jg-acciones" }, h("button", { class: "btn chico oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear otra sala" }))),
+          formEntrar, pista)));
     return tarjeta("Leer en compañía", ico("sala"), h("p", { text: "Crea una sala y comparte su enlace: verán dónde lee cada quien, en vivo, y mientras lean el mismo capítulo cada verso da un 25 % más de experiencia." }),
       h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear una sala" }))),
-      h("div", { class: "jg-form" }, cod, h("button", { class: "btn", type: "button", onclick: async () => { const c = cod.value.trim().toUpperCase(); const i = await pedir("/sala/info?c=" + encodeURIComponent(c), { sin: true });
-        if (i.error) { pista.textContent = "Esa sala no existe o ya venció."; pista.className = "jg-pista mal"; return; } entrarSala(c); repintar(); } }, h("span", { text: "Entrar" }))), pista);
+      formEntrar, pista);
   }
   async function pintarSalaRuta(cont, cod) {
     cod = String(cod || "").toUpperCase();

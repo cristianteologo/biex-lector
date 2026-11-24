@@ -1123,7 +1123,16 @@
       // capítulo con su velo. La vista ya es la correcta: ese aviso se ignora (M.sinRuta).
       M.sinRuta = { url: M.destino, hasta: performance.now() + 1500 };
       try { history.go(-n); } catch (e) { M.saltando = false; M.cortar = false; M.sinRuta = null; }
-    } else M.estados = 0;
+    } else {
+      // Neon (23-nov-2026): al cerrar una ventana de verso/palabra con el gesto Atrás sobre el mismo capítulo y modo ya
+      // dibujados, el hashchange residual (#/LIB/cap/l/v → #/LIB/cap) no debe activar el velo de 900 ms ni redibujar la vista.
+      if (M.porHistoria && esc.libro && esc.cap) {
+        const mh = /^#\/([1-3A-Z]{3})\/(\d+)(?:\/([alo]))?/.exec(location.hash || "");
+        const mHash = mh && mh[3] === "a" ? "a" : "l";
+        if (mh && mh[1] === esc.libro && +mh[2] === esc.cap && mHash === esc.modo) M.sinRuta = { url: location.href, hasta: performance.now() + 800 };
+      }
+      M.estados = 0;
+    }
     M.porHistoria = false;
     const porRuta = M.porRuta; M.porRuta = false;
     const pend = M.rutaPend; M.rutaPend = null;
@@ -1929,14 +1938,14 @@
     const sinVeloCarga = enSitio || (mismoCap && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"])));
     const anclaS = RP.anclaEnSitio; RP.anclaEnSitio = null;
     esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
-    if (mismo) { enfocar(v, i); juegoCapitulo(c, cap, modo); return; }
+    if (mismo) { if (v == null) { if (!intentarRestaurar()) velar(false); } else enfocar(v, i); juegoCapitulo(c, cap, modo); return; }
     if (!sinVeloCarga) { ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()])); hojaHecha = ""; if (v == null) alTope(); }
     let Lc, A = null;
     try {
       const pA = modo === "a" ? Promise.all([analisis(c), tablas()]) : null; // en paralelo con la lectura
       Lc = await lectura(c);
       if (pA) [A] = await pA;
-    } catch (e) { vista().replaceChildren(fallo("No se pudo cargar " + nombreLibro(b) + ".")); return; }
+    } catch (e) { vista().replaceChildren(fallo("No se pudo cargar " + nombreLibro(b) + ".")); velar(false); return; }
     if (esc.libro !== c || esc.cap !== cap || esc.modo !== modo) return;
     const versos = Lc.caps[cap] || [];
     esc.versos = versos;
@@ -1947,7 +1956,7 @@
     if (enSitio) { aplicarAnclaEnSitio(anclaS); fundirTexto(); }
     store.set("ultimo", { c, cap, m: modo, v: v || null });
     historial(c, cap, v || null, modo);
-    enfocar(v, i);
+    if (v == null) { if (!enSitio) { if (!intentarRestaurar()) velar(false); } else velar(false); } else enfocar(v, i);
     juegoCapitulo(c, cap, modo);
     // Mientras se lee (solo con buena conexión), precarga análisis, referencias, léxico y manuscritos del capítulo para abrir palabras y notas al instante sin saltos
     if (!redLenta()) {
@@ -4061,7 +4070,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "f047e7e572", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "e5a5a20af8", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5616,7 +5625,8 @@
     const pintarHip = (hp) => cajaHip.replaceChildren(h("div", { class: "q-hip-d" }, diag(hp)), h("div", { class: "q-hip-t" },
       h("h3", {}, hp.t, h("small", { text: hp.s })), h("p", { text: hp.d }), h("p", { class: "nota-ui", text: hp.quien }),
       h("dl", {}, h("dt", { text: "A su favor" }), h("dd", { text: hp.bien }), h("dt", { text: "Su dificultad" }), h("dd", { text: hp.mal }))));
-    const segHip = h("div", { class: "q-chips", role: "group", "aria-label": "Hipótesis" }, X.hipotesis.map((hp, i) => h("button", { type: "button", class: "q-chip", "aria-pressed": String(i === 0), onclick: (e) => { for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintarHip(hp); } }, hp.t)));
+    const ROM_H = ["I", "II", "III", "IV", "V"];
+    const segHip = h("div", { class: "q-chips", role: "group", "aria-label": "Hipótesis" }, X.hipotesis.map((hp, i) => h("button", { type: "button", class: "q-chip", "aria-pressed": String(i === 0), onclick: (e) => { for (const b of e.currentTarget.parentNode.children) b.setAttribute("aria-pressed", String(b === e.currentTarget)); pintarHip(hp); } }, h("span", { class: "q-hip-n", "aria-hidden": "true", text: ROM_H[i] || String(i + 1) }), h("span", { text: hp.t }))));
     pintarHip(X.hipotesis[0]);
 
     const indice = [["q-problema", "El problema"], ["q-sinopsis", "Sinopsis"], ["q-orden", "El orden"], ["q-favor", "A favor"], ["q-contra", "En contra"], ["q-hip", "Hipótesis"], ["q-cont", "Qué contendría"], ["q-hist", "Historia"]];
@@ -7229,6 +7239,7 @@
     // de la vista de fondo hasta cerrar la ventana evita el sobresalto de medio segundo detrás del buscador
     if (modal.open && performance.now() - (M.reabierta || -1e9) < 800) {
       M.rutaPend = location.hash;
+      velar(false);
       ajustarCuenta();
       return;
     }
