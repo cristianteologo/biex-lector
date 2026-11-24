@@ -89,6 +89,8 @@
     filtro: '<path d="M4.5 5.5h15l-5.8 7v5.3l-3.4 1.7v-7z" ' + L1 + '/>',
     voz: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" ' + L1 + '/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" ' + L1 + '/>',
     contemplar: '<path d="M2.6 12s3.6-6 9.4-6 9.4 6 9.4 6-3.6 6-9.4 6-9.4-6-9.4-6z" ' + L1 + '/><circle cx="12" cy="12" r="2.7" ' + L1 + '/>',
+    constelacion: '<circle cx="12" cy="11.5" r="2.3" fill="currentColor"/><circle cx="5.2" cy="6.8" r="1.7" ' + L1 + '/><circle cx="19" cy="6.2" r="1.7" ' + L1 + '/><circle cx="6.2" cy="18" r="1.7" ' + L1 + '/><circle cx="18.2" cy="17.5" r="1.7" ' + L1 + '/><path d="M6.8 7.8l3.3 2.3M17.4 7.2l-3.6 2.9M7.6 16.8l3-3.6M16.7 16.3l-3.1-3.2M6.9 6.6l10.4-.4" ' + L1 + ' opacity=".82"/>',
+    tarjeta: '<rect x="4" y="3.5" width="16" height="17" rx="2.4" ' + L1 + '/><path d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5.2" ' + L1 + '/><circle cx="16.2" cy="15.5" r="1.15" fill="currentColor"/>',
     pausa: '<path d="M9 6v12M15 6v12" ' + L1 + '/>',
     play: '<path d="M8 5.5l11 6.5-11 6.5z" ' + L1 + '/>',
     marcador: '<path d="M7 4h10a.5.5 0 0 1 .5.5V20l-5.5-4-5.5 4V4.5A.5.5 0 0 1 7 4z" ' + L1 + '/>',
@@ -1864,11 +1866,13 @@
         item(ICO.buscar, "Buscador inteligente", "Escribe como lo recuerdes: una escena, un nombre, una cita, una palabra griega o una pregunta. Entiende también las palabras de otras traducciones.", "bq", 2),
         hr(ICO.tiempo, "Planes de lectura", "La Nueva Voluntad en orden χrοnοlόgικο en 30, 90 días o un año, los relatos de la vida de YēshŪ́aʿ y las cartas: marca cada lectura y sigue donde quedaste.", "Elegir un plan", "#/planes"),
         (() => { const el = hr(ICO.historial, "Historial", "Las últimas 24 citas que consultaste, capítulos y versos, para volver a ellas con un toque.", "Abrir", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirHistorial()); }); return el; })(),
-        hr(ICO.marcador, "Mis marcadores", "Los versos que marcaste con un tema de color y tus notas de estudio. Se exportan e importan entre dispositivos.", "Abrir", "#/marcadores"),
+        hr(ICO.marcador, "Mis marcadores y diario", "Los versos que marcaste en 12 colores, tus notas y tu diario cronológico de estudio sincronizado con la nube.", "Abrir", "#/marcadores"),
+        hr(ICO.sinopsis, "Mesa sinóptica libre", "Compara cualquier par de versos lado a lado con sus lemas y raíces griegas compartidas iluminadas en vivo.", "Comparar versos", "#/sinopsis"),
         (() => { const el = hr(ICO.descargar, "Exportar a Obsidian", "Capítulos, estudios y tus marcadores como notas .md con el mejor formato: propiedades, avisos plegables, colores de BiEx y versos enlazables.", "Exportar", "#/"); el.addEventListener("click", (e) => { e.preventDefault(); encima(() => abrirExportar()); }); return el; })(),
         hr(ICO.balanza, "Falacias lógicas", "Para conversar sobre la Escritura con altura: los errores de razonamiento más comunes y cómo responder sin contiendas innecesarias.", "Aprender", "#/falacias")),
       cat("El griego a fondo",
         item(ICO.lupa, "Análisis morfológico", "Forma, transliteración, lema, tiempo, voz, modo, caso, función en la oración y ediciones de cada palabra.", "an", 1),
+        hr(ICO.constelacion, "Constelación del léxico", "Red visual interactiva de raíces griegas, lemas, referencias cruzadas y tus notas en 12 colores.", "Explorar el mapa", "#/constelacion"),
         hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
         hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
         hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
@@ -2385,7 +2389,7 @@
       : antLibro ? h("a", { class: "btn", href: rutaCap(antLibro, antLibro.caps.length, modo) }, svg(ICO.izq), h("span", {}, etLibro(antLibro))) : null;
     const sig = cap < b.caps.length ? h("a", { class: "btn oro sig", href: rutaCap(b, cap + 1, modo) }, h("span", { text: "Capítulo " + (cap + 1) }), svg(ICO.der))
       : sigLibro ? h("a", { class: "btn oro sig", href: rutaCap(sigLibro, 1, modo) }, h("span", {}, etLibro(sigLibro)), svg(ICO.der)) : null;
-    return [finPlan(b, cap), finLeido(b, cap), h("nav", { class: "fin-cap", "aria-label": "Seguir leyendo" }, ant, sig)];
+    return [finPlan(b, cap), finLeido(b, cap), bloquePulsoCapitulo(b, cap), h("nav", { class: "fin-cap", "aria-label": "Seguir leyendo" }, ant, sig)];
   }
   // Versos leídos en la página: se marcan o desmarcan sin volver a dibujarla
   function marcarLeidoDom(c, cap, vs, si) {
@@ -2671,7 +2675,16 @@
     unirObj(srv, loc) {
       if (!srv || typeof srv !== "object") return loc || null;
       if (!loc || typeof loc !== "object") return srv;
-      return Object.assign({}, srv, loc);
+      const out = Object.assign({}, srv, loc);
+      for (const k of Object.keys(srv)) {
+        const a = srv[k], b = loc[k];
+        if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b)) {
+          const m = Object.assign({}, a);
+          for (const id of Object.keys(b)) m[id] = (!m[id] || ((b[id] && b[id].t) || 0) >= ((m[id] && m[id].t) || 0)) ? b[id] : m[id];
+          out[k] = m;
+        }
+      }
+      return out;
     },
     paquete() {
       return {
@@ -3028,14 +3041,97 @@
     const borrarTodo = h("button", { class: "btn chico mk-borrar", type: "button", onclick: (e) => {
       const bt = e.currentTarget;
       if (!confirmar) { confirmar = 1; bt.lastChild.textContent = "¿Seguro? Toca de nuevo"; setTimeout(() => { confirmar = 0; if (bt.isConnected) bt.lastChild.textContent = "Borrar todos"; }, 4000); return; }
-      confirmar = 0; store.set("marcas", {}); NUBE.cambio(); bt.lastChild.textContent = "Borrar todos"; pintar(); avisar("Marcadores borrados");
+      confirmar = 0; store.set("marcas", {}); NUBE.cambio(); bt.lastChild.textContent = "Borrar todos"; pintar(); pintarDiario(); pintarGrafo(); avisar("Marcadores borrados");
     } }, svg(ICO.papelera), h("span", { text: "Borrar todos" }));
+    let modoVista = store.get("mkModo", "libros") === "diario" ? "diario" : "libros";
+    const zonaGrafo = h("div", {});
+    const zonaDiario = h("div", { class: "di-linea", hidden: modoVista !== "diario" });
+    const ctlLibros = h("div", { class: "mk-ctl", hidden: modoVista !== "libros" }, buscador, chips);
+    cuerpo.hidden = modoVista !== "libros";
+    const pintarGrafo = () => {
+      const todos = lista();
+      if (!todos.length) { zonaGrafo.replaceChildren(); return; }
+      zonaGrafo.replaceChildren(tarjetaMinigrafo("Tu constelación de notas", "Tus marcadores y notas conectados por libro y tema de color · arrastra o toca un nodo.", grafoMarcadores(), "#/constelacion?capa=notas"));
+    };
+    const pintarDiario = () => {
+      const est = leerEstudio();
+      const titIn = h("input", { class: "di-in", type: "text", maxlength: "120", placeholder: "Título de tu reflexión (ej. Ecos de lόgος en YÔḥānā́n 1)", "aria-label": "Título de la reflexión" });
+      const refIn = h("input", { class: "di-in", type: "text", maxlength: "40", placeholder: "Cita opcional (ej. JHN 1:1)", "aria-label": "Cita opcional" });
+      const txtIn = h("textarea", { class: "di-area", maxlength: "4000", placeholder: "Escribe tu hallazgo, observación gramatical o nota de estudio…", "aria-label": "Contenido de la reflexión" });
+      const guardarEnt = () => {
+        const tit = titIn.value.trim(), txt = txtIn.value.trim(), ref = refIn.value.trim();
+        if (!tit && !txt) { avisar("Escribe un título o una nota para guardarla en tu diario"); return; }
+        const st = leerEstudio();
+        const id = "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+        st.diario[id] = { id, t: Date.now(), tit: tit || "Reflexión de estudio", ref, txt };
+        guardarEstudio(st);
+        avisar("Reflexión guardada en tu diario");
+        pintarDiario();
+      };
+      const formDiario = h("div", { class: "di-form" },
+        h("span", { class: "eyebrow", text: "Nueva entrada en tu diario de estudio" }),
+        h("div", { class: "di-form-fila" }, titIn, refIn),
+        txtIn,
+        h("div", { class: "sn-acc" },
+          h("button", { class: "btn chico oro", type: "button", onclick: guardarEnt }, svg(ICO.nota), h("span", { text: "Guardar en mi diario" })),
+          h("button", { class: "btn chico", type: "button", onclick: () => exportarDiarioMd() }, svg(ICO.descargar), h("span", { text: "Exportar diario (.md)" }))));
+      const pares = Object.values(est.pares || {}).sort((a, b) => (b.t || 0) - (a.t || 0));
+      const secPares = pares.length ? h("div", { class: "tarjeta" },
+        h("h2", { text: "Pares sinópticos guardados" }),
+        h("div", { class: "di-pares" }, pares.map((p) => {
+          const b1 = libroDe(p.a && p.a.c), b2 = libroDe(p.b && p.b.c);
+          if (!b1 || !b2) return null;
+          const et = (b1.t || b1.n) + " " + p.a.cap + ":" + p.a.v + " ↔ " + (b2.t || b2.n) + " " + p.b.cap + ":" + p.b.v;
+          return h("a", { class: "di-par", href: "#/sinopsis/" + p.a.c + "." + p.a.cap + "." + p.a.v + "/" + p.b.c + "." + p.b.cap + "." + p.b.v }, svg(ICO.sinopsis), h("span", { text: et }));
+        }).filter(Boolean))) : null;
+      const items = [];
+      for (const e of Object.values(est.diario || {})) if (e && !e.borrado) items.push({ tipo: "ent", t: +e.t || 0, e });
+      for (const x of lista()) items.push({ tipo: "mk", t: +x.f || 0, x });
+      items.sort((a, b) => b.t - a.t);
+      const porDia = new Map();
+      const fmtDia = (ms) => ms ? new Date(ms).toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Sin fecha registrada";
+      for (const it of items) {
+        const k = fmtDia(it.t);
+        if (!porDia.has(k)) porDia.set(k, []);
+        porDia.get(k).push(it);
+      }
+      const linea = items.length ? [...porDia.entries()].map(([dia, xs]) => h("section", { class: "di-dia" },
+        h("h3", { class: "di-dia-h", text: dia }),
+        ...xs.map((it) => {
+          if (it.tipo === "mk") return tarjeta(libroDe(it.x.c), it.x);
+          const e = it.e;
+          const linkRef = parsearRefCorta(e.ref);
+          return h("article", { class: "di-ent" },
+            h("div", { class: "di-ent-cab" },
+              h("b", { text: e.tit || "Reflexión" }),
+              h("small", { text: e.t ? new Date(e.t).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" }) : "" })),
+            e.txt ? h("p", { text: e.txt }) : null,
+            h("div", { class: "di-ent-pie" },
+              linkRef ? h("a", { class: "btn chico", href: "#/" + linkRef.c + "/" + linkRef.cap + "/l/" + linkRef.v }, svg(ICO.libro), h("span", { text: refCorta(libroDe(linkRef.c), linkRef.cap, linkRef.v) })) : (e.ref ? h("span", { class: "chip", text: e.ref }) : h("span")),
+              h("button", { class: "btn chico", type: "button", onclick: () => { const st = leerEstudio(); st.diario[e.id] = { id: e.id, borrado: true, t: Date.now() }; guardarEstudio(st); avisar("Entrada borrada"); pintarDiario(); } }, svg(ICO.papelera), h("span", { text: "Quitar" }))));
+        }))) : [h("p", { class: "nota-ui", text: "Tu diario cronológico reunirá aquí tus reflexiones libres y todos los versos que marques o anotes." })];
+      zonaDiario.replaceChildren(formDiario, secPares, ...linea);
+    };
+    const cambiarModo = (m) => {
+      modoVista = m; store.set("mkModo", m);
+      ctlLibros.hidden = m !== "libros";
+      cuerpo.hidden = m !== "libros";
+      zonaDiario.hidden = m !== "diario";
+      for (const b of tabsModo.children) b.setAttribute("aria-pressed", String(b.dataset.m === m));
+      if (m === "diario") pintarDiario();
+    };
+    const tabsModo = h("div", { class: "di-tabs", role: "group", "aria-label": "Vista de estudio" },
+      h("button", { type: "button", "data-m": "libros", "aria-pressed": String(modoVista === "libros"), text: "Por libro", onclick: () => cambiarModo("libros") }),
+      h("button", { type: "button", "data-m": "diario", "aria-pressed": String(modoVista === "diario"), text: "Diario de estudio", onclick: () => cambiarModo("diario") }));
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel mk-pag" },
       barraVolver(),
-      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Tu estudio · marcadores y notas" }), h("h1", { class: "texto", text: "Mis marcadores" }),
-        h("p", { class: "q-lead", text: "Los versos que marcaste con un tema de color y tus notas de estudio, en el orden de los libros. Toca uno para volver a él." })),
-      h("div", { class: "mk-ctl" }, buscador, chips),
+      h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Tu estudio · marcadores, notas y diario" }), h("h1", { class: "texto", text: "Mis marcadores y diario" }),
+        h("p", { class: "q-lead", text: "Los versos que marcaste en 12 colores, tus notas y tu diario cronológico de estudio. Todo se sincroniza automáticamente con tu cuenta." })),
+      zonaGrafo,
+      tabsModo,
+      ctlLibros,
       cuerpo,
+      zonaDiario,
       h("div", { class: "mk-acciones", "data-sec": "Respaldo y temas" },
         h("button", { class: "btn chico", type: "button", onclick: descargar }, svg(ICO.descargar), h("span", { text: "Exportar" })),
         h("button", { class: "btn chico", type: "button", onclick: () => abrirExportar("marcadores") }, svg(ICO.descargar), h("span", { text: "Obsidian (.md)" })),
@@ -3043,9 +3139,11 @@
         h("button", { class: "btn chico", type: "button", onclick: copiarTexto }, svg(ICO.copiar), h("span", { text: "Copiar como texto" })),
         h("button", { class: "btn chico", type: "button", onclick: editarTemas }, svg(ICO.opciones), h("span", { text: "Nombres de los temas" })),
         borrarTodo, archivo),
-      h("div", { class: "nota-guarda", role: "note" }, svg(ICO.marcador), h("p", {}, h("b", { text: NUBE.tok() ? "Tus notas, en este dispositivo y en el servidor. " : "Tus notas viven en este dispositivo. " }), ...avisoGuarda())),
-      h("p", { class: "nota-ui", text: NUBE.tok() ? "Con tu cuenta de Escudriña, tus marcadores pasan solos a tus otros dispositivos al entrar con la misma cuenta. Nadie más los ve." : "Sin cuenta, tus marcadores se guardan solo en este navegador: nadie más los ve. Para tenerlos en otro dispositivo, entra con tu cuenta de Escudriña o usa «Exportar» aquí e «Importar» allá." }))));
+      h("div", { class: "nota-guarda", role: "note" }, svg(ICO.marcador), h("p", {}, h("b", { text: NUBE.tok() ? "Tus notas y diario, en este dispositivo y en la nube. " : "Tus notas viven en este dispositivo. " }), ...avisoGuarda())),
+      h("p", { class: "nota-ui", text: NUBE.tok() ? "Con tu cuenta de Escudriña, tus marcadores y diario pasan solos a tus otros dispositivos al entrar con la misma cuenta. Nadie más los ve." : "Sin cuenta, tus marcadores y diario se guardan solo en este navegador: nadie más los ve. Para sincronizarlos entre dispositivos, entra con tu cuenta de Escudriña o usa «Exportar»." }))));
     pintar();
+    pintarGrafo();
+    if (modoVista === "diario") pintarDiario();
     alTope();
   }
 
@@ -4129,8 +4227,10 @@
               catch (e) { compartir(nombreLibro(b) + " " + cap + ":" + ctx.v, txt, hh0); }
             } }, svg(ICO.copiar), h("span", { text: "Copiar con enlace" }));
             const nota = h("button", { type: "button", class: "fv-rap-b", onclick: irANotaEnModal }, svg(ICO.nota), h("span", { text: "Nota de estudio" }));
+            const tarj = h("button", { type: "button", class: "fv-rap-b", onclick: () => empujar(vistaTarjetaVerso({ b, cap, v: ctx.v, L, toks: ctx.toks })) }, svg(ICO.tarjeta), h("span", { text: "Tarjeta HD" }));
+            const sino = h("button", { type: "button", class: "fv-rap-b", onclick: () => { cerrarModal(); location.hash = "#/sinopsis/" + b.c + "." + cap + "." + ctx.v; } }, svg(ICO.sinopsis), h("span", { text: "Sinopsis" }));
             return h("div", { class: "fv-rap" },
-              h("div", { class: "fv-rap-acc" }, cop, nota),
+              h("div", { class: "fv-rap-acc" }, cop, nota, tarj, sino),
               h("div", { class: "fv-rap-col-c" },
                 h("div", { class: "fv-rap-et" }, h("span", { text: "Marcar verso" }), etAct),
                 h("div", { class: "fv-rap-col", role: "group", "aria-label": "Marcar con color" }, dots)));
@@ -4640,6 +4740,7 @@
       h("div", { class: "columnas" },
         h("div", { class: "tarjeta", "data-sec": "Formas" }, h("div", { class: "apl-cab" }, h("h2", { text: "Formas" }), togF), cajaF),
         LX ? h("div", { class: "tarjeta", "data-sec": "Raíz y formación" }, h("h2", { text: "Raíz y formación" }), bloqueRaiz(li, "lema")) : null),
+      tarjetaMinigrafo("Red léxica de este lema", "Su raíz, familia etimológica y libros principales · arrastra o toca un nodo.", grafoLema(li), "#/constelacion?lema=" + li),
       h("div", { class: "columnas" },
         h("div", { class: "tarjeta", "data-sec": "Por libro" }, h("h2", { text: "Por libro" }), h("div", { class: "barras" }, pares.map(([bi, n]) => {
           const b = D.libros[bi];
@@ -5078,6 +5179,7 @@
       h("div", { class: "columnas" },
         h("div", { class: "tarjeta", "data-sec": "La raíz" }, h("h2", { text: "La raíz" }), bloqueRaiz(r, "raiz")),
         h("div", { class: "tarjeta", "data-sec": "A lo largo del tiempo" }, h("h2", { text: "A lo largo del tiempo" }), h("p", { class: "nota-ui", text: "Toda la familia, en los libros ordenados por su fecha de escritura." }), tiraTiempo(pares, (c) => { location.hash = "#/" + c + "/1"; }))),
+      tarjetaMinigrafo("Constelación de esta raíz", "Familia etimológica, compuestos y libros donde más resuena · arrastra o toca un nodo.", grafoRaiz(r), "#/constelacion?raiz=" + r),
       G.filter(([c]) => por.get(c).length).map(([c, t]) => h("div", { class: "tarjeta", "data-sec": t }, h("h2", { text: t + " · " + fmt(por.get(c).length) }), h("ol", { class: "rz-lista" }, por.get(c).map(miembro)))))));
     if (restaurando()) intentarRestaurar();
   }
@@ -7512,6 +7614,1215 @@
     ponerHash(rutaVista);
     setTimeout(abrir, 0);
   }
+  // ================================================================== Sección D (A5 · Neon, 24-nov-2026)
+  // 1) Diario de estudio sincronizado a /nube (estudio.diario + estudio.pares)
+  // 2) Constelación del Léxico, Referencias y Notas (motor <canvas> 2D HiDPI estilo Obsidian, 0 % CPU en reposo) + minigrafos
+  // 3) Mesa sinóptica libre (#/sinopsis) con convergencia léxica griega interactiva
+  // 4) Pulso del texto al cerrar cada capítulo (.ps-cap)
+  // 5) Tarjetas compartibles HD 3× (1080 × 1350 px) desde vistaVerso
+  function leerEstudio() {
+    const raw = store.get("estudio", null);
+    const st = raw && typeof raw === "object" ? Object.assign({}, raw) : {};
+    if (!st.diario || typeof st.diario !== "object") st.diario = {};
+    if (!st.pares || typeof st.pares !== "object") st.pares = {};
+    return st;
+  }
+  function guardarEstudio(st) {
+    store.set("estudio", st);
+    NUBE_DAT.cambio();
+  }
+  function parsearRefCorta(txt) {
+    const s = String(txt || "").trim();
+    if (!s || !D) return null;
+    const m = /^([1-3]?[A-Za-zÀ-ÿ\u0370-\u03ff\u1e00-\u1eff\u02b0-\u02ff]+)\s+(\d{1,3}):(\d{1,3})/.exec(s);
+    if (!m) return null;
+    const codU = m[1].toUpperCase();
+    let b = libroDe(codU);
+    if (!b) {
+      const k = claveEs(m[1]);
+      b = D.libros.find((x) => claveEs(x.n).startsWith(k) || claveEs(x.t || "").startsWith(k));
+    }
+    if (!b) return null;
+    const cap = Math.max(1, Math.min(b.caps.length, +m[2] || 1));
+    return { c: b.c, cap, v: Math.max(1, +m[3] || 1) };
+  }
+  function exportarDiarioMd() {
+    const est = leerEstudio();
+    const ents = Object.values(est.diario || {}).filter((e) => e && !e.borrado).sort((a, b) => (b.t || 0) - (a.t || 0));
+    const mks = Object.values(MK.todo()).filter((x) => x && libroDe(x.c)).sort((a, b) => (+b.f || 0) - (+a.f || 0));
+    const pares = Object.values(est.pares || {}).sort((a, b) => (b.t || 0) - (a.t || 0));
+    const ls = ["---", "fuente: Biblia Exacta (BiEx)", "exportado: " + new Date().toISOString(), "tipo: diario-estudio", "---", "", "# Diario de estudio · BiEx", ""];
+    if (ents.length) {
+      ls.push("## Reflexiones", "");
+      for (const e of ents) {
+        const f = e.t ? new Date(e.t).toISOString().slice(0, 10) : "";
+        ls.push("### " + (e.tit || "Reflexión") + (f ? " (" + f + ")" : ""));
+        if (e.ref) ls.push("- Pasaje: " + e.ref);
+        if (e.txt) ls.push("", e.txt);
+        ls.push("");
+      }
+    }
+    if (pares.length) {
+      ls.push("## Pares sinópticos guardados", "");
+      for (const p of pares) {
+        const b1 = libroDe(p.a && p.a.c), b2 = libroDe(p.b && p.b.c);
+        if (b1 && b2) ls.push("- " + refCorta(b1, p.a.cap, p.a.v) + " ↔ " + refCorta(b2, p.b.cap, p.b.v));
+      }
+      ls.push("");
+    }
+    if (mks.length) {
+      ls.push("## Marcadores y notas", "");
+      for (const x of mks) {
+        const b = libroDe(x.c);
+        ls.push("- **" + refCorta(b, x.cap, x.v) + "**" + (x.col ? " `[" + MK.nombre(x.col) + "]`" : "") + (x.nota ? " — " + x.nota.replace(/\n+/g, " ") : ""));
+      }
+      ls.push("");
+    }
+    const blob = new Blob([ls.join("\n")], { type: "text/markdown;charset=utf-8" });
+    const a = h("a", { href: URL.createObjectURL(blob), download: "biex-diario-estudio-" + new Date().toISOString().slice(0, 10) + ".md" });
+    document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    avisar("Diario de estudio descargado (.md)");
+  }
+
+  // --- Constelación estilo Obsidian (<canvas> 2D HiDPI, física amortiguada que duerme a 0 % CPU en reposo)
+  const MK_HEX = { oro: "#d8b468", azul: "#6ea8e8", verde: "#5cc28c", rojo: "#e26e6e", violeta: "#b586ea", turquesa: "#4ec6c6", ambar: "#e69c4c", gris: "#9ea6b2" };
+  const colorTemaMk = (k) => (MK.colores && MK.colores()[k]) || MK_HEX[k] || "#d0af6b";
+  const CN_PAL_OSCURO = { raiz: "#f4dea8", verbo: "#7eb8f0", lema: "#7eb8f0", nombre: "#6fd4a4", adj: "#c598f2", libro: "#e0a458", av: "#e0826b", tema: "#f4dea8", marca: "#d0af6b" };
+  const CN_PAL_CLARO = { raiz: "#8f6514", verbo: "#1d5694", lema: "#1d5694", nombre: "#196f4d", adj: "#6d3ca6", libro: "#9a5614", av: "#a33c26", tema: "#8a600e", marca: "#75571d" };
+  const CN_STOP_GR = new Set(["ο", "και", "ειμι", "αυτοσ", "δε", "εν", "εισ", "οτι", "ου", "μη", "εκ", "επι", "προσ", "δια", "μετα", "υπο", "περι", "κατα", "παρα", "απο", "εγω", "συ", "οσ", "ουτοσ", "εκεινοσ", "τισ", "γαρ", "αλλα", "η", "ωσ", "ουν", "ει", "αν", "ινα", "μεν", "τε", "νυν", "εχω", "γινομαι", "ποιεω", "ερχομαι", "πασ"]);
+  const CN_PRESETS_GR = ["λογοσ", "αγαπη", "πιστισ", "πνευμα", "χαρισ", "ζωη", "αληθεια", "βασιλεια"];
+  const CN_GL = { α: "a", β: "b", γ: "g", δ: "d", ε: "e", ζ: "z", η: "e", θ: "th", ι: "i", κ: "k", λ: "l", μ: "m", ν: "n", ξ: "x", ο: "o", π: "p", ρ: "r", σ: "s", ς: "s", τ: "t", υ: "u", φ: "f", χ: "j", ψ: "ps", ω: "o" };
+  const llanoCn = (s) => sinMarcas(String(s || "")).toLowerCase().replace(/[α-ω]/g, (c) => CN_GL[c] || c).replace(/[^a-z0-9ñ ]/g, "");
+
+  function tipoNodoLema(li) {
+    const cl = claseLema(li);
+    return cl === "V" ? "verbo" : cl === "N" ? "nombre" : cl === "A" ? "adj" : "lema";
+  }
+  function grafoRaiz(r) {
+    const nodos = [], aristas = [], vistos = new Set();
+    const addN = (n) => { if (vistos.has(n.id)) return; vistos.add(n.id); nodos.push(n); };
+    const fam = (LX && LX.fam && LX.fam.get(r)) || [r];
+    addN({ id: "r:" + r, et: lemaCorto(r), sub: tlCorta(r), tipo: "raiz", r: 13.5, pivote: true, href: "#/raiz/" + r, desc: glosaBreve(r) || "Raíz principal de la familia (" + fmt(fam.length) + " palabras)." });
+    const miembros = fam.slice(0, 20);
+    for (const li of miembros) {
+      if (li !== r) {
+        const gb = glosaBreve(li);
+        addN({ id: "l:" + li, et: lemaCorto(li), sub: tlCorta(li), tipo: tipoNodoLema(li), r: Math.max(5.5, Math.min(11, 5.2 + Math.log10((T.LN[li] || 1) + 1) * 2.2)), href: "#/lema/" + li, desc: (gb ? "«" + gb + "» · " : "") + fmt(T.LN[li] || 0) + " apariciones en la Nueva Voluntad." });
+        const base = LX && LX.B && LX.B[li] != null ? LX.B[li] : null;
+        aristas.push({ a: base != null && miembros.includes(base) && base !== li ? (base === r ? "r:" + r : "l:" + base) : "r:" + r, b: "l:" + li, peso: base != null ? 1.4 : 1 });
+      }
+    }
+    const rels = (LX && LX.R && LX.R[r]) || [];
+    for (const rx of rels.slice(0, 4)) {
+      const rr = LX.F[rx] != null ? LX.F[rx] : rx;
+      if (rr === r || !T.L[rr]) continue;
+      addN({ id: "r:" + rr, et: lemaCorto(rr), sub: tlCorta(rr), tipo: "raiz", r: 9.5, href: "#/raiz/" + rr, desc: "Raíz afín: " + (glosaBreve(rr) || tlCorta(rr)) });
+      aristas.push({ a: "r:" + r, b: "r:" + rr, peso: 0.75 });
+    }
+    const libSum = new Map();
+    for (const li of fam) {
+      const lb = T.LB[li] || [];
+      for (let k = 0; k < lb.length; k += 2) libSum.set(lb[k], (libSum.get(lb[k]) || 0) + lb[k + 1]);
+    }
+    const topLibs = [...libSum.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+    for (const [bi, cnt] of topLibs) {
+      const b = D.libros[bi]; if (!b) continue;
+      addN({ id: "b:" + b.c, et: b.t || b.n, sub: b.t ? b.n : "", tipo: "libro", r: Math.max(6.8, Math.min(10.5, 6 + Math.log10(cnt + 1) * 1.9)), href: "#/" + b.c + "/1", desc: fmt(cnt) + " apariciones de esta familia en " + nombreLibro(b) + "." });
+      aristas.push({ a: "r:" + r, b: "b:" + b.c, peso: 0.65 });
+    }
+    return { nodos, aristas };
+  }
+  function grafoLema(li) {
+    const nodos = [], aristas = [], vistos = new Set();
+    const addN = (n) => { if (vistos.has(n.id)) return; vistos.add(n.id); nodos.push(n); };
+    const gb = glosaBreve(li);
+    addN({ id: "l:" + li, et: lemaCorto(li), sub: tlCorta(li), tipo: tipoNodoLema(li), r: 13.5, pivote: true, href: "#/lema/" + li, desc: (gb ? "«" + gb + "» · " : "") + fmt(T.LN[li] || 0) + " apariciones." });
+    const r = LX && LX.F ? LX.F[li] : li;
+    if (LX && r !== li && T.L[r]) {
+      addN({ id: "r:" + r, et: lemaCorto(r), sub: tlCorta(r), tipo: "raiz", r: 11.5, href: "#/raiz/" + r, desc: "Raíz de la familia · " + (glosaBreve(r) || "") });
+      aristas.push({ a: "l:" + li, b: "r:" + r, peso: 1.6 });
+    }
+    const fam = (LX && LX.fam && LX.fam.get(r)) || [];
+    for (const x of fam.filter((x) => x !== li && x !== r).slice(0, 11)) {
+      addN({ id: "l:" + x, et: lemaCorto(x), sub: tlCorta(x), tipo: tipoNodoLema(x), r: Math.max(5.5, Math.min(9.5, 5.2 + Math.log10((T.LN[x] || 1) + 1) * 1.8)), href: "#/lema/" + x, desc: "Pariente de raíz · " + (glosaBreve(x) || tlCorta(x)) + " (" + fmt(T.LN[x] || 0) + ")" });
+      aristas.push({ a: r !== li ? "r:" + r : "l:" + li, b: "l:" + x, peso: 0.85 });
+    }
+    const lb = T.LB[li] || [], ps = [];
+    for (let k = 0; k < lb.length; k += 2) ps.push([lb[k], lb[k + 1]]);
+    ps.sort((a, b) => b[1] - a[1]);
+    for (const [bi, cnt] of ps.slice(0, 9)) {
+      const b = D.libros[bi]; if (!b) continue;
+      addN({ id: "b:" + b.c, et: b.t || b.n, sub: b.t ? b.n : "", tipo: "libro", r: Math.max(6.5, Math.min(10, 5.8 + Math.log10(cnt + 1) * 2)), href: "#/lema/" + li + "/" + b.c, desc: fmt(cnt) + (cnt === 1 ? " aparición" : " apariciones") + " en " + nombreLibro(b) + "." });
+      aristas.push({ a: "l:" + li, b: "b:" + b.c, peso: 1 });
+    }
+    return { nodos, aristas };
+  }
+  function grafoConstelacionLexico(raizId) {
+    if (raizId != null && LX && T.L[raizId]) {
+      const g = grafoRaiz(LX.F[raizId] != null ? LX.F[raizId] : raizId);
+      const r0 = LX.F[raizId] != null ? LX.F[raizId] : raizId;
+      const fam0 = (LX.fam.get(r0) || [r0]).slice(0, 12);
+      const vistos = new Set(g.nodos.map((n) => n.id));
+      for (const li of fam0) {
+        if (li === r0) continue;
+        const lb = T.LB[li] || [], top = [];
+        for (let k = 0; k < lb.length; k += 2) top.push([lb[k], lb[k + 1]]);
+        top.sort((a, b) => b[1] - a[1]);
+        for (const [bi] of top.slice(0, 2)) {
+          const b = D.libros[bi];
+          if (b && vistos.has("b:" + b.c)) g.aristas.push({ a: "l:" + li, b: "b:" + b.c, peso: 0.45 });
+        }
+      }
+      return g;
+    }
+    // Panorama de la Nueva Voluntad: 27 libros + 22 grandes familias léxicas (todos los libros tejidos en la red)
+    const nodos = [], aristas = [], vistos = new Set(), parVisto = new Set(), degLib = new Map();
+    const addN = (n) => { if (vistos.has(n.id)) return; vistos.add(n.id); nodos.push(n); };
+    const addE = (a, b, peso) => {
+      const k = a < b ? a + "|" + b : b + "|" + a;
+      if (parVisto.has(k)) return;
+      parVisto.add(k);
+      aristas.push({ a, b, peso });
+      if (b.startsWith("b:")) degLib.set(b, (degLib.get(b) || 0) + 1);
+    };
+    const prioR = new Set(CN_PRESETS_GR.map((g) => { const li = T.L.findIndex((x) => claveGr(String(x).split(",")[0]) === g); return li >= 0 ? (LX.F[li] != null ? LX.F[li] : li) : -1; }).filter((x) => x >= 0));
+    const cand = [];
+    for (const [r, fam] of LX.fam.entries()) {
+      const kg = claveGr(lemaCorto(r));
+      if (CN_STOP_GR.has(kg) && !prioR.has(r)) continue;
+      let tot = 0;
+      const libs = new Map();
+      for (const li of fam) {
+        tot += T.LN[li] || 0;
+        const lb = T.LB[li] || [];
+        for (let k = 0; k < lb.length; k += 2) libs.set(lb[k], (libs.get(lb[k]) || 0) + lb[k + 1]);
+      }
+      if ((tot >= 40 && libs.size >= 4) || prioR.has(r)) cand.push({ r, fam, tot, libs, prio: prioR.has(r) ? 1 : 0 });
+    }
+    cand.sort((a, b) => (b.prio - a.prio) || ((b.fam.length * 18 + b.tot) - (a.fam.length * 18 + a.tot)));
+    const sel = cand.slice(0, 22);
+    // Primero raíces (capa interior) y luego libros (capa exterior) para colocación inicial sin cruces
+    for (const item of sel) {
+      const gb = glosaBreve(item.r);
+      const topMem = [...item.fam].sort((a, b) => (T.LN[b] || 0) - (T.LN[a] || 0)).slice(0, 12);
+      const nomExtras = topMem.map((x) => lemaCorto(x) + " " + tlCorta(x)).join(" ");
+      addN({
+        id: "r:" + item.r, et: lemaCorto(item.r), sub: tlCorta(item.r), tipo: "raiz", anillo: 0,
+        r: Math.max(7.5, Math.min(12.2, 6.8 + Math.log10(item.tot + 1) * 1.9)),
+        pivote: item.prio === 1,
+        href: "#/raiz/" + item.r,
+        focoRaiz: item.r,
+        busq: nomExtras,
+        desc: (gb ? "«" + gb + "» · " : "") + fmt(item.fam.length) + " palabras · " + fmt(item.tot) + " apariciones en " + item.libs.size + " libros.",
+      });
+    }
+    for (const b of librosEnOrden()) {
+      addN({ id: "b:" + b.c, et: b.t || b.n, sub: b.t ? b.n : "", tipo: "libro", anillo: 1, r: 7.4, href: "#/" + b.c + "/1", desc: nombreLibro(b) + " · " + b.caps.length + (b.caps.length === 1 ? " capítulo." : " capítulos.") });
+    }
+    for (const item of sel) {
+      const topL = [...item.libs.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+      for (const [bi, cnt] of topL) {
+        const b = D.libros[bi];
+        if (b && vistos.has("b:" + b.c)) addE("r:" + item.r, "b:" + b.c, Math.min(1.9, 0.55 + cnt / 45));
+      }
+    }
+    // Garantizar que ningún libro quede suelto: conectar cada libro con menos de 2 aristas a sus raíces más afines
+    D.libros.forEach((b, bi) => {
+      const bid = "b:" + b.c;
+      if (!vistos.has(bid)) return;
+      const falta = 2 - (degLib.get(bid) || 0);
+      if (falta <= 0) return;
+      const afines = sel
+        .map((it) => ({ r: it.r, cnt: it.libs.get(bi) || 0, rel: (it.libs.get(bi) || 0) / Math.max(1, it.tot) }))
+        .filter((x) => x.cnt > 0)
+        .sort((a, b2) => (b2.rel - a.rel) || (b2.cnt - a.cnt));
+      for (const af of afines.slice(0, falta)) addE("r:" + af.r, bid, 0.55);
+    });
+    return { nodos, aristas };
+  }
+  async function grafoConstelacionRefs(libroCod) {
+    const b0 = libroDe(libroCod) || libroDe("JHN") || D.libros[0];
+    const R = await refsDe(b0.c);
+    const nodos = [], aristas = [], vistos = new Set();
+    const addN = (n) => { if (vistos.has(n.id)) return; vistos.add(n.id); nodos.push(n); };
+    addN({ id: "b:" + b0.c, et: b0.t || b0.n, sub: b0.t ? b0.n : "", tipo: "raiz", anillo: 0, r: 14, pivote: true, href: "#/" + b0.c + "/1", desc: "Libro central del mapa de referencias cruzadas: " + nombreLibro(b0) + "." });
+    const porDest = new Map(), capDest = new Map();
+    for (const [cap, vs] of Object.entries(R.c || {})) {
+      const dCap = new Map();
+      for (const plano of Object.values(vs || {})) {
+        for (let i = 0; i + 5 < plano.length; i += 6) {
+          const li = plano[i], peso = plano[i + 4] || 1;
+          const cod = LIBROS_REF[li];
+          if (!cod || cod === b0.c) continue;
+          porDest.set(li, (porDest.get(li) || 0) + 1);
+          dCap.set(li, (dCap.get(li) || 0) + peso);
+        }
+      }
+      capDest.set(+cap, dCap);
+    }
+    const topCaps = [...capDest.entries()].sort((a, b) => b[1].size - a[1].size).slice(0, 9);
+    for (const [cap, dCap] of topCaps) {
+      const cid = "c:" + b0.c + ":" + cap;
+      addN({ id: cid, et: (b0.t || b0.n).split(" ")[0] + " " + cap, sub: "Capítulo " + cap, tipo: "lema", anillo: 0, r: 6.2, href: "#/" + b0.c + "/" + cap, desc: "Capítulo " + cap + " de " + nombreLibro(b0) + " · " + dCap.size + " libros conectados." });
+      aristas.push({ a: "b:" + b0.c, b: cid, peso: 0.8 });
+    }
+    const topDest = [...porDest.entries()].sort((a, b) => b[1] - a[1]).slice(0, 24);
+    for (const [li, cnt] of topDest) {
+      const cod = LIBROS_REF[li];
+      if (li < 39) {
+        const [he, es] = AV_NOMBRES[li] || [cod, cod];
+        addN({ id: "av:" + cod, et: es, sub: he, tipo: "av", anillo: 1, r: Math.max(6.2, Math.min(11.5, 5.5 + Math.log10(cnt + 1) * 2.3)), href: "#/" + b0.c + "/1", desc: fmt(cnt) + " ecos desde " + nombreLibro(b0) + " hacia " + es + " (Antigua Voluntad)." });
+        aristas.push({ a: "b:" + b0.c, b: "av:" + cod, peso: Math.min(2, 0.55 + cnt / 45) });
+      } else {
+        const b = libroDe(cod); if (!b) continue;
+        addN({ id: "b:" + cod, et: b.t || b.n, sub: b.t ? b.n : "", tipo: "libro", anillo: 1, r: Math.max(6.5, Math.min(12, 5.8 + Math.log10(cnt + 1) * 2.4)), href: "#/" + cod + "/1", focoLibro: cod, desc: fmt(cnt) + " referencias cruzadas con " + nombreLibro(b) + "." });
+        aristas.push({ a: "b:" + b0.c, b: "b:" + cod, peso: Math.min(2, 0.55 + cnt / 45) });
+      }
+    }
+    for (const [cap, dCap] of topCaps) {
+      const cid = "c:" + b0.c + ":" + cap;
+      for (const [li] of [...dCap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2)) {
+        const did = li < 39 ? "av:" + LIBROS_REF[li] : "b:" + LIBROS_REF[li];
+        if (vistos.has(did)) aristas.push({ a: cid, b: did, peso: 0.5 });
+      }
+    }
+    return { nodos, aristas };
+  }
+  function grafoMarcadores() {
+    const todos = Object.values(MK.todo()).filter((x) => x && libroDe(x.c));
+    const nodos = [], aristas = [], vistos = new Set();
+    const addN = (n) => { if (vistos.has(n.id)) return; vistos.add(n.id); nodos.push(n); };
+    const temasMap = new Map(MK.temas());
+    for (const x of todos.slice(0, 68)) {
+      const b = libroDe(x.c); if (!b) continue;
+      const bid = "b:" + b.c;
+      addN({ id: bid, et: b.t || b.n, sub: b.t ? b.n : "", tipo: "libro", anillo: 0, r: 10.5, pivote: true, href: "#/" + b.c + "/1", desc: "Libro en tu estudio: " + nombreLibro(b) + "." });
+      const mid = "m:" + x.c + "." + x.cap + "." + x.v;
+      const colHex = x.col ? colorTemaMk(x.col) : null;
+      addN({
+        id: mid, et: x.cap + ":" + x.v, sub: (b.t || b.n).split(" ")[0], tipo: "marca", color: colHex, anillo: 1,
+        r: x.nota ? 7.6 : 6.2,
+        href: "#/" + x.c + "/" + x.cap + "/l/" + x.v,
+        desc: refCorta(b, x.cap, x.v) + (x.col ? " · " + (temasMap.get(x.col) || x.col) : "") + (x.nota ? " — «" + x.nota.slice(0, 140) + (x.nota.length > 140 ? "…" : "") + "»" : ""),
+      });
+      aristas.push({ a: bid, b: mid, peso: 1 });
+      if (x.col) {
+        const tid = "t:" + x.col;
+        addN({ id: tid, et: temasMap.get(x.col) || x.col, sub: "Tema de color", tipo: "tema", color: colHex, anillo: 0, r: 10, pivote: true, href: "#/marcadores", desc: "Tema de estudio «" + (temasMap.get(x.col) || x.col) + "»." });
+        aristas.push({ a: tid, b: mid, peso: 0.9 });
+      }
+    }
+    return { nodos, aristas };
+  }
+
+  function motorConstelacion(cont, grafo, opts) {
+    const o = opts || {};
+    const mini = !!o.mini;
+    const canvas = h("canvas", { class: "cn-lienzo", "aria-label": "Mapa interactivo de conexiones" });
+    const estBadge = h("span", { class: "cn-est" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Calculando constelación…" }));
+    const bMas = h("button", { class: "cn-zbtn", type: "button", title: "Acercar", "aria-label": "Acercar", text: "+" });
+    const bMen = h("button", { class: "cn-zbtn", type: "button", title: "Alejar", "aria-label": "Alejar", text: "−" });
+    const bCen = h("button", { class: "cn-zbtn wide", type: "button", title: "Centrar mapa", text: "Centrar" });
+    const escena = h("div", { class: "cn-escena" + (mini ? " cn-mini" : "") },
+      h("div", { class: "cn-campo" },
+        h("div", { class: "cn-zoom" }, bMen, bMas, bCen),
+        estBadge,
+        canvas),
+      o.leyenda || null);
+    const insp = h("div", { class: "cn-insp", hidden: true });
+    cont.replaceChildren(escena, insp);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return { enfocarTexto: () => false };
+    const N = grafo.nodos.map((n, i) => {
+      const ang = i * 2.3999632;
+      const baseR = n.pivote && i === 0 && n.anillo !== 0 ? 0
+        : (n.anillo === 1 ? (mini ? 125 : 220) + ((i * 19) % 55) : (mini ? 28 : 42) + Math.sqrt(i + 1) * (mini ? 24 : 38));
+      const ex = mini ? 1.15 : 1.38;
+      return Object.assign({}, n, { x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.92, vx: 0, vy: 0, deg: 0 });
+    });
+    const byId = new Map(N.map((n) => [n.id, n]));
+    const E = [];
+    const adj = new Map(N.map((n) => [n.id, new Set()]));
+    for (const ar of grafo.aristas) {
+      const a = byId.get(ar.a), b = byId.get(ar.b);
+      if (!a || !b || a === b) continue;
+      E.push({ a, b, peso: ar.peso || 1 });
+      a.deg++; b.deg++;
+      adj.get(a.id).add(b.id); adj.get(b.id).add(a.id);
+    }
+    // Polvo estelar estático determinista (0 % CPU adicional)
+    const estrellas = Array.from({ length: mini ? 18 : 42 }, (_, i) => ({
+      rx: ((Math.sin(i * 12.9898 + N.length) * 43758.5453) % 1 + 1) % 1,
+      ry: ((Math.sin(i * 78.233 + E.length) * 23421.631) % 1 + 1) % 1,
+      r: 0.6 + ((i * 7) % 10) * 0.11,
+      a: 0.08 + ((i * 13) % 10) * 0.022,
+    }));
+
+    let W = 0, H = 0, dpr = 1, raf = 0, pasos = 0, dormido = false, camManual = false;
+    const cam = { x: 0, y: 0, k: 1 };
+    let hov = null, sel = null;
+    let arrNodo = null, panOn = false, p0 = null, movido = false;
+    const ptrs = new Map();
+    let pinchD0 = 0, pinchK0 = 1;
+
+    const esClaro = () => document.documentElement.getAttribute("data-theme") === "light";
+    const colNodo = (n) => n.color || (esClaro() ? CN_PAL_CLARO : CN_PAL_OSCURO)[n.tipo] || "#d0af6b";
+    const pillPath = (x, y, w, hh, r) => {
+      const rr = Math.min(r, w / 2, hh / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + hh, rr);
+      ctx.arcTo(x + w, y + hh, x, y + hh, rr);
+      ctx.arcTo(x, y + hh, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    };
+    const medir = () => {
+      if (!canvas.isConnected) return false;
+      const rc = canvas.getBoundingClientRect();
+      if (!rc.width || !rc.height) return false;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = Math.round(rc.width); H = Math.round(rc.height);
+      if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+        canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    };
+    const aMundo = (sx, sy) => ({ x: (sx - W / 2) / cam.k + cam.x, y: (sy - H / 2) / cam.k + cam.y });
+    const aPant = (wx, wy) => ({ x: (wx - cam.x) * cam.k + W / 2, y: (wy - cam.y) * cam.k + H / 2 });
+    const encuadrar = () => {
+      if (!N.length || !W || !H) return;
+      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+      for (const n of N) { x0 = Math.min(x0, n.x - 46); x1 = Math.max(x1, n.x + 46); y0 = Math.min(y0, n.y - 42); y1 = Math.max(y1, n.y + 48); }
+      const bw = Math.max(150, x1 - x0), bh = Math.max(150, y1 - y0);
+      cam.x = (x0 + x1) / 2; cam.y = (y0 + y1) / 2;
+      cam.k = Math.max(0.40, Math.min(1.5, Math.min((W - 64) / bw, (H - 92) / bh)));
+    };
+    const pasoFisica = (cool) => {
+      const rep = mini ? 3900 : 8600;
+      const lBase = mini ? 80 : 126;
+      const sepMin = mini ? 24 : 38;
+      const gx = mini ? 0.0042 : (W > H ? 0.0021 : 0.0044);
+      const gy = mini ? 0.0042 : (W > H ? 0.0045 : 0.0024);
+      for (let i = 0; i < N.length; i++) {
+        const a = N[i];
+        for (let j = i + 1; j < N.length; j++) {
+          const b = N[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy + 16;
+          if (d2 > 480000) continue;
+          const d = Math.sqrt(d2);
+          let f = (rep / d2) * cool;
+          const minD = a.r + b.r + sepMin;
+          if (d < minD) f += (minD - d) * 0.14 * cool;
+          const fx = (dx / d) * f, fy = (dy / d) * f;
+          if (a !== arrNodo) { a.vx -= fx; a.vy -= fy; }
+          if (b !== arrNodo) { b.vx += fx; b.vy += fy; }
+        }
+      }
+      for (const e of E) {
+        const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y;
+        const d = Math.sqrt(dx * dx + dy * dy) || 1;
+        const ideal = lBase / Math.pow(Math.max(0.45, e.peso), 0.32);
+        const f = (d - ideal) * 0.022 * cool;
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        if (e.a !== arrNodo) { e.a.vx += fx; e.a.vy += fy; }
+        if (e.b !== arrNodo) { e.b.vx -= fx; e.b.vy -= fy; }
+      }
+      let energia = 0;
+      for (const n of N) {
+        if (n === arrNodo) { n.vx = 0; n.vy = 0; continue; }
+        n.vx = (n.vx - n.x * gx * cool) * 0.80;
+        n.vy = (n.vy - n.y * gy * cool) * 0.80;
+        const spd = Math.hypot(n.vx, n.vy);
+        if (spd > 18) { n.vx = (n.vx / spd) * 18; n.vy = (n.vy / spd) * 18; }
+        n.x += n.vx; n.y += n.vy;
+        energia += spd;
+      }
+      return energia / Math.max(1, N.length);
+    };
+    const dibujar = () => {
+      if (!W || !H) return;
+      const claro = esClaro();
+      ctx.clearRect(0, 0, W, H);
+      // 1) Polvo estelar y anillos tenues de astrolabio
+      ctx.save();
+      for (const st of estrellas) {
+        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.7).toFixed(3) + ")" : "rgba(244,226,184," + st.a.toFixed(3) + ")";
+        ctx.beginPath();
+        ctx.arc(st.rx * W, st.ry * H, st.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const c0 = aPant(0, 0);
+      ctx.strokeStyle = claro ? "rgba(117,87,29,.085)" : "rgba(218,184,114,.065)";
+      ctx.lineWidth = 1;
+      [130, 255, 380].forEach((rr, idx) => {
+        ctx.save();
+        if (idx === 2) ctx.setLineDash([2, 7]);
+        ctx.beginPath();
+        ctx.arc(c0.x, c0.y, rr * cam.k, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      });
+      ctx.restore();
+      const foco = hov || sel;
+      const vecFoco = foco ? adj.get(foco.id) : null;
+      // 2) Filamentos curvos de Bézier (resplandor en foco)
+      for (let i = 0; i < E.length; i++) {
+        const e = E[i];
+        const p1 = aPant(e.a.x, e.a.y), p2 = aPant(e.b.x, e.b.y);
+        const viva = !foco || e.a === foco || e.b === foco;
+        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        const dx = p2.x - p1.x, dy = p2.y - p1.y;
+        const curv = (i % 2 === 0 ? 1 : -1) * 0.085;
+        const cx = mx - dy * curv, cy = my + dx * curv;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.quadraticCurveTo(cx, cy, p2.x, p2.y);
+        if (foco && viva) {
+          ctx.save();
+          ctx.strokeStyle = claro ? "rgba(163,114,22,.22)" : "rgba(244,214,140,.24)";
+          ctx.lineWidth = 5.2;
+          ctx.stroke();
+          ctx.strokeStyle = claro ? "rgba(138,96,14,.9)" : "rgba(255,236,184,.92)";
+          ctx.lineWidth = Math.max(1.35, Math.min(2.4, 1.3 + e.peso * 0.55));
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          ctx.strokeStyle = foco
+            ? (claro ? "rgba(80,66,42,.06)" : "rgba(212,175,105,.055)")
+            : (claro ? "rgba(126,90,26,.26)" : "rgba(220,186,116,.28)");
+          ctx.lineWidth = Math.max(0.85, Math.min(1.65, 0.8 + e.peso * 0.35));
+          ctx.stroke();
+        }
+      }
+      // 3) Orbes luminosos de los nodos
+      const ptMap = new Map();
+      for (const n of N) {
+        const p = aPant(n.x, n.y);
+        ptMap.set(n.id, p);
+        if (p.x < -70 || p.x > W + 70 || p.y < -50 || p.y > H + 50) continue;
+        const col = colNodo(n);
+        const esFoco = foco === n;
+        const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
+        const rad = Math.max(3.6, n.r * Math.pow(cam.k, 0.52));
+        ctx.save();
+        ctx.globalAlpha = esVec ? 1 : 0.14;
+        // Halo atmosférico radial
+        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.7 : 2.2));
+        const rg = ctx.createRadialGradient(p.x, p.y, rad * 0.3, p.x, p.y, haloR);
+        rg.addColorStop(0, col);
+        rg.addColorStop(0.4, claro ? "rgba(143,101,20,.16)" : "rgba(244,222,168,.20)");
+        rg.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = rg;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, haloR, 0, Math.PI * 2);
+        ctx.fill();
+        // Núcleo con brillo especular
+        const cg = ctx.createRadialGradient(p.x - rad * 0.28, p.y - rad * 0.28, rad * 0.1, p.x, p.y, rad);
+        cg.addColorStop(0, claro ? "#fff8e8" : "#fffcf0");
+        cg.addColorStop(0.42, col);
+        cg.addColorStop(1, col);
+        ctx.fillStyle = cg;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+        ctx.fill();
+        // Aro orbital fino en pivotes y nodo enfocado
+        if (n.pivote || esFoco) {
+          ctx.strokeStyle = esFoco ? (claro ? "#100d0a" : "#fff7dc") : (claro ? "rgba(16,13,10,.36)" : "rgba(255,244,212,.48)");
+          ctx.lineWidth = esFoco ? 1.7 : 1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, rad + (esFoco ? 4.2 : 3.2), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      // 4) Capa de etiquetas sin colisiones (ordenadas por prioridad)
+      const ordenEt = [...N].sort((a, b) => {
+        const pa = (foco === a ? 1000 : 0) + (foco && vecFoco && vecFoco.has(a.id) ? 300 : 0) + (a.pivote ? 100 : 0) + a.deg * 4 + a.r;
+        const pb = (foco === b ? 1000 : 0) + (foco && vecFoco && vecFoco.has(b.id) ? 300 : 0) + (b.pivote ? 100 : 0) + b.deg * 4 + b.r;
+        return pb - pa;
+      });
+      const cajas = [];
+      const choca = (bx) => cajas.some((c) => !(bx.x1 < c.x0 || bx.x0 > c.x1 || bx.y1 < c.y0 || bx.y0 > c.y1));
+      for (const n of ordenEt) {
+        const p = ptMap.get(n.id);
+        if (!p || p.x < 16 || p.x > W - 16 || p.y < 16 || p.y > H - 22) continue;
+        const esFoco = foco === n;
+        const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
+        if (foco && !esVec) continue;
+        const rad = Math.max(3.6, n.r * Math.pow(cam.k, 0.52));
+        const fs = Math.round(Math.max(10, Math.min(14, (esFoco ? 13 : n.pivote ? 11.8 : 10.6) * Math.pow(cam.k, 0.28))));
+        ctx.save();
+        ctx.font = (esFoco || n.pivote ? "700 " : "400 ") + fs + "px 'BiEx Texto', 'Gentium Plus', Georgia, serif";
+        const mw = ctx.measureText(n.et).width;
+        const mostrarSub = (esFoco || cam.k >= 1.55) && n.sub;
+        const pw = Math.max(mw + 14, mostrarSub ? Math.min(146, n.sub.length * 6.5 + 14) : 0);
+        const ph = fs + (mostrarSub ? fs + 5 : 6);
+        const bx = { x0: p.x - pw / 2 - 4, x1: p.x + pw / 2 + 4, y0: p.y + rad + 4, y1: p.y + rad + 4 + ph + 3 };
+        if (!esFoco && choca(bx)) { ctx.restore(); continue; }
+        cajas.push(bx);
+        const yPill = p.y + rad + 5;
+        pillPath(p.x - pw / 2, yPill, pw, ph, 7);
+        ctx.fillStyle = esFoco
+          ? (claro ? "rgba(255,250,239,.95)" : "rgba(12,13,20,.94)")
+          : (claro ? "rgba(247,241,229,.84)" : "rgba(7,8,13,.80)");
+        ctx.fill();
+        if (esFoco || n.pivote) {
+          ctx.strokeStyle = esFoco ? (claro ? "rgba(143,101,20,.65)" : "rgba(244,222,168,.65)") : (claro ? "rgba(117,87,29,.22)" : "rgba(218,184,114,.22)");
+          ctx.lineWidth = esFoco ? 1.1 : 0.75;
+          ctx.stroke();
+        }
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = esFoco ? (claro ? "#100d0a" : "#fff6dc") : (claro ? "#1c1813" : "#f2eadc");
+        ctx.fillText(n.et, p.x, yPill + 3);
+        if (mostrarSub) {
+          ctx.font = "400 " + Math.max(9, fs - 2) + "px 'BiEx Interfaz', system-ui, sans-serif";
+          ctx.fillStyle = claro ? "#785718" : "#dfc282";
+          ctx.fillText(n.sub, p.x, yPill + fs + 4);
+        }
+        ctx.restore();
+      }
+    };
+    const actualizarBadge = () => {
+      estBadge.classList.toggle("reposo", dormido);
+      estBadge.lastChild.textContent = fmt(N.length) + " nodos · " + fmt(E.length) + " conexiones" + (dormido ? " · reposo" : "");
+    };
+    const pintarInspector = (n) => {
+      if (!n) { insp.hidden = true; return; }
+      insp.hidden = false;
+      const tipoNom = { raiz: "Raíz griega", verbo: "Verbo griego", nombre: "Sustantivo", adj: "Adjetivo", lema: "Lema / Capítulo", libro: "Libro", av: "Antigua Voluntad", tema: "Tema de color", marca: "Verso marcado" }[n.tipo] || "Nodo";
+      const vecs = [...(adj.get(n.id) || [])].map((id) => byId.get(id)).filter(Boolean).slice(0, 10);
+      insp.replaceChildren(
+        h("div", { class: "cn-insp-cab" },
+          h("div", { class: "cn-insp-tit" },
+            h("b", { lang: n.tipo === "raiz" || n.tipo === "verbo" || n.tipo === "nombre" || n.tipo === "adj" ? "grc" : null, text: n.et }),
+            n.sub ? h("small", { text: n.sub }) : null),
+          h("span", { class: "cn-insp-tipo", text: tipoNom })),
+        n.desc ? h("p", { class: "cn-insp-desc", text: n.desc }) : null,
+        vecs.length ? h("div", { class: "cn-insp-vec" }, vecs.map((v) => h("button", { type: "button", class: "cn-pre", onclick: () => { sel = v; pintarInspector(v); cam.x = v.x; cam.y = v.y; dibujar(); } }, v.et))) : null,
+        h("div", { class: "cn-insp-acc" },
+          n.href ? h("a", { class: "btn chico oro", href: n.href }, svg(ICO.der), h("span", { text: "Abrir" })) : null,
+          n.focoRaiz != null && o.alEnfocarRaiz ? h("button", { class: "btn chico", type: "button", onclick: () => o.alEnfocarRaiz(n.focoRaiz) }, svg(ICO.constelacion), h("span", { text: "Centrar familia aquí" })) : null,
+          n.focoLibro && o.alEnfocarLibro ? h("button", { class: "btn chico", type: "button", onclick: () => o.alEnfocarLibro(n.focoLibro) }, svg(ICO.refs), h("span", { text: "Ver ecos de este libro" })) : null,
+          h("button", { class: "btn chico", type: "button", onclick: () => { sel = null; pintarInspector(null); dibujar(); } }, h("span", { text: "Soltar foco" }))));
+    };
+    const despertar = (pasosExtra) => {
+      dormido = false;
+      pasos = Math.min(pasos, 165 - (pasosExtra || 45));
+      actualizarBadge();
+      if (!raf) raf = requestAnimationFrame(bucle);
+    };
+    const bucle = () => {
+      raf = 0;
+      if (!canvas.isConnected) return limpiar();
+      const cool = Math.max(0.05, 1 - pasos / 170);
+      const en = pasoFisica(cool);
+      pasos++;
+      if (!camManual && pasos % 24 === 0) encuadrar();
+      dibujar();
+      if (!arrNodo && (pasos >= 175 || en < 0.025)) {
+        dormido = true;
+        if (!camManual) encuadrar();
+        dibujar();
+        actualizarBadge();
+        return; // 0 % CPU en reposo
+      }
+      raf = requestAnimationFrame(bucle);
+    };
+    const hitTest = (sx, sy) => {
+      const m = aMundo(sx, sy);
+      let mejor = null, dMin = 1e9;
+      for (const n of N) {
+        const d = Math.hypot(n.x - m.x, n.y - m.y);
+        const tol = Math.max(n.r + 10 / cam.k, 16 / cam.k);
+        if (d < tol && d < dMin) { dMin = d; mejor = n; }
+      }
+      return mejor;
+    };
+    const ptRel = (ev) => { const r = canvas.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+    canvas.addEventListener("pointerdown", (ev) => {
+      const pt = ptRel(ev);
+      ptrs.set(ev.pointerId, pt);
+      canvas.setPointerCapture(ev.pointerId);
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        pinchD0 = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        pinchK0 = cam.k;
+        arrNodo = null; panOn = false; camManual = true;
+        return;
+      }
+      p0 = pt; movido = false;
+      const n = hitTest(pt.x, pt.y);
+      if (n) { arrNodo = n; canvas.classList.add("arrastra"); }
+      else { panOn = true; canvas.classList.add("arrastra"); }
+    });
+    canvas.addEventListener("pointermove", (ev) => {
+      const pt = ptRel(ev);
+      if (ptrs.has(ev.pointerId)) ptrs.set(ev.pointerId, pt);
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        cam.k = Math.max(0.38, Math.min(3.4, pinchK0 * (d / pinchD0)));
+        camManual = true;
+        dibujar(); return;
+      }
+      if (arrNodo) {
+        if (p0 && Math.hypot(pt.x - p0.x, pt.y - p0.y) > 4) movido = true;
+        const m = aMundo(pt.x, pt.y);
+        arrNodo.x = m.x; arrNodo.y = m.y;
+        despertar(30);
+        dibujar(); return;
+      }
+      if (panOn && p0) {
+        const dx = pt.x - p0.x, dy = pt.y - p0.y;
+        if (Math.hypot(dx, dy) > 4) { movido = true; camManual = true; }
+        cam.x -= dx / cam.k; cam.y -= dy / cam.k;
+        p0 = pt; dibujar(); return;
+      }
+      const nh = hitTest(pt.x, pt.y);
+      if (nh !== hov) { hov = nh; canvas.style.cursor = nh ? "pointer" : "grab"; dibujar(); }
+    });
+    const soltar = (ev) => {
+      ptrs.delete(ev.pointerId);
+      if (arrNodo && !movido) {
+        sel = sel === arrNodo ? null : arrNodo;
+        pintarInspector(sel);
+        dibujar();
+      } else if (panOn && !movido) {
+        sel = null; pintarInspector(null); dibujar();
+      }
+      arrNodo = null; panOn = false; canvas.classList.remove("arrastra");
+    };
+    canvas.addEventListener("pointerup", soltar);
+    canvas.addEventListener("pointercancel", soltar);
+    canvas.addEventListener("dblclick", (ev) => {
+      const pt = ptRel(ev), n = hitTest(pt.x, pt.y);
+      if (n && n.href) location.hash = n.href;
+    });
+    canvas.addEventListener("wheel", (ev) => {
+      ev.preventDefault();
+      const pt = ptRel(ev);
+      const antes = aMundo(pt.x, pt.y);
+      const fac = ev.deltaY < 0 ? 1.16 : 0.86;
+      cam.k = Math.max(0.38, Math.min(3.4, cam.k * fac));
+      const desp = aMundo(pt.x, pt.y);
+      cam.x += antes.x - desp.x; cam.y += antes.y - desp.y;
+      camManual = true;
+      dibujar();
+    }, { passive: false });
+    bMas.onclick = () => { cam.k = Math.min(3.4, cam.k * 1.25); camManual = true; dibujar(); };
+    bMen.onclick = () => { cam.k = Math.max(0.38, cam.k * 0.8); camManual = true; dibujar(); };
+    bCen.onclick = () => { camManual = false; encuadrar(); dibujar(); };
+
+    const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
+    if (ro) ro.observe(canvas);
+    const moTema = new MutationObserver(() => dibujar());
+    moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const limpiar = () => {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (ro) ro.disconnect();
+      moTema.disconnect();
+    };
+
+    requestAnimationFrame(() => {
+      if (!medir()) return;
+      const sinA = ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      const initPasos = sinA ? 175 : 95;
+      for (let i = 0; i < initPasos; i++) pasoFisica(Math.max(0.06, 1 - i / 170));
+      pasos = initPasos;
+      encuadrar();
+      if (sinA) { dormido = true; dibujar(); actualizarBadge(); }
+      else { actualizarBadge(); raf = requestAnimationFrame(bucle); }
+    });
+    return {
+      enfocarTexto(q) {
+        const ql = llanoCn(q), ql2 = ql.replace(/ch/g, "j").replace(/ph/g, "f"), kg = claveGr(q);
+        if (!ql && !kg) { sel = null; camManual = false; encuadrar(); pintarInspector(null); dibujar(); return false; }
+        const n = N.find((x) => {
+          if (kg && claveGr(x.et).includes(kg)) return true;
+          const hay = llanoCn(x.et + " " + (x.sub || "") + " " + (x.busq || "") + " " + (x.desc || ""));
+          return (ql && hay.includes(ql)) || (ql2 && hay.includes(ql2));
+        });
+        if (!n) return false;
+        sel = n; camManual = true; cam.x = n.x; cam.y = n.y; cam.k = Math.max(cam.k, 1.32);
+        pintarInspector(n); dibujar();
+        return true;
+      },
+    };
+  }
+  function tarjetaMinigrafo(titulo, sub, grafo, hrefFull) {
+    const zona = h("div", {});
+    const card = h("div", { class: "tarjeta cn-mini-card", "data-sec": titulo },
+      h("div", { class: "cn-mini-cab" },
+        h("h2", { text: titulo }),
+        h("a", { class: "btn chico oro", href: hrefFull }, svg(ICO.constelacion), h("span", { text: "Pantalla completa" }))),
+      sub ? h("p", { class: "nota-ui", text: sub }) : null,
+      zona);
+    requestAnimationFrame(() => { if (zona.isConnected) motorConstelacion(zona, grafo, { mini: true }); });
+    return card;
+  }
+  async function vistaConstelacion(queryStr) {
+    document.title = "Constelación del léxico y notas · BiEx";
+    navActual("#/buscar");
+    vista().replaceChildren(cargando("Trazando la constelación…"));
+    alTope();
+    try { await Promise.all([tablas(), lexico()]); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el léxico.")); return; }
+    const params = new URLSearchParams(queryStr || "");
+    let capa = params.get("capa") || "lexico";
+    let raizSel = params.get("raiz") != null ? +params.get("raiz") : null;
+    let lemaSel = params.get("lema") != null ? +params.get("lema") : null;
+    let libroSel = (params.get("libro") || "JHN").toUpperCase();
+    if (!libroDe(libroSel)) libroSel = "JHN";
+
+    const buscarIn = h("input", { class: "cn-buscar", type: "search", placeholder: "Buscar un nodo (griego, transliteración, libro o tema)…", "aria-label": "Buscar nodo en la constelación" });
+    const zonaPresets = h("div", { class: "cn-presets" });
+    const zonaMapa = h("div", {});
+    let ctrl = null;
+    buscarIn.addEventListener("input", () => { if (ctrl) ctrl.enfocarTexto(buscarIn.value.trim()); });
+
+    const presetsRaices = CN_PRESETS_GR.map((g) => {
+      const li = T.L.findIndex((x) => claveGr(String(x).split(",")[0]) === g);
+      return li >= 0 ? (LX.F[li] != null ? LX.F[li] : li) : -1;
+    }).filter((x, i, a) => x >= 0 && a.indexOf(x) === i);
+
+    const leyendaDe = (c) => {
+      const claro = document.documentElement.getAttribute("data-theme") === "light";
+      const pal = claro ? CN_PAL_CLARO : CN_PAL_OSCURO;
+      const items = c === "refs"
+        ? [[pal.raiz, "Libro central"], [pal.libro, "Nueva Voluntad"], [pal.av, "Antigua Voluntad"], [pal.lema, "Capítulos"]]
+        : c === "notas"
+          ? [[pal.libro, "Libros"], [pal.tema, "Temas de color"], [pal.marca, "Tus versos marcados"]]
+          : [[pal.raiz, "Raíces griegas"], [pal.verbo, "Verbos"], [pal.nombre, "Sustantivos"], [pal.adj, "Adjetivos"], [pal.libro, "Libros"]];
+      return h("div", { class: "cn-leyenda" }, items.map(([col, tx]) => h("span", { class: "cn-ley-it" }, h("i", { style: "background:" + col + ";color:" + col }), tx)));
+    };
+    const renderMapa = async () => {
+      for (const b of barraCapas.children) b.setAttribute("aria-pressed", String(b.dataset.c === capa));
+      buscarIn.value = "";
+      if (capa === "lexico") {
+        zonaPresets.replaceChildren(
+          h("button", { type: "button", class: "cn-pre", "aria-pressed": String(raizSel == null && lemaSel == null), text: "Panorama (27 libros)", onclick: () => { raizSel = null; lemaSel = null; renderMapa(); } }),
+          ...presetsRaices.map((r) => h("button", { type: "button", class: "cn-pre", "aria-pressed": String(raizSel === r), onclick: () => { raizSel = r; lemaSel = null; renderMapa(); } }, h("span", { lang: "grc", text: lemaCorto(r) }), " · " + tlCorta(r))));
+        const g = lemaSel != null ? grafoLema(lemaSel) : grafoConstelacionLexico(raizSel);
+        ctrl = motorConstelacion(zonaMapa, g, {
+          leyenda: leyendaDe("lexico"),
+          alEnfocarRaiz: (r) => { raizSel = r; lemaSel = null; renderMapa(); },
+        });
+      } else if (capa === "refs") {
+        const selLib = h("select", { "aria-label": "Elegir libro para referencias cruzadas", onchange: (e) => { libroSel = e.target.value; renderMapa(); } },
+          librosEnOrden().map((b) => h("option", { value: b.c, selected: b.c === libroSel ? true : null, text: nombreLibro(b) })));
+        zonaPresets.replaceChildren(h("div", { class: "cn-foco" }, selLib));
+        zonaMapa.replaceChildren(cargando("Cargando referencias cruzadas de " + nombreLibro(libroDe(libroSel)) + "…"));
+        try {
+          const g = await grafoConstelacionRefs(libroSel);
+          ctrl = motorConstelacion(zonaMapa, g, {
+            leyenda: leyendaDe("refs"),
+            alEnfocarLibro: (c2) => { libroSel = c2; renderMapa(); },
+          });
+        } catch (e) { zonaMapa.replaceChildren(fallo("No se pudieron cargar las referencias cruzadas de este libro.")); }
+      } else {
+        zonaPresets.replaceChildren();
+        const g = grafoMarcadores();
+        if (!g.nodos.length) {
+          ctrl = null;
+          zonaMapa.replaceChildren(h("div", { class: "tarjeta" },
+            h("h2", { text: "Tu mapa personal aún está en blanco" }),
+            h("p", { class: "nota-ui", text: "Marca cualquier verso con uno de los 12 temas de color o escribe una nota mientras lees, y aquí cobrará vida tu propia constelación personal de estudio." }),
+            h("div", { class: "sn-acc" },
+              h("a", { class: "btn chico oro", href: "#/JHN/1" }, svg(ICO.libro), h("span", { text: "Ir a leer ahora" })),
+              h("button", { class: "btn chico", type: "button", onclick: () => { capa = "lexico"; renderMapa(); } }, svg(ICO.constelacion), h("span", { text: "Explorar el léxico" })))));
+          return;
+        }
+        ctrl = motorConstelacion(zonaMapa, g, { leyenda: leyendaDe("notas") });
+      }
+    };
+    const barraCapas = h("div", { class: "cn-capas", role: "group", "aria-label": "Capa de la constelación" },
+      h("button", { type: "button", class: "cn-capa", "data-c": "lexico", "aria-pressed": String(capa === "lexico"), onclick: () => { capa = "lexico"; renderMapa(); } }, svg(ICO.raiz), h("span", { text: "Léxico y raíces" })),
+      h("button", { type: "button", class: "cn-capa", "data-c": "refs", "aria-pressed": String(capa === "refs"), onclick: () => { capa = "refs"; renderMapa(); } }, svg(ICO.refs), h("span", { text: "Referencias cruzadas" })),
+      h("button", { type: "button", class: "cn-capa", "data-c": "notas", "aria-pressed": String(capa === "notas"), onclick: () => { capa = "notas"; renderMapa(); } }, svg(ICO.marcador), h("span", { text: "Mis notas (12 colores)" })));
+
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel cn-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" },
+        h("span", { class: "eyebrow", text: "Cartógrafo interactivo · red de conexiones" }),
+        h("h1", { class: "texto", text: "Constelación del léxico" }),
+        h("p", { class: "q-lead", text: "Explora cómo se entrelazan las raíces griegas, los 27 libros, las referencias cruzadas y tus notas personales. Arrastra cualquier nodo, acerca la vista o toca una estrella para iluminar su red." })),
+      h("div", { class: "cn-ctl" }, barraCapas, h("div", { class: "cn-fila" }, buscarIn), zonaPresets),
+      zonaMapa)));
+    renderMapa();
+  }
+
+  // --- Mesa sinóptica libre (#/sinopsis)
+  const SN_PRESETS = [
+    ["MAT.5.3", "LUK.6.20", "Bienaventuranzas"],
+    ["JHN.1.1", "1JN.1.1", "Principio y lόgος"],
+    ["MAT.3.16", "MRK.1.10", "El bautismo"],
+    ["ROM.3.28", "JAS.2.24", "Fe y obras"],
+    ["MAT.22.37", "MRK.12.30", "El mayor mandamiento"],
+    ["1CO.13.4", "GAL.5.22", "Amor y fruto"],
+  ];
+  function parseSinRef(s, def) {
+    const m = /^([1-3A-Z]{3})\.(\d{1,3})\.(\d{1,3})$/.exec(String(s || "").toUpperCase());
+    if (m && libroDe(m[1])) return { c: m[1], cap: Math.max(1, Math.min(libroDe(m[1]).caps.length, +m[2])), v: Math.max(1, +m[3]) };
+    return def;
+  }
+  async function vistaSinopsis(p1, p2) {
+    document.title = "Mesa sinóptica libre · BiEx";
+    navActual("#/buscar");
+    vista().replaceChildren(cargando("Preparando la mesa sinóptica…"));
+    alTope();
+    try { await Promise.all([tablas(), lexico()]); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos griegos.")); return; }
+    let A0 = parseSinRef(p1, { c: "MAT", cap: 5, v: 3 });
+    let B0 = parseSinRef(p2, p1 && !p2 ? (A0.c === "LUK" ? { c: "MAT", cap: 5, v: 3 } : { c: "LUK", cap: 6, v: 20 }) : { c: "LUK", cap: 6, v: 20 });
+    let focoClave = null;
+
+    const zonaRes = h("div", { class: "sn-resumen" });
+    const zonaGrid = h("div", { class: "sn-grid" });
+    const presets = h("div", { class: "sn-presets" }, SN_PRESETS.map(([a, b, et]) => h("button", {
+      type: "button", class: "cn-pre", text: et,
+      onclick: () => { A0 = parseSinRef(a, A0); B0 = parseSinRef(b, B0); focoClave = null; actualizarUrl(); cargarPar(); },
+    })));
+    const actualizarUrl = () => {
+      try { history.replaceState(history.state, "", urlHash("#/sinopsis/" + A0.c + "." + A0.cap + "." + A0.v + "/" + B0.c + "." + B0.cap + "." + B0.v)); } catch (e) {}
+    };
+    const crearSelector = (ref, alCambiar) => {
+      const b = libroDe(ref.c) || D.libros[0];
+      const sLib = h("select", { "aria-label": "Libro" }, librosEnOrden().map((x) => h("option", { value: x.c, selected: x.c === b.c ? true : null, text: nombreLibro(x) })));
+      const sCap = h("select", { "aria-label": "Capítulo" }, Array.from({ length: b.caps.length }, (_, i) => h("option", { value: String(i + 1), selected: i + 1 === ref.cap ? true : null, text: "Cap. " + (i + 1) })));
+      const vMax = Math.max(1, ((b.caps[ref.cap - 1] || {}).v) || 40);
+      const sVer = h("select", { "aria-label": "Verso" }, Array.from({ length: vMax }, (_, i) => h("option", { value: String(i + 1), selected: i + 1 === ref.v ? true : null, text: "v. " + (i + 1) })));
+      sLib.onchange = () => { ref.c = sLib.value; ref.cap = 1; ref.v = 1; alCambiar(); };
+      sCap.onchange = () => { ref.cap = +sCap.value || 1; ref.v = 1; alCambiar(); };
+      sVer.onchange = () => { ref.v = +sVer.value || 1; alCambiar(); };
+      return h("div", { class: "sn-sel-bar" }, sLib, sCap, sVer);
+    };
+    const cargarPar = async () => {
+      zonaRes.replaceChildren(h("p", { class: "nota-ui", text: "Comparando lemas y raíces griegas…" }));
+      try {
+        const [lA, lB, tA, tB] = await Promise.all([lectura(A0.c), lectura(B0.c), versoTokens(A0.c, A0.cap, A0.v), versoTokens(B0.c, B0.cap, B0.v)]);
+        const vsA = lA.caps[A0.cap] || [], vsB = lB.caps[B0.cap] || [];
+        const LA = vsA.find((x) => x.v === A0.v) || vsA[0];
+        const LB = vsB.find((x) => x.v === B0.v) || vsB[0];
+        if (LA) A0.v = LA.v; if (LB) B0.v = LB.v;
+        const bA = libroDe(A0.c), bB = libroDe(B0.c);
+        const setLA = new Set(tA.map((t) => t[1])), setLB = new Set(tB.map((t) => t[1]));
+        const raizDe = (li) => (LX && LX.F && LX.F[li] != null ? LX.F[li] : li);
+        const setRA = new Set(tA.map((t) => raizDe(t[1]))), setRB = new Set(tB.map((t) => raizDe(t[1])));
+        const lemasCom = [...setLA].filter((li) => setLB.has(li));
+        const raicesCom = [...setRA].filter((r) => setRB.has(r) && !lemasCom.some((li) => raizDe(li) === r));
+        const union = new Set([...setLA, ...setLB]).size || 1;
+        const afin = Math.round((100 * (lemasCom.length + raicesCom.length * 0.6)) / union);
+        const fichaPal = h("div", { class: "sn-ficha", hidden: true });
+        const aplicarFoco = () => {
+          for (const bt of zonaGrid.querySelectorAll(".sn-w")) {
+            const on = focoClave && (bt.dataset.l === focoClave || bt.dataset.r === focoClave);
+            bt.classList.toggle("foco", !!on);
+          }
+          for (const ch of zonaRes.querySelectorAll(".sn-chip")) ch.setAttribute("aria-pressed", String(ch.dataset.k === focoClave));
+          if (!focoClave) { fichaPal.hidden = true; return; }
+          const esR = focoClave.startsWith("r:");
+          const id = +focoClave.slice(2);
+          fichaPal.hidden = false;
+          fichaPal.replaceChildren(
+            h("span", {}, h("b", { lang: "grc", text: lemaCorto(id) }), " · ", tlCorta(id), glosaBreve(id) ? " — «" + glosaBreve(id) + "»" : ""),
+            h("div", { class: "sn-acc" },
+              h("a", { class: "btn chico", href: esR ? "#/raiz/" + id : "#/lema/" + id }, svg(esR ? ICO.raiz : ICO.lista), h("span", { text: esR ? "Ver raíz" : "Ver concordancia" })),
+              h("a", { class: "btn chico oro", href: "#/constelacion?" + (esR ? "raiz=" : "lema=") + id }, svg(ICO.constelacion), h("span", { text: "Constelación" }))));
+        };
+        const toggleFoco = (k) => { focoClave = focoClave === k ? null : k; aplicarFoco(); };
+        const colDe = (ref, b, L, toks, otro) => h("article", { class: "sn-col" },
+          crearSelector(ref, () => { focoClave = null; actualizarUrl(); cargarPar(); }),
+          h("div", { class: "sn-ref-h" },
+            h("b", { text: refCorta(b, ref.cap, ref.v) }),
+            h("a", { href: "#/" + b.c + "/" + ref.cap + "/l/" + ref.v, text: "Abrir en el lector ›" })),
+          L ? h("p", { class: "sn-es" }, txtVerso(L)) : h("p", { class: "nota-ui", text: "Verso no encontrado." }),
+          h("div", { class: "sn-gr" }, toks.map((t) => {
+            const li = t[1], r = raizDe(li);
+            const esCom = otro.lemas.has(li), esRz = !esCom && otro.raices.has(r);
+            const tr = T.TR[t[3] || 0] || glosaBreve(li) || "";
+            return h("button", {
+              type: "button",
+              class: "sn-w" + (esCom ? " comun" : esRz ? " raiz" : ""),
+              "data-l": "l:" + li,
+              "data-r": "r:" + r,
+              title: lemaCorto(li) + " (" + tlCorta(li) + ")",
+              onclick: () => toggleFoco(esRz ? "r:" + r : "l:" + li),
+            }, h("span", { lang: "grc", text: T.F[t[0]] }), tr ? h("small", { text: tr }) : null);
+          })));
+        const guardarPar = () => {
+          const st = leerEstudio();
+          const k = A0.c + "." + A0.cap + "." + A0.v + "_" + B0.c + "." + B0.cap + "." + B0.v;
+          st.pares[k] = { id: k, t: Date.now(), a: Object.assign({}, A0), b: Object.assign({}, B0) };
+          guardarEstudio(st);
+          avisar("Par sinóptico guardado en tu diario de estudio");
+        };
+        zonaRes.replaceChildren(
+          h("div", { class: "sn-res-cab" },
+            h("strong", { text: fmt(lemasCom.length) + (lemasCom.length === 1 ? " lema compartido" : " lemas compartidos") + (raicesCom.length ? " · " + fmt(raicesCom.length) + (raicesCom.length === 1 ? " raíz común" : " raíces comunes") : "") }),
+            h("span", { class: "sn-af-pct", text: Math.min(100, afin) + " % afinidad léxica" })),
+          h("div", { class: "sn-bar", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, afin) + "%" })),
+          (lemasCom.length || raicesCom.length)
+            ? h("div", { class: "sn-chips" },
+                ...lemasCom.map((li) => h("button", { type: "button", class: "sn-chip", "data-k": "l:" + li, "aria-pressed": "false", onclick: () => toggleFoco("l:" + li) }, h("span", { lang: "grc", text: lemaCorto(li) }), h("small", { text: tlCorta(li) }))),
+                ...raicesCom.map((r) => h("button", { type: "button", class: "sn-chip rz", "data-k": "r:" + r, "aria-pressed": "false", onclick: () => toggleFoco("r:" + r) }, h("span", { lang: "grc", text: lemaCorto(r) }), h("small", { text: "raíz" }))))
+            : h("p", { class: "nota-ui", text: "Estos dos versos no comparten lemas ni raíces griegas directas; toca cualquier palabra para consultar su lema." }),
+          fichaPal,
+          h("div", { class: "sn-acc" },
+            h("button", { class: "btn chico", type: "button", onclick: () => { const tmp = A0; A0 = B0; B0 = tmp; focoClave = null; actualizarUrl(); cargarPar(); } }, svg(ICO.sinopsis), h("span", { text: "Intercambiar" })),
+            h("button", { class: "btn chico oro", type: "button", onclick: guardarPar }, svg(ICO.marcador), h("span", { text: "Guardar en mi diario" }))));
+        zonaGrid.replaceChildren(
+          colDe(A0, bA, LA, tA, { lemas: setLB, raices: setRB }),
+          colDe(B0, bB, LB, tB, { lemas: setLA, raices: setRA }));
+        aplicarFoco();
+      } catch (e) {
+        zonaRes.replaceChildren(fallo("No se pudieron cargar los versos seleccionados."));
+      }
+    };
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel sn-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" },
+        h("span", { class: "eyebrow", text: "Comparación griega palabra por palabra" }),
+        h("h1", { class: "texto", text: "Mesa sinóptica libre" }),
+        h("p", { class: "q-lead", text: "Elige dos versos cualesquiera de la Nueva Voluntad: los lemas compartidos brillan en oro y las raíces comunes en azul. Toca cualquier palabra o ficha para iluminarla en ambos pasajes." })),
+      presets,
+      zonaRes,
+      zonaGrid)));
+    cargarPar();
+  }
+
+  // --- Pulso del texto al cerrar cada capítulo (.ps-cap, carga perezosa al acercarse al pie)
+  function bloquePulsoCapitulo(b, cap) {
+    const sub = h("small", { text: "Raíces dominantes, joyas singulares y pulso verbal de " + nombreLibro(b) + " " + cap });
+    const cuerpo = h("div", { class: "ps-cuerpo" }, h("p", { class: "nota-ui", text: "Analizando el pulso léxico del capítulo…" }));
+    const det = h("details", { class: "ps-cap" },
+      h("summary", {},
+        h("span", { class: "ps-sum-l" }, svg(ICO.constelacion), h("span", { class: "ps-sum-t" }, h("b", { text: "Pulso del texto" }), sub)),
+        h("span", { class: "ps-sum-r" }, h("span", { text: "Explorar" }), svg(ICO.abajo))),
+      cuerpo);
+    let listo = false;
+    const cargarPulso = async () => {
+      if (listo || !det.isConnected) return;
+      listo = true;
+      try {
+        const [A] = await Promise.all([analisis(b.c), tablas(), lexico()]);
+        if (!det.isConnected) return;
+        const vs = (A && A.caps && A.caps[cap]) || [];
+        const rzCnt = new Map(), raras = new Map();
+        const verb = { aor: 0, pres: 0, part: 0, imp: 0, otros: 0 };
+        let totTok = 0;
+        for (const [, toks] of vs) {
+          for (const t of toks) {
+            totTok++;
+            const li = t[1], cl = T.MC[t[2]], m = T.P[t[2]] || {};
+            if (esRara(t) && !raras.has(li)) raras.set(li, T.LN[li]);
+            if (cl === "V") {
+              if (m.mood === "M") verb.imp++;
+              else if (m.mood === "P" || m.mood === "R") verb.part++;
+              else if (m.tense === "A") verb.aor++;
+              else if (m.tense === "P") verb.pres++;
+              else verb.otros++;
+            }
+            if (cl === "V" || cl === "N" || cl === "A") {
+              const r = LX && LX.F && LX.F[li] != null ? LX.F[li] : li;
+              if (!CN_STOP_GR.has(claveGr(lemaCorto(r)))) rzCnt.set(r, (rzCnt.get(r) || 0) + 1);
+            }
+          }
+        }
+        const topRz = [...rzCnt.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const maxRz = Math.max(1, topRz[0] ? topRz[0][1] : 1);
+        const topRaras = [...raras.entries()].sort((a, b) => a[1] - b[1]).slice(0, 6);
+        const vTot = verb.aor + verb.pres + verb.part + verb.imp + verb.otros;
+        sub.textContent = fmt(totTok) + " palabras griegas · " + (topRaras.length ? fmt(topRaras.length) + (topRaras.length === 1 ? " joya singular" : " joyas singulares") : "vocabulario consolidado") + (topRz[0] ? " · raíz líder: " + tlCorta(topRz[0][0]) : "");
+        const colRz = h("div", { class: "ps-blk" },
+          h("h4", { text: "Raíces que pulsan en este capítulo" }),
+          topRz.length ? h("ul", { class: "ps-raices" }, topRz.map(([r, n]) => h("li", {},
+            h("div", { class: "ps-rz-top" },
+              h("a", { href: "#/raiz/" + r }, h("span", { lang: "grc", text: lemaCorto(r) }), h("small", { text: tlCorta(r) + (glosaBreve(r) ? " · " + glosaBreve(r) : "") })),
+              h("em", { text: fmt(n) + "×" })),
+            h("div", { class: "ps-bar", "aria-hidden": "true" }, h("i", { style: "width:" + (100 * n / maxRz).toFixed(1) + "%" })))))
+            : h("p", { class: "nota-ui", text: "Capítulo breve sin repetición de raíces conceptuales." }));
+        const colRaras = h("div", { class: "ps-blk" },
+          h("h4", { text: "Joyas singulares (≤ 3 veces en la Nueva Voluntad)" }),
+          topRaras.length ? h("div", { class: "ps-raras" }, topRaras.map(([li, n]) => h("a", { class: "ps-rara", href: "#/lema/" + li },
+            h("strong", { lang: "grc", text: lemaCorto(li) }),
+            h("span", { text: tlCorta(li) + (glosaBreve(li) ? " · " + glosaBreve(li) : "") }),
+            h("small", { text: n === 1 ? "única vez en la Nueva Voluntad" : fmt(n) + " veces en la Nueva Voluntad" }))))
+            : h("p", { class: "nota-ui", text: "Todas las palabras de este capítulo aparecen más de 3 veces en la Nueva Voluntad." }));
+        const segsV = [
+          ["Aoristo", verb.aor, "#e2a452"],
+          ["Presente", verb.pres, "#6ea8e8"],
+          ["Participios", verb.part, "#6fd4a4"],
+          ["Imperativos", verb.imp, "#e07a68"],
+          ["Otros tiempos", verb.otros, "#b586ea"],
+        ].filter((x) => x[1] > 0);
+        const bloqV = vTot ? h("div", { class: "ps-verb" },
+          h("h4", { style: "margin:0;font:600 .68rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro)", text: "Pulso verbal (" + fmt(vTot) + " verbos)" }),
+          h("div", { class: "ps-vbar", "aria-hidden": "true" }, segsV.map(([, n, col]) => h("i", { style: "width:" + (100 * n / vTot).toFixed(1) + "%;background:" + col }))),
+          h("div", { class: "ps-vley" }, segsV.map(([et, n, col]) => h("span", {}, h("i", { style: "background:" + col }), et + ": " + fmt(n))))) : null;
+        cuerpo.replaceChildren(
+          h("div", { class: "ps-grid" }, colRz, colRaras),
+          bloqV,
+          h("div", { class: "ps-pie" },
+            h("a", { class: "btn chico oro", href: topRz[0] ? "#/constelacion?raiz=" + topRz[0][0] : "#/constelacion?capa=refs&libro=" + b.c }, svg(ICO.constelacion), h("span", { text: "Ver en Constelación" })),
+            h("a", { class: "btn chico", href: "#/sinopsis/" + b.c + "." + cap + ".1" }, svg(ICO.sinopsis), h("span", { text: "Comparar en Sinopsis" }))));
+      } catch (e) { cuerpo.replaceChildren(h("p", { class: "nota-ui", text: "No se pudo calcular el pulso léxico de este capítulo." })); }
+    };
+    det.addEventListener("toggle", () => { if (det.open) cargarPulso(); });
+    if (window.IntersectionObserver) {
+      const io = new IntersectionObserver((es) => { if (es[0] && es[0].isIntersecting) { io.disconnect(); cargarPulso(); } }, { rootMargin: "240px" });
+      requestAnimationFrame(() => { if (det.isConnected) io.observe(det); });
+    }
+    return det;
+  }
+
+  // --- Tarjetas compartibles HD 3× (1080 × 1350 px en <canvas> puro estilo códice BiEx)
+  function vistaTarjetaVerso({ b, cap, v, L, toks }) {
+    const TEMAS_TC = {
+      obsidiana: { nom: "Obsidiana y Oro", bg1: "#0c0b09", bg2: "#050506", halo: "rgba(218,176,96,.18)", marco: "#d0af6b", tinta: "#f6f0e4", tenue: "#d7c9ae", oro: "#f4dea8", sw: "#0a0a0c" },
+      pergamino: { nom: "Pergamino", bg1: "#fbf6ea", bg2: "#efe6d3", halo: "rgba(166,120,38,.14)", marco: "#8e6a26", tinta: "#16120c", tenue: "#544838", oro: "#7a5718", sw: "#f5efe0" },
+      zafiro: { nom: "Zafiro Nocturno", bg1: "#0c1424", bg2: "#060912", halo: "rgba(110,164,232,.2)", marco: "#c8aa68", tinta: "#f4f6fb", tenue: "#b8c5dc", oro: "#f2dba3", sw: "#0d1628" },
+    };
+    return () => {
+      let tema = "obsidiana", conGriego = true, amplio = false, griegoTxt = "";
+      const cv = h("canvas", { class: "tc-canvas", width: "1080", height: "1350", "aria-label": "Vista previa de la tarjeta compartible HD" });
+      const textoLimpio = L ? textoPlano((txtVerso(L).textContent || "").replace(/\s+/g, " ").trim()) : "";
+      const refTit = nombreLibro(b) + " " + cap + ":" + v;
+      const dividir = (ctx, txt, maxW) => {
+        const pals = String(txt || "").split(/\s+/).filter(Boolean), ls = [];
+        let act = "";
+        for (const p of pals) {
+          const pr = act ? act + " " + p : p;
+          if (ctx.measureText(pr).width > maxW && act) { ls.push(act); act = p; }
+          else act = pr;
+        }
+        if (act) ls.push(act);
+        return ls;
+      };
+      const pintarCard = async () => {
+        try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+        if (!cv.isConnected) return;
+        const ctx = cv.getContext("2d"); if (!ctx) return;
+        const W = 1080, H = 1350, P = TEMAS_TC[tema] || TEMAS_TC.obsidiana;
+        // Fondo y halos
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, P.bg1); bg.addColorStop(1, P.bg2);
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+        const hl = ctx.createRadialGradient(W * 0.5, H * 0.24, 20, W * 0.5, H * 0.28, 620);
+        hl.addColorStop(0, P.halo); hl.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = hl; ctx.fillRect(0, 0, W, H);
+        // Marco doble de códice + rombos geométricos en las 4 esquinas (cero cruces/estrellas/rayos)
+        ctx.strokeStyle = P.marco; ctx.globalAlpha = 0.58; ctx.lineWidth = 2.5;
+        ctx.strokeRect(54, 54, W - 108, H - 108);
+        ctx.globalAlpha = 0.25; ctx.lineWidth = 1.4;
+        ctx.strokeRect(72, 72, W - 144, H - 144);
+        ctx.globalAlpha = 0.82; ctx.fillStyle = P.oro;
+        for (const [cx, cy] of [[63, 63], [W - 63, 63], [63, H - 63], [W - 63, H - 63]]) {
+          ctx.beginPath(); ctx.moveTo(cx, cy - 11); ctx.lineTo(cx + 11, cy); ctx.lineTo(cx, cy + 11); ctx.lineTo(cx - 11, cy); ctx.closePath(); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        // Cabecera
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = "500 24px 'BiEx Interfaz', system-ui, -apple-system, sans-serif";
+        ctx.fillStyle = P.oro;
+        ctx.fillText("B I B L I A   E X A C T A   ·   B i E x", W / 2, 148);
+        ctx.globalAlpha = 0.45; ctx.strokeStyle = P.marco; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(W / 2 - 140, 188); ctx.lineTo(W / 2 + 140, 188); ctx.stroke();
+        ctx.globalAlpha = 1;
+        // Cálculo de bloques centrados verticalmente
+        const maxW = W - 210;
+        let grLs = [], grFs = 33;
+        if (conGriego && griegoTxt) {
+          ctx.font = "400 " + grFs + "px 'BiEx Texto', 'Gentium Plus', Georgia, serif";
+          grLs = dividir(ctx, griegoTxt, maxW).slice(0, 5);
+        }
+        let fs = amplio ? 54 : 47;
+        if (textoLimpio.length > 260) fs -= 8;
+        else if (textoLimpio.length > 170) fs -= 5;
+        ctx.font = "400 " + fs + "px 'BiEx Texto', Georgia, serif";
+        let esLs = dividir(ctx, "«" + textoLimpio + "»", maxW);
+        while (esLs.length > 11 && fs > 28) {
+          fs -= 3;
+          ctx.font = "400 " + fs + "px 'BiEx Texto', Georgia, serif";
+          esLs = dividir(ctx, "«" + textoLimpio + "»", maxW);
+        }
+        const grH = grLs.length ? grLs.length * (grFs * 1.48) + 46 : 0;
+        const esH = esLs.length * (fs * 1.46);
+        let y = Math.max(255, (H - 170 - (grH + esH + 115)) / 2 + 86);
+        if (grLs.length) {
+          ctx.font = "400 " + grFs + "px 'BiEx Texto', 'Gentium Plus', Georgia, serif";
+          ctx.fillStyle = P.tenue; ctx.globalAlpha = 0.9;
+          for (const ln of grLs) { ctx.fillText(ln, W / 2, y); y += grFs * 1.48; }
+          ctx.globalAlpha = 1;
+          y += 22;
+          ctx.fillStyle = P.oro; ctx.beginPath(); ctx.moveTo(W / 2, y - 6); ctx.lineTo(W / 2 + 6, y); ctx.lineTo(W / 2, y + 6); ctx.lineTo(W / 2 - 6, y); ctx.closePath(); ctx.fill();
+          y += 42;
+        }
+        ctx.font = "400 " + fs + "px 'BiEx Texto', Georgia, serif";
+        ctx.fillStyle = P.tinta;
+        for (const ln of esLs) { ctx.fillText(ln, W / 2, y); y += fs * 1.46; }
+        // Referencia oficial BiEx
+        y += 38;
+        ctx.font = "600 38px 'BiEx Titular', 'BiEx Texto', Georgia, serif";
+        ctx.fillStyle = P.oro;
+        ctx.fillText("— " + refTit, W / 2, Math.min(H - 186, y));
+        // Línea ornamental y pie de marca
+        ctx.globalAlpha = 0.34; ctx.strokeStyle = P.marco; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(W / 2 - 180, H - 146); ctx.lineTo(W / 2 + 180, H - 146); ctx.stroke();
+        ctx.font = "400 21px 'BiEx Interfaz', system-ui, -apple-system, sans-serif";
+        ctx.fillStyle = P.tenue; ctx.globalAlpha = 0.8;
+        ctx.fillText("La Nueva Voluntad del griego al español, palabra por palabra · bibliaexacta.pages.dev", W / 2, H - 112);
+        ctx.globalAlpha = 1;
+      };
+      const obtenerBlob = () => new Promise((ok) => cv.toBlob((bl) => ok(bl), "image/png", 1));
+      const descargarPng = async () => {
+        const bl = await obtenerBlob(); if (!bl) return;
+        const a = h("a", { href: URL.createObjectURL(bl), download: "biex-" + b.c.toLowerCase() + "-" + cap + "-" + v + ".png" });
+        document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        avisar("Tarjeta HD (1080 × 1350) descargada");
+      };
+      const compartirPng = async () => {
+        const bl = await obtenerBlob(); if (!bl) return;
+        try {
+          const arch = new File([bl], "biex-" + b.c.toLowerCase() + "-" + cap + "-" + v + ".png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [arch] })) {
+            await navigator.share({ title: refTit + " · BiEx", text: "«" + textoLimpio + "» — " + refTit, files: [arch] });
+            return;
+          }
+        } catch (e) { if (e && e.name === "AbortError") return; }
+        descargarPng();
+      };
+      const botonesTema = h("div", { class: "tc-temas", role: "group", "aria-label": "Acabado de la tarjeta" },
+        Object.entries(TEMAS_TC).map(([k, d]) => h("button", { type: "button", class: "tc-tema", "aria-pressed": String(k === tema), onclick: (ev) => {
+          tema = k;
+          for (const bt of botonesTema.children) bt.setAttribute("aria-pressed", String(bt === ev.currentTarget));
+          pintarCard();
+        } }, h("i", { style: "background:" + d.sw }), h("span", { text: d.nom }))));
+      const chkGr = h("input", { type: "checkbox", checked: conGriego, onchange: () => { conGriego = chkGr.checked; pintarCard(); } });
+      const chkAmp = h("input", { type: "checkbox", checked: amplio, onchange: () => { amplio = chkAmp.checked; pintarCard(); } });
+      const cargarGr = async () => {
+        try {
+          const ts = toks || (await versoTokens(b.c, cap, v));
+          if (ts && ts.length && T) griegoTxt = ts.map((t) => T.F[t[0]] + (t[4] || "")).join(" ");
+        } catch (e) {}
+        pintarCard();
+      };
+      requestAnimationFrame(cargarGr);
+      return cajaModal(cabModal("Tarjeta compartible HD", refTit + " · 1080 × 1350 px"),
+        h("div", { class: "tc-wrap" },
+          h("div", { class: "tc-prev-box" }, cv),
+          botonesTema,
+          h("div", { class: "tc-ops" },
+            h("label", {}, chkGr, h("span", { text: "Incluir griego original" })),
+            h("label", {}, chkAmp, h("span", { text: "Letra más amplia" }))),
+          h("div", { class: "tc-acc" },
+            h("button", { class: "btn oro", type: "button", onclick: descargarPng }, svg(ICO.descargar), h("span", { text: "Descargar PNG HD" })),
+            h("button", { class: "btn", type: "button", onclick: compartirPng }, svg(ICO.compartir), h("span", { text: "Compartir imagen" })))));
+    };
+  }
+
   function mostrarRuta(hh) {
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
     // Direcciones del juego mal escritas («#/escudrinabuzonn», «#/Escudriña/Buzón»): se corrigen solas a la ruta real
@@ -7547,6 +8858,8 @@
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }
+    if (partes[0] === "constelacion" || /^constelacion\?/.test(partes[0])) { esc.libro = null; return vistaConstelacion(partes[0].includes("?") ? partes[0].split("?")[1] : ""); }
+    if (partes[0] === "sinopsis") { esc.libro = null; return vistaSinopsis(partes[1] || "", partes[2] || ""); }
     if (partes[0] === "raices" || /^raices\?/.test(partes[0])) { esc.libro = null; return vistaRaices(); }
     if (partes[0] === "raiz" && partes[1] != null) { esc.libro = null; return vistaRaiz(+partes[1]); }
     if (partes[0] === "analizar") { esc.libro = null; return vistaAnalizador(); }
