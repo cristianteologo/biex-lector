@@ -4086,20 +4086,23 @@
     return scripts[nombre];
   }
   // ------------------------------------------------------------------ Fecha y hora de Jerusalén en el calendario hebreo
+  // Meses en transliteración BiEx (forma masorética: sh, v, ḥ, ʾ/ʿ, ᵉ del shevá y acento en la sílaba tónica). Versión provisional
+  // del 23-nov-2026, armada con las notas breves de transliteración y las formas ya usadas en los textos; se precisa después con los prompts A y B.
   const MESES_HEB = {
-    tishri: "Tishréi", tishrei: "Tishréi",
-    heshvan: "Jeshván", cheshvan: "Jeshván", marheshvan: "Jeshván",
-    kislev: "Kislév",
-    tevet: "Tevét", tebet: "Tevét",
-    shevat: "Shevát", shvat: "Shevát",
-    adar: "Adár", "adar i": "Adár I", "adar 1": "Adár I", "adar ii": "Adár II", "adar 2": "Adár II",
-    nisan: "Nisán", nissan: "Nisán",
-    iyar: "Iyár", iyyar: "Iyár",
-    sivan: "Siván",
-    tamuz: "Tamúz", tammuz: "Tamúz",
-    av: "Av", ab: "Av",
-    elul: "Elúl"
+    tishri: "Tishrḗy", tishrei: "Tishrḗy",
+    heshvan: "Ḥeshvā́n", cheshvan: "Ḥeshvā́n", marheshvan: "Marḥeshvā́n",
+    kislev: "Kislḗv",
+    tevet: "Ṭēvḗṯ", tebet: "Ṭēvḗṯ",
+    shevat: "Shᵉvā́ṭ", shvat: "Shᵉvā́ṭ",
+    adar: "ʾĂdā́r", "adar i": "ʾĂdā́r Rīshṓn", "adar 1": "ʾĂdā́r Rīshṓn", "adar ii": "ʾĂdā́r Shēnī́", "adar 2": "ʾĂdā́r Shēnī́",
+    nisan: "Nīsā́n", nissan: "Nīsā́n",
+    iyar: "ʾIyyā́r", iyyar: "ʾIyyā́r",
+    sivan: "Sīvā́n",
+    tamuz: "Tammū́z", tammuz: "Tammū́z",
+    av: "ʾĀv", ab: "ʾĀv",
+    elul: "ʾĔlū́l"
   };
+
   function fechaHoraJerusalen(ms) {
     const f = ms ? new Date(ms) : new Date();
     let fecha = "", hora = "";
