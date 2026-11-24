@@ -125,9 +125,9 @@
   const MENSAJES = { red: "Sin conexión con el juego. Vuelve a intentarlo en un momento.", sin_ruptura: "No tienes ninguna perseverancia rota que recuperar: ¡sigue así!", renuevo_en_curso: "Ya tienes un Renuevo en curso: cumple sus misiones.", renuevo_espera: "El Renuevo se compra uno cada 2 semanas.", sin_servidor: "Escudriña abre muy pronto.", limite: "Demasiados intentos seguidos: espera unos minutos.",
     apodo_usado: "Ese apodo ya lo tiene otra persona.", codigo: "Ese código no existe. Revisa que esté completo.", vencido: "Se venció la espera: vuelve a intentarlo.",
     llave: "No se pudo comprobar la llave de acceso.", llave_desconocida: "Esa llave de acceso no corresponde a ningún perfil de Escudriña.", llave_usada: "Esa llave ya está en tu perfil.",
-    llaves_max: "Ya tienes 10 llaves de acceso.", ya_vinculada: "Esa cuenta ya está vinculada a otro perfil.", sin_google: "La entrada con Google todavía no está activa.", sin_facebook: "La entrada con Facebook todavía no está activa.",
+    llaves_max: "Ya tienes 10 llaves de acceso.", ya_vinculada: "Esa cuenta ya está vinculada a otro perfil.", sin_google: "La entrada con Google todavía no está activa.",
     ya_en_compania: "Ya estás en una compañía: para unirte a otra, primero sal de la tuya.", nombre_usado: "Ese nombre ya lo tiene otra compañía.", compania: "Ese código de compañía no existe.",
-    compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.",
+    compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.", max_salas: "Ya tienes 2 salas abiertas a la vez (el máximo). Cierra una o espera a que venza antes de abrir otra.",
     apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", lugar_espera: "Tu ciudad se puede cambiar una vez cada 2 meses.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
   // AF14 (21-nov-2026): los fallos del servidor dicen qué pasó y, si no tienen mensaje propio, llevan su código discreto
   Object.assign(MENSAJES, { interno: "El servidor del juego tuvo un tropiezo. Vuelve a intentarlo en un momento.", preguntas: "Las preguntas de este capítulo no llegaron. Vuelve a intentarlo en un momento.",
@@ -2131,6 +2131,33 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-sala-extra summary::after{content:"▾";opacity:.75;transition:transform .2s}
 .jg-sala-extra[open] summary::after{transform:rotate(180deg)}
 .jg-sala-extra-c{display:grid;gap:10px;margin-top:10px}
+/* Ficha pública de jugador (GET /jugador), insignia de dificultad B7 y nota de escalera de reasignación */
+.jg-jug-btn{all:unset;display:inline;font:600 inherit var(--f-ui);color:var(--tinta);cursor:pointer;border-bottom:1px dotted color-mix(in srgb,var(--oro) 48%,transparent);transition:color .18s,border-color .18s}
+.jg-jug-btn:hover,.jg-jug-btn:focus-visible{color:var(--oro-vivo);border-bottom-color:var(--oro-vivo)}
+.jg-jug-btn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px;border-radius:3px}
+.jg-jp{display:grid;gap:14px;padding:4px 0 2px}
+.jg-jp-cab{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;border:1px solid color-mix(in srgb,var(--et,var(--oro)) 38%,var(--linea-2));background:radial-gradient(120% 95% at 0% 0%,color-mix(in srgb,var(--et,var(--oro)) 14%,transparent),transparent 66%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
+.jg-jp-emb{flex:none;width:62px;height:62px;display:grid;place-items:center}
+.jg-jp-emb .jg-e{width:58px;height:58px;font-size:1.55rem}
+.jg-jp-id{min-width:0;display:grid;gap:3px}
+.jg-jp-id h3{margin:0;font:600 1.24rem/1.15 var(--f-display);color:var(--tinta);overflow-wrap:anywhere}
+.jg-jp-id .jg-mini{margin:0}
+.jg-jp-vivo{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 12px;border-radius:13px;border:1px solid color-mix(in srgb,#6fbf8f 42%,var(--linea-2));background:color-mix(in srgb,#6fbf8f 10%,var(--hoja-2));font:400 .8rem/1.35 var(--f-ui);color:var(--tinta)}
+.jg-jp-dot{width:9px;height:9px;border-radius:50%;background:#79d99f;box-shadow:0 0 8px rgba(121,217,159,.75)}
+.jg-jp-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.jg-jp-grid li{display:grid;justify-items:center;align-content:center;gap:2px;padding:10px 7px;border-radius:13px;text-align:center;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);min-width:0}
+.jg-jp-grid b{font:600 1.05rem/1.15 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
+.jg-jp-grid span{font:600 .66rem/1.2 var(--f-ui);letter-spacing:.04em;color:var(--tinta)}
+.jg-jp-grid small{font:400 .62rem/1.2 var(--f-ui);color:var(--tenue);text-wrap:balance}
+.jg-jp-priv{margin:8px 0;text-align:center}
+.jg-jp-et{border-color:color-mix(in srgb,var(--et,var(--oro)) 55%,transparent);color:var(--et,var(--oro-vivo))}
+:root[data-theme="light"] .jg-jp-et{border-color:color-mix(in srgb,var(--et-l,var(--oro-vivo)) 48%,transparent);background:color-mix(in srgb,var(--et-l,var(--oro)) 10%,transparent);color:var(--et-l,var(--oro-vivo))}
+@media (max-width:430px){.jg-jp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.jg-qz-dif{justify-self:center;margin:0 auto 2px;padding:4px 11px;border-radius:999px;font:600 .66rem/1.15 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:color-mix(in srgb,var(--oro) 12%,transparent);color:var(--oro-vivo)}
+.jg-qz-dif.d2{border-color:color-mix(in srgb,#7cb8f2 52%,transparent);background:color-mix(in srgb,#7cb8f2 12%,transparent);color:#9ccbff}
+.jg-qz-dif.d3{border-color:color-mix(in srgb,#ff7d93 52%,transparent);background:color-mix(in srgb,#ff7d93 12%,transparent);color:#ff9dad}
+:root[data-theme="light"] .jg-qz-dif.d2{color:#1f5894}:root[data-theme="light"] .jg-qz-dif.d3{color:#a11c36}
+.ap-reasig-nota{margin:8px 0 0;text-align:center}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -2340,8 +2367,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
       h("button", { class: "btn", type: "button", onclick: () => { formCodigo.hidden = !formCodigo.hidden; if (!formCodigo.hidden) codigo.focus(); } }, ico("codigo"), h("span", { text: "Entrar con mi código" })),
       formCodigo, pistaC,
       puedeLlave() ? h("button", { class: "btn", type: "button", onclick: (e) => entrarConLlave(e.currentTarget, pistaC) }, ico("llave"), h("span", { text: "Entrar con una llave de acceso" })) : null,
-      cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pistaC) }, ico("google"), h("span", { text: "Entrar con Google" })) : null,
-      cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pistaC) }, ico("facebook"), h("span", { text: "Entrar con Facebook" })) : null);
+      cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "entrar", pistaC) }, ico("google"), h("span", { text: "Entrar con Google" })) : null);
     marco(cont, cabecera(),
       avisoEnApp(), franjaInv, franjaGrupo, tarjetaPrerregistro(entrada),
       tarjeta("Cómo se juega", null,
@@ -2351,10 +2377,9 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
       h("div", { class: "jg-dos" },
         tarjeta("Empezar con un apodo", null, h("div", { class: "jg-form" }, entrada, btn), pista,
           h("p", { class: "jg-mini", text: "Recibirás un código único para entrar desde otros dispositivos; después podrás asegurar tu avance con una llave de acceso o con Google." }),
-          cfg.google || cfg.facebook ? h("div", { class: "jg-empezar-con" }, h("p", { class: "jg-mini", text: "O empieza de una vez con tu cuenta oficial: tu lugar queda asegurado desde el primer momento y no tienes que guardar ningún código." }),
+          cfg.google ? h("div", { class: "jg-empezar-con" }, h("p", { class: "jg-mini", text: "O empieza de una vez con tu cuenta oficial: tu lugar queda asegurado desde el primer momento y no tienes que guardar ningún código." }),
             h("div", { class: "jg-entrar" },
-              cfg.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "crear", pista) }, ico("google"), h("span", { text: "Empezar con Google" })) : null,
-              cfg.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "entrar", pista) }, ico("facebook"), h("span", { text: "Empezar con Facebook" })) : null)) : null,
+              h("button", { class: "btn", type: "button", onclick: () => conectar("google", "crear", pista) }, ico("google"), h("span", { text: "Empezar con Google" })))) : null,
           h("div", { class: "jg-aviso tenue jg-unica" }, h("b", { text: "Tu lugar es único. " }), "Solo hay 1440 Primicias y cada una pertenece a una sola persona: crea una sola cuenta, para que 1440 personas distintas tengan la suya. Guarda muy bien tu acceso o vincúlalo con Google o con una llave de acceso (huella o rostro): si se pierde, tu número de Primicia no vuelve.")),
         tarjeta("Ya juego", null, opciones)),
       tarjetaOpinion(false),
@@ -2488,15 +2513,14 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
     if (S.codigoArriba !== c) { S.codigoArriba = c; arriba(); requestAnimationFrame(() => { arriba(); try { codigoEl.focus({ preventScroll: true }); } catch (er) { /* ignorar */ } }); }
   }
 
-  // --- asegurar el avance (llave de acceso, Google, Facebook)
+  // --- asegurar el avance (llave de acceso, Google)
   function tarjetaAsegurar(ahora) {
     const y = S.yo || {}, v = y.vinculado || {}, cfg = S.cfg || {};
     if (y.asegurado && !ahora) return null;
     const pista = h("p", { class: "jg-pista", role: "status" });
     const btns = h("div", { class: "jg-entrar" },
       puedeLlave() ? h("button", { class: "btn", type: "button", onclick: (e) => registrarLlave(e.currentTarget, pista) }, ico("llave"), h("span", { text: v.llave ? "Añadir otra llave de acceso" : "Crear una llave de acceso (huella, rostro o PIN)" })) : null,
-      cfg.google && !v.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "vincular", pista) }, ico("google"), h("span", { text: "Vincular mi cuenta de Google" })) : null,
-      cfg.facebook && !v.facebook ? h("button", { class: "btn", type: "button", onclick: () => conectar("facebook", "vincular", pista) }, ico("facebook"), h("span", { text: "Vincular mi cuenta de Facebook" })) : null);
+      cfg.google && !v.google ? h("button", { class: "btn", type: "button", onclick: () => conectar("google", "vincular", pista) }, ico("google"), h("span", { text: "Vincular mi cuenta de Google" })) : null);
     if (!btns.children.length) return null;
     return tarjeta(y.asegurado ? "Más formas de entrar" : "Asegura tu avance", ico("llave"),
       y.asegurado ? null : h("p", { text: "Con una llave de acceso no das ningún dato: tu teléfono la guarda y la sincroniza con tu cuenta de Google o de Apple. Con ella, o con Google, tu avance ya no depende del código." }),
@@ -2992,7 +3016,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
     let vista = A.store.get("jg:clVista", "clas") === "pres" ? "pres" : "clas", alto = 0;
     const icoCiu = () => h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'));
     const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, h("b", { text: x.apodo }), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
+      h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
     const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), icoCiu(),
       h("span", { class: "n" }, h("b", { text: x.ciudad }), h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x" }, fmt(x.pr), h("small", { text: "pts." })));
     const pie = (href, t) => h("a", { class: "btn chico jg-cl2-mas", href }, h("span", { text: t }), A.svg(A.ICO.der));
@@ -3819,19 +3843,29 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
       const r = await accionPoder("/poder/repartir", { at: plan }, null); if (r) celebrarReparto(defs, antes, dado, p0, rehacer); else e.currentTarget.disabled = false; } }, h("span", { text: "Repartir" }));
     function total() { const n = Object.values(plan).reduce((a, x) => a + x, 0); quedan.replaceChildren(h("b", { text: String(libres) }), " " + (libres === 1 ? "punto por repartir" : "puntos por repartir")); btnRep.disabled = !n; }
     total();
-    const gratis = av.sem !== semanaClave();
+    const gratis = av.reasigGratis != null ? !!av.reasigGratis : av.sem !== semanaClave();
+    const proxTs = Number(av.reasigProx) || 0, semN = Math.max(1, Math.min(3, (av.reasigSem | 0) || 1));
+    const fmtProx = proxTs > Date.now() ? (() => { try { return new Intl.DateTimeFormat("es", { day: "numeric", month: "short" }).format(new Date(proxTs)); } catch (e) { return ""; } })() : "";
     const saldoDr = h("span", { class: "ap-saldo", "aria-label": "Tienes " + fmt(P.dr) + " dracmas" }, ico("dracma"), h("b", { text: fmt(P.dr) }), " dr.");
     const puedePunto = P.dr >= av.precioPunto, puedeReasig = gratis || P.dr >= 60;
+    const hayRep = av.tot - av.pts > 0;
+    const notaReasig = hayRep ? h("p", { class: "jg-mini ap-reasig-nota", text: gratis
+      ? "Tienes un restablecimiento gratis disponible (escalera al usarlo: 1 semana, luego 2, y en adelante cada 3 semanas)."
+      : (fmtProx ? "Próximo restablecimiento gratis el " + fmtProx + " (tramo de " + plural(semN, "semana", "semanas") + "). Ahora puedes reasignar por 60 dracmas." : "Tu próximo restablecimiento gratis se habilita al cumplirse el plazo (1 → 2 → 3 semanas); ahora cuesta 60 dracmas.") }) : null;
     return tarjeta("Atributos", ico("arbol"),
       h("div", { class: "ap-cab" }, h("div", { class: "ap-cab-l" }, quedan, saldoDr), h("div", { class: "ap-cab-r" }, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
         h("button", { class: "btn " + (puedePunto ? "dr-ok" : "dr-falta"), type: "button", onclick: async (ev) => { const b = ev.currentTarget; if (b.disabled) return; b.disabled = true; const r = await accionPoder("/tienda/comprar", { item: "punto" }, "Compraste un punto de atributo: ya puedes repartirlo"); b.disabled = false; if (r) rehacer(); } }, h("span", { text: "Comprar punto · " + fmt(av.precioPunto) + " dr." })),
         // (un lector, 14-nov-2026: «se me borraron todos los puntos») antes de reasignar se explica qué pasa y se confirma
-        av.tot - av.pts > 0 ? h("button", { class: "btn" + (gratis ? "" : (puedeReasig ? " dr-ok" : " dr-falta")), type: "button", onclick: async () => {
+        hayRep ? h("button", { class: "btn" + (gratis ? "" : (puedeReasig ? " dr-ok" : " dr-falta")), type: "button", onclick: async () => {
           const rep = av.tot - av.pts;
-          if (!(await confirmar("¿Reasignar tus atributos?", "Tus " + plural(rep, "punto ya repartido vuelve", "puntos ya repartidos vuelven") + " a quedar libres y tus atributos bajan a lo que da la armadura hasta que los repartas otra vez. " + (gratis ? "Es gratis una vez por semana." : "Esta semana ya lo hiciste: cuesta 60 dracmas."), gratis ? "Reasignar" : "Reasignar · 60 dr."))) return;
-          const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis esta semana)" : "Reasignar · 60 dr." })) : null));
+          const det = gratis
+            ? "Este restablecimiento es gratis (la espera siguiente escala: 1 semana, luego 2, y en adelante siempre cada 3 semanas)."
+            : (fmtProx ? "Tu próximo restablecimiento gratis será el " + fmtProx + ". Hacerlo hoy cuesta 60 dracmas." : "Aún no se cumple el plazo del restablecimiento gratis: hacerlo hoy cuesta 60 dracmas.");
+          if (!(await confirmar("¿Reasignar tus atributos?", "Tus " + plural(rep, "punto ya repartido vuelve", "puntos ya repartidos vuelven") + " a quedar libres y tus atributos bajan a lo que da la armadura hasta que los repartas otra vez. " + det, gratis ? "Reasignar gratis" : "Reasignar · 60 dr."))) return;
+          const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis)" : "Reasignar · 60 dr." })) : null),
+      notaReasig);
   }
   // V22 · Granada de nueve cámaras (BiEx, 13-nov-2026; Gálatas 5:22-23, καρπός en singular): el corte de la fruta con sus
   // nueve cámaras de arilos; cada cámara se llena de luz rubí con el nivel de su aspecto. Vectorial y quieta (se pinta una
@@ -5767,13 +5801,24 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
       const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
       const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-        h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
+        h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
       zona.replaceChildren(...[titulo, h("ol", { class: "jg-lista" }, r.lista.map(fila)),
         r.yo && !r.lista.some((x) => x.yo) ? h("p", { class: "jg-mini", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia." }) : null].filter(Boolean));
     }
     function filaDe(x) { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); }
+      h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); }
     async function cargarTodos() {
+      // Opus (23-nov-2026): /clasificacion acepta rango=todos en una sola consulta con caché de borde
+      const rAll = await pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: "todos" }));
+      if (q.rango !== -1) return;
+      if (rAll && !rAll.error && Array.isArray(rAll.lista)) {
+        const ambTxt = (rAll.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "la clasificación general" : lugarDe(q.ambito) || "tu clasificación");
+        comprobarAdelantamientos("clas:" + q.ambito + ":" + q.periodo + ":todos", rAll.lista, ambTxt, "#/escudrina/clasificacion", rAll.yo);
+        const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · todos los rangos · " + ((rAll.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : lugarDe(q.ambito) || "")) });
+        if (!rAll.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie suma experiencia aquí. ¡Puedes ser la primera persona!" }));
+        return zona.replaceChildren(...[titulo, h("ol", { class: "jg-lista" }, rAll.lista.map(filaDe)),
+          rAll.yo && !rAll.lista.some((x) => x.yo) ? h("p", { class: "jg-mini", text: "Tu puesto general: " + fmt(rAll.yo.p) + " · " + fmt(rAll.yo.xp) + " de experiencia." }) : null].filter(Boolean));
+      }
       const rs = await Promise.all(RANGOS.map((_, i) => pedir("/clasificacion?" + new URLSearchParams({ ambito: q.ambito, periodo: q.periodo, rango: String(i) }))));
       if (q.rango !== -1) return;
       const err = rs.find((r) => r.error); if (err && rs.every((r) => r.error)) return zona.replaceChildren(h("p", { text: mensaje(err) }));
@@ -5835,7 +5880,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
         h("p", { class: "jg-mini", text: "Guárdalo: el código anterior ya no sirve." }));
     };
     const v = y.vinculado || {};
-    const estado = [v.llave ? plural(v.llave, "llave de acceso", "llaves de acceso") : null, v.google ? "Google" : null, v.facebook ? "Facebook" : null].filter(Boolean);
+    const estado = [v.llave ? plural(v.llave, "llave de acceso", "llaves de acceso") : null, v.google ? "Google" : null, v.facebook ? "vínculo anterior conservado" : null].filter(Boolean);
     const borrarIn = h("input", { type: "text", placeholder: "Escribe BORRAR", "aria-label": "Escribe BORRAR para confirmar", autocomplete: "off" });
     marco(cont, h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: "Cuenta" })),
       tarjetaApodo(false), tarjetaLugar(false),
@@ -7248,10 +7293,14 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
         } }, h("span", { text: "Elige una opción en cada pregunta" }));
         pie = btnVer; setTimeout(pintarListo, 0);
       }
+      const dif = r.dificultad | 0;
+      const DIF_T = ["", "Dificultad I · Nivel inicial", "Dificultad II · Nivel intermedio", "Dificultad III · Nivel profundo"];
       return h("div", { class: "jg-qz" + (resultado ? " res" : "") }, h("div", { class: "jg-qz-fondo", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+        dif >= 1 && dif <= 3 ? h("p", { class: "jg-qz-dif d" + dif, text: DIF_T[dif] }) : null,
         h("p", { class: "jg-qz-intro", text: resultado ? "Así quedó tu prueba. Debajo de cada pregunta está su verso completo." : "Completa cada verso con la palabra que falta, tal como está en la Textual de BiEx." }), ...preguntas, pie);
     };
-    const vistaP = () => A.cajaModal(A.cabModal("Prueba del capítulo", nombreLibro(lib) + " " + cap), cuerpo());
+    const DIF_SUB = ["", " · Dificultad I", " · Dificultad II", " · Dificultad III"][r.dificultad | 0] || "";
+    const vistaP = () => A.cajaModal(A.cabModal("Prueba del capítulo", nombreLibro(lib) + " " + cap + DIF_SUB), cuerpo());
     R.prueba = false;
     A.abrirModal(vistaP);
   }
@@ -7524,7 +7573,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   function filaLiga(x, suben) {
     const [l, c] = embDe(x.emb), ex = resumenStatsPub(x);
     return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= suben && x.xp > 0 ? " sube" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
-      h("span", { class: "n" }, x.apodo, h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") })), h("span", { class: "x", text: fmt(x.xp) }));
+      h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") })), h("span", { class: "x", text: fmt(x.xp) }));
   }
   function resumenLiga(r, mini) {
     const nv = r.nv || 1, i = nv - 1, yo = (r.lista || []).find((x) => x.yo);
@@ -7643,7 +7692,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
           h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + c.nombre + "»", "Únete a mi compañía «" + c.nombre + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
         c.mia ? h("button", { class: "btn chico jg-cod-nuevo", type: "button", onclick: async () => { const x = await pedir("/compania/codigo", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x)); actualizarYo(x.yo); A.avisar("Código nuevo: el anterior ya no sirve"); repintar(); } }, "Cambiar el código") : null),
       tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
-        h("span", { class: "n" }, x.apodo, h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel + (ex ? " · " + ex : "") })), h("span", { class: "x", text: fmt(x.x) })); })),
+        h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel + (ex ? " · " + ex : "") })), h("span", { class: "x", text: fmt(x.x) })); })),
         h("p", { class: "jg-mini", text: "Se actualiza cada media hora mientras leen, y al cerrar la lectura." })),
       h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" })), salir));
     animarCifras(zona);
@@ -7777,7 +7826,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     salirSala(true);
     Object.assign(SL, { cod, cerrada: false, intentos: 0, miembros: [], seguir: false, guia: false });
     A.store.set("jg:sala", { c: cod, t: Date.now() });
-    conectarSala(); return true;
+    conectarSala(); latirPresencia(true); return true;
   }
   // BiEx (10-nov-2026): la sala quedó en «conectando…» hasta recargar. Ahora: tope de 10 s para abrir, latido que detecta
   // una conexión muerta, reintentos sin rendirse (espera creciente, tope 20 s) y reconexión inmediata al volver a la página,
@@ -7822,7 +7871,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
     SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
     VIVO.salas = null;
-    if (!silencio) { A.avisar("Saliste de la sala"); syncSalasTrasEvento(); }
+    if (!silencio) { A.avisar("Saliste de la sala"); syncSalasTrasEvento(); latirPresencia(true); }
   }
   function mensajeSala(m) {
     if (m.t === "abierta") { SL.pub = !!m.on; if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } syncSalasTrasEvento(); return; }
@@ -7899,7 +7948,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const vistaS = () => {
       const anf = SL.miembros.find((x) => x.anf);
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
-        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, x.apodo, h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
+        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = anf && anf.j === SL.yo6;
       return A.cajaModal(A.cabModal("Sala " + SL.cod, "Lectura en compañía"), h("div", { class: "jg" },
@@ -8015,7 +8064,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
           return h("li", { class: esMia ? "yo" : "" }, emblema(l, c, x.marco || 0, x.foto),
             h("span", { class: "n" },
               h("b", {}, nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
-              h("small", { text: "Sala " + x.c + " · de " + (x.anf || "un lector") + (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + plural(x.n, "persona", "personas") })),
+              h("small", {}, "Sala " + x.c + " · de ", x.anf ? nombreClicable(x.anf) : "un lector", (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + plural(x.n, "persona", "personas"))),
             esMia ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
               : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; const cambiaba = !!SL.cod; entrarSala(x.c); A.avisar((cambiaba ? "Cambiaste a la sala " : "Entraste a la sala ") + x.c); syncSalasTrasEvento(); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" }))); })));
     };
@@ -8040,7 +8089,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const filas = caps.map(([lc, n]) => h("li", {}, h("span", { class: "n" }, h("b", { text: nombreLC(lc) }), h("small", { text: plural(n, "persona lee", "personas leen") + ((r.salas || {})[lc] ? " · sala abierta" : "") })),
         h("button", { class: "btn chico oro", type: "button", onclick: (e) => acompanar(lc, e.currentTarget) }, h("span", { text: "Acompañar" }))));
       const quien = (r.lectores || []).slice(0, 12).map((x) => { const [l, c] = embDe(x.e), actTxt = x.act ? x.act + (x.l ? " · " + nombreLC(x.l) : "") : nombreLC(x.l);
-        return h("li", {}, emblema(l, c, x.m, x.f), h("span", { class: "n" }, h("b", { text: x.a || "Lector" }), h("small", { text: "nivel " + x.nv + (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + actTxt })),
+        return h("li", {}, emblema(l, c, x.m, x.f), h("span", { class: "n" }, nombreClicable(x.a || "Lector"), h("small", { text: "nivel " + x.nv + (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + actTxt })),
           x.l ? h("button", { class: "btn chico", type: "button", onclick: (e) => acompanar(x.l, e.currentTarget) }, h("span", { text: "Acompañar" })) : null); });
       zona.replaceChildren(h("p", { class: "jg-total" }, cifra(r.total || 0), " " + (r.total === 1 ? "persona lee" : "personas leen") + " ahora" + (lib ? " · " + nombreLibro(lib) : "")), mapa,
         filas.length ? h("ul", { class: "jg-salas-l" }, filas) : h("p", { class: "jg-mini", text: lib ? "Nadie lee " + nombreLibro(lib) + " en este momento." : "Cuando alguien lea, su libro se encenderá aquí." }),
@@ -8098,14 +8147,99 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   // al volver al lector con una sala abierta (en las últimas 12 h), se reconecta sola
   function retomarSala() { const s = A.store.get("jg:sala", null); if (s && s.c && Date.now() - (s.t || 0) < 12 * 3600e3 && !SL.cod && S.token) entrarSala(s.c); }
 
+  // ================================================================== presencia en vivo (POST /presencia) y ficha pública (GET /jugador)
+  const PRES = { act: "", lc: "", t: 0, iv: 0, visEsc: false };
+  function actividadDeRuta(ruta) {
+    const hh = String(ruta || location.hash || "");
+    const m = /^#\/([1-3A-Z]{3})\/(\d{1,3})(?:\/([alo]))?/.exec(hh);
+    if (SL.cod) return { act: "En sala", lc: R.lib ? R.lib + "." + R.cap : (m ? m[1] + "." + m[2] : SL.lcAct || "") };
+    if (m) return { act: m[3] === "a" ? "Analizando" : "Leyendo", lc: m[1] + "." + m[2] };
+    if (/^#\/fuente-q\b/i.test(hh)) return { act: "En Fuente Q", lc: "" };
+    if (/^#\/escudrina\b/i.test(hh)) return { act: "En Escudriña", lc: "" };
+    return { act: "", lc: "" };
+  }
+  function latirPresencia(forzar, ruta) {
+    if (!S.token || document.hidden) return;
+    const { act, lc } = actividadDeRuta(ruta);
+    if (!act) return;
+    const ahora = Date.now();
+    if (!forzar && act === PRES.act && lc === PRES.lc && ahora - PRES.t < 70e3) return;
+    PRES.act = act; PRES.lc = lc; PRES.t = ahora;
+    pedir("/presencia", { metodo: "POST", cuerpo: lc ? { act, lc } : { act } }).catch(() => {});
+  }
+  function iniciarPresencia() {
+    if (!PRES.iv) PRES.iv = setInterval(() => latirPresencia(false), 90e3);
+    if (!PRES.visEsc) {
+      PRES.visEsc = true;
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) latirPresencia(false); });
+    }
+  }
+  const CACHE_JUG = new Map();
+  const ET_PUB = [[1, "I", "Semilla", "#c9813f", "#8a4c14"], [2, "II", "Brote", "#c3ccd8", "#425062"], [3, "III", "Raíz honda", "#f0c04a", "#7f5c0f"], [4, "IV", "Copa", "#ffe39a", "#6b4b09"], [5, "V", "Fruto", "#ff7d93", "#9c1d38"]];
+  function nombreClicable(apodo) {
+    const ap = String(apodo || "").trim();
+    if (!ap || /^lector\b/i.test(ap) || /^tú$/i.test(ap)) return h("b", { text: ap || "Lector" });
+    return h("button", { class: "jg-jug-btn", type: "button", title: "Ver perfil público de " + ap, onclick: (e) => { e.stopPropagation(); abrirJugadorPublico(ap); } }, ap);
+  }
+  function abrirJugadorPublico(apodo) {
+    const ap = String(apodo || "").trim();
+    if (!ap) return;
+    estilos();
+    const zona = h("div", { class: "jg-jp" }, h("p", { class: "cargando", text: "Cargando perfil de " + ap + "…" }));
+    A.abrirModal(() => A.cajaModal(A.cabModal(ap, "Perfil público · Escudriña"), zona));
+    const pintar = (j) => {
+      if (!zona.isConnected) return;
+      if (!j || j.error) {
+        return zona.replaceChildren(h("p", { class: "jg-mini jg-jp-priv", text: "Este lector mantiene su perfil reservado o aún no tiene datos públicos disponibles." }));
+      }
+      const [l, c] = embDe(j.emb);
+      const etN = Math.max(1, Math.min(5, (j.etapa | 0) || (j.poder >= 2400 ? 5 : j.poder >= 1200 ? 4 : j.poder >= 600 ? 3 : j.poder >= 250 ? 2 : 1)));
+      const et = ET_PUB[etN - 1];
+      const lugar = [j.ciudad, j.pais ? nombrePais(j.pais) : ""].filter(Boolean).join(" · ");
+      const chips = [];
+      chips.push(h("span", { class: "jg-chip jg-jp-et", style: "--et:" + et[3] + ";--et-l:" + et[4], text: "Etapa " + et[1] + " · " + et[2] }));
+      if (j.fundador && j.n) chips.push(h("span", { class: "jg-chip", text: "Primicia n.º " + fmt(j.n) }));
+      if (j.marco && marcos()[j.marco - 1]) chips.push(h("span", { class: "jg-chip tenue", text: marcos()[j.marco - 1][1] }));
+      const vivo = j.act || j.lc ? h("div", { class: "jg-jp-vivo" },
+        h("span", { class: "jg-jp-dot", "aria-hidden": "true" }),
+        h("span", {}, h("b", { text: j.act || "En línea" }), j.lc ? " · " + nombreLC(j.lc) : ""),
+        j.lc ? h("a", { class: "btn chico", href: "#/" + j.lc.replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null) : null;
+      const lauros = j.lauros || {};
+      const tiles = [
+        [fmt(j.poder | 0), "Poder", "Etapa " + et[1] + " · " + et[2]],
+        ["Nivel " + fmt(j.nivel | 0), j.rangoNombre || "Lector", j.fundador ? "Primicia" : "Rango actual"],
+        [plural(j.pers | 0, "día", "días"), "Perseverancia", "mejor: " + fmt(j.persMejor | 0) + " d"],
+        [fmt(j.vc | 0), "Versos leídos", j.lk ? plural(j.lk, "lectura plena", "lecturas plenas") : "confirmados"],
+        [(j.piedrasN | 0) + " / 12", "Piedras", lauros.doce ? "fundamento completo" : "del fundamento"],
+        [fmt(lauros.trenzado | 0), "Lauros", lauros.libros ? plural(lauros.libros, "libro completo", "libros completos") : "trenzados"],
+      ];
+      zona.replaceChildren(
+        h("div", { class: "jg-jp-cab", style: "--et:" + et[3] },
+          h("span", { class: "jg-jp-emb" }, emblema(l, c, j.marco, j.foto)),
+          h("div", { class: "jg-jp-id" },
+            h("h3", { text: j.apodo || ap }),
+            h("p", { class: "jg-mini", text: (j.rangoNombre || "Lector") + " · nivel " + fmt(j.nivel | 0) + (lugar ? " · " + lugar : "") }))),
+        h("div", { class: "jg-chips jg-chips-yo" }, chips),
+        vivo,
+        h("ul", { class: "jg-jp-grid" }, tiles.map(([v, t, s]) => h("li", {}, h("b", { text: v }), h("span", { text: t }), h("small", { text: s })))));
+    };
+    const hit = CACHE_JUG.get(ap);
+    if (hit && Date.now() - hit.t < 20e3) return pintar(hit.d);
+    pedir("/jugador?a=" + encodeURIComponent(ap), { sin: true }).then((r) => {
+      if (!r.error) { if (CACHE_JUG.size > 40) CACHE_JUG.clear(); CACHE_JUG.set(ap, { t: Date.now(), d: r }); }
+      pintar(r);
+    });
+  }
+
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
-    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); },
+    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
+    actividadRuta(ruta) { if (S.token) latirPresencia(false, ruta); },
     // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
-    retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; if (S.cont && S.cont.isConnected) repintar(); },
+    retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; latirPresencia(true); if (S.cont && S.cont.isConnected) repintar(); },
     // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
     estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v), veces: vecesDe(c + "." + cap, v), k: lecturasK() } : null),
     // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista y para sincronizar el marcador flotante (14-nov-2026 · Argon 23-nov-2026)
