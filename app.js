@@ -1620,6 +1620,7 @@
     else if (EMBED) document.documentElement.setAttribute("data-theme", "dark");
     ajustarBarra();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarBarra).catch(() => {});
+    FARO.montar();
   }
   // créditos del pie: abiertos (sin pliegue) en la pantalla principal y al pie de «Más»; plegados en las demás vistas
   function creditosPie(abiertos) {
@@ -2320,9 +2321,12 @@
     const lupa = h("input", { type: "search", class: "libs-lupa", placeholder: "Busca un libro por su nombre…", "aria-label": "Buscar un libro por su nombre", autocomplete: "off", spellcheck: "false",
       oninput: (e) => { const q = llano(e.target.value).trim(); let n = 0; for (const c of chips) { const si = !q || q.split(/\s+/).every((w) => c._k.includes(w)); c.hidden = !si; if (si) n++; } for (const g of grupos) g.hidden = ![...g.querySelectorAll(".lib-chip")].some((c) => !c.hidden); nada.hidden = n > 0; },
       onkeydown: (e) => { if (e.key === "Enter") { const c = chips.find((x) => !x.hidden); if (c) c.click(); } } });
+    const accLib = h("div", { class: "libs-acc" },
+      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/sinopsis" + (b ? "/" + b.c + "." + (esc.cap || 1) + ".1" : "")) }, svg(ICO.sinopsis), h("span", { text: "Mesa sinóptica" })),
+      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/constelacion" + (b ? "?capa=refs&libro=" + b.c : "")) }, svg(ICO.constelacion), h("span", { text: "Constelación" })));
     abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
       // (14-nov-2026) la lupa y la lista van juntas en el cuerpo de la ventana: la lista no es el pie (se montaba sobre la lupa)
-      [h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
+      [accLib, h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
         h("div", { class: "nav-libros todos por-grupos" }, grupos, nada)]));
   }
   const rutaCap = (b, cap, modo) => "#/" + b.c + "/" + cap + (modo === "a" ? "/a" : "");
@@ -4228,7 +4232,7 @@
             } }, svg(ICO.copiar), h("span", { text: "Copiar con enlace" }));
             const nota = h("button", { type: "button", class: "fv-rap-b", onclick: irANotaEnModal }, svg(ICO.nota), h("span", { text: "Nota de estudio" }));
             const tarj = h("button", { type: "button", class: "fv-rap-b", onclick: () => empujar(vistaTarjetaVerso({ b, cap, v: ctx.v, L, toks: ctx.toks })) }, svg(ICO.tarjeta), h("span", { text: "Tarjeta HD" }));
-            const sino = h("button", { type: "button", class: "fv-rap-b", onclick: () => { cerrarModal(); location.hash = "#/sinopsis/" + b.c + "." + cap + "." + ctx.v; } }, svg(ICO.sinopsis), h("span", { text: "Sinopsis" }));
+            const sino = h("button", { type: "button", class: "fv-rap-b", onclick: () => irDesdeModal("#/sinopsis/" + b.c + "." + cap + "." + ctx.v) }, svg(ICO.sinopsis), h("span", { text: "Sinopsis" }));
             return h("div", { class: "fv-rap" },
               h("div", { class: "fv-rap-acc" }, cop, nota, tarj, sino),
               h("div", { class: "fv-rap-col-c" },
@@ -4271,7 +4275,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "537568653a", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "aff5fe7e22", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -7065,6 +7069,7 @@
     const rk = calcularRkPlan(e); if (rk) e.rk = rk;
     store.set("planes", e);
     NUBE_DAT.cambio(ya ? "ya" : "");
+    FARO.actualizar();
   };
   // A4 · Datos clave de estudio y memoria por libro (sin transliteraciones inventadas: el nombre y fechas salen siempre del catálogo BiEx)
   const CLAVE_LIBRO = {
@@ -7600,6 +7605,7 @@
     if (modal.open) { guardarScrollM(); M.porRuta = true; modal.classList.add("sin-entrada"); cerrarModal(); setTimeout(() => modal.classList.remove("sin-entrada"), 80); }
     mostrarRuta();
     ajustarCuenta();
+    FARO.actualizar();
   }
   function refrescarVista() {
     if (!rutaVista) return;
@@ -7992,14 +7998,77 @@
     };
     const aMundo = (sx, sy) => ({ x: (sx - W / 2) / cam.k + cam.x, y: (sy - H / 2) / cam.k + cam.y });
     const aPant = (wx, wy) => ({ x: (wx - cam.x) * cam.k + W / 2, y: (wy - cam.y) * cam.k + H / 2 });
-    const encuadrar = () => {
-      if (!N.length || !W || !H) return;
+    const limites = () => {
+      if (!N.length || !W || !H) return { x0: -120, x1: 120, y0: -120, y1: 120, cx: 0, cy: 0, kFit: 1 };
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
       for (const n of N) { x0 = Math.min(x0, n.x - 46); x1 = Math.max(x1, n.x + 46); y0 = Math.min(y0, n.y - 42); y1 = Math.max(y1, n.y + 48); }
       const bw = Math.max(150, x1 - x0), bh = Math.max(150, y1 - y0);
-      cam.x = (x0 + x1) / 2; cam.y = (y0 + y1) / 2;
-      cam.k = Math.max(0.40, Math.min(1.5, Math.min((W - 64) / bw, (H - 92) / bh)));
+      const kFit = Math.max(0.42, Math.min(1.5, Math.min((W - 64) / bw, (H - 92) / bh)));
+      return { x0, x1, y0, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, kFit };
     };
+    const encuadrar = () => {
+      const L = limites();
+      cam.x = L.cx; cam.y = L.cy; cam.k = L.kFit;
+    };
+    let camRaf = 0, metaCam = null, ultTap = 0;
+    const vel = { x: 0, y: 0 };
+    const pararCam = () => { if (camRaf) { cancelAnimationFrame(camRaf); camRaf = 0; } };
+    const correrCam = () => {
+      pararCam();
+      if (!canvas.isConnected) return;
+      const sinA = ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      if (sinA) {
+        if (metaCam) { cam.x = metaCam.x; cam.y = metaCam.y; cam.k = metaCam.k; metaCam = null; }
+        else {
+          const L = limites();
+          cam.x = Math.max(L.x0, Math.min(L.x1, cam.x));
+          cam.y = Math.max(L.y0, Math.min(L.y1, cam.y));
+          cam.k = Math.max(Math.min(0.45, L.kFit * 0.78), Math.min(3.2, cam.k));
+        }
+        vel.x = 0; vel.y = 0; dibujar(); return;
+      }
+      const tick = () => {
+        camRaf = 0;
+        if (!canvas.isConnected || panOn || arrNodo || ptrs.size >= 2) return;
+        let mov = false;
+        if (metaCam) {
+          const dx = metaCam.x - cam.x, dy = metaCam.y - cam.y, dk = metaCam.k - cam.k;
+          if (Math.abs(dx) + Math.abs(dy) < 0.35 && Math.abs(dk) < 0.003) {
+            cam.x = metaCam.x; cam.y = metaCam.y; cam.k = metaCam.k; metaCam = null;
+          } else {
+            cam.x += dx * 0.16; cam.y += dy * 0.16; cam.k += dk * 0.16; mov = true;
+          }
+        } else {
+          const L = limites();
+          // Inercia suave amortiguada (nunca dispara al vacío)
+          if (Math.hypot(vel.x, vel.y) > 0.18) {
+            cam.x += vel.x; cam.y += vel.y;
+            vel.x *= 0.84; vel.y *= 0.84;
+            mov = true;
+          } else { vel.x = 0; vel.y = 0; }
+          // Efecto cauchera/resorte: regresa suavemente a la vista cercana más adecuada de la constelación
+          const kMin = Math.min(0.48, L.kFit * 0.82), kMax = 3.2;
+          const marX = Math.max(18, (L.x1 - L.x0) * 0.14);
+          const marY = Math.max(18, (L.y1 - L.y0) * 0.14);
+          const bx0 = L.x0 - marX, bx1 = L.x1 + marX, by0 = L.y0 - marY, by1 = L.y1 + marY;
+          const tx = cam.x < bx0 ? bx0 : cam.x > bx1 ? bx1 : cam.x;
+          const ty = cam.y < by0 ? by0 : cam.y > by1 ? by1 : cam.y;
+          const tk = cam.k < kMin ? kMin : cam.k > kMax ? kMax : cam.k;
+          const ex = tx - cam.x, ey = ty - cam.y, ek = tk - cam.k;
+          if (Math.abs(ex) > 0.35 || Math.abs(ey) > 0.35 || Math.abs(ek) > 0.003) {
+            cam.x += ex * 0.12; cam.y += ey * 0.12; cam.k += ek * 0.14;
+            vel.x *= 0.62; vel.y *= 0.62;
+            mov = true;
+          } else {
+            cam.x = tx; cam.y = ty; cam.k = tk;
+          }
+        }
+        dibujar();
+        if (mov) camRaf = requestAnimationFrame(tick);
+      };
+      camRaf = requestAnimationFrame(tick);
+    };
+    const irA = (x, y, k) => { metaCam = { x, y, k: k != null ? k : cam.k }; vel.x = 0; vel.y = 0; correrCam(); };
     const pasoFisica = (cool) => {
       const rep = mini ? 3900 : 8600;
       const lBase = mini ? 80 : 126;
@@ -8203,7 +8272,7 @@
             n.sub ? h("small", { text: n.sub }) : null),
           h("span", { class: "cn-insp-tipo", text: tipoNom })),
         n.desc ? h("p", { class: "cn-insp-desc", text: n.desc }) : null,
-        vecs.length ? h("div", { class: "cn-insp-vec" }, vecs.map((v) => h("button", { type: "button", class: "cn-pre", onclick: () => { sel = v; pintarInspector(v); cam.x = v.x; cam.y = v.y; dibujar(); } }, v.et))) : null,
+        vecs.length ? h("div", { class: "cn-insp-vec" }, vecs.map((v) => h("button", { type: "button", class: "cn-pre", onclick: () => { sel = v; camManual = true; pintarInspector(v); irA(v.x, v.y, Math.max(cam.k, 1.18)); } }, v.et))) : null,
         h("div", { class: "cn-insp-acc" },
           n.href ? h("a", { class: "btn chico oro", href: n.href }, svg(ICO.der), h("span", { text: "Abrir" })) : null,
           n.focoRaiz != null && o.alEnfocarRaiz ? h("button", { class: "btn chico", type: "button", onclick: () => o.alEnfocarRaiz(n.focoRaiz) }, svg(ICO.constelacion), h("span", { text: "Centrar familia aquí" })) : null,
@@ -8238,20 +8307,24 @@
       let mejor = null, dMin = 1e9;
       for (const n of N) {
         const d = Math.hypot(n.x - m.x, n.y - m.y);
-        const tol = Math.max(n.r + 10 / cam.k, 16 / cam.k);
+        const tol = Math.max(n.r + 12 / cam.k, 18 / cam.k);
         if (d < tol && d < dMin) { dMin = d; mejor = n; }
       }
       return mejor;
     };
     const ptRel = (ev) => { const r = canvas.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+    let pinchMidW = null;
     canvas.addEventListener("pointerdown", (ev) => {
+      ev.preventDefault();
       const pt = ptRel(ev);
+      pararCam(); metaCam = null; vel.x = 0; vel.y = 0;
       ptrs.set(ev.pointerId, pt);
-      canvas.setPointerCapture(ev.pointerId);
+      try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
       if (ptrs.size === 2) {
         const [a, b] = [...ptrs.values()];
         pinchD0 = Math.hypot(b.x - a.x, b.y - a.y) || 1;
         pinchK0 = cam.k;
+        pinchMidW = aMundo((a.x + b.x) / 2, (a.y + b.y) / 2);
         arrNodo = null; panOn = false; camManual = true;
         return;
       }
@@ -8266,7 +8339,12 @@
       if (ptrs.size === 2) {
         const [a, b] = [...ptrs.values()];
         const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-        cam.k = Math.max(0.38, Math.min(3.4, pinchK0 * (d / pinchD0)));
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        cam.k = Math.max(0.32, Math.min(3.5, pinchK0 * (d / pinchD0)));
+        if (pinchMidW) {
+          cam.x = pinchMidW.x - (mx - W / 2) / cam.k;
+          cam.y = pinchMidW.y - (my - H / 2) / cam.k;
+        }
         camManual = true;
         dibujar(); return;
       }
@@ -8280,22 +8358,46 @@
       if (panOn && p0) {
         const dx = pt.x - p0.x, dy = pt.y - p0.y;
         if (Math.hypot(dx, dy) > 4) { movido = true; camManual = true; }
-        cam.x -= dx / cam.k; cam.y -= dy / cam.k;
+        const L = limites();
+        const marX = Math.max(18, (L.x1 - L.x0) * 0.14), marY = Math.max(18, (L.y1 - L.y0) * 0.14);
+        const bx0 = L.x0 - marX, bx1 = L.x1 + marX, by0 = L.y0 - marY, by1 = L.y1 + marY;
+        const tacto = ev.pointerType === "touch" ? 0.78 : 0.92;
+        let stepX = (-dx * tacto) / cam.k, stepY = (-dy * tacto) / cam.k;
+        const excX = cam.x < bx0 ? (bx0 - cam.x) : cam.x > bx1 ? (cam.x - bx1) : 0;
+        const excY = cam.y < by0 ? (by0 - cam.y) : cam.y > by1 ? (cam.y - by1) : 0;
+        const alejX = (cam.x < bx0 && stepX < 0) || (cam.x > bx1 && stepX > 0);
+        const alejY = (cam.y < by0 && stepY < 0) || (cam.y > by1 && stepY > 0);
+        if (alejX && excX > 0) stepX /= 1 + excX / (80 / Math.max(0.45, cam.k));
+        if (alejY && excY > 0) stepY /= 1 + excY / (80 / Math.max(0.45, cam.k));
+        cam.x += stepX; cam.y += stepY;
+        vel.x = Math.max(-22, Math.min(22, vel.x * 0.45 + stepX * 0.55));
+        vel.y = Math.max(-22, Math.min(22, vel.y * 0.45 + stepY * 0.55));
         p0 = pt; dibujar(); return;
       }
       const nh = hitTest(pt.x, pt.y);
       if (nh !== hov) { hov = nh; canvas.style.cursor = nh ? "pointer" : "grab"; dibujar(); }
     });
     const soltar = (ev) => {
+      const eraPan = panOn || ptrs.size >= 2;
       ptrs.delete(ev.pointerId);
+      if (ptrs.size < 2) pinchMidW = null;
       if (arrNodo && !movido) {
         sel = sel === arrNodo ? null : arrNodo;
         pintarInspector(sel);
-        dibujar();
+        if (sel) irA(sel.x, sel.y, Math.max(cam.k, 1.05));
+        else dibujar();
       } else if (panOn && !movido) {
-        sel = null; pintarInspector(null); dibujar();
+        const ahora = performance.now();
+        if (ahora - ultTap < 320) {
+          camManual = false; sel = null; pintarInspector(null);
+          const L = limites(); irA(L.cx, L.cy, L.kFit);
+        } else {
+          sel = null; pintarInspector(null); dibujar();
+        }
+        ultTap = ahora;
       }
       arrNodo = null; panOn = false; canvas.classList.remove("arrastra");
+      if (eraPan && movido && !ptrs.size) correrCam();
     };
     canvas.addEventListener("pointerup", soltar);
     canvas.addEventListener("pointercancel", soltar);
@@ -8305,18 +8407,21 @@
     });
     canvas.addEventListener("wheel", (ev) => {
       ev.preventDefault();
+      pararCam(); metaCam = null;
       const pt = ptRel(ev);
       const antes = aMundo(pt.x, pt.y);
-      const fac = ev.deltaY < 0 ? 1.16 : 0.86;
-      cam.k = Math.max(0.38, Math.min(3.4, cam.k * fac));
+      const fac = ev.deltaY < 0 ? 1.14 : 0.88;
+      const L = limites();
+      cam.k = Math.max(Math.min(0.45, L.kFit * 0.78), Math.min(3.2, cam.k * fac));
       const desp = aMundo(pt.x, pt.y);
       cam.x += antes.x - desp.x; cam.y += antes.y - desp.y;
       camManual = true;
       dibujar();
+      correrCam();
     }, { passive: false });
-    bMas.onclick = () => { cam.k = Math.min(3.4, cam.k * 1.25); camManual = true; dibujar(); };
-    bMen.onclick = () => { cam.k = Math.max(0.38, cam.k * 0.8); camManual = true; dibujar(); };
-    bCen.onclick = () => { camManual = false; encuadrar(); dibujar(); };
+    bMas.onclick = () => { camManual = true; irA(cam.x, cam.y, Math.min(3.2, cam.k * 1.25)); };
+    bMen.onclick = () => { const L = limites(); camManual = true; irA(cam.x, cam.y, Math.max(Math.min(0.48, L.kFit * 0.82), cam.k * 0.8)); };
+    bCen.onclick = () => { camManual = false; const L = limites(); irA(L.cx, L.cy, L.kFit); };
 
     const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
     if (ro) ro.observe(canvas);
@@ -8324,6 +8429,7 @@
     moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const limpiar = () => {
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      pararCam();
       if (ro) ro.disconnect();
       moTema.disconnect();
     };
@@ -8341,15 +8447,16 @@
     return {
       enfocarTexto(q) {
         const ql = llanoCn(q), ql2 = ql.replace(/ch/g, "j").replace(/ph/g, "f"), kg = claveGr(q);
-        if (!ql && !kg) { sel = null; camManual = false; encuadrar(); pintarInspector(null); dibujar(); return false; }
+        if (!ql && !kg) { sel = null; camManual = false; const L = limites(); pintarInspector(null); irA(L.cx, L.cy, L.kFit); return false; }
         const n = N.find((x) => {
           if (kg && claveGr(x.et).includes(kg)) return true;
           const hay = llanoCn(x.et + " " + (x.sub || "") + " " + (x.busq || "") + " " + (x.desc || ""));
           return (ql && hay.includes(ql)) || (ql2 && hay.includes(ql2));
         });
         if (!n) return false;
-        sel = n; camManual = true; cam.x = n.x; cam.y = n.y; cam.k = Math.max(cam.k, 1.32);
-        pintarInspector(n); dibujar();
+        sel = n; camManual = true;
+        pintarInspector(n);
+        irA(n.x, n.y, Math.max(cam.k, 1.32));
         return true;
       },
     };
@@ -8497,7 +8604,8 @@
       sLib.onchange = () => { ref.c = sLib.value; ref.cap = 1; ref.v = 1; alCambiar(); };
       sCap.onchange = () => { ref.cap = +sCap.value || 1; ref.v = 1; alCambiar(); };
       sVer.onchange = () => { ref.v = +sVer.value || 1; alCambiar(); };
-      return h("div", { class: "sn-sel-bar" }, sLib, sCap, sVer);
+      const campo = (et, el) => h("div", { class: "sn-campo" }, h("span", { class: "sn-campo-et", text: et }), el);
+      return h("div", { class: "sn-sel-bar" }, campo("Libro", sLib), campo("Capítulo", sCap), campo("Verso", sVer));
     };
     const cargarPar = async () => {
       zonaRes.replaceChildren(h("p", { class: "nota-ui", text: "Comparando lemas y raíces griegas…" }));
@@ -8595,12 +8703,12 @@
 
   // --- Pulso del texto al cerrar cada capítulo (.ps-cap, carga perezosa al acercarse al pie)
   function bloquePulsoCapitulo(b, cap) {
-    const sub = h("small", { text: "Raíces dominantes, joyas singulares y pulso verbal de " + nombreLibro(b) + " " + cap });
+    const sub = h("small", { text: "Toca para ver las 5 raíces clave, joyas singulares y tiempos verbales de " + nombreLibro(b) + " " + cap });
     const cuerpo = h("div", { class: "ps-cuerpo" }, h("p", { class: "nota-ui", text: "Analizando el pulso léxico del capítulo…" }));
     const det = h("details", { class: "ps-cap" },
       h("summary", {},
-        h("span", { class: "ps-sum-l" }, svg(ICO.constelacion), h("span", { class: "ps-sum-t" }, h("b", { text: "Pulso del texto" }), sub)),
-        h("span", { class: "ps-sum-r" }, h("span", { text: "Explorar" }), svg(ICO.abajo))),
+        h("span", { class: "ps-sum-l" }, svg(ICO.constelacion), h("span", { class: "ps-sum-t" }, h("b", { text: "Pulso léxico del capítulo" }), sub)),
+        h("span", { class: "ps-sum-r" }, h("span", { text: "Ver análisis" }), svg(ICO.abajo))),
       cuerpo);
     let listo = false;
     const cargarPulso = async () => {
@@ -8723,11 +8831,11 @@
           ctx.beginPath(); ctx.moveTo(cx, cy - 11); ctx.lineTo(cx + 11, cy); ctx.lineTo(cx, cy + 11); ctx.lineTo(cx - 11, cy); ctx.closePath(); ctx.fill();
         }
         ctx.globalAlpha = 1;
-        // Cabecera
+        // Cabecera («BiEx» siempre como primera palabra)
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.font = "500 24px 'BiEx Interfaz', system-ui, -apple-system, sans-serif";
         ctx.fillStyle = P.oro;
-        ctx.fillText("B I B L I A   E X A C T A   ·   B i E x", W / 2, 148);
+        ctx.fillText("B i E x   ·   B I B L I A   E X A C T A", W / 2, 148);
         ctx.globalAlpha = 0.45; ctx.strokeStyle = P.marco; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(W / 2 - 140, 188); ctx.lineTo(W / 2 + 140, 188); ctx.stroke();
         ctx.globalAlpha = 1;
@@ -8822,6 +8930,147 @@
             h("button", { class: "btn", type: "button", onclick: compartirPng }, svg(ICO.compartir), h("span", { text: "Compartir imagen" })))));
     };
   }
+
+  // --- Faro pulsante discreto de pendientes (accesibilidad TDAH · 0 peticiones de red, 100 % desde caché local)
+  const FARO = {
+    btn: null,
+    cnt: null,
+    pendientes() {
+      const out = [];
+      const hoy = new Date().toISOString().slice(0, 10);
+      // 1) Plan de lectura activo con día pendiente
+      try {
+        const ep = estPlanes();
+        if (ep.act && D) {
+          const pl = planDe(ep.act);
+          if (pl) {
+            const ds = diasPlan(pl), hechos = new Set(ep.hechos[pl.id] || []);
+            const sig = ds.findIndex((_, i) => !hechos.has(i));
+            const hoyHecho = Object.values(ep.fechas || {}).some((f) => String(f || "").slice(0, 10) === hoy);
+            if (sig >= 0 && !hoyHecho) {
+              const pri = ds[sig] && ds[sig][0];
+              out.push({
+                t: "Lectura de hoy en tu plan",
+                d: pl.t + " · día " + (sig + 1) + " de " + ds.length,
+                accion: "Abrir plan",
+                href: pri ? "#/" + pri.c + "/" + pri.cap : "#/planes/" + pl.id,
+                col: "#e8cf94",
+              });
+            }
+          }
+        }
+      } catch (e) {}
+      // 2) Partida de Ajedrez Bíblico guardada en caché por retomar
+      try {
+        const part = store.get("ajedrez:partida", null);
+        if (part && part.fen && !part.fin && part.rivalNom) {
+          out.push({
+            t: "Partida de Ajedrez en pausa",
+            d: "Frente a " + part.rivalNom + " · jugada " + Math.max(1, Math.ceil((part.hist ? part.hist.length : 0) / 2)) + " guardada en caché.",
+            accion: "Retomar",
+            href: "#/escudrina/ajedrez",
+            col: "#c598f2",
+          });
+        }
+      } catch (e) {}
+      // 3) Datos locales cacheados de Escudriña (Coloso con cargas, misiones pendientes, puntos de Árbol)
+      try {
+        const tk = store.get("jg:t", null);
+        if (tk) {
+          const col = store.get("jg:coloso_snap", null);
+          if (col && col.estado === "activo" && (col.vida | 0) > 0 && (col.cargas | 0) > 0) {
+            out.push({
+              t: "El Coloso de la Tradición te espera",
+              d: (col.cargas | 0) + (col.cargas === 1 ? " carga lista" : " cargas listas") + " para apoyar a la comunidad.",
+              accion: "Ir a la arena",
+              href: "#/escudrina/coloso",
+              col: "#e69a52",
+            });
+          }
+          const yo = store.get("jg:yo", null);
+          if (yo) {
+            const rawMs = Array.isArray(yo.mis) ? yo.mis : (Array.isArray(yo.misiones) ? yo.misiones : []);
+            const ms = rawMs.filter((m) => m && !m.hecha && !m.fin);
+            if (ms.length) {
+              const m0 = ms[0];
+              const dMis = m0.titulo || m0.desc || (m0.tipo === "versos" && m0.meta ? "Leer " + m0.meta + " versos (" + (m0.prog | 0) + " de " + m0.meta + ")" : m0.tipo === "preguntas" ? "Responder una prueba al final de un capítulo." : "Suma experiencia y dracmas con tu lectura de hoy.");
+              out.push({
+                t: ms.length === 1 ? "1 misión del día pendiente" : ms.length + " misiones del día pendientes",
+                d: dMis,
+                accion: "Ver en Hoy",
+                href: "#/escudrina",
+                col: "#7eb8f0",
+              });
+            }
+            const libres = yo.av ? ((yo.av.pts | 0) || (yo.av.libres | 0)) : 0;
+            if (libres > 0) {
+              out.push({
+                t: libres === 1 ? "Tienes 1 punto de atributo libre" : "Tienes " + libres + " puntos de atributo libres",
+                d: "Fortalece tu Ser interior y sube tu poder en Tu Árbol.",
+                accion: "Ir a Tu Árbol",
+                href: "#/escudrina/arbol",
+                col: "#6fd4a4",
+              });
+            }
+          }
+        }
+      } catch (e) {}
+      // 4) Si aún no hay pendientes de plan/Escudriña pero el lector tiene una lectura reciente sin abrir hoy
+      if (!out.length) {
+        try {
+          const ult = store.get("ultimo", null);
+          const yo = store.get("jg:yo", null);
+          const leyoHoy = yo && yo.hoy && yo.hoy.f === hoy && (yo.hoy.versos | 0) > 0;
+          if (ult && ult.c && D && libroDe(ult.c) && !leyoHoy && store.get("jg:t", null)) {
+            out.push({
+              t: "Continúa donde quedaste",
+              d: nombreLibro(libroDe(ult.c)) + " " + ult.cap + (ult.v ? ":" + ult.v : "") + " · un par de versos ya suman hoy.",
+              accion: "Seguir leyendo",
+              href: "#/" + ult.c + "/" + ult.cap + (ult.v ? "/l/" + ult.v : ""),
+              col: "#e8cf94",
+            });
+          }
+        } catch (e) {}
+      }
+      return out.slice(0, 5);
+    },
+    montar() {
+      if (this.btn && this.btn.isConnected) return this.actualizar();
+      const cnt = h("span", { class: "faro-cnt", text: "" });
+      const btn = h("button", {
+        type: "button", class: "faro-btn", id: "btn-faro", hidden: true,
+        title: "Tu faro de hoy · pendientes", "aria-label": "Tu faro de hoy: ver pendientes",
+        onclick: () => this.abrir(),
+      }, h("span", { class: "faro-nucleo", "aria-hidden": "true" }, h("i", { class: "faro-onda" })), cnt);
+      this.btn = btn; this.cnt = cnt;
+      document.body.append(btn);
+      this.actualizar();
+    },
+    actualizar() {
+      if (!this.btn) return;
+      const lista = this.pendientes();
+      this.btn.hidden = lista.length === 0;
+      if (lista.length) {
+        this.cnt.textContent = String(lista.length);
+        this.btn.setAttribute("aria-label", "Tu faro de hoy: " + (lista.length === 1 ? "1 paso pendiente" : lista.length + " pasos pendientes"));
+      }
+    },
+    abrir() {
+      const lista = this.pendientes();
+      if (!lista.length) { this.actualizar(); return; }
+      abrirModal(() => cajaModal(
+        cabModal("Tu faro de hoy", lista.length === 1 ? "1 paso sencillo disponible ahora" : lista.length + " pasos disponibles ahora"),
+        h("div", { class: "faro-mod" },
+          h("p", { class: "faro-calm", text: "Un paso a la vez: elige solo lo que quieras hacer ahora. Nada se pierde si avanzas con calma." }),
+          h("ul", { class: "faro-list" }, lista.map((it) => h("li", { class: "faro-it", style: "--fc:" + (it.col || "#e8cf94") },
+            h("i", { "aria-hidden": "true" }),
+            h("div", { class: "faro-it-t" }, h("b", { text: it.t }), h("small", { text: it.d })),
+            h("button", { type: "button", class: "btn chico oro faro-go", onclick: () => irDesdeModal(it.href) }, h("span", { text: it.accion }), svg(ICO.der))))))));
+    },
+  };
+  document.addEventListener("biex:faro", () => FARO.actualizar());
+  window.addEventListener("storage", () => FARO.actualizar());
+
 
   function mostrarRuta(hh) {
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
