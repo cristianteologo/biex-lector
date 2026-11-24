@@ -4171,7 +4171,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "c75f6c1a7c", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "537568653a", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -6860,7 +6860,7 @@
     const on = !!si;
     if (on && !btnContSalir) {
       btnContSalir = h("button", { class: "btn-cont-salir", type: "button", "aria-label": "Salir del modo Contemplar", title: "Salir de Contemplar (Esc)", onclick: () => ponerContemplar(false) },
-        svg(ICO.contemplar), h("span", { text: "Salir de Contemplar" }));
+        svg(ICO.contemplar), h("span", { class: "btn-cont-lbl" }, h("span", { text: "Salir" }), h("span", { class: "btn-cont-x", text: "\u00a0de Contemplar" })));
       document.body.append(btnContSalir);
     }
     document.documentElement.classList.toggle("contemplar", on);

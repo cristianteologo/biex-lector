@@ -466,7 +466,7 @@
 .jg-chip.tenue{color:var(--tenue);background:none;border-color:var(--linea-2)}
 .jg-barra{height:8px;border-radius:99px;background:var(--hoja-3);overflow:hidden}
 .jg-barra>i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo));transform-origin:left center}
-.jg-nivel{display:flex;justify-content:space-between;gap:10px;font:400 .8rem/1.3 var(--f-ui);color:var(--tenue);margin-top:6px}
+.jg-nivel{display:flex;justify-content:center;gap:10px;text-align:center;font:400 .8rem/1.3 var(--f-ui);color:var(--tenue);margin-top:6px}
 .jg-grande{width:100%;justify-content:center;min-height:52px;font-size:1.02rem}
 .jg-grande small{display:block;font-size:.78em;opacity:.8;font-weight:400}
 .jg-cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -1093,8 +1093,9 @@ html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0p
 .jg-acciones{display:flex;flex-wrap:wrap;gap:8px}
 .jg-acciones .btn{flex:1 1 auto;justify-content:center}
 .jg-form{display:flex;gap:8px;flex-wrap:wrap}
-.jg-form input{flex:1 1 180px;min-width:0;font:400 1rem/1.3 var(--f-ui);padding:12px 14px;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tinta)}
-.jg-form input:focus{outline:2px solid var(--oro);outline-offset:1px}
+.jg-form input,.jg-in{flex:1 1 180px;min-width:0;font:400 1rem/1.3 var(--f-ui);padding:12px 14px;border-radius:12px;border:1px solid var(--linea);background:var(--hoja-2);color:var(--tinta)}
+.jg-in{display:block;width:100%;box-sizing:border-box}
+.jg-form input:focus,.jg-in:focus{outline:2px solid var(--oro);outline-offset:1px}
 .jg-pista{font:400 .8rem/1.4 var(--f-ui);color:var(--tenue);min-height:1.2em;margin:0}
 .jg-pista:empty{min-height:0;margin-top:-8px}
 .jg-pista.mal{color:#e0866f}.jg-pista.bien{color:var(--oro)}
@@ -2189,49 +2190,109 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-sala-nom{display:grid;gap:6px;padding:10px 12px;border-radius:13px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 72%,transparent)}
 .jg-sala-nom-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:600 .72rem/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--oro)}
 .jg-sala-nom-cab small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--tenue)}
-/* B4 + B5 · Batalla táctica cooperativa contra El Coloso de la Tradición */
-.jg-col-arena{display:grid;gap:14px}
-.jg-col-escena{position:relative;overflow:hidden;display:grid;justify-items:center;gap:12px;padding:20px 16px 18px;border-radius:20px;text-align:center;border:1px solid color-mix(in srgb,var(--oro) 48%,var(--linea-2));background:radial-gradient(95% 75% at 50% 10%,color-mix(in srgb,#d97c38 18%,transparent),transparent 68%),radial-gradient(75% 65% at 50% 95%,color-mix(in srgb,var(--oro) 12%,transparent),transparent 72%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 28%,transparent),0 22px 44px -26px rgba(0,0,0,.78)}
-.jg-col-fig{position:relative;width:min(190px,56vw);aspect-ratio:1/1.05;display:grid;place-items:center;animation:col-respira 5.4s ease-in-out infinite;will-change:transform}
-.jg-col-fig.golpe{animation:col-sacude .36s cubic-bezier(.2,.8,.2,1)}
-.jg-col-fig.caido{animation:none;opacity:.76;filter:saturate(.55)}
-.jg-col-fig svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 16px 26px rgba(0,0,0,.62))}
-@keyframes col-respira{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5px,0)}}
-@keyframes col-sacude{0%{transform:translate3d(0,0,0)}25%{transform:translate3d(-7px,-3px,0)}55%{transform:translate3d(6px,2px,0)}80%{transform:translate3d(-3px,0,0)}100%{transform:translate3d(0,0,0)}}
-.jg-col-dano{position:absolute;top:14%;left:50%;transform:translate3d(-50%,0,0);font:700 1.45rem/1 var(--f-display);color:#ffe49c;text-shadow:0 3px 14px rgba(0,0,0,.85);pointer-events:none;z-index:4;animation:col-dano 1.15s cubic-bezier(.2,.8,.2,1) forwards}
-@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,12px,0) scale(.85)}22%{opacity:1;transform:translate3d(-50%,-10px,0) scale(1.12)}100%{opacity:0;transform:translate3d(-50%,-48px,0) scale(.95)}}
-.jg-col-hp{width:100%;display:grid;gap:6px}
-.jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .8rem/1.2 var(--f-ui);color:var(--tinta-2)}
-.jg-col-hp-cab b{font:600 1.05rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
-.jg-col-hp-bar{height:12px;border-radius:999px;background:color-mix(in srgb,var(--hoja-3) 90%,transparent);overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 34%,transparent);padding:1px}
-.jg-col-hp-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c94c38,#e68a3e,#f5c962);transition:width .45s cubic-bezier(.2,.8,.2,1)}
-.jg-col-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;font:400 .76rem/1.3 var(--f-ui);color:var(--tinta-2)}
-.jg-col-cargas{display:grid;gap:8px;padding:12px 14px;border-radius:15px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 84%,transparent)}
-.jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:600 .76rem/1.2 var(--f-ui);color:var(--tinta)}
-.jg-col-cg-cab small{font-weight:400;color:var(--tenue)}
-.jg-col-crist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-.jg-col-crist i{height:11px;border-radius:999px;background:var(--hoja-3);border:1px solid var(--linea-2);transition:background-color .25s,border-color .25s}
-.jg-col-crist i.on{background:linear-gradient(90deg,var(--oro),var(--oro-vivo));border-color:var(--oro-vivo);box-shadow:0 0 10px color-mix(in srgb,var(--oro-vivo) 55%,transparent)}
-.jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-@media (max-width:560px){.jg-col-habs{grid-template-columns:1fr}}
-.jg-col-hab{display:grid;gap:4px;text-align:left;padding:13px 13px 12px;border-radius:15px;border:1px solid color-mix(in srgb,var(--oro) 38%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));color:var(--tinta);cursor:pointer;transition:transform .2s,border-color .2s,opacity .2s}
-.jg-col-hab:hover:not(:disabled){transform:translate3d(0,-2px,0);border-color:var(--oro-vivo)}
-.jg-col-hab:active:not(:disabled){transform:scale(.98)}
-.jg-col-hab:disabled{opacity:.48;cursor:not-allowed}
-.jg-col-hab-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.jg-col-hab b{font:600 1rem/1.15 var(--f-display);color:var(--oro-vivo)}
-.jg-col-hab-cost{font:600 .68rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--oro) 16%,transparent);color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 42%,transparent)}
-.jg-col-hab span{font:500 .78rem/1.3 var(--f-ui);color:var(--tinta)}
-.jg-col-hab small{font:400 .72rem/1.35 var(--f-ui);color:var(--tenue)}
-.jg-col-ens{display:grid;gap:8px;padding:14px 16px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(110% 90% at 0% 0%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 68%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
-.jg-col-ens p{margin:0;font:400 .9rem/1.55 var(--f-texto);color:var(--tinta)}
+/* B4 + B5 · El Coloso de la Tradición — Santuario Chiaroscuro Volumétrico y Controles Tácticos de Reliquia (Neon, 23-nov-2026) */
+.jg-col-arena{display:grid;gap:16px}
+.jg-col-prev{position:relative;overflow:hidden;border-radius:14px;aspect-ratio:16/7.6;max-height:190px;background:#050506;border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);box-shadow:inset 0 0 0 1px rgba(255,235,176,.08),0 14px 30px -18px rgba(0,0,0,.85)}
+.jg-col-prev img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;display:block;opacity:.92;animation:col-respira 10s ease-in-out infinite;will-change:transform,opacity}
+.jg-col-prev::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 75% at 50% 36%,transparent 35%,rgba(5,5,6,.72) 100%),linear-gradient(180deg,rgba(5,5,6,.18) 0%,transparent 36%,rgba(5,5,6,.86) 100%)}
+.jg-col-prev-cap{position:absolute;left:12px;right:12px;bottom:10px;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.jg-col-prev-cap strong{font:500 clamp(1rem,3.6vw,1.2rem)/1.15 var(--f-display);color:#f7f1e4;text-shadow:0 2px 12px rgba(0,0,0,.95)}
+.jg-col-prev-cap span{font:600 .62rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#f4dea8;padding:4px 8px;border-radius:999px;background:rgba(12,10,8,.76);border:1px solid rgba(212,175,105,.46);white-space:nowrap}
+.jg-col-escena{position:relative;overflow:hidden;display:grid;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 58%,rgba(255,232,168,.2));background:linear-gradient(180deg,#050506 0%,#0b0a09 62%,#0f0d0a 100%);color:#f6f0e4;box-shadow:inset 0 1px 0 rgba(255,236,184,.22),inset 0 0 0 1px rgba(212,175,105,.12),0 28px 60px -28px rgba(0,0,0,.9)}
+.jg-col-stage{position:relative;width:100%;aspect-ratio:16/10;min-height:224px;max-height:410px;overflow:hidden;background:#050506;isolation:isolate}
+@media (max-width:520px){.jg-col-stage{aspect-ratio:16/11.4;min-height:216px}}
+.jg-col-art-w{position:absolute;inset:0;will-change:transform}
+.jg-col-art-w.golpe{animation:col-sacude .44s cubic-bezier(.2,.8,.2,1)}
+.jg-col-art-w.caido .jg-col-art{animation:none;opacity:.52;filter:saturate(.28) brightness(.72)}
+.jg-col-art{position:absolute;inset:-4% -3%;width:106%;height:108%;object-fit:cover;object-position:50% 22%;display:block;pointer-events:none;user-select:none;animation:col-respira 9.5s ease-in-out infinite;will-change:transform,opacity}
+.jg-col-velo{position:absolute;inset:-12% -24%;pointer-events:none;will-change:transform,opacity}
+.jg-col-velo.a{background:radial-gradient(44% 58% at 24% 64%,rgba(5,5,6,.82) 0%,rgba(8,7,6,.44) 48%,transparent 76%),radial-gradient(40% 52% at 78% 54%,rgba(5,5,6,.76) 0%,rgba(8,7,6,.36) 46%,transparent 74%);animation:col-bruma-a 16s ease-in-out infinite}
+.jg-col-velo.b{background:radial-gradient(48% 50% at 58% 72%,rgba(4,4,5,.72) 0%,rgba(9,8,7,.28) 46%,transparent 74%),radial-gradient(34% 44% at 38% 42%,rgba(218,162,74,.11) 0%,transparent 70%);animation:col-bruma-b 21s ease-in-out infinite}
+.jg-col-fx{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
+.jg-col-vig{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(76% 68% at 50% 40%,transparent 32%,rgba(5,5,6,.68) 100%),linear-gradient(180deg,rgba(5,5,6,.68) 0%,rgba(5,5,6,.1) 24%,transparent 48%,rgba(8,7,6,.56) 78%,#0b0a09 100%)}
+.jg-col-top{position:absolute;top:12px;left:12px;right:12px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px}
+.jg-col-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font:600 .62rem/1 var(--f-ui);letter-spacing:.13em;text-transform:uppercase;color:#f6e2ac;background:rgba(10,9,8,.76);border:1px solid rgba(212,175,105,.48);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.jg-col-badge.tenue{color:#d8d0c0;border-color:rgba(240,234,222,.2)}
+.jg-col-premio{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,rgba(212,175,105,.08),rgba(244,207,115,.14),rgba(212,175,105,.08));border:1px solid rgba(212,175,105,.32);font:500 .75rem/1.3 var(--f-ui);color:#e9dfc9;text-align:center}
+.jg-col-premio b{color:#fae3a7;font-weight:600}
+.jg-col-tit-wrap{position:absolute;left:16px;right:16px;bottom:10px;z-index:4;text-align:center;display:grid;gap:3px;pointer-events:none}
+.jg-col-tit-wrap h2{margin:0;font:500 clamp(1.38rem,4.6vw,1.92rem)/1.1 var(--f-display);color:#fbf5e9;letter-spacing:.03em;text-shadow:0 3px 22px rgba(0,0,0,.95)}
+.jg-col-fase{font:600 .66rem/1.2 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#dfb96e;text-shadow:0 2px 12px rgba(0,0,0,.95)}
+.jg-col-dano{position:absolute;top:38%;left:50%;transform:translate3d(-50%,0,0);font:700 clamp(1.7rem,6vw,2.35rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 22px rgba(245,188,78,.92),0 4px 16px rgba(0,0,0,.95);pointer-events:none;z-index:5;animation:col-dano 1.35s cubic-bezier(.18,.82,.24,1) forwards}
+@keyframes col-respira{0%,100%{transform:scale(1.01) translate3d(0,0,0);opacity:.9}50%{transform:scale(1.055) translate3d(0,-4px,0);opacity:1}}
+@keyframes col-bruma-a{0%,100%{transform:translate3d(-3%,1%,0) scale(1);opacity:.82}50%{transform:translate3d(4%,-2%,0) scale(1.06);opacity:.54}}
+@keyframes col-bruma-b{0%,100%{transform:translate3d(4%,0,0) scale(1.04);opacity:.56}50%{transform:translate3d(-4%,2%,0) scale(.98);opacity:.84}}
+@keyframes col-sacude{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(-9px,-4px,0) scale(1.02)}42%{transform:translate3d(8px,3px,0) scale(.99)}68%{transform:translate3d(-5px,1px,0)}100%{transform:translate3d(0,0,0)}}
+@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,16px,0) scale(.72)}20%{opacity:1;transform:translate3d(-50%,-12px,0) scale(1.16)}100%{opacity:0;transform:translate3d(-50%,-62px,0) scale(.92)}}
+.jg-col-hud{position:relative;z-index:4;display:grid;gap:12px;padding:12px 16px 16px;background:linear-gradient(180deg,#0b0a09 0%,#12100d 100%);border-top:1px solid rgba(212,175,105,.18)}
+.jg-col-hp{width:100%;display:grid;gap:7px}
+.jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .78rem/1.2 var(--f-ui);color:#d7cfbf}
+.jg-col-hp-cab b{font:600 1.12rem/1 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.02em}
+.jg-col-hp-bar{position:relative;height:14px;border-radius:999px;background:linear-gradient(180deg,#1a1612,#0c0a08);overflow:hidden;border:1px solid rgba(212,175,105,.46);padding:2px;box-shadow:inset 0 2px 6px rgba(0,0,0,.85),0 0 16px -6px rgba(235,172,72,.35)}
+.jg-col-hp-bar>i{position:relative;display:block;height:100%;border-radius:inherit;overflow:hidden;background:linear-gradient(90deg,#8f241c 0%,#cc5a28 38%,#e8a23c 78%,#ffe69c 100%);box-shadow:0 0 14px rgba(238,164,62,.55);transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.jg-col-hp-bar>i::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,rgba(255,250,232,.46) 50%,transparent 72%);transform:translate3d(-120%,0,0);animation:col-hp-luz 4.8s ease-in-out infinite;will-change:transform}
+@keyframes col-hp-luz{0%,42%{transform:translate3d(-120%,0,0)}100%{transform:translate3d(140%,0,0)}}
+.jg-col-hp-m{position:absolute;top:0;bottom:0;width:1.5px;background:rgba(5,5,6,.72);box-shadow:1px 0 0 rgba(255,232,168,.24);pointer-events:none;z-index:2}
+.jg-col-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:540px){.jg-col-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.jg-col-st{display:grid;gap:2px;padding:8px 10px;border-radius:12px;text-align:center;background:rgba(255,244,214,.04);border:1px solid rgba(212,175,105,.2)}
+.jg-col-st b{font:600 .98rem/1.15 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums}
+.jg-col-st span{font:500 .66rem/1.2 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:#b8afa0}
+.jg-col-pre{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--oro) 13%,var(--hoja-2)),color-mix(in srgb,var(--hoja-2) 94%,transparent));font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2)}
+.jg-col-pre b{color:var(--oro-vivo);font-weight:600}
+.jg-col-pre-ico{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:1px;background:color-mix(in srgb,var(--oro) 18%,transparent);border:1px solid color-mix(in srgb,var(--oro) 48%,transparent);color:var(--oro-vivo)}
+.jg-col-pre-ico svg{width:13px;height:13px}
+.jg-col-panel{display:grid;gap:14px;padding:16px;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 44%,var(--linea-2));background:radial-gradient(110% 80% at 50% 0%,color-mix(in srgb,var(--oro) 11%,transparent),transparent 65%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 95%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 24%,transparent),0 18px 36px -24px rgba(0,0,0,.78)}
+.jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.jg-col-cg-tit{display:grid;gap:2px}
+.jg-col-cg-tit span{font:600 .66rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro)}
+.jg-col-cg-tit b{font:600 1.05rem/1.15 var(--f-display);color:var(--tinta)}
+.jg-col-cg-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:500 .74rem/1.2 var(--f-ui);color:var(--tenue)}
+.jg-col-mult{padding:4px 9px;border-radius:999px;font:600 .72rem/1 var(--f-ui);color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 15%,transparent);border:1px solid color-mix(in srgb,var(--oro) 46%,transparent)}
+.jg-col-crist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:8px 10px;border-radius:14px;background:color-mix(in srgb,var(--hoja) 76%,transparent);border:1px solid var(--linea-2)}
+.jg-col-cg-c{position:relative;height:26px;display:grid;place-items:center}
+.jg-col-cg-c i{position:relative;display:block;width:16px;height:16px;border-radius:3.5px;transform:rotate(45deg);background:var(--hoja-3);border:1.5px solid color-mix(in srgb,var(--linea) 70%,transparent);transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .28s,border-color .28s,box-shadow .28s}
+.jg-col-cg-c.on i{background:linear-gradient(135deg,#fff3c8 0%,var(--oro-vivo) 44%,var(--oro) 100%);border-color:#fff2c6;box-shadow:0 0 14px color-mix(in srgb,var(--oro-vivo) 72%,transparent),inset 0 0 4px rgba(255,255,255,.72);transform:rotate(45deg) scale(1.06)}
+:root[data-theme="light"] .jg-col-cg-c.on i{background:linear-gradient(135deg,#f6d98a 0%,#c79234 55%,#8f6116 100%);border-color:#754d0c;box-shadow:0 0 10px rgba(152,102,24,.4)}
+.jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+@media (max-width:640px){.jg-col-habs{grid-template-columns:1fr}}
+.jg-col-hab{--hc:#d79b5b;--hc-l:#8c5418;position:relative;overflow:hidden;display:grid;align-content:space-between;gap:10px;text-align:left;padding:15px 14px 13px;border-radius:17px;border:1px solid color-mix(in srgb,var(--hc) 46%,var(--linea-2));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc) 16%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 96%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));color:var(--tinta);cursor:pointer;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 34%,transparent),0 14px 28px -20px rgba(0,0,0,.8);transition:transform .22s cubic-bezier(.2,.8,.2,1),border-color .22s,box-shadow .22s,opacity .22s}
+.jg-col-hab.t2{--hc:#7eb8f0;--hc-l:#1f5894}
+.jg-col-hab.t3{--hc:#f4cf73;--hc-l:#8a600e;border-color:color-mix(in srgb,var(--hc) 62%,var(--linea-2));background:radial-gradient(125% 90% at 50% 0%,color-mix(in srgb,var(--hc) 22%,transparent),transparent 66%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 96%,transparent),color-mix(in srgb,var(--hoja) 99%,transparent))}
+:root[data-theme="light"] .jg-col-hab{border-color:color-mix(in srgb,var(--hc-l) 44%,var(--linea-2));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc-l) 11%,transparent),transparent 64%),linear-gradient(180deg,#fffdf8,#f4ecde);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 24px -18px rgba(48,34,14,.28)}
+.jg-col-hab.t3.listo::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 30%,color-mix(in srgb,var(--hc) 22%,transparent) 50%,transparent 70%);transform:translate3d(-120%,0,0);animation:jp-brillo 5.2s ease-in-out infinite;will-change:transform}
+.jg-col-hab:hover:not(:disabled){transform:translate3d(0,-3px,0);border-color:var(--hc);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 52%,transparent),0 18px 34px -18px color-mix(in srgb,var(--hc) 42%,rgba(0,0,0,.85))}
+.jg-col-hab:active:not(:disabled){transform:scale(.975)}
+.jg-col-hab:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
+.jg-col-hab:disabled{opacity:.44;cursor:not-allowed;filter:saturate(.65)}
+.jg-col-hab-top{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:10px}
+.jg-col-sig{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:var(--hc);background:radial-gradient(circle at 35% 25%,color-mix(in srgb,var(--hc) 24%,transparent),color-mix(in srgb,var(--hoja) 88%,transparent));border:1px solid color-mix(in srgb,var(--hc) 46%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 35%,transparent)}
+:root[data-theme="light"] .jg-col-sig{color:var(--hc-l);border-color:color-mix(in srgb,var(--hc-l) 45%,transparent)}
+.jg-col-sig svg{width:24px;height:24px;display:block}
+.jg-col-hab-id{display:grid;gap:3px;min-width:0}
+.jg-col-hab-id b{font:600 1.06rem/1.12 var(--f-display);color:var(--tinta)}
+.jg-col-hab-cost{display:inline-flex;align-items:center;gap:5px;width:fit-content;font:600 .64rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--hc)}
+:root[data-theme="light"] .jg-col-hab-cost{color:var(--hc-l)}
+.jg-col-hab-dots{display:inline-flex;gap:3px}
+.jg-col-hab-dots i{width:5.5px;height:5.5px;border-radius:1.2px;transform:rotate(45deg);background:currentColor}
+.jg-col-hab-mid{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:11px;background:color-mix(in srgb,var(--hoja) 72%,transparent);border:1px solid color-mix(in srgb,var(--hc) 24%,var(--linea-2))}
+.jg-col-hab-dmg{font:600 1.24rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
+.jg-col-hab-ef{font:600 .65rem/1.1 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--hc)}
+:root[data-theme="light"] .jg-col-hab-ef{color:var(--hc-l)}
+.jg-col-hab-desc{font:400 .75rem/1.38 var(--f-ui);color:var(--tinta-2)}
+.jg-col-hab-go{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--linea-2) 85%,transparent);font:600 .7rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--hc)}
+:root[data-theme="light"] .jg-col-hab-go{color:var(--hc-l)}
+.jg-col-hab:disabled .jg-col-hab-go{color:var(--tenue)}
+.jg-col-ens{display:grid;gap:8px;padding:15px 16px;border-radius:18px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(110% 90% at 0% 0%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 68%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
+.jg-col-ens p{margin:0;font:400 .92rem/1.55 var(--f-texto);color:var(--tinta)}
 .jg-col-cita{display:grid;gap:5px;padding:10px 12px;border-radius:12px;border-left:2px solid var(--oro);background:color-mix(in srgb,var(--hoja) 84%,transparent);font:400 .88rem/1.55 var(--f-texto);color:var(--tinta)}
 .jg-col-cita a{font:600 .72rem/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--oro-vivo);text-decoration:none}
 .jg-col-cita a:hover{text-decoration:underline}
 .jg-col-live{display:grid;gap:10px;margin-top:8px}
 .jg-col-cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin-top:4px}
-@media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-fig{animation:none}}
-html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-fig{animation:none}
+html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after,html.desplazando .jg-col-art,html.desplazando .jg-col-velo,html.desplazando .jg-col-prev img{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-art,.jg-col-velo,.jg-col-prev img,.jg-col-hp-bar>i::after,.jg-col-hab.t3.listo::after{animation:none}}
+html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-art,html[data-mov="no"] .jg-col-velo,html[data-mov="no"] .jg-col-prev img,html[data-mov="no"] .jg-col-hp-bar>i::after,html[data-mov="no"] .jg-col-hab.t3.listo::after{animation:none}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -3321,41 +3382,207 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   // B4 + B5 · El Coloso de la Tradición (Neon, 23-nov-2026): incursión cooperativa semanal en vivo (GET /coloso + POST /coloso/accion)
   const COLOSO_MS = Date.UTC(2026, 10, 28, 18, 0, 0);
   const COLOSO_CACHE = { d: null, t: 0 };
+  const COLOSO_IMG = (window.BIEX_BASE || "") + "img/coloso-velo.webp";
   const COLOSO_HABS = [
-    ["golpe", "Golpe certero", 1, 100, "Ataque constante · 1 carga"],
-    ["palabra", "Palabra afilada", 2, 260, "+30 % por carga · precisión táctica"],
-    ["fuerza", "Fuerza plena", 4, 620, "+55 % por carga · impacto decisivo"],
+    ["golpe", "Golpe certero", 1, 100, "Impacto constante que mantiene la presión cada pocas horas."],
+    ["palabra", "Palabra afilada", 2, 260, "+30 % por carga · precisión táctica sobre las grietas."],
+    ["fuerza", "Fuerza plena", 4, 620, "+55 % por carga · descarga decisiva amplificada por tu Árbol."],
   ];
-  function colosoSvg(hpPct, derrotado) {
-    const g1 = hpPct < 78 || derrotado ? '<path d="M92 56l7 11-5 9M108 58l-6 10 4 8" fill="none" stroke="#ffdf8a" stroke-width="1.8" stroke-linecap="round"/>' : "";
-    const g2 = hpPct < 48 || derrotado ? '<path d="M72 96l15 14-8 16 14 14M126 98l-14 15 7 15-12 13" fill="none" stroke="#ffb85c" stroke-width="2.1" stroke-linecap="round"/>' : "";
-    const g3 = hpPct < 22 || derrotado ? '<path d="M98 34l-3 24 8 18-9 26 7 28-6 26" fill="none" stroke="#fff0be" stroke-width="2.4" stroke-linecap="round"/>' : "";
+  // Sigilos vectoriales de reliquia (cero cruces, cero estrellas de cinco puntas, cero rayos solares)
+  function colosoSigilo(id) {
+    if (id === "palabra") {
+      return A.svg(
+        '<path d="M12 2.5C15.6 6.8 17.5 11.4 17.5 15.6c0 2.6-1.9 4.9-5.5 5.9-3.6-1-5.5-3.3-5.5-5.9 0-4.2 1.9-8.8 5.5-13.1Z" fill="currentColor" fill-opacity=".16" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' +
+        '<path d="M12 5.4v14.8M9.3 14.2c.8-2.2 1.7-4.5 2.7-6.6 1 2.1 1.9 4.4 2.7 6.6" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>',
+        "0 0 24 24"
+      );
+    }
+    if (id === "fuerza") {
+      return A.svg(
+        '<polygon points="12,2.2 19,5.1 21.8,12 19,18.9 12,21.8 5,18.9 2.2,12 5,5.1" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>' +
+        '<polygon points="12,6.2 16.8,12 12,17.8 7.2,12" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>' +
+        '<circle cx="12" cy="12" r="1.9" fill="currentColor"/>',
+        "0 0 24 24"
+      );
+    }
     return A.svg(
-      '<defs>' +
-        '<linearGradient id="cOro" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f7df9d"/><stop offset="100%" stop-color="#b4832c"/></linearGradient>' +
-        '<linearGradient id="cPla" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#7c8798"/></linearGradient>' +
-        '<linearGradient id="cBro" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d79b5b"/><stop offset="100%" stop-color="#7c4a1d"/></linearGradient>' +
-        '<linearGradient id="cHie" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e7684"/><stop offset="100%" stop-color="#303540"/></linearGradient>' +
-        '<linearGradient id="cBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b5a3c"/><stop offset="100%" stop-color="#472b1c"/></linearGradient>' +
-      '</defs>' +
-      '<ellipse cx="100" cy="196" rx="64" ry="9" fill="rgba(0,0,0,.45)"/>' +
-      // cabeza de oro (corona geométrica, sin cruces)
-      '<polygon points="84,22 100,12 116,22 114,52 86,52" fill="url(#cOro)" stroke="#fff0be" stroke-opacity=".45" stroke-width="1.2"/>' +
-      '<rect x="91" y="33" width="6" height="3.2" rx="1.5" fill="#1b1409"/><rect x="103" y="33" width="6" height="3.2" rx="1.5" fill="#1b1409"/>' +
-      // pecho y hombros de plata
-      '<polygon points="62,56 138,56 146,84 128,104 72,104 54,84" fill="url(#cPla)" stroke="#ffffff" stroke-opacity=".32" stroke-width="1.2"/>' +
-      '<path d="M74 66h52l-6 26H80z" fill="rgba(12,14,18,.22)"/>' +
-      // vientre y faja de bronce
-      '<polygon points="73,106 127,106 122,140 78,140" fill="url(#cBro)" stroke="#f6c78a" stroke-opacity=".35" stroke-width="1.2"/>' +
-      // piernas de hierro
-      '<polygon points="77,142 96,142 92,178 72,178" fill="url(#cHie)" stroke="#aeb7c7" stroke-opacity=".28" stroke-width="1"/>' +
-      '<polygon points="104,142 123,142 128,178 108,178" fill="url(#cHie)" stroke="#aeb7c7" stroke-opacity=".28" stroke-width="1"/>' +
-      // base de hierro y barro
-      '<polygon points="66,180 95,180 93,192 62,192" fill="url(#cBar)" stroke="#d39c76" stroke-opacity=".35" stroke-width="1"/>' +
-      '<polygon points="105,180 134,180 138,192 107,192" fill="url(#cBar)" stroke="#d39c76" stroke-opacity=".35" stroke-width="1"/>' +
-      g1 + g2 + g3,
-      "0 0 200 208"
+      '<circle cx="12" cy="12" r="8.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="10 4" stroke-linecap="round"/>' +
+      '<polygon points="12,4.4 16.6,12 12,19.6 7.4,12" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<circle cx="12" cy="12" r="2.2" fill="currentColor"/>',
+      "0 0 24 24"
     );
+  }
+  function faseColoso(pct, derrotado) {
+    if (derrotado) return "Coloso derribado · Victoria de la comunidad";
+    if (pct > 75) return "Fase I · Presencia entre la bruma";
+    if (pct > 50) return "Fase II · Primeras grietas de luz";
+    if (pct > 25) return "Fase III · El velo comienza a ceder";
+    return "Fase IV · Al borde del derrumbe";
+  }
+  // Motor atmosférico HiDPI <canvas>: bruma abisal «sí y no», brasas doradas, pulso de fracturas y onda de choque al impactar.
+  // Se pausa automáticamente fuera de pantalla (IntersectionObserver), en pestaña oculta, con modal abierto o en modo sin animaciones.
+  function montarAtmosferaColoso(canvas, opts) {
+    const ctx = canvas && canvas.getContext && canvas.getContext("2d");
+    if (!ctx) return;
+    const pct = Math.max(0, Math.min(100, Number(opts.pct) || 0));
+    const derrotado = !!opts.derrotado;
+    const danoFrac = derrotado ? 1 : (100 - pct) / 100;
+    let w = 0, hC = 0, dpr = 1, raf = 0, visible = true, t0 = performance.now();
+    const nBrasas = derrotado ? 14 : Math.round(26 + danoFrac * 18);
+    const brasas = Array.from({ length: nBrasas }, (_, i) => ({
+      x: ((i * 73.1 + 19) % 100) / 100,
+      y: ((i * 41.7 + 7) % 100) / 100,
+      r: 0.9 + ((i * 17) % 10) * 0.22,
+      vy: 0.016 + ((i * 29) % 11) * 0.0032,
+      amp: 0.008 + ((i * 13) % 7) * 0.003,
+      f: 0.7 + ((i * 19) % 9) * 0.16,
+      ph: i * 1.37,
+      oro: i % 3 !== 0,
+    }));
+    const brumas = [
+      { x: 0.18, y: 0.76, rx: 0.42, ry: 0.26, vx: 0.011, ph: 0.3, op: 0.42 },
+      { x: 0.82, y: 0.72, rx: 0.44, ry: 0.28, vx: -0.009, ph: 2.1, op: 0.4 },
+      { x: 0.48, y: 0.86, rx: 0.56, ry: 0.24, vx: 0.007, ph: 4.2, op: 0.46 },
+      { x: 0.32, y: 0.52, rx: 0.34, ry: 0.26, vx: 0.008, ph: 1.4, op: 0.24 },
+      { x: 0.68, y: 0.48, rx: 0.36, ry: 0.26, vx: -0.01, ph: 3.6, op: 0.24 },
+    ];
+    let onda = opts.impacto ? 1 : 0;
+    const chispas = opts.impacto ? Array.from({ length: 36 }, (_, i) => {
+      const ang = (Math.PI * 2 * i) / 36 + (i % 3) * 0.07;
+      const spd = 0.16 + ((i * 23) % 15) * 0.028;
+      return { x: 0.5, y: 0.56, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd - 0.04, life: 1, r: 1.3 + (i % 4) * 0.65 };
+    }) : [];
+    const medir = () => {
+      if (!canvas.isConnected) return false;
+      const rc = canvas.getBoundingClientRect();
+      if (!rc.width || !rc.height) return false;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = Math.round(rc.width); hC = Math.round(rc.height);
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(hC * dpr)) {
+        canvas.width = Math.round(w * dpr); canvas.height = Math.round(hC * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    };
+    const dibujar = (ahora, dt) => {
+      if (!w || !hC) return;
+      const t = (ahora - t0) / 1000;
+      ctx.clearRect(0, 0, w, hC);
+      // 1) Resplandor interior de grietas en el pecho (crece al bajar la vida del Coloso)
+      const cx = w * 0.5, cy = hC * 0.58;
+      const pulso = 0.5 + 0.5 * Math.sin(t * (derrotado ? 0.9 : 1.7 + danoFrac * 1.4));
+      const intGrieta = derrotado ? 0.14 : (0.12 + danoFrac * 0.34) * (0.72 + 0.28 * pulso);
+      const rg = ctx.createRadialGradient(cx, cy, 2, cx, cy, Math.max(w, hC) * (0.2 + danoFrac * 0.14));
+      rg.addColorStop(0, "rgba(255,232,162," + (intGrieta * 0.95).toFixed(3) + ")");
+      rg.addColorStop(0.42, "rgba(224,142,46," + (intGrieta * 0.48).toFixed(3) + ")");
+      rg.addColorStop(1, "rgba(224,142,46,0)");
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillStyle = rg;
+      ctx.fillRect(0, 0, w, hC);
+      // 2) Volutas de bruma abisal oscureciendo y revelando contornos («sí y no»)
+      ctx.globalCompositeOperation = "source-over";
+      for (const b of brumas) {
+        const bx = ((b.x + Math.sin(t * 0.35 + b.ph) * 0.09 + t * b.vx) % 1.3 + 1.3) % 1.3 - 0.15;
+        const by = b.y + Math.cos(t * 0.26 + b.ph) * 0.03;
+        const rad = Math.max(w * b.rx, hC * b.ry);
+        const g = ctx.createRadialGradient(bx * w, by * hC, rad * 0.06, bx * w, by * hC, rad);
+        g.addColorStop(0, "rgba(4,4,6," + b.op + ")");
+        g.addColorStop(0.58, "rgba(7,6,6," + (b.op * 0.45).toFixed(3) + ")");
+        g.addColorStop(1, "rgba(5,5,6,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(bx * w, by * hC, w * b.rx, hC * b.ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // 3) Brasas y polvo de oro ascendentes
+      ctx.globalCompositeOperation = "lighter";
+      for (const p of brasas) {
+        p.y -= p.vy * dt;
+        if (p.y < -0.05) { p.y = 1.06; p.x = (p.x + 0.31) % 1; }
+        const px = (p.x + Math.sin(t * p.f + p.ph) * p.amp) * w;
+        const py = p.y * hC;
+        const al = Math.sin(Math.max(0, Math.min(1, p.y)) * Math.PI) * (0.38 + 0.52 * (0.5 + 0.5 * Math.sin(t * 2.4 + p.ph)));
+        if (al < 0.04) continue;
+        ctx.fillStyle = p.oro ? "rgba(255,224,142," + al.toFixed(3) + ")" : "rgba(232,148,66," + (al * 0.85).toFixed(3) + ")";
+        ctx.beginPath();
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // 4) Onda expansiva y lluvia radial de chispas al golpear
+      if (onda > 0) {
+        onda = Math.max(0, onda - dt * 1.15);
+        const prog = 1 - onda;
+        const rOnda = Math.max(w, hC) * (0.04 + prog * 0.52);
+        ctx.strokeStyle = "rgba(255,232,162," + (onda * 0.85).toFixed(3) + ")";
+        ctx.lineWidth = Math.max(1.2, 4.5 * onda);
+        ctx.beginPath();
+        ctx.arc(cx, cy, rOnda, 0, Math.PI * 2);
+        ctx.stroke();
+        const flash = ctx.createRadialGradient(cx, cy, 0, cx, cy, rOnda * 0.8);
+        flash.addColorStop(0, "rgba(255,244,205," + (onda * 0.42).toFixed(3) + ")");
+        flash.addColorStop(1, "rgba(255,212,112,0)");
+        ctx.fillStyle = flash;
+        ctx.fillRect(0, 0, w, hC);
+      }
+      for (const ch of chispas) {
+        if (ch.life <= 0) continue;
+        ch.x += ch.vx * dt; ch.y += ch.vy * dt; ch.vy += 0.24 * dt; ch.life -= dt * 1.05;
+        if (ch.life <= 0) continue;
+        ctx.fillStyle = "rgba(255,238,180," + ch.life.toFixed(3) + ")";
+        ctx.beginPath();
+        ctx.arc(ch.x * w, ch.y * hC, ch.r * (0.5 + 0.5 * ch.life), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
+    let ult = performance.now();
+    const limpiar = () => {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (io) io.disconnect();
+      if (ro) ro.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    const paso = (ahora) => {
+      raf = 0;
+      if (!canvas.isConnected) return limpiar();
+      if (!visible || document.hidden) return;
+      const dt = Math.min(0.05, Math.max(0.008, (ahora - ult) / 1000));
+      ult = ahora;
+      if (!document.documentElement.classList.contains("con-modal") && !document.documentElement.classList.contains("desplazando")) {
+        dibujar(ahora, dt);
+      }
+      raf = requestAnimationFrame(paso);
+    };
+    const arrancar = () => {
+      if (!canvas.isConnected || !medir()) return;
+      if (sinAnim()) { dibujar(performance.now() + 900, 0.016); return; }
+      if (!raf && visible && !document.hidden) { ult = performance.now(); raf = requestAnimationFrame(paso); }
+    };
+    const onVis = () => {
+      if (!canvas.isConnected) return limpiar();
+      if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+      else arrancar();
+    };
+    const io = window.IntersectionObserver ? new IntersectionObserver((es) => {
+      visible = !!(es[0] && es[0].isIntersecting);
+      if (visible) arrancar(); else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    }, { threshold: 0.04 }) : null;
+    if (io) io.observe(canvas);
+    const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir() && sinAnim()) dibujar(performance.now() + 900, 0.016); }) : null;
+    if (ro) ro.observe(canvas);
+    document.addEventListener("visibilitychange", onVis);
+    requestAnimationFrame(arrancar);
+  }
+  function avisoPrelanzamientoColoso(compacto) {
+    if (S.yo && S.yo.lanzado) return null;
+    const gemSvg = A.svg('<polygon points="12,3 20,12 12,21 4,12" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2" fill="currentColor"/>', "0 0 24 24");
+    return h("div", { class: "jg-col-pre", role: "note" },
+      h("span", { class: "jg-col-pre-ico", "aria-hidden": "true" }, gemSvg),
+      h("div", {},
+        h("b", { text: "Prelanzamiento activo · " }),
+        compacto
+          ? "Quienes participen ya suman recompensas reales y conservarán de forma aleatoria " + textoConserva() + " al abrir el juego oficial."
+          : "Quienes participen desde ahora contra El Coloso ya ganan experiencia, dracmas y aporte real; al empezar el juego oficial conservarán, de forma aleatoria, " + textoConserva() + " de estas recompensas, igual que en el resto de la práctica."));
   }
   function parseCitaColoso(cita) {
     const m = /^([1-3A-Z]{3})\s+(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?/.exec(String(cita || "").trim());
@@ -3405,8 +3632,14 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("span", { class: "jg-coloso-chip", text: falta > 0 ? "Sábado 28 nov · 18:00 UTC" : "Desafío semanal" })),
       h("h2", { class: "jg-coloso-h", text: "El Coloso de la Tradición" }),
       zona);
+    const prevArte = (subt, etiq) => h("div", { class: "jg-col-prev" },
+      h("img", { src: COLOSO_IMG, alt: "Presencia velada de El Coloso de la Tradición entre bruma oscura", loading: "lazy", decoding: "async" }),
+      h("div", { class: "jg-col-prev-cap" },
+        h("strong", { text: subt || "El Coloso de la Tradición" }),
+        etiq ? h("span", { text: etiq }) : null));
     const pintarCuenta = () => {
       zona.replaceChildren(
+        prevArte("Presencia entre la bruma", "Incursión cooperativa"),
         h("p", { class: "jg-coloso-p", text: compacta
           ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
           : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
@@ -3424,10 +3657,16 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (nov) nov.textContent = derrotado ? "Coloso derribado · Victoria común" : "Incursión activa · en vivo";
       if (ch) ch.textContent = c.cargas != null ? (c.cargas | 0) + " / " + (c.cargasMax || 6) + " cargas" : (c.semana || "Semana actual");
       zona.replaceChildren(
-        jefe.nombre ? h("p", { class: "jg-coloso-p", text: jefe.nombre + (jefe.ensenanza && !compacta ? " — " + jefe.ensenanza : "") }) : null,
+        prevArte(jefe.nombre || "El Coloso de la Tradición", derrotado ? "Derribado" : pct.toFixed(0) + " %"),
+        jefe.ensenanza && !compacta ? h("p", { class: "jg-coloso-p", text: jefe.ensenanza }) : null,
         h("div", { class: "jg-col-hp" },
           h("div", { class: "jg-col-hp-cab" }, h("span", { text: derrotado ? "Coloso derribado" : "Resistencia del Coloso" }), h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
-          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida restante de El Coloso" }, h("i", { style: "width:" + pct.toFixed(1) + "%" }))),
+          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida restante de El Coloso" },
+            h("i", { style: "width:" + pct.toFixed(1) + "%" }),
+            h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
+            h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
+            h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }))),
+        avisoPrelanzamientoColoso(true),
         h("div", { class: "jg-col-cta-row" },
           h("span", { class: "jg-mini", text: plural(c.participantes | 0, "lector combate", "lectores combaten") + (c.miAporte ? " · tu aporte: " + fmt(c.miAporte) : "") + (c.fin && !derrotado ? " · cierra en " + restaTexto(c.fin) : "") }),
           h("a", { class: "btn oro chico", href: "#/escudrina/coloso" }, h("span", { text: derrotado ? "Ver victoria y enseñanza" : "Entrar a la batalla" }), A.svg(A.ICO.der))));
@@ -3439,7 +3678,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   async function pintarColoso(cont) {
     document.title = "El Coloso de la Tradición · Escudriña · BiEx";
     const zona = h("div", { class: "jg jg-col-arena" }, h("p", { class: "cargando", text: "Despertando la incursión…" }));
-    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa de toda la comunidad · tu poder del Árbol amplifica cada acción manual."), zona);
+    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa de toda la comunidad · tu poder del Árbol amplifica cada acción manual.", "#/escudrina/mundo"), zona);
     const pintar = (c, ultDano) => {
       if (cont !== S.cont || !zona.isConnected) return;
       if (!c) {
@@ -3456,31 +3695,47 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       const poderYo = (S.yo && S.yo.av && S.yo.av.poder) || 0;
       const mult = 1 + poderYo / 2000;
       const cargas = Math.max(0, c.cargas | 0), cmax = Math.max(1, c.cargasMax || 6);
-      const fig = h("div", { class: "jg-col-fig" + (derrotado ? " caido" : "") + (ultDano ? " golpe" : "") }, colosoSvg(pct, derrotado));
-      if (ultDano) fig.append(h("span", { class: "jg-col-dano", text: "−" + fmt(ultDano) }));
-      const escena = h("section", { class: "jg-col-escena" },
-        h("div", { class: "jg-chips jg-chips-yo" },
-          h("span", { class: "jg-chip", text: derrotado ? "Derrotado esta semana" : "Jefe activo" }),
-          c.semana ? h("span", { class: "jg-chip tenue", text: "Semana " + c.semana }) : null,
-          premioColosoTxt(c.premio) ? h("span", { class: "jg-chip", text: "Premio: " + premioColosoTxt(c.premio) }) : null),
-        fig,
-        h("h2", { class: "jg-coloso-h", text: jefe.nombre || "El Coloso de la Tradición" }),
+      const lienzoFx = h("canvas", { class: "jg-col-fx", "aria-hidden": "true" });
+      const artWrap = h("div", { class: "jg-col-art-w" + (derrotado ? " caido" : "") + (ultDano ? " golpe" : "") },
+        h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
+        h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
+        h("div", { class: "jg-col-velo b", "aria-hidden": "true" }));
+      const premioTxt = premioColosoTxt(c.premio);
+      const stage = h("div", { class: "jg-col-stage" },
+        artWrap,
+        lienzoFx,
+        h("div", { class: "jg-col-vig", "aria-hidden": "true" }),
+        h("div", { class: "jg-col-top" },
+          h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "Incursión activa · en vivo" })),
+          c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null),
+        ultDano ? h("span", { class: "jg-col-dano", text: "−" + fmt(ultDano) }) : null,
+        h("div", { class: "jg-col-tit-wrap" },
+          h("span", { class: "jg-col-fase", text: faseColoso(pct, derrotado) }),
+          h("h2", { text: jefe.nombre || "El Coloso de la Tradición" })));
+      const hud = h("div", { class: "jg-col-hud" },
         h("div", { class: "jg-col-hp" },
           h("div", { class: "jg-col-hp-cab" },
-            h("span", { text: derrotado ? "¡Derribado entre todos!" : "Resistencia restante (" + pct.toFixed(1).replace(".", ",") + " %)" }),
+            h("span", { text: derrotado ? "¡Derribado entre todos!" : "Resistencia restante · " + pct.toFixed(1).replace(".", ",") + " %" }),
             h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
-          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida del Coloso" }, h("i", { style: "width:" + pct.toFixed(1) + "%" }))),
-        h("div", { class: "jg-col-meta" },
-          h("span", { text: plural(c.participantes | 0, "lector participa", "lectores participan") }),
-          h("span", { text: "Tu aporte: " + fmt(c.miAporte | 0) }),
-          h("span", { text: "Tu poder: " + fmt(poderYo) + " (×" + mult.toFixed(2).replace(".", ",") + ")" }),
-          c.fin && !derrotado ? h("span", { text: "Termina en " + restaTexto(c.fin) }) : null));
+          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida del Coloso" },
+            h("i", { style: "width:" + pct.toFixed(1) + "%" }),
+            h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
+            h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
+            h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }))),
+        h("div", { class: "jg-col-stats" },
+          h("div", { class: "jg-col-st" }, h("b", { text: fmt(c.participantes | 0) }), h("span", { text: (c.participantes | 0) === 1 ? "Lector" : "Lectores" })),
+          h("div", { class: "jg-col-st" }, h("b", { text: fmt(c.miAporte | 0) }), h("span", { text: "Tu aporte" })),
+          h("div", { class: "jg-col-st" }, h("b", { text: "×" + mult.toFixed(2).replace(".", ",") }), h("span", { text: "Bono Árbol" })),
+          h("div", { class: "jg-col-st" }, h("b", { text: derrotado ? "Cerrado" : (c.fin ? restaTexto(c.fin) : "Activo") }), h("span", { text: derrotado ? "Estado" : "Restante" }))),
+        premioTxt ? h("div", { class: "jg-col-premio" }, h("span", { text: "Recompensa por victoria:" }), h("b", { text: premioTxt })) : null);
+      const escena = h("section", { class: "jg-col-escena" }, stage, hud);
+      const avisoPre = avisoPrelanzamientoColoso(false);
       // B5 · Enseñanza del jefe + cita real de BiEx
       const ens = jefe.ensenanza || jefe.cita ? h("section", { class: "jg-col-ens" },
         h("span", { class: "eyebrow", text: "Enseñanza de esta incursión" }),
         jefe.ensenanza ? h("p", { text: jefe.ensenanza }) : null,
         jefe.cita ? bloqueCitaColoso(jefe.cita) : null) : null;
-      // B4 · Cargas y habilidades manuales estratégicas
+      // B4 · Cargas y habilidades manuales estratégicas de reliquia
       const actuar = async (hab, bt) => {
         if (bt) bt.disabled = true;
         const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab } });
@@ -3488,7 +3743,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           if (bt) bt.disabled = false;
           return A.avisar(mensaje(r));
         }
-        vibrar([12, 24, 18]); sonar("chispa");
+        vibrar([14, 26, 22]); sonar("chispa");
         const dano = Number(r.dano || r.impacto || 0);
         if (r.yo) actualizarYo(r.yo);
         const nuevo = Object.assign({}, c, r.coloso || r);
@@ -3501,21 +3756,41 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         COLOSO_CACHE.d = nuevo; COLOSO_CACHE.t = Date.now();
         A.avisar(dano ? "¡Impacto de " + fmt(dano) + " contra El Coloso!" : "Acción registrada contra El Coloso");
         pintar(nuevo, dano || 1);
+        const escEl = zona.querySelector(".jg-col-escena");
+        if (escEl && escEl.getBoundingClientRect().top < 40) escEl.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" });
       };
       const habsFuente = Array.isArray(c.habilidades) && c.habilidades.length
         ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
         : COLOSO_HABS;
-      const comb = !derrotado ? h("section", { class: "jg-col-cargas" },
+      const efEtiqueta = (cost) => cost >= 4 ? "+55 % · Decisivo" : cost >= 2 ? "+30 % / carga" : "Presión constante";
+      const comb = !derrotado ? h("section", { class: "jg-col-panel" },
         h("div", { class: "jg-col-cg-cab" },
-          h("span", { text: "Cargas tácticas: " + cargas + " de " + cmax }),
-          h("small", { text: cargas >= cmax ? "Al máximo · elige tu estrategia" : c.cargaEn ? "Próxima carga en " + restaTexto(c.cargaEn) : "+1 carga cada 3 horas" })),
-        h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("i", { class: i < cargas ? "on" : "" }))),
-        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base, desc]) => {
+          h("div", { class: "jg-col-cg-tit" },
+            h("span", { text: "Conducto de energía táctica" }),
+            h("b", { text: cargas + " de " + cmax + " cargas listas" })),
+          h("div", { class: "jg-col-cg-sub" },
+            h("span", { class: "jg-col-mult", text: "Poder " + fmt(poderYo) + " · ×" + mult.toFixed(2).replace(".", ",") }),
+            h("span", { text: cargas >= cmax ? "Al máximo · elige tu golpe" : c.cargaEn ? "Próxima en " + restaTexto(c.cargaEn) : "+1 cada 3 h" }))),
+        h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("span", { class: "jg-col-cg-c" + (i < cargas ? " on" : "") }, h("i", {})))),
+        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base, desc], idx) => {
           const est = Math.round(base * mult);
-          return h("button", { class: "jg-col-hab", type: "button", disabled: cargas < cost, onclick: (e) => actuar(id, e.currentTarget) },
-            h("div", { class: "jg-col-hab-top" }, h("b", { text: nom }), h("span", { class: "jg-col-hab-cost", text: plural(cost, "carga", "cargas") })),
-            h("span", { text: "~" + fmt(est) + " de impacto" }),
-            h("small", { text: desc || "Escalado con tu poder actual" }));
+          const lista = cargas >= cost;
+          const faltaCg = Math.max(0, cost - cargas);
+          const tier = id === "fuerza" || cost >= 4 ? "t3" : id === "palabra" || cost >= 2 ? "t2" : ("t" + Math.min(3, idx + 1));
+          const dots = h("span", { class: "jg-col-hab-dots", "aria-hidden": "true" }, Array.from({ length: Math.min(6, cost) }, () => h("i", {})));
+          return h("button", { class: "jg-col-hab " + tier + (lista ? " listo" : ""), type: "button", disabled: !lista, onclick: (e) => actuar(id, e.currentTarget) },
+            h("div", { class: "jg-col-hab-top" },
+              h("span", { class: "jg-col-sig", "aria-hidden": "true" }, colosoSigilo(id)),
+              h("span", { class: "jg-col-hab-id" },
+                h("b", { text: nom }),
+                h("span", { class: "jg-col-hab-cost" }, dots, h("span", { text: plural(cost, "carga", "cargas") })))),
+            h("div", { class: "jg-col-hab-mid" },
+              h("span", { class: "jg-col-hab-dmg", text: "~" + fmt(est) }),
+              h("span", { class: "jg-col-hab-ef", text: efEtiqueta(cost) })),
+            h("span", { class: "jg-col-hab-desc", text: desc || "Escalado directamente con tu poder del Árbol." }),
+            h("span", { class: "jg-col-hab-go" },
+              h("span", { text: lista ? "Desatar acción" : "Faltan " + plural(faltaCg, "carga", "cargas") }),
+              h("span", { "aria-hidden": "true", text: lista ? "›" : "·" })));
         }))) : null;
       const topL = Array.isArray(c.top) ? c.top : [];
       const topCard = topL.length ? tarjeta("Mayores aportes de la semana", ico("liga"),
@@ -3528,7 +3803,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
             h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
             h("span", { class: "x", text: fmt(pts) }));
         }))) : null;
-      zona.replaceChildren(...[escena, comb, ens, topCard].filter(Boolean));
+      zona.replaceChildren(...[escena, avisoPre, comb, ens, topCard].filter(Boolean));
+      montarAtmosferaColoso(lienzoFx, { pct, derrotado, impacto: ultDano > 0 });
     };
     const d = await cargarColoso(true);
     pintar(d, 0);
@@ -5643,7 +5919,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     document.title = "Árbol de la siembra · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu árbol…" }));
     const poder = raiz ? null : h("div", { class: "jg ap" }, h("p", { class: "cargando", text: "Despertando tu árbol…" }));
-    if (raiz) marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje."), zona);
+    if (raiz) marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje.", "#/escudrina/juntos"), zona);
     else { marco(cont, cabeceraJuego("arbol"), poder, zona); (S.yo ? Promise.resolve(S.yo) : pedir("/yo").then((r) => { if (!r.error) actualizarYo(r.yo); return S.yo; })).then((y) => { if (y) pintarPoder(poder, y); else poder.replaceChildren(); }); }
     const r = await pedir("/arbol?" + new URLSearchParams(raiz ? { raiz, prof: "3" } : { prof: "3" }), { guardable: true });
     if (cont !== S.cont || !zona.isConnected) return;
@@ -5858,11 +6134,20 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     return tarjeta("Construye Escudriña con nosotros", ico("idea"), intro, seg, h("div", { class: "jg-form col" }, area, h("button", { class: "btn oro", type: "button", onclick: enviarO }, h("span", { text: "Enviar" }))), pista, h("div", { class: "jg-acciones" }, ver));
   }
   const ESTADOS = { nuevo: "Recibida", estudio: "En estudio", construccion: "En construcción", hecha: "¡Hecha realidad!", descartada: "No por ahora" };
-  const cabSub = (t, sub) => h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: t }), sub ? h("p", { class: "est-sub", text: sub }) : null);
+  const enlaceVolver = (dest) => h("a", {
+    class: "eyebrow",
+    href: dest || "#/escudrina",
+    text: "‹ Escudriña",
+    onclick: (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+      if (A.volver) { e.preventDefault(); A.volver(dest || "#/escudrina"); }
+    },
+  });
+  const cabSub = (t, sub, dest) => h("div", { class: "panel-cab" }, enlaceVolver(dest), h("h1", { class: "texto", text: t }), sub ? h("p", { class: "est-sub", text: sub }) : null);
   async function pintarPropuestas(cont) {
     document.title = "Propuestas de la comunidad · Escudriña · BiEx";
     const zona = h("div", {}, h("p", { class: "cargando", text: "Cargando…" }));
-    marco(cont, cabSub("Propuestas de la comunidad", "Lo que la comunidad propone para Escudriña. Apoya las que quieres ver hechas realidad: las más apoyadas se estudian primero."),
+    marco(cont, cabSub("Propuestas de la comunidad", "Lo que la comunidad propone para Escudriña. Apoya las que quieres ver hechas realidad: las más apoyadas se estudian primero.", "#/escudrina/mas"),
       tarjeta(null, null, zona), S.token ? tarjetaOpinion(true) : tarjeta(null, null, h("a", { class: "btn oro", href: "#/escudrina" }, h("span", { text: "Reservar mi lugar para proponer y votar" }))));
     const r = await pedir("/propuestas", { guardable: true, sin: !S.token });
     if (r.error) return zona.replaceChildren(h("p", { text: mensaje(r) }));
@@ -5898,7 +6183,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (r.error) return zona.replaceChildren(h("p", { text: "La clave no coincide o el buzón no está activo." }));
       zona.replaceChildren(r.lista.length ? h("ul", { class: "jg-props" }, r.lista.map((p) => fila(p, k))) : h("p", { text: "El buzón está vacío por ahora." }));
     };
-    marco(cont, cabSub("Buzón del equipo", "Opiniones, errores y propuestas de la comunidad. Las propuestas marcadas «Pública» aparecen para votar."),
+    marco(cont, cabSub("Buzón del equipo", "Opiniones, errores y propuestas de la comunidad. Las propuestas marcadas «Pública» aparecen para votar.", "#/escudrina/mas"),
       tarjeta(null, null, h("div", { class: "jg-form" }, clave, h("button", { class: "btn", type: "button", onclick: () => { A.store.set("jg:admin", clave.value.trim()); abrirB(); } }, h("span", { text: "Abrir" })))), tarjeta(null, null, zona));
     abrirB();
   }
@@ -6031,7 +6316,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           x.top ? h("small", { class: "jg-top1", text: "n.º 1: " + x.top }) : null),
         h("span", { class: "x", text: fmt(x.pr) })))));
     }
-    marco(cont, cabSub("Prestigio local", "Cada ciudad suma la experiencia de sus 12 mejores lectores: así una ciudad pequeña puede brillar tanto como una grande. Lee e invita a los tuyos para llevar a tu ciudad a lo más alto."),
+    marco(cont, cabSub("Prestigio local", "Cada ciudad suma la experiencia de sus 12 mejores lectores: así una ciudad pequeña puede brillar tanto como una grande. Lee e invita a los tuyos para llevar a tu ciudad a lo más alto.", "#/escudrina/mundo"),
       tarjeta(null, null, seg([["pais", lugar.pais ? nombrePais(lugar.pais) : "Mi país"], ["mundo", "El mundo"]], "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"),
         y.verCiudad === false ? h("p", { class: "jg-mini", text: "Ocultaste tu ciudad en tu perfil: tu lectura no suma a su prestigio." }) : null),
       tarjetaLugar(true), tarjeta(null, null, zona));
@@ -6120,7 +6405,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         : h("p", { class: "jg-mini jg-mi-fila sin", text: "Lee hoy y entra en la clasificación de tu rango." });
       zona.replaceChildren(titulo, h("div", { class: "jg-saltos", role: "group", "aria-label": "Ir a un rango" }, saltos), ...secciones, yoBar);
     }
-    marco(cont, h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: "Clasificación" }),
+    marco(cont, h("div", { class: "panel-cab" }, enlaceVolver("#/escudrina/mundo"), h("h1", { class: "texto", text: "Clasificación" }),
       h("p", { class: "est-sub", text: "Cada rango tiene su propia clasificación: los nuevos compiten con nuevos y los veteranos con veteranos." })),
       tarjeta(null, null, seg(AMBITOS((y.lugar || {}).pais), "ambito"), seg([["semana", "Esta semana"], ["total", "Desde el comienzo"]], "periodo"), seg([[-1, "Todos"], ...RANGOS.map((t, i) => [i, t])], "rango")),
       tarjeta(null, null, zona), vivoLinea());
@@ -6156,7 +6441,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const v = y.vinculado || {};
     const estado = [v.llave ? plural(v.llave, "llave de acceso", "llaves de acceso") : null, v.google ? "Google" : null, v.facebook ? "vínculo anterior conservado" : null].filter(Boolean);
     const borrarIn = h("input", { type: "text", placeholder: "Escribe BORRAR", "aria-label": "Escribe BORRAR para confirmar", autocomplete: "off" });
-    marco(cont, h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/escudrina", text: "‹ Escudriña" }), h("h1", { class: "texto", text: "Cuenta" })),
+    marco(cont, h("div", { class: "panel-cab" }, enlaceVolver("#/escudrina/mas"), h("h1", { class: "texto", text: "Cuenta" })),
       tarjetaApodo(false), tarjetaLugar(false),
       tarjeta("Emblema", null, h("div", { class: "jg-perfil" }, vista, h("p", { class: "jg-mini", text: "Elige una letra hebrea o griega y un color. Así te verán en las clasificaciones." })), letras, colores),
       tarjeta("Formas de entrar", ico("llave"), h("p", { text: estado.length ? "Tu avance está asegurado con: " + estado.join(", ") + "." : "Tu avance todavía depende solo de tu código." })),
@@ -7883,7 +8168,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarLiga(cont) {
     document.title = "Liga de la semana · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu liga…" }));
-    marco(cont, cabSub("Liga de la semana", "La semana va " + textoSemana() + ". Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento."), zona);
+    marco(cont, cabSub("Liga de la semana", "La semana va " + textoSemana() + ". Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento.", "#/escudrina/mundo"), zona);
     const r = await pedir("/liga");
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
@@ -7908,6 +8193,25 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ================================================================== compañías (de 2 a 24)
   const enlaceCompania = (cod) => PUBLICO + "/#/escudrina/c/" + cod;
+  const limpiarNomComp = (s) => String(s || "").replace(/\s+/g, " ").trim().slice(0, 30);
+  const nombresCompLoc = () => { const m = A.store.get("jg:compNom", null); return m && typeof m === "object" ? m : {}; };
+  const nombreCompDe = (cod, srvNom) => {
+    const loc = nombresCompLoc()[String(cod || "").toUpperCase()];
+    if (loc && loc.n && loc.t) return limpiarNomComp(loc.n);
+    return limpiarNomComp(srvNom) || "";
+  };
+  const guardarNomComp = (cod, nom, marcarCambio) => {
+    cod = String(cod || "").toUpperCase(); if (!cod) return;
+    const m = nombresCompLoc(), prev = m[cod] || {}, limpio = limpiarNomComp(nom);
+    if (limpio) m[cod] = { n: limpio, t: marcarCambio ? Date.now() : (prev.t || 0) };
+    A.store.set("jg:compNom", m);
+  };
+  const puedeRenombrarComp = (cod) => {
+    const loc = nombresCompLoc()[String(cod || "").toUpperCase()];
+    const ult = Number(loc && loc.t) || 0;
+    const falta = ult ? (ult + 864e5) - Date.now() : 0;
+    return { ok: falta <= 0, faltaMs: Math.max(0, falta) };
+  };
   function formCompania(pista) {
     const nombre = h("input", { type: "text", maxlength: "30", placeholder: "Nombre de la compañía (3 a 30)", "aria-label": "Nombre de la compañía" });
     const cod = h("input", { type: "text", maxlength: "10", autocapitalize: "characters", placeholder: "Código (8 letras)", "aria-label": "Código de la compañía", spellcheck: "false" });
@@ -7930,19 +8234,21 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       return tarjeta("Compañía", ico("compania"), h("p", { text: "Lean juntos: una compañía reúne de 2 a 24 personas con una meta común cada semana y su propia clasificación." }),
         inv && inv.c ? h("div", { class: "jg-aviso" }, "Te invitaron a una compañía. ", h("a", { href: "#/escudrina/c/" + inv.c, text: "Ver la invitación" })) : null, formCompania(pista));
     }
+    const nomComp = nombreCompDe(y.comp.cod, y.comp.nombre);
     const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando…" }));
     pedir("/compania", { guardable: true }).then((r) => {
       if (!zona.isConnected || r.error || !r.comp) return;
-      if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + r.comp.cod, r.miembros, "tu compañía «" + r.comp.nombre + "»", "#/escudrina/compania");
+      const nomR = nombreCompDe(r.comp.cod, r.comp.nombre);
+      if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + r.comp.cod, r.miembros, "tu compañía «" + nomR + "»", "#/escudrina/compania");
       zona.replaceChildren(metaCompania(r)); animarCifras(zona);
     });
-    return tarjeta("Compañía · " + y.comp.nombre, ico("compania"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/compania" }, ico("compania"), h("span", { text: "Ver mi compañía" })),
+    return tarjeta("Compañía · " + nomComp, ico("compania"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/compania" }, ico("compania"), h("span", { text: "Ver mi compañía" })),
       h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
   }
   async function pintarCompania(cont) {
     document.title = "Compañía · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando…" }));
-    marco(cont, cabSub("Compañía", "De 2 a 24 personas que leen juntas: meta común cada semana y su propia clasificación."), zona);
+    marco(cont, cabSub("Compañía", "De 2 a 24 personas que leen juntas: meta común cada semana y su propia clasificación.", "#/escudrina/juntos"), zona);
     const r = await pedir("/compania", { guardable: false });
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
@@ -7953,17 +8259,39 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       return animarCifras(zona);
     }
     const c = r.comp;
-    if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + c.cod, r.miembros, "tu compañía «" + c.nombre + "»", "#/escudrina/compania");
+    const nomComp = nombreCompDe(c.cod, c.nombre);
+    if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + c.cod, r.miembros, "tu compañía «" + nomComp + "»", "#/escudrina/compania");
+    const ren = puedeRenombrarComp(c.cod);
+    const renIn = h("input", { type: "text", maxlength: "30", value: nomComp, placeholder: "Nombre de la compañía (3 a 30)", "aria-label": "Nombre de la compañía", disabled: !ren.ok });
+    const renPista = h("p", { class: "jg-pista", role: "status" });
+    const renombrarComp = async (ev) => {
+      const nuevo = limpiarNomComp(renIn.value);
+      if (nuevo.length < 3) { renPista.textContent = "El nombre debe tener entre 3 y 30 caracteres."; renPista.className = "jg-pista mal"; return; }
+      const st = puedeRenombrarComp(c.cod);
+      if (!st.ok) { renPista.textContent = "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + st.faltaMs) + "."; renPista.className = "jg-pista mal"; return; }
+      const bt = ev.currentTarget; bt.disabled = true;
+      const x = await pedir("/compania/nombre", { metodo: "POST", cuerpo: { nombre: nuevo } });
+      bt.disabled = false;
+      if (x && x.error === "nombre_espera") { renPista.textContent = mensaje(x); renPista.className = "jg-pista mal"; return; }
+      if (x && !x.error && x.yo) actualizarYo(x.yo);
+      guardarNomComp(c.cod, nuevo, true);
+      A.avisar("Nombre de la compañía actualizado a «" + nuevo + "»");
+      repintar();
+    };
+    const cajaNomComp = c.mia ? h("div", { class: "jg-sala-nom" },
+      h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de la compañía" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
+      h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrarComp }, h("span", { text: "Guardar" }))),
+      renPista) : null;
     const salir = h("button", { class: "btn", type: "button", onclick: async (e) => {
       if (!e.currentTarget.dataset.seguro) { e.currentTarget.dataset.seguro = "1"; e.currentTarget.querySelector("span").textContent = "Toca otra vez para salir"; return; }
       const x = await pedir("/compania/salir", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x));
-      actualizarYo(x.yo); A.avisar("Saliste de «" + c.nombre + "»"); repintar();
+      actualizarYo(x.yo); A.avisar("Saliste de «" + nomComp + "»"); repintar();
     } }, h("span", { text: "Salir de la compañía" }));
     zona.replaceChildren(
-      h("section", { class: "jg-tarjeta jg-heroe" }, h("p", { class: "jg-tit", text: c.nombre }), h("p", { class: "jg-mini", text: plural(c.n, "persona", "personas") + " de " + ((S.cfg && S.cfg.comp && S.cfg.comp.max) || 24) + (c.mia ? " · la cuidas tú" : "") }), metaCompania(r)),
+      h("section", { class: "jg-tarjeta jg-heroe" }, h("p", { class: "jg-tit", text: nomComp }), h("p", { class: "jg-mini", text: plural(c.n, "persona", "personas") + " de " + ((S.cfg && S.cfg.comp && S.cfg.comp.max) || 24) + (c.mia ? " · la cuidas tú" : "") }), metaCompania(r), cajaNomComp),
       tarjeta("Invitar", ico("compartir"), h("div", { class: "jg-codigo", text: c.cod }),
         h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => copiar(c.cod, "Código copiado") }, ico("copiar"), h("span", { text: "Copiar el código" })),
-          h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + c.nombre + "»", "Únete a mi compañía «" + c.nombre + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
+          h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + nomComp + "»", "Únete a mi compañía «" + nomComp + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
         c.mia ? h("button", { class: "btn chico jg-cod-nuevo", type: "button", onclick: async () => { const x = await pedir("/compania/codigo", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x)); actualizarYo(x.yo); A.avisar("Código nuevo: el anterior ya no sirve"); repintar(); } }, "Cambiar el código") : null),
       tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
         h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel + (ex ? " · " + ex : "") })), h("span", { class: "x", text: fmt(x.x) })); })),
@@ -7974,7 +8302,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarCompanias(cont) {
     document.title = "Compañías · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando…" }));
-    marco(cont, cabSub("Clasificación de compañías", "Por la experiencia promedio de sus personas esta semana: una compañía de 2 compite de igual a igual con una de 24."), zona);
+    marco(cont, cabSub("Clasificación de compañías", "Por la experiencia promedio de sus personas esta semana: una compañía de 2 compite de igual a igual con una de 24.", "#/escudrina/juntos"), zona);
     const r = await pedir("/companias", { sin: true, guardable: true });
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
@@ -7988,7 +8316,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarUnirCompania(cont, cod) {
     document.title = "Invitación a una compañía · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando…" }));
-    marco(cont, cabSub("Invitación a una compañía", "Lean juntos la Nueva Voluntad con una meta común cada semana."), zona);
+    marco(cont, cabSub("Invitación a una compañía", "Lean juntos la Nueva Voluntad con una meta común cada semana.", "#/escudrina/juntos"), zona);
     const r = await pedir("/compania/ver?c=" + encodeURIComponent(String(cod || "").toUpperCase()), { sin: true, guardable: true });
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: "Esa invitación ya no es válida: pide el código nuevo a quien te invitó." })));
@@ -8434,7 +8762,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function tarjetaSala() {
     const cod = h("input", { type: "text", maxlength: "8", autocapitalize: "characters", placeholder: "Código de sala (6)", "aria-label": "Código de la sala", spellcheck: "false" });
-    const nomIn = h("input", { type: "text", maxlength: "36", placeholder: "Nombre de la sala (opcional · cambiable 1 vez/día)", "aria-label": "Nombre opcional de la sala" });
+    const nomIn = h("input", { class: "jg-in", type: "text", maxlength: "36", placeholder: "Nombre de la sala (opcional)", "aria-label": "Nombre opcional de la sala" });
     const pista = h("p", { class: "jg-pista", role: "status" });
     const ab = h("input", { type: "checkbox", checked: true });
     const crear = async (e) => {
@@ -8455,8 +8783,33 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (i.error) { pista.textContent = "Esa sala no existe o ya venció."; pista.className = "jg-pista mal"; return; } entrarSala(c); repintar(); syncSalasTrasEvento(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" })));
     if (SL.cod) {
       const nomAct = nombreSalaDe(SL.cod, SL.nombre);
+      const anf = SL.miembros.find((x) => x.anf);
+      const soyAnf = !anf || anf.j === SL.yo6;
+      const ren = puedeRenombrarSala(SL.cod);
+      const renIn = h("input", { type: "text", maxlength: "36", value: nomAct, placeholder: "Nombre de la sala (2 a 36)", "aria-label": "Nombre de tu sala activa", disabled: !ren.ok });
+      const renPista = h("p", { class: "jg-pista", role: "status" });
+      const renombrarDir = async (ev) => {
+        const nuevo = limpiarNomSala(renIn.value);
+        if (nuevo.length < 2) { renPista.textContent = "Escribe un nombre de entre 2 y 36 caracteres."; renPista.className = "jg-pista mal"; return; }
+        const st = puedeRenombrarSala(SL.cod);
+        if (!st.ok) { renPista.textContent = "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + st.faltaMs) + "."; renPista.className = "jg-pista mal"; return; }
+        const bt = ev.currentTarget; bt.disabled = true;
+        const r = await pedir("/sala/nombre", { metodo: "POST", cuerpo: { c: SL.cod, nombre: nuevo } });
+        bt.disabled = false;
+        if (r && r.error === "nombre_espera") { renPista.textContent = mensaje(r); renPista.className = "jg-pista mal"; return; }
+        try { if (SL.ws && SL.ws.readyState === 1) SL.ws.send(JSON.stringify({ t: "nombre", nombre: nuevo })); } catch (e) { /* ignorar */ }
+        guardarNomSala(SL.cod, nuevo, true);
+        pintarSalaPildora(); syncSalasTrasEvento();
+        A.avisar("Nombre de la sala actualizado a «" + nuevo + "»");
+        repintar();
+      };
+      const cajaRen = soyAnf ? h("div", { class: "jg-sala-nom" },
+        h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de tu sala" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
+        h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrarDir }, h("span", { text: "Guardar" }))),
+        renPista) : null;
       return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás activo en ", h("b", { text: nomAct ? "«" + nomAct + "» (" + SL.cod + ")" : "la sala " + SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + ". El bono del +25 % suma únicamente por tu sala activa."),
         h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))),
+        cajaRen,
         h("details", { class: "jg-sala-extra" }, h("summary", { text: "Crear otra sala o entrar por código" }),
           h("div", { class: "jg-sala-extra-c" },
             nomIn,
@@ -8474,7 +8827,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     cod = String(cod || "").toUpperCase();
     document.title = "Sala de lectura · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Entrando a la sala…" }));
-    marco(cont, cabSub("Lectura en compañía", "Lean juntos, en vivo: cada quien ve dónde lee el resto."), zona);
+    marco(cont, cabSub("Lectura en compañía", "Lean juntos, en vivo: cada quien ve dónde lee el resto.", "#/escudrina/juntos"), zona);
     const i = await pedir("/sala/info?c=" + encodeURIComponent(cod), { sin: true });
     if (cont !== S.cont || !zona.isConnected) return;
     if (i.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: "Esa sala no existe o ya venció (duran 7 días). Puedes crear una nueva desde tu panel." }), h("a", { class: "btn", href: "#/escudrina" }, h("span", { text: "Ir a mi panel" }))));
