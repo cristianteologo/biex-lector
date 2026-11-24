@@ -711,3 +711,46 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - Auditoría editorial y de pureza iconográfica (0 palabras prohibidas, 0 cruces/estrellas/rayos, prefijos CSS `.cn-*`/`.sn-*`/`.ps-*`/`.tc-*`/`.di-*` sin colisión): **CLEAN**.
 - Suite Playwright 3× HD (`280 / 390 / 1280 px`, temas oscuro y Pergamino, reposo `0 % CPU`, foco por búsqueda `"logos"`, capas *Léxico / Referencias / Notas*, minigrafo en `#/raiz/539`, *Sinopsis*, *Pulso* oculto en *Contemplar*, *Tarjeta HD* `1080×1350`, *Diario* y estrés en `280 px`): **0 errores de consola/página, 0 px de desborde, 13/13 capturas inspeccionadas a 10/10**.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #12 — 24 de noviembre de 2026 (PR #12: Faro pulsante TDAH, El Coloso 2.0 inmersivo, Constelación elástica «cauchera», Mesa sinóptica de lujo, Tarjeta BiEx, pie sin botón «Leído» y última conexión aproximada)
+
+### 1. Trabajo realizado
+1. **Faro pulsante discreto de pendientes para accesibilidad TDAH (`#btn-faro`, `FARO` en `app.js` / `app.css`):**
+   - Botón circular dorado de `36 × 36 px` que **solo aparece si el lector tiene ≥ 1 paso pendiente real** (0 peticiones de red, 100 % desde caché local: día pendiente en plan activo, partida de Ajedrez Bíblico en pausa, El Coloso activo con cargas, misiones diarias reales en `yo.mis`, puntos de atributo libres en `yo.av.pts`, o lectura reciente sin abrir hoy).
+   - Se eleva limpiamente sobre el escudo `.jg-med` (`+25 %`, 37 px de separación verificados), sobre `.adelante.vis` y sobre `.jg-muelle`; se oculta automáticamente en **Modo Contemplar** y al abrir cualquier modal, y respeta `data-mov="no"` y `prefers-reduced-motion`.
+   - Al tocarlo abre **«Tu faro de hoy»**, una lista serena sin agobio (*«Un paso a la vez: elige solo lo que quieras hacer ahora»*) con navegación directa vía `irDesdeModal`.
+2. **El Coloso 2.0 — fluidez sin congelación, combate integrado y Pulso de Resonancia escalado por nivel (`juego.js`):**
+   - **Nunca se congelan las esferas al desplazarse:** retirada la pausa CSS de `html.desplazando` sobre `.jg-col-art`/`.jg-col-velo` y sustituida la detención del `<canvas>` por una desaceleración fluida a **`0.42×`** durante el scroll (0 sensación de bug visual).
+   - **Consola de combate unificada e inmersiva:** el conducto de cristales y las 3 habilidades viven integrados dentro de `.jg-col-escena`, y el aviso de prelanzamiento (`avisoPrelanzamientoColoso`) se movió **debajo de «Mayores aportes de la semana»** para elevar el monolito y las habilidades en pantalla.
+   - **Posturas dinámicas + Pulso de Resonancia escalado al nivel:** el Coloso alterna posturas (*Muro de humo*, *Velo tenso*, *Grieta abierta*) marcando la habilidad con **`Brecha`**. Al enfocar un ataque se abre el **Pulso de Resonancia** cuya banda dorada y velocidad se ajustan al nivel de Escudriña (`Niv. 1–4` Iniciado `28 %` `1.0×`, `Niv. 5–11` Diestro `20 %` `1.32×`, `Niv. 12–20` Maestro `14 %` `1.65×`, `Niv. 21+` Gran Maestro `10 %` `2.0×`), con disparo limpio automático si expira o con `sinAnim()` para no desperdiciar cargas.
+   - **VFX multicapa por habilidad, retroceso de cámara y háptica:** lanza broncínea (`golpe`), doble tajo zafiro-oro (`palabra`), destello + triple onda expansiva + 68 brasas (`fuerza`), 3 niveles de sacudida (`sacude-1/2/3`), `vibrar(...)`, texto flotante crítico y `Racha ×N`. Guarda `jg:coloso_snap` y notifica a `biex:faro`.
+3. **Constelación del léxico — experiencia táctil elástica («cauchera / resorte») (`motorConstelacion` en `app.js`):**
+   - Resistencia hiperbólica progresiva al arrastrar fuera del perímetro de la constelación (`step /= 1 + exc / (80 / k)`), ganancia táctil amortiguada (`0.78`), retorno elástico críticamente amortiguado e inercia acotada (`correrCam`) que vuelve a reposo **0 % CPU**.
+   - Zoom de dos dedos anclado al punto medio real (sin saltos laterales), doble toque en zona libre para recentrar, desplazamientos suaves `irA(x, y, k)` y `user-select: none` + `ev.preventDefault()` para evitar selecciones azules al arrastrar.
+4. **Mesa sinóptica libre — 3 mejoras (`app.js` / `app.css`):**
+   - **Acceso directo en Biblioteca (`abrirLibros`):** botones **Mesa sinóptica** y **Constelación** sobre el buscador de libros.
+   - **Selectores de alta relojería obsidiana-oro (`.sn-campo`, `.sn-sel-bar .mm-btn`, `.cn-foco .mm-btn`):** eliminados los botones grises planos por defecto; micro-etiquetas `Libro`, `Capítulo`, `Verso` en temas oscuro y *Pergamino*.
+   - **Arreglo definitivo del botón «Sinopsis» dentro de `vistaVerso`:** sustituida la carrera `cerrarModal(); location.hash = ...` por `irDesdeModal("#/sinopsis/" + b.c + "." + cap + "." + ctx.v)`.
+5. **Tarjeta HD, Pulso léxico del capítulo, botón inferior «Leído» y última conexión aproximada:**
+   - **Tarjeta compartible HD (`vistaTarjetaVerso`):** cabecera actualizada para comenzar siempre con **`BiEx`** (`"B i E x   ·   B I B L I A   E X A C T A"`).
+   - **Pulso léxico del capítulo (`bloquePulsoCapitulo`):** resumen más claro (*«Pulso léxico del capítulo»* + conteo de palabras griegas, joyas singulares y raíz líder).
+   - **Botón inferior «Leído» oculto al pie de página (`ponerLB` en `juego.js`):** detecta `pegadoPie` (`scrollHeight - (scrollY + innerHeight) <= 24`) y oculta suavemente `.jg-lb` y `.jg-lbp` al llegar al pie, reapareciendo al subir.
+   - **Última conexión aproximada (`ultimaConexionTexto` + `abrirJugadorPublico` en `juego.js`):** muestra en el perfil público y en `resumenStatsPub` la hora aproximada amable (*«Hace ~20 min»*, *«Hoy cerca de las 14:30»*, *«Ayer…»*) cuando el lector no está en línea, con TTL ampliado de `CACHE_JUG` a `60 s`.
+
+### 2. Contratos reservados para el mensaje final consolidado al servidor (`biex-juego`)
+- **`ultTs` (marca de tiempo aproximada de última actividad en ms)** en `GET /jugador` y en los listados públicos (`/clasificacion`, `/liga`, `/compania`, `/coloso` top): el cliente ya lo formatea automáticamente con `ultimaConexionTexto(...)`.
+- **`POST /jugador/beneficio` (envío de beneficios entre lectores):** tras auditar todas las rutas actuales del Worker, no existe aún un endpoint de envío de beneficios/regalos entre lectores; por disciplina no se renderizó ningún botón falso 404. Se reserva en el paquete final de servidor (contrato sugerido: `{ para: apodo, tipo: "animo" | "dracmas" | "xp2", cant }` con tope diario antispam y recibo en `avisos`).
+- **Opcional en `POST /coloso/accion`:** aceptar `{ hab, precision, brecha }` para bonificar el daño real del servidor según el Pulso de Resonancia y la postura activa.
+
+### 3. Aprendizajes clave (Entrada #12)
+1. **Validar contra el esquema real del Worker (`yo.mis`, `yo.av.pts`, `yo.hoy`):** la prueba Playwright reveló inmediatamente que `FARO` buscaba `yo.misiones`/`yo.av.libres` cuando el servidor entrega `yo.mis`/`yo.av.pts`. Alinear los nombres reales garantizó detección real en producción.
+2. **Inspección 3× HD contra colisiones de flotantes:** ver las capturas reales reveló el solapamiento inicial de `.faro-btn` sobre el escudo `.jg-med` (`+25 %`) y la selección de texto azul al arrastrar el canvas de Constelación fuera de su caja — ambos corregidos y reverificados antes de publicar.
+3. **Mandato visual permanente:** jamás entregar controles nativos grises sin estilizar ni geometrías planas/primitivas; toda pieza visual debe lucir digna de alta relojería y códice.
+
+### 4. Comprobaciones pasadas (Entrada #12)
+- `node --check app.js juego.js busqueda.js`, JSON + balance CSS (`2994` bloques) y auditoría editorial: **correcto**.
+- Suite Playwright (`verificar_pr12.py`, `280 / 390 / 1280 px`, temas oscuro y Pergamino): Faro oculto en 0 pendientes y Contemplar, 37 px de separación libre sobre `.jg-med`, botón `Leído` oculto al pie y restaurado al subir, `vistaVerso → Sinopsis` sin reversión, `Coloso` integrado con canvas activo durante `html.desplazando` y aviso de prelanzamiento debajo de Mayores aportes, Pulso de Resonancia + impacto VFX, última conexión aproximada en ficha pública, **0 errores y 0 px de desborde, 18/18 capturas inspeccionadas a 10/10**.
+- `python3 wix/sellar.py`: **al día**.

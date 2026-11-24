@@ -153,7 +153,7 @@
   function actualizarYo(yo) {
     if (!yo) return;
     S.yo = yo; A.store.set("jg:yo", yo); R.ld = 0;
-    try { document.dispatchEvent(new Event("jg:yo")); } catch (e) {}
+    try { document.dispatchEvent(new Event("jg:yo")); document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
     // AA12: comparte resumen ligero al Service Worker para el widget de escritorio (sin peticiones extra)
     try {
       const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
@@ -194,13 +194,47 @@
     IO_FLOT.observe(el);
     return el;
   }
-  // Estadísticas públicas de jugadores (se muestran automáticamente en clasificaciones, ligas, compañías y salas en cuanto el servidor exponga poder/pers/vc)
+  // Hora aproximada de última conexión del lector (acepta sello numérico en ms/s o fecha ISO; redondea a tramos amables)
+  function ultimaConexionTexto(x, corto) {
+    if (!x) return "";
+    if (x.enLinea || x.vivo || x.act) return corto ? "en línea" : "En línea ahora";
+    let ts = Number(x.ultTs || x.vistoEn || x.ultVisto || x.ultimoEn || x.visto || 0);
+    if (ts > 0 && ts < 1e11) ts *= 1000;
+    if (ts > 1e12) {
+      const dif = Math.max(0, Date.now() - ts);
+      const min = Math.round(dif / 60000);
+      if (min < 5) return corto ? "ahora" : "Hace unos instantes";
+      if (min < 60) {
+        const mA = Math.max(5, Math.round(min / 5) * 5);
+        return corto ? "hace ~" + mA + " min" : "Hace ~" + mA + " min";
+      }
+      const d = new Date(ts), hoy = new Date();
+      const hh = String(d.getHours()).padStart(2, "0") + ":" + String(Math.floor(d.getMinutes() / 5) * 5).padStart(2, "0");
+      if (d.toDateString() === hoy.toDateString()) return corto ? "hoy ~" + hh : "Hoy cerca de las " + hh;
+      const ayer = new Date(hoy.getTime() - 864e5);
+      if (d.toDateString() === ayer.toDateString()) return corto ? "ayer ~" + hh : "Ayer cerca de las " + hh;
+      const dias = Math.max(2, Math.round(dif / 864e5));
+      return corto ? "hace " + dias + " d" : "Hace " + dias + " días (~" + hh + ")";
+    }
+    const dia = String(x.ultDia || x.ultimoDia || x.dia || "").slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dia)) {
+      const hoy = new Date().toISOString().slice(0, 10);
+      if (dia === hoy) return corto ? "hoy" : "Conectado hoy";
+      const difD = Math.max(1, Math.round((Date.parse(hoy + "T00:00:00Z") - Date.parse(dia + "T00:00:00Z")) / 864e5));
+      if (difD === 1) return corto ? "ayer" : "Última actividad ayer";
+      return corto ? "hace " + difD + " d" : "Última actividad hace " + difD + " días";
+    }
+    return "";
+  }
+  // Estadísticas públicas de jugadores (se muestran automáticamente en clasificaciones, ligas, compañías y salas en cuanto el servidor exponga poder/pers/vc/ultTs)
   function resumenStatsPub(x) {
     if (!x) return "";
     const p = [];
     if (x.poder != null) p.push("poder " + fmt(x.poder | 0));
     if (x.pers > 0) p.push(fmt(x.pers | 0) + " d");
     if (x.vc > 0) p.push(fmt(x.vc | 0) + " v.");
+    const uc = !x.yo && ultimaConexionTexto(x, true);
+    if (uc && uc !== "en línea") p.push(uc);
     return p.join(" · ");
   }
   // AD2: una sola vez por cuenta, las marcas dobles guardadas en este dispositivo (jg:rp) pasan a la cuenta del servidor
@@ -2198,11 +2232,13 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-prev-cap{position:absolute;left:12px;right:12px;bottom:10px;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
 .jg-col-prev-cap strong{font:500 clamp(1rem,3.6vw,1.2rem)/1.15 var(--f-display);color:#f7f1e4;text-shadow:0 2px 12px rgba(0,0,0,.95)}
 .jg-col-prev-cap span{font:600 .62rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#f4dea8;padding:4px 8px;border-radius:999px;background:rgba(12,10,8,.76);border:1px solid rgba(212,175,105,.46);white-space:nowrap}
-.jg-col-escena{position:relative;overflow:hidden;display:grid;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 58%,rgba(255,232,168,.2));background:linear-gradient(180deg,#050506 0%,#0b0a09 62%,#0f0d0a 100%);color:#f6f0e4;box-shadow:inset 0 1px 0 rgba(255,236,184,.22),inset 0 0 0 1px rgba(212,175,105,.12),0 28px 60px -28px rgba(0,0,0,.9)}
-.jg-col-stage{position:relative;width:100%;aspect-ratio:16/10;min-height:224px;max-height:410px;overflow:hidden;background:#050506;isolation:isolate}
-@media (max-width:520px){.jg-col-stage{aspect-ratio:16/11.4;min-height:216px}}
+.jg-col-escena{position:relative;overflow:hidden;display:grid;border-radius:22px;border:1px solid color-mix(in srgb,var(--oro) 58%,rgba(255,232,168,.2));background:linear-gradient(180deg,#050506 0%,#0b0a09 56%,#100e0b 100%);color:#f6f0e4;box-shadow:inset 0 1px 0 rgba(255,236,184,.22),inset 0 0 0 1px rgba(212,175,105,.12),0 28px 60px -28px rgba(0,0,0,.9)}
+.jg-col-stage{position:relative;width:100%;aspect-ratio:16/9.2;min-height:208px;max-height:375px;overflow:hidden;background:#050506;isolation:isolate}
+@media (max-width:520px){.jg-col-stage{aspect-ratio:16/10.5;min-height:196px}}
 .jg-col-art-w{position:absolute;inset:0;will-change:transform}
-.jg-col-art-w.golpe{animation:col-sacude .44s cubic-bezier(.2,.8,.2,1)}
+.jg-col-art-w.sacude-1{animation:col-sacude-1 .38s cubic-bezier(.2,.8,.2,1)}
+.jg-col-art-w.sacude-2{animation:col-sacude-2 .48s cubic-bezier(.18,.82,.22,1)}
+.jg-col-art-w.sacude-3{animation:col-sacude-3 .62s cubic-bezier(.16,.84,.2,1)}
 .jg-col-art-w.caido .jg-col-art{animation:none;opacity:.52;filter:saturate(.28) brightness(.72)}
 .jg-col-art{position:absolute;inset:-4% -3%;width:106%;height:108%;object-fit:cover;object-position:50% 22%;display:block;pointer-events:none;user-select:none;animation:col-respira 9.5s ease-in-out infinite;will-change:transform,opacity}
 .jg-col-velo{position:absolute;inset:-12% -24%;pointer-events:none;will-change:transform,opacity}
@@ -2210,79 +2246,88 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-velo.b{background:radial-gradient(48% 50% at 58% 72%,rgba(4,4,5,.72) 0%,rgba(9,8,7,.28) 46%,transparent 74%),radial-gradient(34% 44% at 38% 42%,rgba(218,162,74,.11) 0%,transparent 70%);animation:col-bruma-b 21s ease-in-out infinite}
 .jg-col-fx{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
 .jg-col-vig{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(76% 68% at 50% 40%,transparent 32%,rgba(5,5,6,.68) 100%),linear-gradient(180deg,rgba(5,5,6,.68) 0%,rgba(5,5,6,.1) 24%,transparent 48%,rgba(8,7,6,.56) 78%,#0b0a09 100%)}
-.jg-col-top{position:absolute;top:12px;left:12px;right:12px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px}
-.jg-col-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font:600 .62rem/1 var(--f-ui);letter-spacing:.13em;text-transform:uppercase;color:#f6e2ac;background:rgba(10,9,8,.76);border:1px solid rgba(212,175,105,.48);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.jg-col-badge.tenue{color:#d8d0c0;border-color:rgba(240,234,222,.2)}
-.jg-col-premio{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,rgba(212,175,105,.08),rgba(244,207,115,.14),rgba(212,175,105,.08));border:1px solid rgba(212,175,105,.32);font:500 .75rem/1.3 var(--f-ui);color:#e9dfc9;text-align:center}
+.jg-col-top{position:absolute;top:10px;left:10px;right:10px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px}
+.jg-col-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;font:600 .6rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#f6e2ac;background:rgba(10,9,8,.78);border:1px solid rgba(212,175,105,.48)}
+.jg-col-badge.tenue{color:#d8d0c0;border-color:rgba(240,234,222,.22)}
+.jg-col-badge.post{color:#fff2cc;border-color:var(--pc,rgba(244,207,115,.65));background:rgba(12,10,9,.86)}
+.jg-col-badge.post i{width:7px;height:7px;border-radius:50%;background:var(--pc,#f4cf73);box-shadow:0 0 8px var(--pc,#f4cf73)}
+.jg-col-premio{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:7px 11px;border-radius:11px;background:linear-gradient(90deg,rgba(212,175,105,.08),rgba(244,207,115,.14),rgba(212,175,105,.08));border:1px solid rgba(212,175,105,.3);font:500 .73rem/1.3 var(--f-ui);color:#e9dfc9;text-align:center}
 .jg-col-premio b{color:#fae3a7;font-weight:600}
-.jg-col-tit-wrap{position:absolute;left:16px;right:16px;bottom:10px;z-index:4;text-align:center;display:grid;gap:3px;pointer-events:none}
-.jg-col-tit-wrap h2{margin:0;font:500 clamp(1.38rem,4.6vw,1.92rem)/1.1 var(--f-display);color:#fbf5e9;letter-spacing:.03em;text-shadow:0 3px 22px rgba(0,0,0,.95)}
-.jg-col-fase{font:600 .66rem/1.2 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#dfb96e;text-shadow:0 2px 12px rgba(0,0,0,.95)}
-.jg-col-dano{position:absolute;top:38%;left:50%;transform:translate3d(-50%,0,0);font:700 clamp(1.7rem,6vw,2.35rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 22px rgba(245,188,78,.92),0 4px 16px rgba(0,0,0,.95);pointer-events:none;z-index:5;animation:col-dano 1.35s cubic-bezier(.18,.82,.24,1) forwards}
+.jg-col-tit-wrap{position:absolute;left:16px;right:16px;bottom:8px;z-index:4;text-align:center;display:grid;gap:2px;pointer-events:none}
+.jg-col-tit-wrap h2{margin:0;font:500 clamp(1.26rem,4.4vw,1.76rem)/1.1 var(--f-display);color:#fbf5e9;letter-spacing:.03em;text-shadow:0 3px 22px rgba(0,0,0,.95)}
+.jg-col-fase{font:600 .62rem/1.2 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#dfb96e;text-shadow:0 2px 12px rgba(0,0,0,.95)}
+.jg-col-dano{position:absolute;top:36%;left:50%;transform:translate3d(-50%,0,0);display:grid;justify-items:center;gap:2px;font:700 clamp(1.7rem,6vw,2.4rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 24px rgba(245,188,78,.95),0 4px 16px rgba(0,0,0,.95);pointer-events:none;z-index:6;animation:col-dano 1.45s cubic-bezier(.18,.82,.24,1) forwards}
+.jg-col-dano small{font:700 .66rem/1 var(--f-ui);letter-spacing:.18em;text-transform:uppercase;color:#ffe69b;padding:3px 9px;border-radius:999px;background:rgba(12,10,8,.84);border:1px solid rgba(255,222,130,.65)}
+.jg-col-dano.crit{color:#ffffff;text-shadow:0 0 32px rgba(255,214,102,1),0 0 12px rgba(126,184,240,.8),0 4px 18px rgba(0,0,0,.95)}
 @keyframes col-respira{0%,100%{transform:scale(1.01) translate3d(0,0,0);opacity:.9}50%{transform:scale(1.055) translate3d(0,-4px,0);opacity:1}}
 @keyframes col-bruma-a{0%,100%{transform:translate3d(-3%,1%,0) scale(1);opacity:.82}50%{transform:translate3d(4%,-2%,0) scale(1.06);opacity:.54}}
 @keyframes col-bruma-b{0%,100%{transform:translate3d(4%,0,0) scale(1.04);opacity:.56}50%{transform:translate3d(-4%,2%,0) scale(.98);opacity:.84}}
-@keyframes col-sacude{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(-9px,-4px,0) scale(1.02)}42%{transform:translate3d(8px,3px,0) scale(.99)}68%{transform:translate3d(-5px,1px,0)}100%{transform:translate3d(0,0,0)}}
-@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,16px,0) scale(.72)}20%{opacity:1;transform:translate3d(-50%,-12px,0) scale(1.16)}100%{opacity:0;transform:translate3d(-50%,-62px,0) scale(.92)}}
-.jg-col-hud{position:relative;z-index:4;display:grid;gap:12px;padding:12px 16px 16px;background:linear-gradient(180deg,#0b0a09 0%,#12100d 100%);border-top:1px solid rgba(212,175,105,.18)}
-.jg-col-hp{width:100%;display:grid;gap:7px}
-.jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .78rem/1.2 var(--f-ui);color:#d7cfbf}
-.jg-col-hp-cab b{font:600 1.12rem/1 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.02em}
-.jg-col-hp-bar{position:relative;height:14px;border-radius:999px;background:linear-gradient(180deg,#1a1612,#0c0a08);overflow:hidden;border:1px solid rgba(212,175,105,.46);padding:2px;box-shadow:inset 0 2px 6px rgba(0,0,0,.85),0 0 16px -6px rgba(235,172,72,.35)}
+@keyframes col-sacude-1{0%{transform:translate3d(0,0,0)}22%{transform:translate3d(-7px,-3px,0) scale(1.015)}55%{transform:translate3d(6px,2px,0) scale(.995)}100%{transform:translate3d(0,0,0)}}
+@keyframes col-sacude-2{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(-11px,-5px,0) scale(1.028)}40%{transform:translate3d(10px,4px,0) scale(.985)}68%{transform:translate3d(-6px,-2px,0)}100%{transform:translate3d(0,0,0)}}
+@keyframes col-sacude-3{0%{transform:translate3d(0,0,0)}12%{transform:translate3d(-14px,-7px,0) scale(1.04)}28%{transform:translate3d(13px,6px,0) scale(.98)}48%{transform:translate3d(-10px,4px,0) scale(1.02)}70%{transform:translate3d(7px,-3px,0)}100%{transform:translate3d(0,0,0)}}
+@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,16px,0) scale(.72)}18%{opacity:1;transform:translate3d(-50%,-14px,0) scale(1.18)}100%{opacity:0;transform:translate3d(-50%,-70px,0) scale(.94)}}
+.jg-col-hud{position:relative;z-index:4;display:grid;gap:10px;padding:11px 14px 12px;background:linear-gradient(180deg,#0b0a09 0%,#12100d 100%);border-top:1px solid rgba(212,175,105,.18)}
+.jg-col-hp{width:100%;display:grid;gap:6px}
+.jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .76rem/1.2 var(--f-ui);color:#d7cfbf}
+.jg-col-hp-cab b{font:600 1.06rem/1 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.02em}
+.jg-col-hp-bar{position:relative;height:13px;border-radius:999px;background:linear-gradient(180deg,#1a1612,#0c0a08);overflow:hidden;border:1px solid rgba(212,175,105,.46);padding:2px;box-shadow:inset 0 2px 6px rgba(0,0,0,.85),0 0 16px -6px rgba(235,172,72,.35)}
 .jg-col-hp-bar>i{position:relative;display:block;height:100%;border-radius:inherit;overflow:hidden;background:linear-gradient(90deg,#8f241c 0%,#cc5a28 38%,#e8a23c 78%,#ffe69c 100%);box-shadow:0 0 14px rgba(238,164,62,.55);transition:width .55s cubic-bezier(.2,.8,.2,1)}
 .jg-col-hp-bar>i::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,rgba(255,250,232,.46) 50%,transparent 72%);transform:translate3d(-120%,0,0);animation:col-hp-luz 4.8s ease-in-out infinite;will-change:transform}
 @keyframes col-hp-luz{0%,42%{transform:translate3d(-120%,0,0)}100%{transform:translate3d(140%,0,0)}}
 .jg-col-hp-m{position:absolute;top:0;bottom:0;width:1.5px;background:rgba(5,5,6,.72);box-shadow:1px 0 0 rgba(255,232,168,.24);pointer-events:none;z-index:2}
-.jg-col-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-@media (max-width:540px){.jg-col-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.jg-col-st{display:grid;gap:2px;padding:8px 10px;border-radius:12px;text-align:center;background:rgba(255,244,214,.04);border:1px solid rgba(212,175,105,.2)}
-.jg-col-st b{font:600 .98rem/1.15 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums}
-.jg-col-st span{font:500 .66rem/1.2 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:#b8afa0}
+.jg-col-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media (max-width:520px){.jg-col-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.jg-col-st{display:grid;gap:1px;padding:6px 8px;border-radius:10px;text-align:center;background:rgba(255,244,214,.04);border:1px solid rgba(212,175,105,.18)}
+.jg-col-st b{font:600 .92rem/1.15 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums}
+.jg-col-st span{font:500 .62rem/1.2 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:#b8afa0}
+.jg-col-comb{position:relative;z-index:4;display:grid;gap:10px;padding:12px 14px 14px;background:radial-gradient(110% 80% at 50% 0%,rgba(218,176,96,.12),transparent 68%),#0e0c09;border-top:1px solid rgba(212,175,105,.24)}
+.jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+.jg-col-cg-tit{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+.jg-col-cg-tit span{font:600 .62rem/1.1 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:#d6b267}
+.jg-col-cg-tit b{font:600 .96rem/1.15 var(--f-display);color:#faf2e2}
+.jg-col-cg-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:500 .7rem/1.2 var(--f-ui);color:#bdb4a4}
+.jg-col-mult{padding:3px 8px;border-radius:999px;font:600 .68rem/1 var(--f-ui);color:#fae3a7;background:rgba(212,175,105,.16);border:1px solid rgba(212,175,105,.46)}
+.jg-col-racha{padding:3px 8px;border-radius:999px;font:600 .68rem/1 var(--f-ui);color:#fff2cc;background:rgba(126,184,240,.2);border:1px solid rgba(126,184,240,.54)}
+.jg-col-crist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:6px 10px;border-radius:12px;background:rgba(5,5,7,.68);border:1px solid rgba(212,175,105,.18)}
+.jg-col-cg-c{position:relative;height:20px;display:grid;place-items:center}
+.jg-col-cg-c i{position:relative;display:block;width:13px;height:13px;border-radius:3px;transform:rotate(45deg);background:#221e18;border:1.5px solid rgba(212,175,105,.28);transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .28s,border-color .28s,box-shadow .28s}
+.jg-col-cg-c.on i{background:linear-gradient(135deg,#fff3c8 0%,#f4cf73 46%,#c79234 100%);border-color:#fff2c6;box-shadow:0 0 12px rgba(244,207,115,.72),inset 0 0 4px rgba(255,255,255,.72);transform:rotate(45deg) scale(1.06)}
+.jg-col-res{display:grid;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(244,207,115,.58);background:radial-gradient(100% 90% at 50% 0%,rgba(244,207,115,.16),transparent 70%),rgba(8,7,6,.94);box-shadow:0 0 28px -12px rgba(244,207,115,.55)}
+.jg-col-res[hidden]{display:none}
+.jg-col-res-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;font:600 .72rem/1.2 var(--f-ui);color:#fae3a7;letter-spacing:.06em;text-transform:uppercase}
+.jg-col-res-cab small{font-weight:500;color:#cfc6b6;text-transform:none;letter-spacing:0}
+.jg-col-res-pista{position:relative;height:26px;border-radius:999px;background:linear-gradient(180deg,#16130f,#080706);border:1px solid rgba(212,175,105,.44);overflow:hidden;cursor:pointer;touch-action:manipulation}
+.jg-col-res-zona{position:absolute;top:2px;bottom:2px;border-radius:999px;background:linear-gradient(90deg,rgba(218,162,74,.28),rgba(244,207,115,.52),rgba(218,162,74,.28));border:1px solid rgba(255,228,150,.55)}
+.jg-col-res-crit{position:absolute;top:2px;bottom:2px;border-radius:999px;background:rgba(255,248,214,.78);box-shadow:0 0 14px rgba(255,232,150,.9)}
+.jg-col-res-cur{position:absolute;top:1px;bottom:1px;left:0;width:6px;margin-left:-3px;border-radius:999px;background:#ffffff;box-shadow:0 0 14px #fff4cc,0 0 4px #ffffff;will-change:transform}
+.jg-col-res-btn{width:100%;justify-content:center}
+.jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.jg-col-habs{grid-template-columns:1fr;gap:7px}}
+.jg-col-hab{--hc:#d79b5b;position:relative;overflow:hidden;display:grid;align-content:space-between;gap:6px;text-align:left;padding:10px 11px;border-radius:14px;border:1px solid color-mix(in srgb,var(--hc) 44%,rgba(255,244,214,.14));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc) 17%,transparent),transparent 62%),linear-gradient(180deg,#171410,#0d0c09);color:#f6f0e4;cursor:pointer;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 34%,transparent),0 10px 22px -16px rgba(0,0,0,.85);transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .2s,opacity .2s}
+.jg-col-hab.t2{--hc:#7eb8f0}
+.jg-col-hab.t3{--hc:#f4cf73;border-color:color-mix(in srgb,var(--hc) 62%,rgba(255,244,214,.16))}
+.jg-col-hab.brecha:not(:disabled){border-color:var(--hc);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 58%,transparent),0 0 22px -8px color-mix(in srgb,var(--hc) 75%,transparent)}
+.jg-col-hab.t3.listo::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 30%,color-mix(in srgb,var(--hc) 22%,transparent) 50%,transparent 70%);transform:translate3d(-120%,0,0);animation:jp-brillo 5.2s ease-in-out infinite;will-change:transform}
+.jg-col-hab:hover:not(:disabled){transform:translate3d(0,-2px,0);border-color:var(--hc)}
+.jg-col-hab:active:not(:disabled){transform:scale(.97)}
+.jg-col-hab:focus-visible{outline:2px solid #f4cf73;outline-offset:2px}
+.jg-col-hab:disabled{opacity:.42;cursor:not-allowed;filter:saturate(.6)}
+.jg-col-hab-top{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:8px}
+.jg-col-sig{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--hc);background:radial-gradient(circle at 35% 25%,color-mix(in srgb,var(--hc) 24%,transparent),rgba(10,9,8,.9));border:1px solid color-mix(in srgb,var(--hc) 48%,transparent)}
+.jg-col-sig svg{width:19px;height:19px;display:block}
+.jg-col-hab-id{display:grid;gap:2px;min-width:0}
+.jg-col-hab-id b{font:600 .95rem/1.12 var(--f-display);color:#fbf5e9}
+.jg-col-hab-cost{display:inline-flex;align-items:center;gap:4px;width:fit-content;font:600 .6rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--hc)}
+.jg-col-hab-dots{display:inline-flex;gap:2.5px}
+.jg-col-hab-dots i{width:5px;height:5px;border-radius:1px;transform:rotate(45deg);background:currentColor}
+.jg-col-hab-dmg{font:600 1.06rem/1 var(--f-display);color:#fae3a7;font-variant-numeric:lining-nums tabular-nums;text-align:right}
+.jg-col-hab-go{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:6px;border-top:1px solid rgba(255,244,214,.09);font:600 .64rem/1 var(--f-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--hc)}
+.jg-col-hab:disabled .jg-col-hab-go{color:#9a9284}
+.jg-col-brecha-tag{padding:2px 6px;border-radius:999px;background:color-mix(in srgb,var(--hc) 22%,transparent);border:1px solid color-mix(in srgb,var(--hc) 56%,transparent);color:#fff6dc;font-size:.58rem}
 .jg-col-pre{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--oro) 13%,var(--hoja-2)),color-mix(in srgb,var(--hoja-2) 94%,transparent));font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2)}
 .jg-col-pre b{color:var(--oro-vivo);font-weight:600}
 .jg-col-pre-ico{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:1px;background:color-mix(in srgb,var(--oro) 18%,transparent);border:1px solid color-mix(in srgb,var(--oro) 48%,transparent);color:var(--oro-vivo)}
 .jg-col-pre-ico svg{width:13px;height:13px}
-.jg-col-panel{display:grid;gap:14px;padding:16px;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 44%,var(--linea-2));background:radial-gradient(110% 80% at 50% 0%,color-mix(in srgb,var(--oro) 11%,transparent),transparent 65%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 95%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 24%,transparent),0 18px 36px -24px rgba(0,0,0,.78)}
-.jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
-.jg-col-cg-tit{display:grid;gap:2px}
-.jg-col-cg-tit span{font:600 .66rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:var(--oro)}
-.jg-col-cg-tit b{font:600 1.05rem/1.15 var(--f-display);color:var(--tinta)}
-.jg-col-cg-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:500 .74rem/1.2 var(--f-ui);color:var(--tenue)}
-.jg-col-mult{padding:4px 9px;border-radius:999px;font:600 .72rem/1 var(--f-ui);color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 15%,transparent);border:1px solid color-mix(in srgb,var(--oro) 46%,transparent)}
-.jg-col-crist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:8px 10px;border-radius:14px;background:color-mix(in srgb,var(--hoja) 76%,transparent);border:1px solid var(--linea-2)}
-.jg-col-cg-c{position:relative;height:26px;display:grid;place-items:center}
-.jg-col-cg-c i{position:relative;display:block;width:16px;height:16px;border-radius:3.5px;transform:rotate(45deg);background:var(--hoja-3);border:1.5px solid color-mix(in srgb,var(--linea) 70%,transparent);transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .28s,border-color .28s,box-shadow .28s}
-.jg-col-cg-c.on i{background:linear-gradient(135deg,#fff3c8 0%,var(--oro-vivo) 44%,var(--oro) 100%);border-color:#fff2c6;box-shadow:0 0 14px color-mix(in srgb,var(--oro-vivo) 72%,transparent),inset 0 0 4px rgba(255,255,255,.72);transform:rotate(45deg) scale(1.06)}
-:root[data-theme="light"] .jg-col-cg-c.on i{background:linear-gradient(135deg,#f6d98a 0%,#c79234 55%,#8f6116 100%);border-color:#754d0c;box-shadow:0 0 10px rgba(152,102,24,.4)}
-.jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-@media (max-width:640px){.jg-col-habs{grid-template-columns:1fr}}
-.jg-col-hab{--hc:#d79b5b;--hc-l:#8c5418;position:relative;overflow:hidden;display:grid;align-content:space-between;gap:10px;text-align:left;padding:15px 14px 13px;border-radius:17px;border:1px solid color-mix(in srgb,var(--hc) 46%,var(--linea-2));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc) 16%,transparent),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 96%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));color:var(--tinta);cursor:pointer;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 34%,transparent),0 14px 28px -20px rgba(0,0,0,.8);transition:transform .22s cubic-bezier(.2,.8,.2,1),border-color .22s,box-shadow .22s,opacity .22s}
-.jg-col-hab.t2{--hc:#7eb8f0;--hc-l:#1f5894}
-.jg-col-hab.t3{--hc:#f4cf73;--hc-l:#8a600e;border-color:color-mix(in srgb,var(--hc) 62%,var(--linea-2));background:radial-gradient(125% 90% at 50% 0%,color-mix(in srgb,var(--hc) 22%,transparent),transparent 66%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 96%,transparent),color-mix(in srgb,var(--hoja) 99%,transparent))}
-:root[data-theme="light"] .jg-col-hab{border-color:color-mix(in srgb,var(--hc-l) 44%,var(--linea-2));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc-l) 11%,transparent),transparent 64%),linear-gradient(180deg,#fffdf8,#f4ecde);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 24px -18px rgba(48,34,14,.28)}
-.jg-col-hab.t3.listo::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 30%,color-mix(in srgb,var(--hc) 22%,transparent) 50%,transparent 70%);transform:translate3d(-120%,0,0);animation:jp-brillo 5.2s ease-in-out infinite;will-change:transform}
-.jg-col-hab:hover:not(:disabled){transform:translate3d(0,-3px,0);border-color:var(--hc);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 52%,transparent),0 18px 34px -18px color-mix(in srgb,var(--hc) 42%,rgba(0,0,0,.85))}
-.jg-col-hab:active:not(:disabled){transform:scale(.975)}
-.jg-col-hab:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px}
-.jg-col-hab:disabled{opacity:.44;cursor:not-allowed;filter:saturate(.65)}
-.jg-col-hab-top{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:10px}
-.jg-col-sig{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:var(--hc);background:radial-gradient(circle at 35% 25%,color-mix(in srgb,var(--hc) 24%,transparent),color-mix(in srgb,var(--hoja) 88%,transparent));border:1px solid color-mix(in srgb,var(--hc) 46%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 35%,transparent)}
-:root[data-theme="light"] .jg-col-sig{color:var(--hc-l);border-color:color-mix(in srgb,var(--hc-l) 45%,transparent)}
-.jg-col-sig svg{width:24px;height:24px;display:block}
-.jg-col-hab-id{display:grid;gap:3px;min-width:0}
-.jg-col-hab-id b{font:600 1.06rem/1.12 var(--f-display);color:var(--tinta)}
-.jg-col-hab-cost{display:inline-flex;align-items:center;gap:5px;width:fit-content;font:600 .64rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--hc)}
-:root[data-theme="light"] .jg-col-hab-cost{color:var(--hc-l)}
-.jg-col-hab-dots{display:inline-flex;gap:3px}
-.jg-col-hab-dots i{width:5.5px;height:5.5px;border-radius:1.2px;transform:rotate(45deg);background:currentColor}
-.jg-col-hab-mid{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:11px;background:color-mix(in srgb,var(--hoja) 72%,transparent);border:1px solid color-mix(in srgb,var(--hc) 24%,var(--linea-2))}
-.jg-col-hab-dmg{font:600 1.24rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
-.jg-col-hab-ef{font:600 .65rem/1.1 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--hc)}
-:root[data-theme="light"] .jg-col-hab-ef{color:var(--hc-l)}
-.jg-col-hab-desc{font:400 .75rem/1.38 var(--f-ui);color:var(--tinta-2)}
-.jg-col-hab-go{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--linea-2) 85%,transparent);font:600 .7rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--hc)}
-:root[data-theme="light"] .jg-col-hab-go{color:var(--hc-l)}
-.jg-col-hab:disabled .jg-col-hab-go{color:var(--tenue)}
 .jg-col-ens{display:grid;gap:8px;padding:15px 16px;border-radius:18px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(110% 90% at 0% 0%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 68%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
 .jg-col-ens p{margin:0;font:400 .92rem/1.55 var(--f-texto);color:var(--tinta)}
 .jg-col-cita{display:grid;gap:5px;padding:10px 12px;border-radius:12px;border-left:2px solid var(--oro);background:color-mix(in srgb,var(--hoja) 84%,transparent);font:400 .88rem/1.55 var(--f-texto);color:var(--tinta)}
@@ -2290,7 +2335,10 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-cita a:hover{text-decoration:underline}
 .jg-col-live{display:grid;gap:10px;margin-top:8px}
 .jg-col-cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin-top:4px}
-html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after,html.desplazando .jg-col-art,html.desplazando .jg-col-velo,html.desplazando .jg-col-prev img{animation-play-state:paused}
+.jg-jp-ult{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);font:400 .8rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-jp-ult i{width:8px;height:8px;border-radius:50%;background:var(--oro);opacity:.72;flex:none}
+.jg-jp-ult b{color:var(--tinta);font-weight:500}
+html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-art,.jg-col-velo,.jg-col-prev img,.jg-col-hp-bar>i::after,.jg-col-hab.t3.listo::after{animation:none}}
 html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-art,html[data-mov="no"] .jg-col-velo,html[data-mov="no"] .jg-col-prev img,html[data-mov="no"] .jg-col-hp-bar>i::after,html[data-mov="no"] .jg-col-hab.t3.listo::after{animation:none}
 `;
@@ -3419,21 +3467,21 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (pct > 25) return "Fase III · El velo comienza a ceder";
     return "Fase IV · Al borde del derrumbe";
   }
-  // Motor atmosférico HiDPI <canvas>: bruma abisal «sí y no», brasas doradas, pulso de fracturas y onda de choque al impactar.
-  // Se pausa automáticamente fuera de pantalla (IntersectionObserver), en pestaña oculta, con modal abierto o en modo sin animaciones.
+  // Motor atmosférico HiDPI <canvas>: bruma abisal «sí y no», brasas doradas, pulso de fracturas y efectos de impacto por habilidad.
+  // Durante el desplazamiento ralentiza suavemente a 0,42× en vez de congelar las partículas; solo pausa fuera de vista, pestaña oculta o modal.
   function montarAtmosferaColoso(canvas, opts) {
     const ctx = canvas && canvas.getContext && canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return { golpear: () => {} };
     const pct = Math.max(0, Math.min(100, Number(opts.pct) || 0));
     const derrotado = !!opts.derrotado;
     const danoFrac = derrotado ? 1 : (100 - pct) / 100;
-    let w = 0, hC = 0, dpr = 1, raf = 0, visible = true, t0 = performance.now();
-    const nBrasas = derrotado ? 14 : Math.round(26 + danoFrac * 18);
+    let w = 0, hC = 0, dpr = 1, raf = 0, visible = true, tSim = 0;
+    const nBrasas = derrotado ? 14 : Math.round(28 + danoFrac * 18);
     const brasas = Array.from({ length: nBrasas }, (_, i) => ({
       x: ((i * 73.1 + 19) % 100) / 100,
       y: ((i * 41.7 + 7) % 100) / 100,
-      r: 0.9 + ((i * 17) % 10) * 0.22,
-      vy: 0.016 + ((i * 29) % 11) * 0.0032,
+      r: 0.95 + ((i * 17) % 10) * 0.24,
+      vy: 0.017 + ((i * 29) % 11) * 0.0032,
       amp: 0.008 + ((i * 13) % 7) * 0.003,
       f: 0.7 + ((i * 19) % 9) * 0.16,
       ph: i * 1.37,
@@ -3446,12 +3494,30 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       { x: 0.32, y: 0.52, rx: 0.34, ry: 0.26, vx: 0.008, ph: 1.4, op: 0.24 },
       { x: 0.68, y: 0.48, rx: 0.36, ry: 0.26, vx: -0.01, ph: 3.6, op: 0.24 },
     ];
-    let onda = opts.impacto ? 1 : 0;
-    const chispas = opts.impacto ? Array.from({ length: 36 }, (_, i) => {
-      const ang = (Math.PI * 2 * i) / 36 + (i % 3) * 0.07;
-      const spd = 0.16 + ((i * 23) % 15) * 0.028;
-      return { x: 0.5, y: 0.56, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd - 0.04, life: 1, r: 1.3 + (i % 4) * 0.65 };
-    }) : [];
+    let ondas = [], cortes = [], lanza = 0, flashAmt = 0, chispas = [], colorFx = "oro";
+    const lanzarFx = (hab, crit, brecha) => {
+      const esPal = hab === "palabra", esFuerza = hab === "fuerza";
+      colorFx = esPal ? "azul" : "oro";
+      const nOndas = esFuerza || crit ? 3 : esPal ? 2 : 1;
+      for (let i = 0; i < nOndas; i++) ondas.push({ life: 1, delay: i * 0.11, col: esPal ? "azul" : "oro", gran: esFuerza || crit });
+      flashAmt = esFuerza ? 0.92 : crit || brecha ? 0.72 : 0.46;
+      if (esPal) {
+        cortes.push({ life: 1, dir: 1 }, { life: 1, dir: -1, delay: 0.08 });
+      } else if (!esFuerza) {
+        lanza = 1;
+      }
+      const nCh = esFuerza ? 68 : crit || brecha ? 52 : esPal ? 44 : 34;
+      for (let i = 0; i < nCh; i++) {
+        const ang = (Math.PI * 2 * i) / nCh + (i % 5) * 0.09;
+        const spd = (esFuerza ? 0.24 : 0.18) + ((i * 23) % 17) * 0.028;
+        chispas.push({
+          x: 0.5, y: 0.54, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd - 0.05,
+          life: 1, r: (esFuerza || crit ? 1.6 : 1.25) + (i % 4) * 0.7,
+          col: esPal && i % 2 === 0 ? "azul" : "oro",
+        });
+      }
+    };
+    if (opts.impacto) lanzarFx(opts.hab || "golpe", !!opts.crit, !!opts.brecha);
     const medir = () => {
       if (!canvas.isConnected) return false;
       const rc = canvas.getBoundingClientRect();
@@ -3464,16 +3530,17 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       return true;
     };
-    const dibujar = (ahora, dt) => {
+    const dibujar = (dt) => {
       if (!w || !hC) return;
-      const t = (ahora - t0) / 1000;
+      tSim += dt;
+      const t = tSim;
       ctx.clearRect(0, 0, w, hC);
-      // 1) Resplandor interior de grietas en el pecho (crece al bajar la vida del Coloso)
-      const cx = w * 0.5, cy = hC * 0.58;
+      const cx = w * 0.5, cy = hC * 0.54;
+      // 1) Resplandor interior de grietas en el pecho (se intensifica con daño y con impactos)
       const pulso = 0.5 + 0.5 * Math.sin(t * (derrotado ? 0.9 : 1.7 + danoFrac * 1.4));
-      const intGrieta = derrotado ? 0.14 : (0.12 + danoFrac * 0.34) * (0.72 + 0.28 * pulso);
-      const rg = ctx.createRadialGradient(cx, cy, 2, cx, cy, Math.max(w, hC) * (0.2 + danoFrac * 0.14));
-      rg.addColorStop(0, "rgba(255,232,162," + (intGrieta * 0.95).toFixed(3) + ")");
+      const intGrieta = Math.min(0.95, (derrotado ? 0.14 : (0.14 + danoFrac * 0.34) * (0.72 + 0.28 * pulso)) + flashAmt * 0.45);
+      const rg = ctx.createRadialGradient(cx, cy, 2, cx, cy, Math.max(w, hC) * (0.22 + danoFrac * 0.14 + flashAmt * 0.16));
+      rg.addColorStop(0, colorFx === "azul" && flashAmt > 0.1 ? "rgba(182,224,255," + (intGrieta * 0.95).toFixed(3) + ")" : "rgba(255,232,162," + (intGrieta * 0.95).toFixed(3) + ")");
       rg.addColorStop(0.42, "rgba(224,142,46," + (intGrieta * 0.48).toFixed(3) + ")");
       rg.addColorStop(1, "rgba(224,142,46,0)");
       ctx.globalCompositeOperation = "screen";
@@ -3494,45 +3561,85 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         ctx.ellipse(bx * w, by * hC, w * b.rx, hC * b.ry, 0, 0, Math.PI * 2);
         ctx.fill();
       }
-      // 3) Brasas y polvo de oro ascendentes
+      // 3) Brasas y esferas de luz ascendentes (nunca se congelan al desplazarse)
       ctx.globalCompositeOperation = "lighter";
       for (const p of brasas) {
         p.y -= p.vy * dt;
         if (p.y < -0.05) { p.y = 1.06; p.x = (p.x + 0.31) % 1; }
         const px = (p.x + Math.sin(t * p.f + p.ph) * p.amp) * w;
         const py = p.y * hC;
-        const al = Math.sin(Math.max(0, Math.min(1, p.y)) * Math.PI) * (0.38 + 0.52 * (0.5 + 0.5 * Math.sin(t * 2.4 + p.ph)));
+        const al = Math.sin(Math.max(0, Math.min(1, p.y)) * Math.PI) * (0.42 + 0.52 * (0.5 + 0.5 * Math.sin(t * 2.4 + p.ph)));
         if (al < 0.04) continue;
         ctx.fillStyle = p.oro ? "rgba(255,224,142," + al.toFixed(3) + ")" : "rgba(232,148,66," + (al * 0.85).toFixed(3) + ")";
         ctx.beginPath();
         ctx.arc(px, py, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
-      // 4) Onda expansiva y lluvia radial de chispas al golpear
-      if (onda > 0) {
-        onda = Math.max(0, onda - dt * 1.15);
-        const prog = 1 - onda;
-        const rOnda = Math.max(w, hC) * (0.04 + prog * 0.52);
-        ctx.strokeStyle = "rgba(255,232,162," + (onda * 0.85).toFixed(3) + ")";
-        ctx.lineWidth = Math.max(1.2, 4.5 * onda);
+      // 4) Destello de impacto y efectos propios de cada habilidad
+      if (flashAmt > 0) {
+        flashAmt = Math.max(0, flashAmt - dt * 1.9);
+        const fl = ctx.createRadialGradient(cx, cy, 4, cx, cy, Math.max(w, hC) * 0.62);
+        fl.addColorStop(0, colorFx === "azul" ? "rgba(216,238,255," + (flashAmt * 0.58).toFixed(3) + ")" : "rgba(255,248,214," + (flashAmt * 0.62).toFixed(3) + ")");
+        fl.addColorStop(1, "rgba(255,212,112,0)");
+        ctx.fillStyle = fl;
+        ctx.fillRect(0, 0, w, hC);
+      }
+      if (lanza > 0) {
+        lanza = Math.max(0, lanza - dt * 2.6);
+        const lg = ctx.createLinearGradient(cx, hC, cx, cy - hC * 0.25);
+        lg.addColorStop(0, "rgba(215,155,91,0)");
+        lg.addColorStop(0.55, "rgba(255,224,132," + (lanza * 0.85).toFixed(3) + ")");
+        lg.addColorStop(1, "rgba(255,250,224," + lanza.toFixed(3) + ")");
+        ctx.strokeStyle = lg;
+        ctx.lineWidth = Math.max(2, 12 * lanza);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(cx, hC * 0.96);
+        ctx.lineTo(cx, cy - hC * 0.14 * (1 - lanza));
+        ctx.stroke();
+      }
+      for (const co of cortes) {
+        if (co.delay > 0) { co.delay -= dt; continue; }
+        co.life = Math.max(0, co.life - dt * 2.2);
+        if (co.life <= 0) continue;
+        const p = 1 - co.life, span = Math.min(w, hC) * 0.42;
+        const x1 = cx - co.dir * span, y1 = cy - span * 0.55;
+        const x2 = cx + co.dir * span, y2 = cy + span * 0.55;
+        ctx.strokeStyle = "rgba(154,212,255," + (co.life * 0.92).toFixed(3) + ")";
+        ctx.lineWidth = Math.max(1.5, 7 * co.life);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.quadraticCurveTo(cx + co.dir * 26 * (1 - p), cy - 28, x2, y2);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255,248,224," + (co.life * 0.95).toFixed(3) + ")";
+        ctx.lineWidth = Math.max(1, 2.4 * co.life);
+        ctx.stroke();
+      }
+      cortes = cortes.filter((c) => c.life > 0 || c.delay > 0);
+      for (const on of ondas) {
+        if (on.delay > 0) { on.delay -= dt; continue; }
+        on.life = Math.max(0, on.life - dt * (on.gran ? 1.02 : 1.25));
+        if (on.life <= 0) continue;
+        const prog = 1 - on.life;
+        const rOnda = Math.max(w, hC) * (0.04 + prog * (on.gran ? 0.62 : 0.48));
+        ctx.strokeStyle = on.col === "azul" ? "rgba(158,214,255," + (on.life * 0.88).toFixed(3) + ")" : "rgba(255,232,162," + (on.life * 0.88).toFixed(3) + ")";
+        ctx.lineWidth = Math.max(1.2, (on.gran ? 5.6 : 4.2) * on.life);
         ctx.beginPath();
         ctx.arc(cx, cy, rOnda, 0, Math.PI * 2);
         ctx.stroke();
-        const flash = ctx.createRadialGradient(cx, cy, 0, cx, cy, rOnda * 0.8);
-        flash.addColorStop(0, "rgba(255,244,205," + (onda * 0.42).toFixed(3) + ")");
-        flash.addColorStop(1, "rgba(255,212,112,0)");
-        ctx.fillStyle = flash;
-        ctx.fillRect(0, 0, w, hC);
       }
+      ondas = ondas.filter((o) => o.life > 0 || o.delay > 0);
       for (const ch of chispas) {
         if (ch.life <= 0) continue;
-        ch.x += ch.vx * dt; ch.y += ch.vy * dt; ch.vy += 0.24 * dt; ch.life -= dt * 1.05;
+        ch.x += ch.vx * dt; ch.y += ch.vy * dt; ch.vy += 0.25 * dt; ch.life -= dt * 1.02;
         if (ch.life <= 0) continue;
-        ctx.fillStyle = "rgba(255,238,180," + ch.life.toFixed(3) + ")";
+        ctx.fillStyle = ch.col === "azul" ? "rgba(182,226,255," + ch.life.toFixed(3) + ")" : "rgba(255,238,180," + ch.life.toFixed(3) + ")";
         ctx.beginPath();
-        ctx.arc(ch.x * w, ch.y * hC, ch.r * (0.5 + 0.5 * ch.life), 0, Math.PI * 2);
+        ctx.arc(ch.x * w, ch.y * hC, ch.r * (0.45 + 0.55 * ch.life), 0, Math.PI * 2);
         ctx.fill();
       }
+      if (chispas.length > 90) chispas = chispas.filter((c) => c.life > 0);
       ctx.globalCompositeOperation = "source-over";
     };
     let ult = performance.now();
@@ -3546,16 +3653,18 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       raf = 0;
       if (!canvas.isConnected) return limpiar();
       if (!visible || document.hidden) return;
-      const dt = Math.min(0.05, Math.max(0.008, (ahora - ult) / 1000));
+      const dtRaw = Math.min(0.05, Math.max(0.008, (ahora - ult) / 1000));
       ult = ahora;
-      if (!document.documentElement.classList.contains("con-modal") && !document.documentElement.classList.contains("desplazando")) {
-        dibujar(ahora, dt);
+      if (!document.documentElement.classList.contains("con-modal")) {
+        // Ralentizar suavemente durante el scroll en vez de congelar las partículas (cero sensación de bug visual)
+        const desl = document.documentElement.classList.contains("desplazando");
+        dibujar(desl ? dtRaw * 0.42 : dtRaw);
       }
       raf = requestAnimationFrame(paso);
     };
     const arrancar = () => {
       if (!canvas.isConnected || !medir()) return;
-      if (sinAnim()) { dibujar(performance.now() + 900, 0.016); return; }
+      if (sinAnim()) { dibujar(0.016); return; }
       if (!raf && visible && !document.hidden) { ult = performance.now(); raf = requestAnimationFrame(paso); }
     };
     const onVis = () => {
@@ -3568,10 +3677,11 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (visible) arrancar(); else if (raf) { cancelAnimationFrame(raf); raf = 0; }
     }, { threshold: 0.04 }) : null;
     if (io) io.observe(canvas);
-    const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir() && sinAnim()) dibujar(performance.now() + 900, 0.016); }) : null;
+    const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir() && sinAnim()) dibujar(0.016); }) : null;
     if (ro) ro.observe(canvas);
     document.addEventListener("visibilitychange", onVis);
     requestAnimationFrame(arrancar);
+    return { golpear: lanzarFx };
   }
   function avisoPrelanzamientoColoso(compacto) {
     if (S.yo && S.yo.lanzado) return null;
@@ -3614,12 +3724,18 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (p.desc) ps.push(p.desc);
     return ps.join(" · ");
   };
+  function guardarSnapColoso(r) {
+    if (!r || r.error || !A || !A.store) return;
+    A.store.set("jg:coloso_snap", { estado: r.estado, vida: r.vida | 0, vidaMax: r.vidaMax | 0, cargas: r.cargas | 0, cargasMax: r.cargasMax || 6, t: Date.now() });
+    try { document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
+  }
   async function cargarColoso(forzar) {
     if (!S.token) return null;
-    if (!forzar && COLOSO_CACHE.d && Date.now() - COLOSO_CACHE.t < 18e3) return COLOSO_CACHE.d;
+    if (!forzar && COLOSO_CACHE.d && Date.now() - COLOSO_CACHE.t < 24e3) return COLOSO_CACHE.d;
     const r = await pedir("/coloso");
     if (!r || r.error) return null;
     COLOSO_CACHE.d = r; COLOSO_CACHE.t = Date.now();
+    guardarSnapColoso(r);
     return r;
   }
   function tarjetaColoso(compacta) {
@@ -3675,11 +3791,27 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (S.token) cargarColoso(false).then(pintarVivo);
     return card;
   }
+  const COLOSO_POSTURAS = [
+    { id: "muro", nom: "Muro de humo", debil: "golpe", et: "Brecha: Golpe certero", col: "#d79b5b" },
+    { id: "velo", nom: "Velo tenso", debil: "palabra", et: "Brecha: Palabra afilada", col: "#7eb8f0" },
+    { id: "grieta", nom: "Grieta abierta", debil: "fuerza", et: "Brecha: Fuerza plena", col: "#f4cf73" },
+  ];
+  function perfilResonanciaNivel(nivel) {
+    const n = Math.max(1, nivel | 0);
+    if (n >= 21) return { grado: "Gran Maestro", ancho: 10, crit: 4, vel: 2.0 };
+    if (n >= 12) return { grado: "Maestro", ancho: 14, crit: 5, vel: 1.65 };
+    if (n >= 5) return { grado: "Diestro", ancho: 20, crit: 7, vel: 1.32 };
+    return { grado: "Iniciado", ancho: 28, crit: 10, vel: 1.0 };
+  }
   async function pintarColoso(cont) {
     document.title = "El Coloso de la Tradición · Escudriña · BiEx";
     const zona = h("div", { class: "jg jg-col-arena" }, h("p", { class: "cargando", text: "Despertando la incursión…" }));
-    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa de toda la comunidad · tu poder del Árbol amplifica cada acción manual.", "#/escudrina/mundo"), zona);
-    const pintar = (c, ultDano) => {
+    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), zona);
+    let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0;
+    const pararRes = () => { if (resRaf) { cancelAnimationFrame(resRaf); resRaf = 0; } };
+    const pintar = (c, infoGolpe) => {
+      pararRes();
+      if (tPost) { clearInterval(tPost); tPost = 0; }
       if (cont !== S.cont || !zona.isConnected) return;
       if (!c) {
         const ms = (S.cfg && S.cfg.colosoEn) || COLOSO_MS;
@@ -3693,22 +3825,29 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       const pct = Math.max(0, Math.min(100, (100 * vida) / vmax));
       const jefe = c.jefe || {};
       const poderYo = (S.yo && S.yo.av && S.yo.av.poder) || 0;
+      const nivelYo = (S.yo && S.yo.nivel) || 1;
+      const perf = perfilResonanciaNivel(nivelYo);
       const mult = 1 + poderYo / 2000;
       const cargas = Math.max(0, c.cargas | 0), cmax = Math.max(1, c.cargasMax || 6);
+      const postAct = COLOSO_POSTURAS[idxPost % COLOSO_POSTURAS.length];
       const lienzoFx = h("canvas", { class: "jg-col-fx", "aria-hidden": "true" });
-      const artWrap = h("div", { class: "jg-col-art-w" + (derrotado ? " caido" : "") + (ultDano ? " golpe" : "") },
+      const sacudeCl = infoGolpe ? (infoGolpe.hab === "fuerza" || infoGolpe.crit ? " sacude-3" : infoGolpe.hab === "palabra" || infoGolpe.brecha ? " sacude-2" : " sacude-1") : "";
+      const artWrap = h("div", { class: "jg-col-art-w" + (derrotado ? " caido" : "") + sacudeCl },
         h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
         h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
         h("div", { class: "jg-col-velo b", "aria-hidden": "true" }));
+      const postBadge = !derrotado ? h("span", { class: "jg-col-badge post", style: "--pc:" + postAct.col }, h("i", { "aria-hidden": "true" }), h("span", { text: postAct.nom + " · " + postAct.et })) : null;
       const premioTxt = premioColosoTxt(c.premio);
       const stage = h("div", { class: "jg-col-stage" },
         artWrap,
         lienzoFx,
         h("div", { class: "jg-col-vig", "aria-hidden": "true" }),
         h("div", { class: "jg-col-top" },
-          h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "Incursión activa · en vivo" })),
-          c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null),
-        ultDano ? h("span", { class: "jg-col-dano", text: "−" + fmt(ultDano) }) : null,
+          h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "En vivo" })),
+          postBadge || (c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null)),
+        infoGolpe && infoGolpe.dano ? h("span", { class: "jg-col-dano" + (infoGolpe.crit || infoGolpe.brecha ? " crit" : "") },
+          h("span", { text: "−" + fmt(infoGolpe.dano) }),
+          infoGolpe.etiq ? h("small", { text: infoGolpe.etiq }) : null) : null,
         h("div", { class: "jg-col-tit-wrap" },
           h("span", { class: "jg-col-fase", text: faseColoso(pct, derrotado) }),
           h("h2", { text: jefe.nombre || "El Coloso de la Tradición" })));
@@ -3728,22 +3867,26 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           h("div", { class: "jg-col-st" }, h("b", { text: "×" + mult.toFixed(2).replace(".", ",") }), h("span", { text: "Bono Árbol" })),
           h("div", { class: "jg-col-st" }, h("b", { text: derrotado ? "Cerrado" : (c.fin ? restaTexto(c.fin) : "Activo") }), h("span", { text: derrotado ? "Estado" : "Restante" }))),
         premioTxt ? h("div", { class: "jg-col-premio" }, h("span", { text: "Recompensa por victoria:" }), h("b", { text: premioTxt })) : null);
-      const escena = h("section", { class: "jg-col-escena" }, stage, hud);
-      const avisoPre = avisoPrelanzamientoColoso(false);
-      // B5 · Enseñanza del jefe + cita real de BiEx
-      const ens = jefe.ensenanza || jefe.cita ? h("section", { class: "jg-col-ens" },
-        h("span", { class: "eyebrow", text: "Enseñanza de esta incursión" }),
-        jefe.ensenanza ? h("p", { text: jefe.ensenanza }) : null,
-        jefe.cita ? bloqueCitaColoso(jefe.cita) : null) : null;
-      // B4 · Cargas y habilidades manuales estratégicas de reliquia
-      const actuar = async (hab, bt) => {
-        if (bt) bt.disabled = true;
-        const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab } });
-        if (r.error) {
-          if (bt) bt.disabled = false;
-          return A.avisar(mensaje(r));
-        }
-        vibrar([14, 26, 22]); sonar("chispa");
+
+      // B4 · Consola táctica integrada con Pulso de Resonancia escalado por nivel
+      let fxCtrl = null;
+      const resCaja = h("div", { class: "jg-col-res", hidden: true });
+      let enviandoAcc = false;
+      const ejecutarGolpe = async (hab, precision, brecha) => {
+        if (enviandoAcc) return;
+        enviandoAcc = true;
+        pararRes();
+        resCaja.hidden = true;
+        const crit = precision === "critico";
+        const habEs = hab === "fuerza" ? "fuerza" : hab === "palabra" ? "palabra" : "golpe";
+        if (fxCtrl) fxCtrl.golpear(habEs, crit, brecha);
+        if (crit || habEs === "fuerza") vibrar([42, 20, 92, 24, 64]);
+        else if (habEs === "palabra" || brecha) vibrar([24, 18, 48, 18, 28]);
+        else vibrar([18, 22, 34]);
+        sonar("chispa");
+        const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab, precision, postura: postAct.id } });
+        enviandoAcc = false;
+        if (r.error) return A.avisar(mensaje(r));
         const dano = Number(r.dano || r.impacto || 0);
         if (r.yo) actualizarYo(r.yo);
         const nuevo = Object.assign({}, c, r.coloso || r);
@@ -3754,44 +3897,105 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         if (r.estado) nuevo.estado = r.estado;
         if (Array.isArray(r.top)) nuevo.top = r.top;
         COLOSO_CACHE.d = nuevo; COLOSO_CACHE.t = Date.now();
-        A.avisar(dano ? "¡Impacto de " + fmt(dano) + " contra El Coloso!" : "Acción registrada contra El Coloso");
-        pintar(nuevo, dano || 1);
+        guardarSnapColoso(nuevo);
+        if (crit || precision === "resonancia" || brecha) rachaTac++;
+        else rachaTac = 0;
+        idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
+        const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "";
+        A.avisar((etiq ? etiq + " " : "") + (dano ? "Impacto de " + fmt(dano) + " contra El Coloso" : "Acción registrada contra El Coloso"));
+        pintar(nuevo, { dano: dano || 1, hab: habEs, crit, brecha, etiq });
         const escEl = zona.querySelector(".jg-col-escena");
         if (escEl && escEl.getBoundingClientRect().top < 40) escEl.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" });
       };
+      const iniciarResonancia = (hab, nom, brecha) => {
+        if (enviandoAcc) return;
+        if (sinAnim()) return ejecutarGolpe(hab, "resonancia", brecha);
+        pararRes();
+        const centro = 32 + ((Date.now() * 13 + nivelYo * 19) % 36);
+        const z0 = Math.max(8, centro - perf.ancho / 2), zW = perf.ancho;
+        const c0 = Math.max(z0 + 1, centro - perf.crit / 2), cW = perf.crit;
+        const cur = h("span", { class: "jg-col-res-cur" });
+        let pos = 4, dir = 1, pases = 0, tUlt = performance.now(), resuelto = false;
+        const cerrarYDisparar = (ev) => {
+          if (ev) ev.stopPropagation();
+          if (resuelto) return;
+          resuelto = true;
+          pararRes();
+          const enCrit = pos >= c0 && pos <= c0 + cW;
+          const enZona = pos >= z0 && pos <= z0 + zW;
+          const prec = enCrit ? "critico" : enZona ? "resonancia" : "firme";
+          ejecutarGolpe(hab, prec, brecha);
+        };
+        const pista = h("div", { class: "jg-col-res-pista", role: "button", tabindex: "0", "aria-label": "Toca cuando la luz cruce la zona dorada", onclick: cerrarYDisparar },
+          h("span", { class: "jg-col-res-zona", style: "left:" + z0.toFixed(1) + "%;width:" + zW.toFixed(1) + "%" }),
+          h("span", { class: "jg-col-res-crit", style: "left:" + c0.toFixed(1) + "%;width:" + cW.toFixed(1) + "%" }),
+          cur);
+        const btGolpe = h("button", { class: "btn oro chico jg-col-res-btn", type: "button", onclick: cerrarYDisparar }, h("span", { text: "¡Desatar " + nom + " ahora!" }));
+        resCaja.replaceChildren(
+          h("div", { class: "jg-col-res-cab" },
+            h("span", { text: "Pulso de Resonancia · " + perf.grado + " (Niv. " + nivelYo + ")" }),
+            h("small", { text: "Toca en la banda dorada" })),
+          pista,
+          btGolpe);
+        resCaja.hidden = false;
+        vibrar(10);
+        const tick = (ahora) => {
+          resRaf = 0;
+          if (!resCaja.isConnected || resuelto) return;
+          const dt = Math.min(0.04, (ahora - tUlt) / 1000);
+          tUlt = ahora;
+          pos += dir * (82 * perf.vel) * dt;
+          if (pos >= 97) { pos = 97; dir = -1; pases++; }
+          else if (pos <= 3) { pos = 3; dir = 1; pases++; }
+          cur.style.transform = "translate3d(" + (pos * (pista.clientWidth || 260) / 100).toFixed(1) + "px,0,0)";
+          if (pases >= 4) { cerrarYDisparar(); return; }
+          resRaf = requestAnimationFrame(tick);
+        };
+        resRaf = requestAnimationFrame(tick);
+      };
+
       const habsFuente = Array.isArray(c.habilidades) && c.habilidades.length
         ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
         : COLOSO_HABS;
-      const efEtiqueta = (cost) => cost >= 4 ? "+55 % · Decisivo" : cost >= 2 ? "+30 % / carga" : "Presión constante";
-      const comb = !derrotado ? h("section", { class: "jg-col-panel" },
+      const habBtns = [];
+      const comb = !derrotado ? h("div", { class: "jg-col-comb" },
         h("div", { class: "jg-col-cg-cab" },
           h("div", { class: "jg-col-cg-tit" },
-            h("span", { text: "Conducto de energía táctica" }),
-            h("b", { text: cargas + " de " + cmax + " cargas listas" })),
+            h("span", { text: "Energía táctica" }),
+            h("b", { text: cargas + " / " + cmax + " cargas" })),
           h("div", { class: "jg-col-cg-sub" },
-            h("span", { class: "jg-col-mult", text: "Poder " + fmt(poderYo) + " · ×" + mult.toFixed(2).replace(".", ",") }),
-            h("span", { text: cargas >= cmax ? "Al máximo · elige tu golpe" : c.cargaEn ? "Próxima en " + restaTexto(c.cargaEn) : "+1 cada 3 h" }))),
+            rachaTac >= 2 ? h("span", { class: "jg-col-racha", text: "Racha ×" + rachaTac }) : null,
+            h("span", { class: "jg-col-mult", text: "Niv. " + nivelYo + " · " + perf.grado }),
+            h("span", { text: cargas >= cmax ? "Al máximo" : c.cargaEn ? "+1 en " + restaTexto(c.cargaEn) : "+1 cada 3 h" }))),
         h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("span", { class: "jg-col-cg-c" + (i < cargas ? " on" : "") }, h("i", {})))),
-        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base, desc], idx) => {
+        resCaja,
+        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base], idx) => {
           const est = Math.round(base * mult);
           const lista = cargas >= cost;
           const faltaCg = Math.max(0, cost - cargas);
+          const esBrecha = postAct.debil === id;
           const tier = id === "fuerza" || cost >= 4 ? "t3" : id === "palabra" || cost >= 2 ? "t2" : ("t" + Math.min(3, idx + 1));
           const dots = h("span", { class: "jg-col-hab-dots", "aria-hidden": "true" }, Array.from({ length: Math.min(6, cost) }, () => h("i", {})));
-          return h("button", { class: "jg-col-hab " + tier + (lista ? " listo" : ""), type: "button", disabled: !lista, onclick: (e) => actuar(id, e.currentTarget) },
+          const tagBr = h("span", { class: "jg-col-brecha-tag", hidden: !esBrecha, text: "Brecha" });
+          const bt = h("button", { class: "jg-col-hab " + tier + (lista ? " listo" : "") + (esBrecha ? " brecha" : ""), type: "button", disabled: !lista, onclick: () => iniciarResonancia(id, nom, bt.classList.contains("brecha")) },
             h("div", { class: "jg-col-hab-top" },
               h("span", { class: "jg-col-sig", "aria-hidden": "true" }, colosoSigilo(id)),
               h("span", { class: "jg-col-hab-id" },
                 h("b", { text: nom }),
-                h("span", { class: "jg-col-hab-cost" }, dots, h("span", { text: plural(cost, "carga", "cargas") })))),
-            h("div", { class: "jg-col-hab-mid" },
-              h("span", { class: "jg-col-hab-dmg", text: "~" + fmt(est) }),
-              h("span", { class: "jg-col-hab-ef", text: efEtiqueta(cost) })),
-            h("span", { class: "jg-col-hab-desc", text: desc || "Escalado directamente con tu poder del Árbol." }),
+                h("span", { class: "jg-col-hab-cost" }, dots, h("span", { text: plural(cost, "carga", "cargas") }))),
+              h("span", { class: "jg-col-hab-dmg", text: "~" + fmt(est) })),
             h("span", { class: "jg-col-hab-go" },
-              h("span", { text: lista ? "Desatar acción" : "Faltan " + plural(faltaCg, "carga", "cargas") }),
-              h("span", { "aria-hidden": "true", text: lista ? "›" : "·" })));
+              h("span", { text: lista ? "Enfocar ataque" : "Faltan " + plural(faltaCg, "carga", "cargas") }),
+              tagBr));
+          habBtns.push({ id, bt, tagBr });
+          return bt;
         }))) : null;
+      const escena = h("section", { class: "jg-col-escena" }, stage, hud, comb);
+      // B5 · Enseñanza del jefe + cita real de BiEx
+      const ens = jefe.ensenanza || jefe.cita ? h("section", { class: "jg-col-ens" },
+        h("span", { class: "eyebrow", text: "Enseñanza de esta incursión" }),
+        jefe.ensenanza ? h("p", { text: jefe.ensenanza }) : null,
+        jefe.cita ? bloqueCitaColoso(jefe.cita) : null) : null;
       const topL = Array.isArray(c.top) ? c.top : [];
       const topCard = topL.length ? tarjeta("Mayores aportes de la semana", ico("liga"),
         h("ol", { class: "jg-lista mini" }, topL.slice(0, 15).map((x, idx) => {
@@ -3803,11 +4007,24 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
             h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
             h("span", { class: "x", text: fmt(pts) }));
         }))) : null;
-      zona.replaceChildren(...[escena, avisoPre, comb, ens, topCard].filter(Boolean));
-      montarAtmosferaColoso(lienzoFx, { pct, derrotado, impacto: ultDano > 0 });
+      const avisoPre = avisoPrelanzamientoColoso(false);
+      // Prelanzamiento siempre debajo de Mayores aportes para mantener el Coloso y los poderes arriba en pantalla
+      zona.replaceChildren(...[escena, ens, topCard, avisoPre].filter(Boolean));
+      fxCtrl = montarAtmosferaColoso(lienzoFx, { pct, derrotado, impacto: !!(infoGolpe && infoGolpe.dano), hab: infoGolpe && infoGolpe.hab, crit: infoGolpe && infoGolpe.crit, brecha: infoGolpe && infoGolpe.brecha });
+      if (!derrotado && postBadge) {
+        tPost = setInterval(() => {
+          if (!zona.isConnected) { clearInterval(tPost); tPost = 0; return; }
+          if (!resCaja.hidden) return;
+          idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
+          const np = COLOSO_POSTURAS[idxPost];
+          postBadge.style.setProperty("--pc", np.col);
+          postBadge.lastChild.textContent = np.nom + " · " + np.et;
+          for (const hb of habBtns) { const on = hb.id === np.debil; hb.bt.classList.toggle("brecha", on); hb.tagBr.hidden = !on; }
+        }, 14000);
+      }
     };
     const d = await cargarColoso(true);
-    pintar(d, 0);
+    pintar(d, null);
   }
   // Lo que se conserva al lanzar (BiEx, 9-nov-2026): nada se pierde del todo
   const textoConserva = () => { const c = (S.cfg && S.cfg.conserva) || [0.72, 40]; return "entre el " + String(c[0]).replace(".", ",") + " % y el " + String(c[1]).replace(".", ",") + " %"; };
@@ -7035,8 +7252,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const mm = dos && dos.length > 1 ? dos : m ? [m] : [], elm = (m && document.getElementById("v" + (dos ? dos[dos.length - 1] : m))) || el;
     const clave = mm.join(","), listo = mm.length > 0 && mm.every((x) => R.pend.has(x));
     const cambioV = LB.v !== v, nuevo = cambioV || LB.clave !== clave;
+    const se = document.scrollingElement || document.documentElement;
+    const pegadoPie = se.scrollHeight > innerHeight + 48 && (se.scrollHeight - (scrollY + innerHeight)) <= 24;
+    const cambioPie = !!LB.enPie !== pegadoPie;
+    LB.enPie = pegadoPie;
     if (LB.ah) LB.ah.classList.toggle("marcado", !marcable(v));
-    if (!nuevo && !forzar && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
+    if (!nuevo && !forzar && !cambioPie && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
     const lc = R.lib + "." + R.cap, rep = m ? marcadoAntes(lc, m) : false;
     const fila = el.classList.contains("vl"), pe = periDe(v);
     if (fila && mm.length) { ponerPie(elm, m, pe, rep, dos); }
@@ -7045,7 +7266,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
       let ver = false;
-      if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
+      if (!pegadoPie && !fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
       LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver ? 0 : -1;
       if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", alza); }
     }
@@ -7078,7 +7299,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       }
     }
     if (LB.el.style.getPropertyValue("--jg-lb-alza") !== alza) LB.el.style.setProperty("--jg-lb-alza", alza);
-    if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
+    if (pegadoPie || fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
     else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
     document.documentElement.classList.toggle("jg-con-lb", !LB.el.classList.contains("fuera") || !!(LB.pb && !LB.pb.classList.contains("fuera")));
     if (!hoja) return;
@@ -8918,6 +9139,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("span", { class: "jg-jp-dot", "aria-hidden": "true" }),
         h("span", {}, h("b", { text: j.act || "En línea" }), j.lc ? " · " + nombreLC(j.lc) : ""),
         j.lc ? h("a", { class: "btn chico", href: "#/" + j.lc.replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null) : null;
+      const ultTxt = !vivo ? ultimaConexionTexto(j, false) : "";
+      const ultEl = ultTxt ? h("div", { class: "jg-jp-ult" },
+        h("i", { "aria-hidden": "true" }),
+        h("span", {}, "Última conexión aproximada: ", h("b", { text: ultTxt }))) : null;
       const lauros = j.lauros || {}, piedrasN = Math.max(0, Math.min(12, j.piedrasN | 0));
       const tiles = [
         ["arbol", fmt(poder), "Poder", "Etapa " + et[1] + " · " + et[2], null],
@@ -8934,12 +9159,12 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("span", { text: esOtro && miPoder != null ? (poder > miPoder ? "Te lleva " + fmt(poder - miPoder) + " de poder · ¡gran meta!" : poder === miPoder ? "¡Exactamente al mismo poder!" : "Llevas " + fmt(miPoder - poder) + " de ventaja") : "Cada verso confirmado forja el árbol interior" }));
       zona.replaceChildren(
         hero,
-        vivo,
+        vivo || ultEl,
         h("ul", { class: "jg-jp-grid" }, tiles.map(([ic, v, t, s, ex]) => h("li", {}, h("span", { class: "jg-jp-ico", "aria-hidden": "true" }, ico(ic)), h("b", { text: v }), h("span", { text: t }), h("small", { text: s }), ex))),
         pie);
     };
     const hit = CACHE_JUG.get(ap);
-    if (hit && Date.now() - hit.t < 20e3) return pintar(hit.d);
+    if (hit && Date.now() - hit.t < 60e3) return pintar(hit.d);
     pedir("/jugador?a=" + encodeURIComponent(ap), { sin: true }).then((r) => {
       if (!r.error) { if (CACHE_JUG.size > 40) CACHE_JUG.clear(); CACHE_JUG.set(ap, { t: Date.now(), d: r }); }
       pintar(r);
