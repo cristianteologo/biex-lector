@@ -754,3 +754,38 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check app.js juego.js busqueda.js`, JSON + balance CSS (`2994` bloques) y auditoría editorial: **correcto**.
 - Suite Playwright (`verificar_pr12.py`, `280 / 390 / 1280 px`, temas oscuro y Pergamino): Faro oculto en 0 pendientes y Contemplar, 37 px de separación libre sobre `.jg-med`, botón `Leído` oculto al pie y restaurado al subir, `vistaVerso → Sinopsis` sin reversión, `Coloso` integrado con canvas activo durante `html.desplazando` y aviso de prelanzamiento debajo de Mayores aportes, Pulso de Resonancia + impacto VFX, última conexión aproximada en ficha pública, **0 errores y 0 px de desborde, 18/18 capturas inspeccionadas a 10/10**.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #13 — 24 de noviembre de 2026 (PR #13 · Ajedrez Bíblico «Escudriña · Estrategia» · 13 figuras bíblicas con Esteban #12 y Pablo #13, Enigmas del Códice, piezas SVG sin cruces y caché blindada por jugada)
+
+**Rama:** `neon/pr13-ajedrez-biblico` (desde `main` en `29ec923`, que incluye PR #12 fusionado)
+**Archivos modificados:** `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `app.js`, `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados
+
+1. **Motor de ajedrez FIDE 100 % legal en cliente (`AJ_ENG` en `juego.js`):**
+   - Implementación completa y matemática: generación legal de jugadas, enroque corto y largo con verificación de casillas atacadas, captura al paso (*en passant*), coronación con selector modal de 4 piezas, detección de jaque, jaque mate, ahogado, regla de 50 jugadas, triple repetición y material insuficiente.
+   - IA ultraligera con búsqueda alfa-beta, tablas pieza-casilla (*piece-square tables*), ordenamiento MVV-LVA, búsqueda de quietud (*quiescence*) y ejecución asíncrona por tajadas para mantener siempre `60 fps` y 100 % funcionamiento sin conexión (`0` peticiones al servidor para jugar).
+2. **«Sendas de los Antiguos» — Campaña de 13 figuras bíblicas (`AJ_FIGURAS`):**
+   - Los 13 escalones progresivos (`ELO ~650` a `ELO ~2150`), con transliteraciones exactas verificadas palabra por palabra contra `datos/libros/` y `datos/tablas.json`, incluyendo **`Sτέfαnος [Esteban]` (#12)** y **`Shāʾū́l — Pαῦlος [Pablo]` (#13)**, cada uno con personalidad posicional propia, cita oficial BiEx en vivo (`bloqueCitaColoso` + nombres de libro oficiales `Prάc̅ṣεις`, `1 Τιmόdsεος`, `Mattáy`, etc.) y sellos de campaña (**«Estratega del Atrio»** 7/7 y **«Diadema de Consejo»** 13/13).
+3. **Piezas artesanales SVG duales (cero cruces, cero estrellas, cero rayos solares):**
+   - **Piezas escriturales BiEx** (*Soberano* diadema con cabujón, *Sabiduría* lámpara encendida, *Baluarte* torreón de sillar, *Mensajero* rollo sellado, *Corcel*, *Discípulo* cayado) y alternancia en 1 toque con **piezas clásicas (sin cruz en el Soberano)**, tanto en tema oscuro Obsidiana/Oro como en tema claro *Pergamino*.
+4. **Caché blindada jugada por jugada (`biex:ajedrez:partida` + `biex:ajedrez` + `/nube`):**
+   - Cada media jugada (propia y de la IA), posición FEN, historial SAN, capturas, rival y estado de *Lumbre de Consejo* se guarda síncronamente en `localStorage` (y en `pagehide` / `visibilitychange`), más sincronización automática en la nube vía `A.nube` (`ajedrez`) y registro opcional de victoria (`POST /ajedrez/victoria`).
+   - Si el teléfono se reinicia o se queda sin batería en mitad de una partida, al volver a `#/escudrina/ajedrez` la partida se restaura exactamente donde se dejó (con aviso *«Caché activa · Partida retomada automáticamente desde caché»*), reanuda el turno de la IA si quedó pensando e incluso aparece como acceso rápido en **Tu faro de hoy**.
+5. **«Lumbre de Consejo» y «Enigmas del Códice» vinculados a la lectura diaria:**
+   - **Lumbre de Consejo** (1 por partida): analiza y dibuja en el tablero las 2 mejores jugadas candidatas (anillo oro sólido + anillo zafiro punteado) con explicación táctica clara en español.
+   - **Enigmas del Códice** (8 problemas de Mate en 1 y Mate en 2 matemáticamente verificados): se habilitan al leer tus primeros 5 versos del día en BiEx (dejando siempre el Enigma #1 de muestra abierto) y abren la cápsula del verso oficial BiEx al resolverse.
+   - Tarjeta de acceso directo en **Escudriña › Mundo** (`tarjetaAjedrez`) y en **Tu faro de hoy**.
+
+### 2. Aprendizajes clave (Entrada #13)
+1. **Despeje táctil del tablero 8×8 en móvil (`:has(.aj-tab)`):** la inspección a 3× HD detectó que el riel lateral `.saltos-rap` rozaba la columna `h` (`h1`/`h2`) en `390 px`; ocultarlo limpiamente mediante `@media (max-width:760px){body:has(.aj-tab) .saltos-rap{...}}` deja las 64 casillas 100 % libres al jugar sin afectar ninguna otra vista.
+2. **Cero códigos internos en inglés en la interfaz pública:** añadir `ajCitaBonita` / `ajCitaBonitaPub` convirtió todas las referencias visibles (`ACT`, `1TI`, `MAT`, `1CO`, `HEB`, `JAS`, `2TI`) a los nombres oficiales de BiEx (`Prάc̅ṣεις`, `1 Τιmόdsεος`, `Mattáy`, `1 Κοrίndsιοι`, `ʻIḇrî́m`, `Yaʿăqṓḇ`, `2 Τιmόdsεος`).
+3. **Encuadre completo del tablero en escritorio `1280 × 860`:** ajustar la columna del tablero a `minmax(320px, min(468px, calc(100dvh - 440px)))` permite ver las 8 filas completas por encima del muelle inferior sin desplazar la pantalla.
+
+### 3. Comprobaciones pasadas (Entrada #13)
+- `node --check juego.js app.js`, validación editorial y pureza iconográfica (0 cruces/estrellas/rayos, transliteraciones verificadas contra `datos/libros/`): **CLEAN**.
+- Suite Playwright (`verificar_pr13.py`, `280 / 390 / 1280 px`, temas oscuro y *Pergamino*): pruebas matemáticas FIDE (20 jugadas iniciales, en passant, enroques abiertos y bloqueados bajo ataque, 4 coronaciones, mate y ahogado), verificación matemática de los **8 Enigmas**, 13 figuras con `Esteban` #12 y `Pablo` #13, geometría exacta `64` casillas `1:1` (`maxDiff: 0.02 px`), **recarga completa en mitad de partida con restauración exacta desde caché**, `Lumbre de Consejo` (`2` candidatas), alternancia de piezas, **0 errores de consola y 0 px de desborde lateral, 12/12 capturas inspeccionadas a 10/10**.
+- `python3 wix/sellar.py`: **al día**.
