@@ -2369,6 +2369,7 @@
     return h("div", { class: "encab" + (modo !== "a" && prefs.lorg ? " encab-org" : "") },
       flecha(cap > 1 ? cap - 1 : 0, ICO.izq, "Capítulo anterior"),
       h("div", { class: "encab-c" },
+        h("span", { class: "cont-lib", text: b.t || b.n }),
         // (21-nov-2026, AC11/AC21: el brillo del título hebreo movía su fondo en el hilo principal en cada cuadro, ~6 % de CPU en reposo)
         // ahora el brillo son siete luces quietas sobre el texto que se encienden en secuencia: solo opacidad, por el compositor
         C.h ? h("div", { class: "h" }, h("span", { lang: "he", class: "he-br" }, partes[0], ...Array.from({ length: 7 }, (_, k) => h("span", { class: "he-luz", "aria-hidden": "true", style: "--hk:" + k, text: partes[0] }))), partes[1] ? " [" + partes[1] : "") : h("div", { class: "h", text: "Capítulo " + cap }),
@@ -2642,6 +2643,90 @@
       if (store.get("marcasSucio", 0) || ((r.n | 0) === 0 && Object.keys(MK.todo()).length)) NUBE.cambio();
     },
   };
+  // PR #9 (Neon, 23-nov-2026): sincronización en la nube vía GET/PUT /nube para { planes, estudio, ajedrez } (tope 128 KB, unión sin pérdida ante conflicto)
+  const NUBE_DAT = {
+    reloj: 0, bajado: false, enCurso: false,
+    async pedir(metodo, cuerpo) {
+      const t = NUBE.tok(); if (!t || !navigator.onLine) return null;
+      try {
+        const opt = { method: metodo || "GET", headers: Object.assign({ authorization: "Bearer " + t }, cuerpo ? { "content-type": "application/json" } : {}), body: cuerpo ? JSON.stringify(cuerpo) : undefined, credentials: "omit" };
+        const r = await fetchConTope(API_JG + "/nube", opt, 10000);
+        const d = await r.json().catch(() => null);
+        return d && typeof d === "object" ? d : null;
+      } catch (e) { return null; }
+    },
+    unirPlanes(srv, loc) {
+      const a = srv && typeof srv === "object" ? srv : {}, b = loc && typeof loc === "object" ? loc : {};
+      const out = { act: b.act != null ? b.act : (a.act || null), hechos: {}, ini: Object.assign({}, a.ini || {}, b.ini || {}), fechas: {}, ranking: b.ranking !== undefined ? !!b.ranking : !!a.ranking };
+      const ids = new Set([...Object.keys(a.hechos || {}), ...Object.keys(b.hechos || {})]);
+      for (const id of ids) {
+        const s = new Set([...(Array.isArray((a.hechos || {})[id]) ? a.hechos[id] : []), ...(Array.isArray((b.hechos || {})[id]) ? b.hechos[id] : [])]);
+        out.hechos[id] = [...s].sort((x, y) => x - y);
+      }
+      const fIds = new Set([...Object.keys(a.fechas || {}), ...Object.keys(b.fechas || {})]);
+      for (const id of fIds) out.fechas[id] = Object.assign({}, (a.fechas || {})[id] || {}, (b.fechas || {})[id] || {});
+      if (b.rk || a.rk) out.rk = b.rk || a.rk;
+      return out;
+    },
+    unirObj(srv, loc) {
+      if (!srv || typeof srv !== "object") return loc || null;
+      if (!loc || typeof loc !== "object") return srv;
+      return Object.assign({}, srv, loc);
+    },
+    paquete() {
+      return {
+        planes: store.get("planes", null),
+        estudio: store.get("estudio", null),
+        ajedrez: store.get("ajedrez", null),
+      };
+    },
+    cambio(k) {
+      if (!NUBE.tok()) return;
+      store.set("nubeSucio", 1);
+      clearTimeout(NUBE_DAT.reloj);
+      NUBE_DAT.reloj = setTimeout(() => NUBE_DAT.subir(false), k === "ya" ? 300 : 2200);
+    },
+    async subir(forzar) {
+      if (!NUBE.tok() || NUBE_DAT.enCurso) return;
+      NUBE_DAT.enCurso = true;
+      try {
+        const pk = NUBE_DAT.paquete();
+        const cuerpo = Object.assign({ ts: Number(store.get("nubeTs", 0)) || 0, forzar: !!forzar }, pk);
+        if (JSON.stringify(cuerpo).length > 122000) return;
+        const r = await NUBE_DAT.pedir("PUT", cuerpo);
+        if (!r || r.error) return;
+        if (r.conflicto && !forzar) {
+          if (r.planes) store.set("planes", NUBE_DAT.unirPlanes(r.planes, pk.planes));
+          if (r.estudio) store.set("estudio", NUBE_DAT.unirObj(r.estudio, pk.estudio));
+          if (r.ajedrez) store.set("ajedrez", NUBE_DAT.unirObj(r.ajedrez, pk.ajedrez));
+          if (r.ts) store.set("nubeTs", Number(r.ts) || 0);
+          NUBE_DAT.enCurso = false;
+          return NUBE_DAT.subir(true);
+        }
+        if (r.ok || r.ts) {
+          store.set("nubeTs", Number(r.ts) || Date.now());
+          store.set("nubeSucio", 0);
+          try { document.dispatchEvent(new Event("biex:nube")); } catch (e) {}
+        }
+      } finally { NUBE_DAT.enCurso = false; }
+    },
+    async bajar() {
+      if (NUBE_DAT.bajado || !NUBE.tok()) return;
+      NUBE_DAT.bajado = true;
+      const r = await NUBE_DAT.pedir("GET");
+      if (!r || r.error) { NUBE_DAT.bajado = false; return; }
+      const tsSrv = Number(r.ts) || 0, tsLoc = Number(store.get("nubeTs", 0)) || 0;
+      if (tsSrv > tsLoc) {
+        if (r.planes) store.set("planes", NUBE_DAT.unirPlanes(r.planes, store.get("planes", null)));
+        if (r.estudio) store.set("estudio", NUBE_DAT.unirObj(r.estudio, store.get("estudio", null)));
+        if (r.ajedrez) store.set("ajedrez", NUBE_DAT.unirObj(r.ajedrez, store.get("ajedrez", null)));
+        store.set("nubeTs", tsSrv);
+        try { document.dispatchEvent(new Event("biex:nube")); } catch (e) {}
+      }
+      if (store.get("nubeSucio", 0) || (!tsSrv && (store.get("planes", null) || store.get("estudio", null) || store.get("ajedrez", null)))) NUBE_DAT.cambio();
+    },
+  };
+  window.BiExNube = NUBE_DAT;
   // el aviso de dónde se guardan (verso, «Mis marcadores» y la app)
   const avisoGuarda = () => NUBE.tok()
     ? ["Se guarda en este dispositivo y en nuestro servidor con tu cuenta de Escudriña, donde además hacemos una copia de seguridad cada 12 horas; solo tú lo ves. Aun así, por prudencia, haz tu propio respaldo tan seguido como lo necesites: ", h("a", { href: "#/marcadores", text: "«Exportar» en Mis marcadores" }), "."]
@@ -4086,7 +4171,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "44a56ceec3", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "c75f6c1a7c", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4145,7 +4230,7 @@
   function cargarJuego() {
     if (!JGX) JGX = cargarScript("juego").then(() => {
       const J = window.BiExJuego; if (!J) throw new Error("juego");
-      J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn),
+      J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn), nube: NUBE_DAT,
         fechaHoraJerusalen,
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
@@ -6497,9 +6582,12 @@
     } catch (e) { /* no disponible en este navegador */ }
   }
 
-  // AA19: las notas del servidor se traen en un momento libre, poco después de abrir el lector (y al volver a la pestaña)
-  setTimeout(() => { const ir = () => NUBE.bajar(); if (window.requestIdleCallback) requestIdleCallback(ir, { timeout: 6000 }); else ir(); }, 4000);
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { NUBE.bajado = false; setTimeout(() => NUBE.bajar(), 1500); } else if (store.get("marcasSucio", 0)) NUBE.subir(); });
+  // AA19 + PR #9: las notas y datos de nube (/nube: planes, estudio, ajedrez) se sincronizan en calma y al volver a la pestaña
+  setTimeout(() => { const ir = () => { NUBE.bajar(); NUBE_DAT.bajar(); }; if (window.requestIdleCallback) requestIdleCallback(ir, { timeout: 6000 }); else ir(); }, 4000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") { NUBE.bajado = false; NUBE_DAT.bajado = false; setTimeout(() => { NUBE.bajar(); NUBE_DAT.bajar(); }, 1500); }
+    else { if (store.get("marcasSucio", 0)) NUBE.subir(); if (store.get("nubeSucio", 0)) NUBE_DAT.subir(); }
+  });
   // ------------------------------------------------------------------ saltos rápidos: inicio, mitad y final de la página
   // En las páginas largas aparecen al desplazarse y se retiran solos al quedarse quietos; el aro del botón central
   // muestra cuánto se ha avanzado.
@@ -6864,8 +6952,64 @@
     { id: "nv-30", t: "La Nueva Voluntad en 30 días", dias: 30, ord: "crono", d: () => "Una lectura intensa, de unos nueve capítulos por día, en orden χrοnοlόgικο." },
   ];
   const planDe = (id) => PLANES.find((x) => x.id === id) || null;
-  const estPlanes = () => { const e = store.get("planes", null); return e && typeof e === "object" ? Object.assign({ act: null, hechos: {}, ini: {}, fechas: {} }, e) : { act: null, hechos: {}, ini: {}, fechas: {} }; };
-  const guardarPlanes = (e) => store.set("planes", e);
+  const estPlanes = () => { const e = store.get("planes", null); return e && typeof e === "object" ? Object.assign({ act: null, hechos: {}, ini: {}, fechas: {}, ranking: false }, e) : { act: null, hechos: {}, ini: {}, fechas: {}, ranking: false }; };
+  const calcularRkPlan = (e) => {
+    const id = e.act && planDe(e.act) ? e.act : PLANES.map((p) => [p.id, (e.hechos[p.id] || []).length]).sort((a, b) => b[1] - a[1])[0][0];
+    const pl = planDe(id); if (!pl || !D) return null;
+    const tot = Math.max(1, diasPlan(pl).length), dias = (e.hechos[id] || []).length;
+    return { planId: id, pct: Math.min(100, Math.round((100 * dias) / tot)), dias };
+  };
+  const guardarPlanes = (e, ya) => {
+    const rk = calcularRkPlan(e); if (rk) e.rk = rk;
+    store.set("planes", e);
+    NUBE_DAT.cambio(ya ? "ya" : "");
+  };
+  // A4 · Datos clave de estudio y memoria por libro (sin transliteraciones inventadas: el nombre y fechas salen siempre del catálogo BiEx)
+  const CLAVE_LIBRO = {
+    LUK: "Relato investigado «desde arriba con exactitud»: conecta la historia de Israel con el alcance universal del Mensaje.",
+    MAT: "Reúne cinco grandes discursos del Ungido y muestra el cumplimiento de las Escrituras de la Antigua Voluntad.",
+    MRK: "Narración ágil y directa de los hechos y la autoridad del Ungido, marcada por el ritmo del «al instante».",
+    JHN: "Siete señales y discursos hondos que revelan al Lόgος [Palabra] como fuente de vida y luz.",
+    ACT: "Crónica de cómo el testimonio cruza desde Yᵉrūshāláyim [Jerusalén] hasta ῾Hrṓmē [Roma] por el impulso del espíritu.",
+    JAS: "Sabiduría práctica: una confianza viva se comprueba en el dominio de la lengua, la imparcialidad y las obras.",
+    GAL: "Defensa firme de la libertad frente a las cargas añadidas y llamado a caminar en el fruto del espíritu.",
+    "1TH": "Escrito temprano de aliento en medio de la presión: perseverancia, santidad cotidiana y esperanza despierta.",
+    "2TH": "Aclara rumores sobre el día del Señor y llama a la calma, al trabajo fiel y a no ceder al desánimo.",
+    "1CO": "Responde a divisiones y preguntas concretas de una comunidad real, coronado por el camino superior de la benevolencia.",
+    "2CO": "Revela la fuerza que se perfecciona en la debilidad y el ministerio de la reconciliación.",
+    ROM: "Exposición ordenada de la justicia, la misericordia y la unidad entre judíos y naciones.",
+    EPH: "Dibuja el propósito eterno de unidad y equipa al creyente con la armadura completa para mantenerse firme.",
+    PHP: "Carta de gozo sereno escrita desde la prisión: humildad mental, contentamiento y mirada en la meta.",
+    COL: "Coloca al Ungido por encima de toda filosofía o tradición humana vacía y llama a una vida renovada.",
+    PHM: "Carta breve y personal donde la fraternidad transforma desde dentro las relaciones humanas.",
+    "1TI": "Guía pastoral para cuidar la enseñanza sana, el carácter probado y el orden en la congregación.",
+    TIT: "Une doctrina íntegra con conducta digna en la vida pública y doméstica.",
+    "2TI": "Testamento final de fidelidad: guardar el depósito, resistir con temple y aprovechar toda Escritura inspirada.",
+    HEB: "Contrasta sombras y realidad plena, llamando a acercarse con confianza y correr con perseverancia.",
+    "1PE": "Fortalece a lectores extranjeros y probados recordando su identidad como piedras vivas.",
+    "2PE": "Advierte contra distorsiones de las Escrituras y anima a añadir virtud, conocimiento y dominio propio.",
+    "1JN": "Distingue luz y oscuridad: conocer de verdad se demuestra caminando en verdad y benevolencia.",
+    "2JN": "Equilibrio breve entre firmeza en la enseñanza verdadera y hospitalidad con discernimiento.",
+    "3JN": "Contrasta el servicio generoso con el afán de protagonismo dentro de la comunidad.",
+    JUD: "Exhortación breve a contender por la confianza entregada y sostener con misericordia a quien duda.",
+    REV: "Visión simbólica de consuelo y discernimiento que culmina con la renovación total de toda creación.",
+  };
+  const HITOS_PLAN = {
+    "crono-90": [[25, "Primer cuarto · Relatos en escena", "Recorriste el arranque de la vida del Ungido y sus primeras enseñanzas."], [50, "Mitad del camino · Nacimiento de las comunidades", "Llegaste a la expansión del testimonio y las primeras cartas históricas."], [75, "Tres cuartos · Cartas de madurez", "Atas los hilos entre doctrina, ética cotidiana y discernimiento comunitario."], [100, "Travesía completa · Toda la Nueva Voluntad", "Completaste los 27 libros en orden χrοnοlόgικο."]],
+    anual: [[25, "Primer trimestre · Raíz firme", "Constancia diaria sin prisas: un capítulo a la vez construye memoria duradera."], [50, "Medio año · Ritmo consolidado", "La mitad de los 260 capítulos ya forma parte de tu lectura habitual."], [75, "Tercer trimestre · Visión de conjunto", "Empiezas a notar cómo cada carta conversa con los relatos previos."], [100, "Año cumplido · 260 capítulos", "Has recorrido íntegra la Nueva Voluntad capítulo por capítulo."]],
+    "relatos-40": [[25, "Primer relato · Contexto y nacimiento", "Afianzas el marco histórico y los primeros discursos."], [50, "Mitad · Señales y parábolas", "Comparas el tono y el enfoque propio de cada testigo."], [75, "Recta final · Camino a Yᵉrūshāláyim [Jerusalén]", "Se intensifican los diálogos clave y la confrontación con la tradición."], [100, "Cuatro testigos completos", "Recorriste los cuatro relatos de la vida de YēshŪ́aʿ en orden χrοnοlόgικο."]],
+    "cartas-60": [[25, "Cartas tempranas · Primeras respuestas", "Viste nacer la correspondencia práctica antes de los grandes tratados."], [50, "Núcleo epistolar · Comunidad y gracia", "Recorriste las grandes cartas sobre unidad, libertad y justicia."], [75, "Cartas desde prisión y cuidado pastoral", "Profundizas en firmeza, armadura interior y liderazgo íntegro."], [100, "Todas las cartas completadas", "Leíste las 21 cartas en el orden histórico en que fueron escritas."]],
+    "escritura-90": [[25, "Primeros manuscritos en circulación", "Leíste los textos más tempranos tal como los recibieron las primeras comunidades."], [50, "Mitad · Consolidación del testimonio", "Observas cómo maduran los relatos escritos junto a las cartas."], [75, "Tercer tramo · Defensa y perseverancia", "Atraviesas escritos de firmeza ante crisis y falsas enseñanzas."], [100, "Secuencia de escritura completa", "Completaste los 27 libros del primero al último en redactarse."]],
+    "nv-30": [[25, "Semana 1 · Impulso panorámico", "Captas el arco narrativo completo sin perder el hilo entre capítulos."], [50, "Mitad · Lectura de inmersión", "Superaste el ecuador de la lectura intensiva en 30 días."], [75, "Semana 3 · Conexiones vivas", "Las ideas recurrentes entre cartas y relatos resaltan con nitidez."], [100, "30 días · Visión panorámica total", "Completaste toda la Nueva Voluntad en un mes."]],
+  };
+  function datoDiaPlan(dia) {
+    if (!dia || !dia.length) return null;
+    const b = dia[0].b;
+    const fe = fechaEscrito(b), fn = fechaNarra(b);
+    const meta = [nombreLibro(b), fe ? "escrito c. " + fe.replace(/^c\. /, "") + (/H\.D\./.test(fe) ? "" : " " + ERA_D) : "", fn ? "narra " + fn : ""].filter(Boolean).join(" · ");
+    const clave = CLAVE_LIBRO[b.c] || "Lee atento a las palabras repetidas y al contexto de todo el capítulo.";
+    return { meta, clave };
+  }
   const cachePlan = new Map();
   function diasPlan(pl) {
     if (cachePlan.has(pl.id)) return cachePlan.get(pl.id);
@@ -6938,6 +7082,11 @@
     const C = 2 * Math.PI * 17;
     return h("span", { class: "pl-anillo", "aria-hidden": "true" }, svg('<circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="3"/><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + (C * p).toFixed(1) + " " + C.toFixed(1) + '" transform="rotate(-90 20 20)"/>', "0 0 40 40"), h("b", { text: Math.round(p * 100) + "%" }));
   }
+  function insigniaNubePlan() {
+    const con = !!NUBE.tok();
+    return h("span", { class: "pl-nube-est" + (con ? " ok" : "") }, h("i", { "aria-hidden": "true" }),
+      con ? "Sincronizado en la nube con tu cuenta de Escudriña" : "Guardado en este dispositivo · entra a Escudriña para llevarlo a la nube");
+  }
   // Tarjeta de la siguiente lectura del plan activo (portada)
   function tarjetaPlanHoy() {
     const e = estPlanes(), pl = e.act && planDe(e.act); if (!pl || !D) return null;
@@ -6972,25 +7121,84 @@
     const pLec = panelLectura(); if (pLec) pLec.dataset.sec = "Tu lectura";
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel planes" },
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Leer con constancia" }), h("h1", { class: "texto", text: "Planes de lectura" }),
-        h("p", { class: "est-sub", text: "Elige un plan y marca cada lectura. Tu avance queda guardado en este dispositivo; la siguiente lectura aparece en la portada." })),
+        h("p", { class: "est-sub", text: "Elige un plan, aprende un dato clave cada día y avanza a tu ritmo sin castigos. Con cuenta de Escudriña tu avance viaja en la nube y puedes sumarte al ranking en vivo." }),
+        insigniaNubePlan()),
       pLec,
       h("div", { class: "pl-lista", "data-sec": "Planes disponibles" }, PLANES.map(tarjeta)))));
     saltarA(0);
   }
   function vistaPlan(pl) {
     document.title = pl.t + " · Planes de lectura · BiEx";
+    const abrirPerfilDesdePlan = (ap) => {
+      if (!ap) return;
+      cargarJuego().then((J) => { if (J && J.abrirJugador) J.abrirJugador(ap); }).catch(() => {});
+    };
     const pintar = () => {
       const e = estPlanes(), dias = diasPlan(pl), hs = new Set(e.hechos[pl.id] || []), i = sigDia(pl, e), act = e.act === pl.id;
+      const pct = Math.round((100 * hs.size) / Math.max(1, dias.length));
       const lista = h("ol", { class: "pl-dias", "data-sec": "Todas las lecturas" }, dias.map((dia, k) => h("li", { class: hs.has(k) ? "hecho" : k === i ? "sig" : "" },
         h("button", { type: "button", class: "pl-marca", "aria-pressed": String(hs.has(k)), "aria-label": "Día " + (k + 1) + (hs.has(k) ? ": leído. Desmarcar" : ": marcar como leído"), onclick: () => { marcarDia(pl, k, !hs.has(k)); pintar(); } }, svg('<path d="M6 12.5l4 4 8-9" ' + L1 + '/>')),
         h("span", { class: "pl-n", text: "Día " + (k + 1) }),
         h("a", { href: "#/" + dia[0].b.c + "/" + dia[0].c, text: etDia(dia) }))));
-      const sig = i >= 0 ? h("div", { class: "pl-sig", "data-sec": "Siguiente lectura" }, h("span", { class: "eyebrow", text: "Siguiente lectura · Día " + (i + 1) }), h("b", { text: etDia(dias[i]) }),
-        h("div", { class: "pl-acc" }, h("a", { class: "btn oro chico", href: "#/" + dias[i][0].b.c + "/" + dias[i][0].c }, svg(ICO.libro), h("span", { text: "Leer" })),
-          h("button", { class: "btn chico", type: "button", onclick: () => { marcarDia(pl, i, true); pintar(); } }, svg('<path d="M6 12.5l4 4 8-9" ' + L1 + '/>'), h("span", { text: "Marcar como leído" }))))
-        : h("div", { class: "pl-sig", "data-sec": "Estado del plan" }, h("b", { text: "Plan terminado. ¡Bien hecho!" }));
+      const datoHoy = i >= 0 ? datoDiaPlan(dias[i]) : null;
+      const sig = i >= 0 ? h("div", { class: "pl-sig", "data-sec": "Siguiente lectura" },
+        h("span", { class: "eyebrow", text: "Siguiente lectura · Día " + (i + 1) + " de " + dias.length }),
+        h("b", { text: etDia(dias[i]) }),
+        datoHoy ? h("div", { class: "pl-dato" },
+          h("span", { class: "pl-dato-et", text: "Dato clave y aprendizaje de hoy" }),
+          h("p", { text: datoHoy.clave }),
+          h("small", { text: datoHoy.meta })) : null,
+        h("div", { class: "pl-hab" },
+          h("div", { class: "pl-hab-tit" }, h("b", { text: "Paso amable · sin presión" }), h("small", { text: "Cada paso cuenta · si pausas un día, retomas justo aquí" })),
+          h("ol", { class: "pl-pasos" },
+            h("li", {}, h("em", { text: "Paso 1" }), "Abre solo el primer capítulo de hoy."),
+            h("li", {}, h("em", { text: "Paso 2" }), "Lee sin distracciones o activa Contemplar."),
+            h("li", {}, h("em", { text: "Paso 3" }), "Marca tu logro y suma a tu próximo hito."))),
+        h("div", { class: "pl-acc" },
+          h("a", { class: "btn oro chico", href: "#/" + dias[i][0].b.c + "/" + dias[i][0].c }, svg(ICO.libro), h("span", { text: "Leer" })),
+          h("button", { class: "btn chico", type: "button", onclick: () => { location.hash = "#/" + dias[i][0].b.c + "/" + dias[i][0].c; setTimeout(() => ponerContemplar(true), 260); } }, svg(ICO.contemplar), h("span", { text: "Leer en Contemplar" })),
+          h("button", { class: "btn chico", type: "button", onclick: () => { marcarDia(pl, i, true); avisar("¡Día " + (i + 1) + " completado! Avance guardado."); pintar(); } }, svg('<path d="M6 12.5l4 4 8-9" ' + L1 + '/>'), h("span", { text: "Marcar como leído" }))))
+        : h("div", { class: "pl-sig", "data-sec": "Estado del plan" }, h("b", { text: "Plan terminado. ¡Bien hecho!" }), h("p", { class: "nota-ui", text: "Alcanzaste los 4 hitos de este plan. Puedes elegir otro plan o reiniciar cuando desees repasarlo." }));
+      const hitosDef = HITOS_PLAN[pl.id] || [];
+      const hitos = hitosDef.length ? h("section", { class: "pl-hitos", "data-sec": "Hitos y aprendizajes" },
+        h("div", { class: "pl-hitos-cab" }, h("h2", { text: "Hitos y aprendizajes del camino" }), h("small", { text: hitosDef.filter(([p]) => pct >= p).length + " de " + hitosDef.length + " desbloqueados" })),
+        h("ol", { class: "pl-hitos-g" }, hitosDef.map(([p, tit, desc]) => h("li", { class: "pl-hito" + (pct >= p ? " ok" : "") },
+          h("div", { class: "pl-hito-top" }, h("span", { class: "pl-hito-pct", text: pct >= p ? "✓ " + p + " %" : p + " %" })),
+          h("b", { text: tit }),
+          h("p", { text: desc }))))) : null;
+      // Ranking en vivo del plan (GET /planes/ranking?plan=<id>)
+      const rkZona = h("div", {}, h("p", { class: "nota-ui", text: "Cargando clasificación de este plan…" }));
+      const cargarRk = () => {
+        fetchConTope(API_JG + "/planes/ranking?plan=" + encodeURIComponent(pl.id), { credentials: "omit" }, 8000)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            if (!rkZona.isConnected) return;
+            const L = d && Array.isArray(d.lista) ? d.lista : [];
+            if (!L.length) return rkZona.replaceChildren(h("p", { class: "nota-ui", text: "Aún nadie se ha sumado al ranking público de este plan. Activa la casilla arriba para inaugurar la lista." }));
+            rkZona.replaceChildren(h("ol", { class: "pl-rk-l" }, L.slice(0, 30).map((x, idx) => h("li", {},
+              h("span", { class: "pl-rk-p", text: String(idx + 1) }),
+              h("div", { class: "pl-rk-id" },
+                h("button", { class: "pl-rk-nom", type: "button", title: "Ver perfil público de " + x.apodo, onclick: () => abrirPerfilDesdePlan(x.apodo) }, x.apodo || "Lector"),
+                h("span", { class: "pl-rk-sub", text: "nivel " + (x.nivel | 0) + (x.poder != null ? " · poder " + fmt(x.poder) : "") }),
+                h("div", { class: "pl-rk-bar", "aria-hidden": "true" }, h("i", { style: "width:" + Math.max(2, Math.min(100, Number(x.pct) || 0)) + "%" }))),
+              h("div", { class: "pl-rk-pct" }, (Number(x.pct) || 0) + " %", h("small", { text: fmt(x.dias | 0) + " d" }))))));
+          }).catch(() => { if (rkZona.isConnected) rkZona.replaceChildren(h("p", { class: "nota-ui", text: "No se pudo consultar el ranking del plan ahora." })); });
+      };
+      const chkRk = h("input", { type: "checkbox", checked: !!e.ranking, onchange: async (ev) => {
+        if (!NUBE.tok()) { ev.currentTarget.checked = false; avisar("Inicia sesión en Escudriña para sumarte al ranking en vivo"); return; }
+        const e2 = estPlanes(); e2.ranking = !!ev.currentTarget.checked; if (!e2.act) e2.act = pl.id;
+        guardarPlanes(e2, true);
+        avisar(e2.ranking ? "Te sumaste al ranking público de este plan" : "Saliste del ranking público de planes");
+        setTimeout(cargarRk, 900);
+      } });
+      const rkSec = h("section", { class: "pl-rk", "data-sec": "Ranking del plan" },
+        h("div", { class: "pl-rk-cab" },
+          h("h2", { text: "Lectores en este plan" }),
+          h("label", { class: "pl-rk-opt" }, chkRk, h("span", { text: "Aparecer en el ranking" }))),
+        rkZona);
       vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel planes" },
         h("div", { class: "panel-cab" }, h("a", { class: "eyebrow", href: "#/planes", text: "‹ Planes de lectura" }), h("h1", { class: "texto", text: pl.t }), h("p", { class: "est-sub", text: pl.d() }),
+          insigniaNubePlan(),
           h("div", { class: "pl-cab" }, anilloPlan(hs.size / dias.length), h("span", { text: hs.size + " de " + dias.length + " lecturas" }),
             act ? [h("span", { class: "chip activo", text: "Plan activo" }), h("button", { class: "btn chico", type: "button", onclick: (ev) => {
               const bt = ev.currentTarget;
@@ -6998,7 +7206,8 @@
               const e2 = estPlanes(); e2.act = null; guardarPlanes(e2); avisar("Plan desactivado: tus marcas quedan guardadas"); pintar();
             } }, "Desactivar")] : h("button", { class: "btn chico", type: "button", onclick: () => { const e2 = estPlanes(); e2.act = pl.id; guardarPlanes(e2); pintar(); } }, "Seguir este plan"),
             hs.size ? h("button", { class: "btn chico", type: "button", onclick: (ev) => { const bt = ev.currentTarget; if (!bt.dataset.seguro) { bt.dataset.seguro = "1"; bt.textContent = "Tocar otra vez para borrar las marcas"; setTimeout(() => { if (bt.isConnected) { delete bt.dataset.seguro; bt.textContent = "Reiniciar"; } }, 4000); return; } const e2 = estPlanes(); e2.hechos[pl.id] = []; guardarPlanes(e2); pintar(); } }, "Reiniciar") : null)),
-        sig, lista)));
+        sig, hitos, rkSec, lista)));
+      cargarRk();
     };
     pintar(); saltarA(0);
   }
@@ -7307,8 +7516,8 @@
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
     // Direcciones del juego mal escritas («#/escudrinabuzonn», «#/Escudriña/Buzón»): se corrigen solas a la ruta real
     const pj = sinMarcas(partes[0] || "").toLowerCase();
-    if (/^escudri/.test(pj) && (partes[0] !== "escudrina" || (partes[1] && !/^(i|c|sala|arbol|clasificacion|prestigio|propuestas|buzon|cuenta|liga|compania|companias|tesoro|mundo|juntos|mas|guia)$/.test(partes[1])))) {
-      const SUB = ["clasificacion", "prestigio", "arbol", "propuestas", "buzon", "cuenta", "liga", "companias", "compania", "sala", "tesoro", "mundo", "juntos", "guia", "mas"];
+    if (/^escudri/.test(pj) && (partes[0] !== "escudrina" || (partes[1] && !/^(i|c|sala|arbol|clasificacion|prestigio|propuestas|buzon|cuenta|liga|coloso|ajedrez|compania|companias|tesoro|mundo|juntos|mas|guia)$/.test(partes[1])))) {
+      const SUB = ["clasificacion", "prestigio", "arbol", "propuestas", "buzon", "cuenta", "liga", "coloso", "ajedrez", "companias", "compania", "sala", "tesoro", "mundo", "juntos", "guia", "mas"];
       const dist = (a, b) => { const d = Array.from({ length: b.length + 1 }, (_, j) => j); for (let i = 1; i <= a.length; i++) { let pr = d[0]; d[0] = i; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, pr + (a[i - 1] === b[j - 1] ? 0 : 1)); pr = t; } } return d[b.length]; };
       const cerca = (x) => { x = sinMarcas(x || "").toLowerCase().replace(/[^a-z]/g, ""); if (!x) return null; if (x === "i") return "i"; return SUB.find((k) => k === x) || SUB.find((k) => x.length >= 3 && (k.startsWith(x) || x.startsWith(k))) || SUB.find((k) => dist(x, k) <= 2) || null; };
       const resto = pj.replace(/^escudri(n|ni)?a?/, "");

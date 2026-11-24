@@ -131,7 +131,8 @@
     apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", lugar_espera: "Tu ciudad se puede cambiar una vez cada 2 meses.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
   // AF14 (21-nov-2026): los fallos del servidor dicen qué pasó y, si no tienen mensaje propio, llevan su código discreto
   Object.assign(MENSAJES, { interno: "El servidor del juego tuvo un tropiezo. Vuelve a intentarlo en un momento.", preguntas: "Las preguntas de este capítulo no llegaron. Vuelve a intentarlo en un momento.",
-    vencida: "Esa prueba venció sin responderse: ábrela de nuevo para recibir otra.", rapido: "Toma un momento para leer cada pregunta antes de ver el resultado.", prueba: "Esa prueba ya se respondió." });
+    vencida: "Esa prueba venció sin responderse: ábrela de nuevo para recibir otra.", rapido: "Toma un momento para leer cada pregunta antes de ver el resultado.", prueba: "Esa prueba ya se respondió.",
+    sin_cargas: "Aún no tienes suficientes cargas para esa habilidad. Recuperas 1 carga cada 3 horas.", derrotado: "El Coloso de la Tradición ya fue derrotado esta semana.", habilidad: "Esa habilidad táctica no está disponible.", nombre_espera: "El nombre de la sala se puede cambiar una vez al día." });
   const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien" + (r && r.error ? " (código «" + String(r.error).slice(0, 24) + "»)" : "") + ". Vuelve a intentarlo.";
 
   function guardarSesion(token, yo) {
@@ -2131,24 +2132,51 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-sala-extra summary::after{content:"▾";opacity:.75;transition:transform .2s}
 .jg-sala-extra[open] summary::after{transform:rotate(180deg)}
 .jg-sala-extra-c{display:grid;gap:10px;margin-top:10px}
-/* Ficha pública de jugador (GET /jugador), insignia de dificultad B7 y nota de escalera de reasignación */
-.jg-jug-btn{all:unset;display:inline;font:600 inherit var(--f-ui);color:var(--tinta);cursor:pointer;border-bottom:1px dotted color-mix(in srgb,var(--oro) 48%,transparent);transition:color .18s,border-color .18s}
+/* Ficha pública espectacular (Relicario Astral), nombres de sala y batalla táctica contra El Coloso (B4/B5) */
+.jg-jug-btn{all:unset;display:inline;font:600 inherit var(--f-ui);color:var(--tinta);cursor:pointer;border-bottom:1px dotted color-mix(in srgb,var(--oro) 50%,transparent);transition:color .18s,border-color .18s}
 .jg-jug-btn:hover,.jg-jug-btn:focus-visible{color:var(--oro-vivo);border-bottom-color:var(--oro-vivo)}
 .jg-jug-btn:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px;border-radius:3px}
-.jg-jp{display:grid;gap:14px;padding:4px 0 2px}
-.jg-jp-cab{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;border:1px solid color-mix(in srgb,var(--et,var(--oro)) 38%,var(--linea-2));background:radial-gradient(120% 95% at 0% 0%,color-mix(in srgb,var(--et,var(--oro)) 14%,transparent),transparent 66%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
-.jg-jp-emb{flex:none;width:62px;height:62px;display:grid;place-items:center}
-.jg-jp-emb .jg-e{width:58px;height:58px;font-size:1.55rem}
-.jg-jp-id{min-width:0;display:grid;gap:3px}
-.jg-jp-id h3{margin:0;font:600 1.24rem/1.15 var(--f-display);color:var(--tinta);overflow-wrap:anywhere}
-.jg-jp-id .jg-mini{margin:0}
-.jg-jp-vivo{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 12px;border-radius:13px;border:1px solid color-mix(in srgb,#6fbf8f 42%,var(--linea-2));background:color-mix(in srgb,#6fbf8f 10%,var(--hoja-2));font:400 .8rem/1.35 var(--f-ui);color:var(--tinta)}
-.jg-jp-dot{width:9px;height:9px;border-radius:50%;background:#79d99f;box-shadow:0 0 8px rgba(121,217,159,.75)}
-.jg-jp-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.jg-jp-grid li{display:grid;justify-items:center;align-content:center;gap:2px;padding:10px 7px;border-radius:13px;text-align:center;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);min-width:0}
-.jg-jp-grid b{font:600 1.05rem/1.15 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
-.jg-jp-grid span{font:600 .66rem/1.2 var(--f-ui);letter-spacing:.04em;color:var(--tinta)}
-.jg-jp-grid small{font:400 .62rem/1.2 var(--f-ui);color:var(--tenue);text-wrap:balance}
+.jg-jp{display:grid;gap:14px;padding:2px 0 4px}
+.jg-jp-hero{position:relative;overflow:hidden;display:grid;justify-items:center;gap:10px;padding:20px 16px 16px;border-radius:20px;text-align:center;border:1px solid color-mix(in srgb,var(--et,var(--oro)) 48%,var(--linea-2));background:radial-gradient(95% 75% at 50% 8%,color-mix(in srgb,var(--et,var(--oro)) 22%,transparent),transparent 72%),radial-gradient(65% 55% at 85% 95%,color-mix(in srgb,var(--oro) 12%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 30%,transparent),0 18px 36px -22px rgba(0,0,0,.72)}
+.jg-jp-hero::before{content:"";position:absolute;inset:-40% -25%;pointer-events:none;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--et,var(--oro)) 14%,transparent),transparent 54%);opacity:.85;animation:jp-halo 7s ease-in-out infinite;will-change:transform,opacity}
+.jg-jp-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 34%,color-mix(in srgb,var(--oro-vivo) 12%,transparent) 50%,transparent 66%);transform:translate3d(-120%,0,0);animation:jp-brillo 6.5s ease-in-out infinite;will-change:transform}
+@keyframes jp-halo{0%,100%{transform:scale(.96);opacity:.62}50%{transform:scale(1.06);opacity:.96}}
+@keyframes jp-brillo{0%,62%{transform:translate3d(-120%,0,0)}100%{transform:translate3d(130%,0,0)}}
+.jg-jp-emb-wrap{position:relative;width:96px;height:96px;display:grid;place-items:center;z-index:1}
+.jg-jp-aro{position:absolute;inset:0;border-radius:50%;border:1px dashed color-mix(in srgb,var(--et,var(--oro)) 54%,transparent);opacity:.7;animation:jp-gira 26s linear infinite;will-change:transform}
+.jg-jp-aro.b{inset:8px;border-style:solid;border-color:color-mix(in srgb,var(--et,var(--oro)) 28%,transparent);animation-direction:reverse;animation-duration:38s}
+@keyframes jp-gira{to{transform:rotate(360deg)}}
+.jg-jp-emb{position:relative;z-index:1;width:74px;height:74px;display:grid;place-items:center;filter:drop-shadow(0 8px 18px color-mix(in srgb,var(--et,var(--oro)) 32%,rgba(0,0,0,.6)))}
+.jg-jp-emb .jg-e{width:70px;height:70px;font-size:1.95rem}
+.jg-jp-id{position:relative;z-index:1;min-width:0;display:grid;gap:3px}
+.jg-jp-id h3{margin:0;font:600 1.5rem/1.1 var(--f-display);color:var(--tinta);letter-spacing:.02em;overflow-wrap:anywhere}
+.jg-jp-id .jg-mini{margin:0;color:var(--tinta-2)}
+.jg-jp-hero .jg-chips{position:relative;z-index:1;justify-content:center;margin:0}
+.jg-jp-track{position:relative;z-index:1;width:100%;display:grid;gap:6px;margin-top:4px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--et,var(--oro)) 22%,var(--linea-2))}
+.jg-jp-tr-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:500 .72rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.jg-jp-tr-cab b{font:600 .86rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.jg-jp-bar{height:7px;border-radius:999px;background:color-mix(in srgb,var(--hoja-3) 86%,transparent);overflow:hidden;border:1px solid color-mix(in srgb,var(--et,var(--oro)) 26%,transparent)}
+.jg-jp-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--oro-2),var(--et,var(--oro-vivo)))}
+.jg-jp-pasos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;font:600 .62rem/1.2 var(--f-ui);letter-spacing:.08em;color:var(--tenue)}
+.jg-jp-pasos span{padding:2px 0;border-radius:6px;text-align:center;border:1px solid transparent}
+.jg-jp-pasos span.on{color:var(--et,var(--oro-vivo));border-color:color-mix(in srgb,var(--et,var(--oro)) 38%,transparent);background:color-mix(in srgb,var(--et,var(--oro)) 10%,transparent)}
+:root[data-theme="light"] .jg-jp-pasos span.on{color:var(--et-l,var(--oro-vivo));border-color:color-mix(in srgb,var(--et-l,var(--oro)) 42%,transparent);background:color-mix(in srgb,var(--et-l,var(--oro)) 10%,transparent)}
+:root[data-theme="light"] .jg-jp-hero{border-color:color-mix(in srgb,var(--et-l,var(--oro)) 46%,var(--linea-2));background:radial-gradient(95% 75% at 50% 8%,color-mix(in srgb,var(--et-l,var(--oro)) 15%,transparent),transparent 72%),linear-gradient(180deg,#fffdf8,#f5eee1);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 16px 32px -22px rgba(60,45,20,.3)}
+.jg-jp-vivo{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 13px;border-radius:14px;border:1px solid color-mix(in srgb,#6fbf8f 48%,var(--linea-2));background:linear-gradient(90deg,color-mix(in srgb,#6fbf8f 14%,var(--hoja-2)),color-mix(in srgb,var(--hoja-2) 92%,transparent));font:400 .82rem/1.35 var(--f-ui);color:var(--tinta);box-shadow:0 8px 20px -14px rgba(0,0,0,.5)}
+.jg-jp-dot{width:9px;height:9px;border-radius:50%;background:#79d99f;box-shadow:0 0 8px rgba(121,217,159,.8)}
+.jg-jp-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.jg-jp-grid li{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;padding:13px 8px 11px;border-radius:15px;text-align:center;border:1px solid color-mix(in srgb,var(--oro) 24%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 92%,transparent),color-mix(in srgb,var(--hoja) 96%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 22%,transparent),0 12px 24px -18px rgba(0,0,0,.68);min-width:0;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .2s}
+.jg-jp-grid li:hover{transform:translate3d(0,-2px,0);border-color:color-mix(in srgb,var(--oro) 54%,transparent)}
+.jg-jp-ico{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--oro) 13%,transparent);color:var(--oro-vivo);margin-bottom:2px}
+.jg-jp-ico svg{width:13px;height:13px}
+.jg-jp-grid b{font:600 1.12rem/1.15 var(--f-display);color:var(--oro-vivo);font-variant-numeric:lining-nums tabular-nums}
+.jg-jp-grid span{font:600 .67rem/1.2 var(--f-ui);letter-spacing:.05em;color:var(--tinta)}
+.jg-jp-grid small{font:400 .63rem/1.2 var(--f-ui);color:var(--tenue);text-wrap:balance}
+.jg-jp-gemas{display:grid;grid-template-columns:repeat(6,6px);justify-content:center;gap:5px;margin-top:4px}
+.jg-jp-gemas i{width:6px;height:6px;border-radius:1.8px;transform:rotate(45deg);background:var(--hoja-3);border:1px solid var(--linea-2)}
+.jg-jp-gemas i.on{background:var(--oro-vivo);border-color:var(--oro);box-shadow:0 0 6px color-mix(in srgb,var(--oro-vivo) 65%,transparent)}
+.jg-jp-pie{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:10px 13px;border-radius:14px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 72%,transparent);font:400 .75rem/1.35 var(--f-ui);color:var(--tinta-2)}
+.jg-jp-pie b{color:var(--oro-vivo);font-weight:600}
 .jg-jp-priv{margin:8px 0;text-align:center}
 .jg-jp-et{border-color:color-mix(in srgb,var(--et,var(--oro)) 55%,transparent);color:var(--et,var(--oro-vivo))}
 :root[data-theme="light"] .jg-jp-et{border-color:color-mix(in srgb,var(--et-l,var(--oro-vivo)) 48%,transparent);background:color-mix(in srgb,var(--et-l,var(--oro)) 10%,transparent);color:var(--et-l,var(--oro-vivo))}
@@ -2158,6 +2186,52 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-qz-dif.d3{border-color:color-mix(in srgb,#ff7d93 52%,transparent);background:color-mix(in srgb,#ff7d93 12%,transparent);color:#ff9dad}
 :root[data-theme="light"] .jg-qz-dif.d2{color:#1f5894}:root[data-theme="light"] .jg-qz-dif.d3{color:#a11c36}
 .ap-reasig-nota{margin:8px 0 0;text-align:center}
+.jg-sala-nom{display:grid;gap:6px;padding:10px 12px;border-radius:13px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 72%,transparent)}
+.jg-sala-nom-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:600 .72rem/1.2 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--oro)}
+.jg-sala-nom-cab small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--tenue)}
+/* B4 + B5 · Batalla táctica cooperativa contra El Coloso de la Tradición */
+.jg-col-arena{display:grid;gap:14px}
+.jg-col-escena{position:relative;overflow:hidden;display:grid;justify-items:center;gap:12px;padding:20px 16px 18px;border-radius:20px;text-align:center;border:1px solid color-mix(in srgb,var(--oro) 48%,var(--linea-2));background:radial-gradient(95% 75% at 50% 10%,color-mix(in srgb,#d97c38 18%,transparent),transparent 68%),radial-gradient(75% 65% at 50% 95%,color-mix(in srgb,var(--oro) 12%,transparent),transparent 72%),linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 28%,transparent),0 22px 44px -26px rgba(0,0,0,.78)}
+.jg-col-fig{position:relative;width:min(190px,56vw);aspect-ratio:1/1.05;display:grid;place-items:center;animation:col-respira 5.4s ease-in-out infinite;will-change:transform}
+.jg-col-fig.golpe{animation:col-sacude .36s cubic-bezier(.2,.8,.2,1)}
+.jg-col-fig.caido{animation:none;opacity:.76;filter:saturate(.55)}
+.jg-col-fig svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 16px 26px rgba(0,0,0,.62))}
+@keyframes col-respira{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5px,0)}}
+@keyframes col-sacude{0%{transform:translate3d(0,0,0)}25%{transform:translate3d(-7px,-3px,0)}55%{transform:translate3d(6px,2px,0)}80%{transform:translate3d(-3px,0,0)}100%{transform:translate3d(0,0,0)}}
+.jg-col-dano{position:absolute;top:14%;left:50%;transform:translate3d(-50%,0,0);font:700 1.45rem/1 var(--f-display);color:#ffe49c;text-shadow:0 3px 14px rgba(0,0,0,.85);pointer-events:none;z-index:4;animation:col-dano 1.15s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,12px,0) scale(.85)}22%{opacity:1;transform:translate3d(-50%,-10px,0) scale(1.12)}100%{opacity:0;transform:translate3d(-50%,-48px,0) scale(.95)}}
+.jg-col-hp{width:100%;display:grid;gap:6px}
+.jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .8rem/1.2 var(--f-ui);color:var(--tinta-2)}
+.jg-col-hp-cab b{font:600 1.05rem/1 var(--f-display);color:var(--oro-vivo);font-variant-numeric:tabular-nums}
+.jg-col-hp-bar{height:12px;border-radius:999px;background:color-mix(in srgb,var(--hoja-3) 90%,transparent);overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 34%,transparent);padding:1px}
+.jg-col-hp-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c94c38,#e68a3e,#f5c962);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.jg-col-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;font:400 .76rem/1.3 var(--f-ui);color:var(--tinta-2)}
+.jg-col-cargas{display:grid;gap:8px;padding:12px 14px;border-radius:15px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 84%,transparent)}
+.jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:600 .76rem/1.2 var(--f-ui);color:var(--tinta)}
+.jg-col-cg-cab small{font-weight:400;color:var(--tenue)}
+.jg-col-crist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.jg-col-crist i{height:11px;border-radius:999px;background:var(--hoja-3);border:1px solid var(--linea-2);transition:background-color .25s,border-color .25s}
+.jg-col-crist i.on{background:linear-gradient(90deg,var(--oro),var(--oro-vivo));border-color:var(--oro-vivo);box-shadow:0 0 10px color-mix(in srgb,var(--oro-vivo) 55%,transparent)}
+.jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+@media (max-width:560px){.jg-col-habs{grid-template-columns:1fr}}
+.jg-col-hab{display:grid;gap:4px;text-align:left;padding:13px 13px 12px;border-radius:15px;border:1px solid color-mix(in srgb,var(--oro) 38%,var(--linea-2));background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));color:var(--tinta);cursor:pointer;transition:transform .2s,border-color .2s,opacity .2s}
+.jg-col-hab:hover:not(:disabled){transform:translate3d(0,-2px,0);border-color:var(--oro-vivo)}
+.jg-col-hab:active:not(:disabled){transform:scale(.98)}
+.jg-col-hab:disabled{opacity:.48;cursor:not-allowed}
+.jg-col-hab-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.jg-col-hab b{font:600 1rem/1.15 var(--f-display);color:var(--oro-vivo)}
+.jg-col-hab-cost{font:600 .68rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--oro) 16%,transparent);color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 42%,transparent)}
+.jg-col-hab span{font:500 .78rem/1.3 var(--f-ui);color:var(--tinta)}
+.jg-col-hab small{font:400 .72rem/1.35 var(--f-ui);color:var(--tenue)}
+.jg-col-ens{display:grid;gap:8px;padding:14px 16px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:radial-gradient(110% 90% at 0% 0%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 68%),color-mix(in srgb,var(--hoja-2) 86%,transparent)}
+.jg-col-ens p{margin:0;font:400 .9rem/1.55 var(--f-texto);color:var(--tinta)}
+.jg-col-cita{display:grid;gap:5px;padding:10px 12px;border-radius:12px;border-left:2px solid var(--oro);background:color-mix(in srgb,var(--hoja) 84%,transparent);font:400 .88rem/1.55 var(--f-texto);color:var(--tinta)}
+.jg-col-cita a{font:600 .72rem/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--oro-vivo);text-decoration:none}
+.jg-col-cita a:hover{text-decoration:underline}
+.jg-col-live{display:grid;gap:10px;margin-top:8px}
+.jg-col-cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin-top:4px}
+@media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-fig{animation:none}}
+html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-fig{animation:none}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -2256,6 +2330,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
     if (que === "arbol") return pintarArbol(cont, /^[a-z0-9]{4,12}$/.test(S.sub[1] || "") ? S.sub[1] : null);
     if (que === "propuestas") return pintarPropuestas(cont);
     if (que === "liga") return pintarLiga(cont);
+    if (que === "coloso") return pintarColoso(cont);
     if (que === "compania") return pintarCompania(cont);
     if (que === "c" && S.sub[1]) return pintarUnirCompania(cont, S.sub[1]);
     if (que === "sala" && S.sub[1]) return pintarSalaRuta(cont, S.sub[1]);
@@ -2929,7 +3004,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
   // El Árbol de la siembra con su propio botón en el menú (BiEx, 10-nov-2026)
   // AC20 (BiEx, 15-nov-2026): el Árbol pasa al lugar de Juntos y Juntos al del Árbol
   const SECC = [["hoy", "Hoy", "hoy"], ["mundo", "Mundo", "mundo"], ["tesoro", "Tesoro", "liga"], ["arbol", "Árbol", "arbol"], ["juntos", "Juntos", "compania"], ["mas", "Más", "mas"]];
-  const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "arbol",
+  const SECC_DE = { tesoro: "tesoro", mundo: "mundo", liga: "mundo", coloso: "mundo", clasificacion: "mundo", prestigio: "mundo", juntos: "juntos", compania: "juntos", companias: "juntos", c: "juntos", sala: "juntos", arbol: "arbol",
     mas: "mas", cuenta: "mas", propuestas: "mas", guia: "hoy" };
   const HUB = { "": 1, tesoro: 1, mundo: 1, juntos: 1, mas: 1 };
   const TIT = { hoy: ["Hoy", "Tu lectura y tus misiones"], tesoro: ["Tesoro", "Lo que has hallado leyendo"], mundo: ["Mundo", "Liga, misión mundial y clasificaciones"],
@@ -3243,21 +3318,220 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
     const t = setInterval(() => { if (!el.isConnected || !pintar()) clearInterval(t); }, 1000);
     return el;
   }
-  // Cuenta atrás de El Coloso de la Tradición (BiEx, 23-nov-2026): sábado 28-nov-2026 18:00 UTC (visible hasta 7 días después de la apertura)
+  // B4 + B5 · El Coloso de la Tradición (Neon, 23-nov-2026): incursión cooperativa semanal en vivo (GET /coloso + POST /coloso/accion)
   const COLOSO_MS = Date.UTC(2026, 10, 28, 18, 0, 0);
+  const COLOSO_CACHE = { d: null, t: 0 };
+  const COLOSO_HABS = [
+    ["golpe", "Golpe certero", 1, 100, "Ataque constante · 1 carga"],
+    ["palabra", "Palabra afilada", 2, 260, "+30 % por carga · precisión táctica"],
+    ["fuerza", "Fuerza plena", 4, 620, "+55 % por carga · impacto decisivo"],
+  ];
+  function colosoSvg(hpPct, derrotado) {
+    const g1 = hpPct < 78 || derrotado ? '<path d="M92 56l7 11-5 9M108 58l-6 10 4 8" fill="none" stroke="#ffdf8a" stroke-width="1.8" stroke-linecap="round"/>' : "";
+    const g2 = hpPct < 48 || derrotado ? '<path d="M72 96l15 14-8 16 14 14M126 98l-14 15 7 15-12 13" fill="none" stroke="#ffb85c" stroke-width="2.1" stroke-linecap="round"/>' : "";
+    const g3 = hpPct < 22 || derrotado ? '<path d="M98 34l-3 24 8 18-9 26 7 28-6 26" fill="none" stroke="#fff0be" stroke-width="2.4" stroke-linecap="round"/>' : "";
+    return A.svg(
+      '<defs>' +
+        '<linearGradient id="cOro" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f7df9d"/><stop offset="100%" stop-color="#b4832c"/></linearGradient>' +
+        '<linearGradient id="cPla" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#7c8798"/></linearGradient>' +
+        '<linearGradient id="cBro" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d79b5b"/><stop offset="100%" stop-color="#7c4a1d"/></linearGradient>' +
+        '<linearGradient id="cHie" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6e7684"/><stop offset="100%" stop-color="#303540"/></linearGradient>' +
+        '<linearGradient id="cBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b5a3c"/><stop offset="100%" stop-color="#472b1c"/></linearGradient>' +
+      '</defs>' +
+      '<ellipse cx="100" cy="196" rx="64" ry="9" fill="rgba(0,0,0,.45)"/>' +
+      // cabeza de oro (corona geométrica, sin cruces)
+      '<polygon points="84,22 100,12 116,22 114,52 86,52" fill="url(#cOro)" stroke="#fff0be" stroke-opacity=".45" stroke-width="1.2"/>' +
+      '<rect x="91" y="33" width="6" height="3.2" rx="1.5" fill="#1b1409"/><rect x="103" y="33" width="6" height="3.2" rx="1.5" fill="#1b1409"/>' +
+      // pecho y hombros de plata
+      '<polygon points="62,56 138,56 146,84 128,104 72,104 54,84" fill="url(#cPla)" stroke="#ffffff" stroke-opacity=".32" stroke-width="1.2"/>' +
+      '<path d="M74 66h52l-6 26H80z" fill="rgba(12,14,18,.22)"/>' +
+      // vientre y faja de bronce
+      '<polygon points="73,106 127,106 122,140 78,140" fill="url(#cBro)" stroke="#f6c78a" stroke-opacity=".35" stroke-width="1.2"/>' +
+      // piernas de hierro
+      '<polygon points="77,142 96,142 92,178 72,178" fill="url(#cHie)" stroke="#aeb7c7" stroke-opacity=".28" stroke-width="1"/>' +
+      '<polygon points="104,142 123,142 128,178 108,178" fill="url(#cHie)" stroke="#aeb7c7" stroke-opacity=".28" stroke-width="1"/>' +
+      // base de hierro y barro
+      '<polygon points="66,180 95,180 93,192 62,192" fill="url(#cBar)" stroke="#d39c76" stroke-opacity=".35" stroke-width="1"/>' +
+      '<polygon points="105,180 134,180 138,192 107,192" fill="url(#cBar)" stroke="#d39c76" stroke-opacity=".35" stroke-width="1"/>' +
+      g1 + g2 + g3,
+      "0 0 200 208"
+    );
+  }
+  function parseCitaColoso(cita) {
+    const m = /^([1-3A-Z]{3})\s+(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?/.exec(String(cita || "").trim());
+    return m ? { lib: m[1], cap: +m[2], v1: +m[3], v2: m[4] ? +m[4] : +m[3] } : null;
+  }
+  function bloqueCitaColoso(cita) {
+    const p = parseCitaColoso(cita);
+    if (!p) return null;
+    const refTxt = nombreLibro(p.lib) + " " + p.cap + ":" + p.v1 + (p.v2 > p.v1 ? "–" + p.v2 : "");
+    const enlace = "#/" + p.lib + "/" + p.cap + "/l/" + p.v1;
+    const caja = h("div", { class: "jg-col-cita" },
+      h("a", { href: enlace, text: refTxt + " ›" }),
+      h("span", { class: "jg-mini", text: "Cargando verso en BiEx…" }));
+    if (A.versos) {
+      A.versos(p.lib, p.cap, p.v1, p.v2).then((ls) => {
+        if (!caja.isConnected) return;
+        if (!ls || !ls.length) return caja.replaceChildren(h("a", { href: enlace, text: "Leer " + refTxt + " en BiEx ›" }));
+        caja.replaceChildren(h("a", { href: enlace, text: refTxt + " · Lectura BiEx ›" }), ...ls.map(([, nodo]) => h("div", {}, nodo)));
+      }).catch(() => { if (caja.isConnected) caja.replaceChildren(h("a", { href: enlace, text: "Leer " + refTxt + " en BiEx ›" })); });
+    }
+    return caja;
+  }
+  const premioColosoTxt = (p) => {
+    if (!p) return "";
+    if (typeof p === "string") return p;
+    const ps = [];
+    if (p.xp) ps.push("+" + fmt(p.xp) + " de experiencia");
+    if (p.dr) ps.push("+" + fmt(p.dr) + " dracmas");
+    if (p.desc) ps.push(p.desc);
+    return ps.join(" · ");
+  };
+  async function cargarColoso(forzar) {
+    if (!S.token) return null;
+    if (!forzar && COLOSO_CACHE.d && Date.now() - COLOSO_CACHE.t < 18e3) return COLOSO_CACHE.d;
+    const r = await pedir("/coloso");
+    if (!r || r.error) return null;
+    COLOSO_CACHE.d = r; COLOSO_CACHE.t = Date.now();
+    return r;
+  }
   function tarjetaColoso(compacta) {
     const ms = (S.cfg && S.cfg.colosoEn) || COLOSO_MS;
-    if (!ms || Date.now() > ms + 7 * 864e5) return null;
     const falta = ms - Date.now();
-    return h("section", { class: "jg-coloso" + (compacta ? " comp" : "") },
+    const zona = h("div", { class: "jg-col-live" });
+    const card = h("section", { class: "jg-coloso" + (compacta ? " comp" : "") },
       h("div", { class: "jg-coloso-cab" },
-        h("span", { class: "jg-coloso-nov" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: falta > 0 ? "Novedad · Próximo evento" : "Novedad · Evento abierto" })),
-        h("span", { class: "jg-coloso-chip", text: "Sábado 28 nov · 18:00 UTC" })),
+        h("span", { class: "jg-coloso-nov" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: falta > 0 ? "Novedad · Próximo evento" : "Incursión cooperativa" })),
+        h("span", { class: "jg-coloso-chip", text: falta > 0 ? "Sábado 28 nov · 18:00 UTC" : "Desafío semanal" })),
       h("h2", { class: "jg-coloso-h", text: "El Coloso de la Tradición" }),
-      h("p", { class: "jg-coloso-p", text: compacta
-        ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
-        : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
-      cuentaAtras(ms, "Apertura", "¡El Coloso de la Tradición ha despertado!"));
+      zona);
+    const pintarCuenta = () => {
+      zona.replaceChildren(
+        h("p", { class: "jg-coloso-p", text: compacta
+          ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
+          : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
+        cuentaAtras(ms, "Apertura", "¡El Coloso de la Tradición ha despertado!"),
+        S.token ? h("div", { class: "jg-col-cta-row" }, h("a", { class: "btn chico oro", href: "#/escudrina/coloso" }, h("span", { text: "Ver la incursión" }), A.svg(A.ICO.der))) : null);
+    };
+    const pintarVivo = (c) => {
+      if (!zona.isConnected) return;
+      if (!c || (c.estado !== "activo" && c.estado !== "derrotado")) return pintarCuenta();
+      const derrotado = c.estado === "derrotado" || (c.vida | 0) <= 0;
+      const vida = Math.max(0, c.vida | 0), vmax = Math.max(1, c.vidaMax | 0);
+      const pct = Math.max(0, Math.min(100, (100 * vida) / vmax));
+      const jefe = c.jefe || {};
+      const nov = card.querySelector(".jg-coloso-nov span"), ch = card.querySelector(".jg-coloso-chip");
+      if (nov) nov.textContent = derrotado ? "Coloso derribado · Victoria común" : "Incursión activa · en vivo";
+      if (ch) ch.textContent = c.cargas != null ? (c.cargas | 0) + " / " + (c.cargasMax || 6) + " cargas" : (c.semana || "Semana actual");
+      zona.replaceChildren(
+        jefe.nombre ? h("p", { class: "jg-coloso-p", text: jefe.nombre + (jefe.ensenanza && !compacta ? " — " + jefe.ensenanza : "") }) : null,
+        h("div", { class: "jg-col-hp" },
+          h("div", { class: "jg-col-hp-cab" }, h("span", { text: derrotado ? "Coloso derribado" : "Resistencia del Coloso" }), h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
+          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida restante de El Coloso" }, h("i", { style: "width:" + pct.toFixed(1) + "%" }))),
+        h("div", { class: "jg-col-cta-row" },
+          h("span", { class: "jg-mini", text: plural(c.participantes | 0, "lector combate", "lectores combaten") + (c.miAporte ? " · tu aporte: " + fmt(c.miAporte) : "") + (c.fin && !derrotado ? " · cierra en " + restaTexto(c.fin) : "") }),
+          h("a", { class: "btn oro chico", href: "#/escudrina/coloso" }, h("span", { text: derrotado ? "Ver victoria y enseñanza" : "Entrar a la batalla" }), A.svg(A.ICO.der))));
+    };
+    pintarCuenta();
+    if (S.token) cargarColoso(false).then(pintarVivo);
+    return card;
+  }
+  async function pintarColoso(cont) {
+    document.title = "El Coloso de la Tradición · Escudriña · BiEx";
+    const zona = h("div", { class: "jg jg-col-arena" }, h("p", { class: "cargando", text: "Despertando la incursión…" }));
+    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa de toda la comunidad · tu poder del Árbol amplifica cada acción manual."), zona);
+    const pintar = (c, ultDano) => {
+      if (cont !== S.cont || !zona.isConnected) return;
+      if (!c) {
+        const ms = (S.cfg && S.cfg.colosoEn) || COLOSO_MS;
+        return zona.replaceChildren(tarjeta("Incursión en preparación", ico("mundo"),
+          h("p", { text: "El Coloso de la Tradición se activa en ventanas semanales para toda la comunidad. Mientras tanto, fortalece tus atributos, tu armadura y tu fruto en Tu Árbol." }),
+          cuentaAtras(ms, "Próxima apertura", "¡El Coloso de la Tradición ha despertado!"),
+          h("div", { class: "jg-acciones" }, h("a", { class: "btn oro", href: "#/escudrina/arbol" }, ico("arbol"), h("span", { text: "Fortalecer mi Árbol" })))));
+      }
+      const derrotado = c.estado === "derrotado" || (c.vida | 0) <= 0;
+      const vida = Math.max(0, c.vida | 0), vmax = Math.max(1, c.vidaMax | 0);
+      const pct = Math.max(0, Math.min(100, (100 * vida) / vmax));
+      const jefe = c.jefe || {};
+      const poderYo = (S.yo && S.yo.av && S.yo.av.poder) || 0;
+      const mult = 1 + poderYo / 2000;
+      const cargas = Math.max(0, c.cargas | 0), cmax = Math.max(1, c.cargasMax || 6);
+      const fig = h("div", { class: "jg-col-fig" + (derrotado ? " caido" : "") + (ultDano ? " golpe" : "") }, colosoSvg(pct, derrotado));
+      if (ultDano) fig.append(h("span", { class: "jg-col-dano", text: "−" + fmt(ultDano) }));
+      const escena = h("section", { class: "jg-col-escena" },
+        h("div", { class: "jg-chips jg-chips-yo" },
+          h("span", { class: "jg-chip", text: derrotado ? "Derrotado esta semana" : "Jefe activo" }),
+          c.semana ? h("span", { class: "jg-chip tenue", text: "Semana " + c.semana }) : null,
+          premioColosoTxt(c.premio) ? h("span", { class: "jg-chip", text: "Premio: " + premioColosoTxt(c.premio) }) : null),
+        fig,
+        h("h2", { class: "jg-coloso-h", text: jefe.nombre || "El Coloso de la Tradición" }),
+        h("div", { class: "jg-col-hp" },
+          h("div", { class: "jg-col-hp-cab" },
+            h("span", { text: derrotado ? "¡Derribado entre todos!" : "Resistencia restante (" + pct.toFixed(1).replace(".", ",") + " %)" }),
+            h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
+          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida del Coloso" }, h("i", { style: "width:" + pct.toFixed(1) + "%" }))),
+        h("div", { class: "jg-col-meta" },
+          h("span", { text: plural(c.participantes | 0, "lector participa", "lectores participan") }),
+          h("span", { text: "Tu aporte: " + fmt(c.miAporte | 0) }),
+          h("span", { text: "Tu poder: " + fmt(poderYo) + " (×" + mult.toFixed(2).replace(".", ",") + ")" }),
+          c.fin && !derrotado ? h("span", { text: "Termina en " + restaTexto(c.fin) }) : null));
+      // B5 · Enseñanza del jefe + cita real de BiEx
+      const ens = jefe.ensenanza || jefe.cita ? h("section", { class: "jg-col-ens" },
+        h("span", { class: "eyebrow", text: "Enseñanza de esta incursión" }),
+        jefe.ensenanza ? h("p", { text: jefe.ensenanza }) : null,
+        jefe.cita ? bloqueCitaColoso(jefe.cita) : null) : null;
+      // B4 · Cargas y habilidades manuales estratégicas
+      const actuar = async (hab, bt) => {
+        if (bt) bt.disabled = true;
+        const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab } });
+        if (r.error) {
+          if (bt) bt.disabled = false;
+          return A.avisar(mensaje(r));
+        }
+        vibrar([12, 24, 18]); sonar("chispa");
+        const dano = Number(r.dano || r.impacto || 0);
+        if (r.yo) actualizarYo(r.yo);
+        const nuevo = Object.assign({}, c, r.coloso || r);
+        if (r.vida != null) nuevo.vida = r.vida;
+        if (r.cargas != null) nuevo.cargas = r.cargas;
+        if (r.cargaEn != null) nuevo.cargaEn = r.cargaEn;
+        if (r.miAporte != null) nuevo.miAporte = r.miAporte;
+        if (r.estado) nuevo.estado = r.estado;
+        if (Array.isArray(r.top)) nuevo.top = r.top;
+        COLOSO_CACHE.d = nuevo; COLOSO_CACHE.t = Date.now();
+        A.avisar(dano ? "¡Impacto de " + fmt(dano) + " contra El Coloso!" : "Acción registrada contra El Coloso");
+        pintar(nuevo, dano || 1);
+      };
+      const habsFuente = Array.isArray(c.habilidades) && c.habilidades.length
+        ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
+        : COLOSO_HABS;
+      const comb = !derrotado ? h("section", { class: "jg-col-cargas" },
+        h("div", { class: "jg-col-cg-cab" },
+          h("span", { text: "Cargas tácticas: " + cargas + " de " + cmax }),
+          h("small", { text: cargas >= cmax ? "Al máximo · elige tu estrategia" : c.cargaEn ? "Próxima carga en " + restaTexto(c.cargaEn) : "+1 carga cada 3 horas" })),
+        h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("i", { class: i < cargas ? "on" : "" }))),
+        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base, desc]) => {
+          const est = Math.round(base * mult);
+          return h("button", { class: "jg-col-hab", type: "button", disabled: cargas < cost, onclick: (e) => actuar(id, e.currentTarget) },
+            h("div", { class: "jg-col-hab-top" }, h("b", { text: nom }), h("span", { class: "jg-col-hab-cost", text: plural(cost, "carga", "cargas") })),
+            h("span", { text: "~" + fmt(est) + " de impacto" }),
+            h("small", { text: desc || "Escalado con tu poder actual" }));
+        }))) : null;
+      const topL = Array.isArray(c.top) ? c.top : [];
+      const topCard = topL.length ? tarjeta("Mayores aportes de la semana", ico("liga"),
+        h("ol", { class: "jg-lista mini" }, topL.slice(0, 15).map((x, idx) => {
+          const ap = x.apodo || x.a || "Lector", [l, col] = embDe(x.emb || x.e);
+          const pts = x.aporte != null ? x.aporte : (x.dano != null ? x.dano : (x.pts | 0));
+          return h("li", { class: "jg-fila" + (x.yo || (S.yo && ap === S.yo.apodo) ? " yo" : "") },
+            h("span", { class: "p", text: String(idx + 1) }),
+            emblema(l, col, x.marco || x.m || 0, x.foto || x.f),
+            h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
+            h("span", { class: "x", text: fmt(pts) }));
+        }))) : null;
+      zona.replaceChildren(...[escena, comb, ens, topCard].filter(Boolean));
+    };
+    const d = await cargarColoso(true);
+    pintar(d, 0);
   }
   // Lo que se conserva al lanzar (BiEx, 9-nov-2026): nada se pierde del todo
   const textoConserva = () => { const c = (S.cfg && S.cfg.conserva) || [0.72, 40]; return "entre el " + String(c[0]).replace(".", ",") + " % y el " + String(c[1]).replace(".", ",") + " %"; };
@@ -7819,12 +8093,36 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
 
   // ================================================================== lectura en compañía (salas en tiempo real)
-  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "" };
+  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "", nombre: "", nomEn: 0 };
+  const limpiarNomSala = (s) => String(s || "").replace(/\s+/g, " ").trim().slice(0, 36);
+  const nombresSalaLoc = () => { const m = A.store.get("jg:salaNom", null); return m && typeof m === "object" ? m : {}; };
+  const nombreSalaDe = (cod, srvNom) => {
+    const s = limpiarNomSala(srvNom); if (s) return s;
+    if (cod && cod === SL.cod && SL.nombre) return SL.nombre;
+    const loc = nombresSalaLoc()[String(cod || "").toUpperCase()];
+    return loc && loc.n ? limpiarNomSala(loc.n) : "";
+  };
+  const guardarNomSala = (cod, nom, marcarCambio) => {
+    cod = String(cod || "").toUpperCase(); if (!cod) return;
+    const m = nombresSalaLoc(), prev = m[cod] || {};
+    const limpio = limpiarNomSala(nom);
+    if (limpio) m[cod] = { n: limpio, t: marcarCambio ? Date.now() : (prev.t || 0) };
+    else if (m[cod]) delete m[cod];
+    const ks = Object.keys(m); if (ks.length > 24) for (const k of ks.slice(0, ks.length - 24)) delete m[k];
+    A.store.set("jg:salaNom", m);
+    if (cod === SL.cod) { SL.nombre = limpio; if (marcarCambio) SL.nomEn = Date.now(); }
+  };
+  const puedeRenombrarSala = (cod) => {
+    const loc = nombresSalaLoc()[String(cod || "").toUpperCase()];
+    const ult = Math.max(Number(cod === SL.cod ? SL.nomEn : 0) || 0, Number(loc && loc.t) || 0);
+    const falta = ult ? (ult + 864e5) - Date.now() : 0;
+    return { ok: falta <= 0, faltaMs: Math.max(0, falta) };
+  };
   function entrarSala(cod) {
     cod = String(cod || "").toUpperCase(); if (!/^[2-9A-HJKMNP-Z]{6}$/.test(cod) || !S.token) return false;
     if (SL.cod === cod && SL.ws && SL.ws.readyState <= 1) return true;
     salirSala(true);
-    Object.assign(SL, { cod, cerrada: false, intentos: 0, miembros: [], seguir: false, guia: false });
+    Object.assign(SL, { cod, cerrada: false, intentos: 0, miembros: [], seguir: false, guia: false, nombre: nombreSalaDe(cod, ""), nomEn: Number((nombresSalaLoc()[cod] || {}).t) || 0 });
     A.store.set("jg:sala", { c: cod, t: Date.now() });
     conectarSala(); latirPresencia(true); return true;
   }
@@ -7869,15 +8167,22 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   function salirSala(silencio) {
     SL.cerrada = true; clearInterval(SL.t);
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
-    SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
+    SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; SL.nombre = ""; SL.nomEn = 0; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
     VIVO.salas = null;
     if (!silencio) { A.avisar("Saliste de la sala"); syncSalasTrasEvento(); latirPresencia(true); }
   }
   function mensajeSala(m) {
     if (m.t === "abierta") { SL.pub = !!m.on; if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } syncSalasTrasEvento(); return; }
+    if (m.t === "nombre") {
+      SL.nombre = limpiarNomSala(m.nombre); if (m.nomEn) SL.nomEn = Number(m.nomEn) || SL.nomEn;
+      if (SL.cod) guardarNomSala(SL.cod, SL.nombre, false);
+      pintarSalaPildora(); if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } syncSalasTrasEvento(); return;
+    }
     if (m.t === "estado") {
       const antesN = SL.miembros.length, antesPub = SL.pub;
       if (m.abierta !== undefined) SL.pub = !!m.abierta;
+      if (m.nombre !== undefined) SL.nombre = limpiarNomSala(m.nombre);
+      if (m.nomEn) SL.nomEn = Number(m.nomEn) || SL.nomEn;
       SL.miembros = m.miembros || []; SL.anf = m.anf || ""; if (m.yo) SL.yo6 = m.yo;
       const yo = SL.miembros.find((x) => x.j === SL.yo6); SL.guia = !!(yo && yo.guia);
       pintarSalaPildora(); pintarMarcas(); if (S.yo) pintarMedidor();
@@ -7940,9 +8245,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (!p) p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala });
     const anclaP = document.getElementById("pie-b");
     if (anclaP ? p.nextElementSibling !== anclaP : !p.isConnected) anclaP ? anclaP.before(p) : document.body.append(p);
-    const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1;
-    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: "Sala " + SL.cod }), h("b", { text: conectada ? plural(n, "persona", "personas") : "conectando…" }));
-    p.setAttribute("aria-label", "Sala de lectura " + SL.cod + ": " + (conectada ? plural(n, "persona", "personas") : "conectando"));
+    const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1, nom = nombreSalaDe(SL.cod, SL.nombre);
+    const et = nom ? nom : "Sala " + SL.cod;
+    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: et }), h("b", { text: conectada ? plural(n, "persona", "personas") : "conectando…" }));
+    p.setAttribute("aria-label", et + " (" + SL.cod + "): " + (conectada ? plural(n, "persona", "personas") : "conectando"));
   }
   function abrirSala() {
     const vistaS = () => {
@@ -7950,15 +8256,40 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
         return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
-      const soyAnf = anf && anf.j === SL.yo6;
-      return A.cajaModal(A.cabModal("Sala " + SL.cod, "Lectura en compañía"), h("div", { class: "jg" },
+      const soyAnf = !anf || anf.j === SL.yo6;
+      const nomAct = nombreSalaDe(SL.cod, SL.nombre);
+      const ren = puedeRenombrarSala(SL.cod);
+      const renIn = h("input", { type: "text", maxlength: "36", value: nomAct, placeholder: "Nombre de la sala (ej. Estudio de Mattáy)", "aria-label": "Nombre de la sala", disabled: !ren.ok });
+      const renPista = h("p", { class: "jg-pista", role: "status" });
+      const renombrar = async (ev) => {
+        const nuevo = limpiarNomSala(renIn.value);
+        if (!nuevo) { renPista.textContent = "Escribe un nombre de entre 2 y 36 caracteres."; renPista.className = "jg-pista mal"; return; }
+        if (nuevo.length < 2) { renPista.textContent = "El nombre debe tener al menos 2 caracteres."; renPista.className = "jg-pista mal"; return; }
+        const st = puedeRenombrarSala(SL.cod);
+        if (!st.ok) { renPista.textContent = "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + st.faltaMs) + "."; renPista.className = "jg-pista mal"; return; }
+        const bt = ev.currentTarget; bt.disabled = true;
+        const r = await pedir("/sala/nombre", { metodo: "POST", cuerpo: { c: SL.cod, nombre: nuevo } });
+        bt.disabled = false;
+        if (r && r.error === "nombre_espera") { renPista.textContent = mensaje(r); renPista.className = "jg-pista mal"; return; }
+        try { if (SL.ws && SL.ws.readyState === 1) SL.ws.send(JSON.stringify({ t: "nombre", nombre: nuevo })); } catch (e) { /* ignorar */ }
+        guardarNomSala(SL.cod, nuevo, true);
+        pintarSalaPildora(); syncSalasTrasEvento();
+        A.avisar("Nombre de la sala actualizado a «" + nuevo + "»");
+        if (SL.abierta) { try { A.reemplazarModal(vistaS); } catch (e) { SL.abierta = false; } }
+      };
+      const cajaNom = soyAnf ? h("div", { class: "jg-sala-nom" },
+        h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de la sala" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
+        h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrar }, h("span", { text: "Guardar" }))),
+        renPista) : null;
+      return A.cajaModal(A.cabModal(nomAct ? nomAct : "Sala " + SL.cod, nomAct ? "Sala " + SL.cod + " · Lectura en compañía" : "Lectura en compañía"), h("div", { class: "jg" },
         h("p", { class: "jg-mini", text: "Cuando al menos dos personas de la sala leen el mismo capítulo, cada verso les da un 25 % más de experiencia (crear la sala no basta)." }), lista,
+        cajaNom,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.pub !== false, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "abierta", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Sala abierta: aparece en la lista de Juntos y cualquiera puede entrar" })) : null,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.guia, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "guia", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Guiar la lectura (quien te siga irá contigo)" }))
           : anf && anf.guia ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.seguir, onchange: (e) => { SL.seguir = e.currentTarget.checked; if (SL.seguir && anf.lc) seguirA(anf); } }), h("span", { text: "Seguir a " + anf.apodo })) : null,
         h("div", { class: "jg-acciones" },
           R.lib ? h("button", { class: "btn", type: "button", onclick: () => { const v = versoVisible(); if (v && SL.ws && SL.ws.readyState === 1) { SL.ws.send(JSON.stringify({ t: "luz", lc: R.lib + "." + R.cap, v })); sonar("chispa"); A.avisar("Quienes están en la sala ven ahora una luz en el verso " + v); } }, title: "Enciende por unos segundos una luz en el verso que tienes en pantalla, para que los demás lo vean en su texto" }, ico("idea"), h("span", { text: "Señalar este verso a la sala" })) : null,
-          h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · leamos juntos", "Leamos juntos la Nueva Voluntad en Escudriña: entra a mi sala.", PUBLICO + "/#/escudrina/sala/" + SL.cod) }, ico("compartir"), h("span", { text: "Invitar" })),
+          h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · leamos juntos", "Leamos juntos la Nueva Voluntad en Escudriña: entra a mi sala" + (nomAct ? " «" + nomAct + "»" : "") + ".", PUBLICO + "/#/escudrina/sala/" + SL.cod) }, ico("compartir"), h("span", { text: "Invitar" })),
           h("button", { class: "btn", type: "button", onclick: () => { salirSala(false); SL.abierta = false; A.cerrarModal(); } }, h("span", { text: "Salir de la sala" })))));
     };
     SL.vista = vistaS; SL.abierta = true;
@@ -8028,6 +8359,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         const anf = SL.miembros.find((m) => m.anf);
         lista.unshift({
           c: SL.cod,
+          nombre: nombreSalaDe(SL.cod, SL.nombre),
           lc: (anf && anf.lc) || (R.lib ? R.lib + "." + R.cap : SL.lcAct || SL.lcCreada || ultimoLC() || ""),
           anf: (anf && anf.apodo) || y.apodo || "Tú",
           emb: (e.l || "α") + String(e.c || 0),
@@ -8060,13 +8392,13 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         : "Ahora hay " + fmt(L.length) + " salas abiertas" + (otras && SL.cod && L.some((x) => x.c === SL.cod) ? " (" + plural(otras, "otra disponible para cambiar", "otras disponibles para cambiar") + ")." : ".");
       zona.replaceChildren(
         h("div", { class: "jg-salas-cab" }, h("p", { class: "jg-mini jg-salas-n", text: totTxt }), btnRef),
-        h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb); const esMia = x.c === SL.cod;
+        h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb); const esMia = x.c === SL.cod; const nomS = nombreSalaDe(x.c, x.nombre);
           return h("li", { class: esMia ? "yo" : "" }, emblema(l, c, x.marco || 0, x.foto),
             h("span", { class: "n" },
-              h("b", {}, nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
+              h("b", {}, nomS ? nomS + " · " + nombreLC(x.lc) : nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
               h("small", {}, "Sala " + x.c + " · de ", x.anf ? nombreClicable(x.anf) : "un lector", (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + plural(x.n, "persona", "personas"))),
             esMia ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
-              : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; const cambiaba = !!SL.cod; entrarSala(x.c); A.avisar((cambiaba ? "Cambiaste a la sala " : "Entraste a la sala ") + x.c); syncSalasTrasEvento(); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" }))); })));
+              : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; const cambiaba = !!SL.cod; entrarSala(x.c); A.avisar((cambiaba ? "Cambiaste a la sala " : "Entraste a la sala ") + (nomS || x.c)); syncSalasTrasEvento(); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" }))); })));
     };
     VIVO.onSalas = (L) => { if (zona.isConnected) pintar(L); else VIVO.onSalas = null; };
     salasAbiertas("fresco").then(pintar);
@@ -8102,30 +8434,38 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function tarjetaSala() {
     const cod = h("input", { type: "text", maxlength: "8", autocapitalize: "characters", placeholder: "Código de sala (6)", "aria-label": "Código de la sala", spellcheck: "false" });
+    const nomIn = h("input", { type: "text", maxlength: "36", placeholder: "Nombre de la sala (opcional · cambiable 1 vez/día)", "aria-label": "Nombre opcional de la sala" });
     const pista = h("p", { class: "jg-pista", role: "status" });
     const ab = h("input", { type: "checkbox", checked: true });
     const crear = async (e) => {
       const bt = e.currentTarget; bt.disabled = true;
       const lc = R.lib ? R.lib + "." + R.cap : (SL.lcAct || ultimoLC());
-      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: ab.checked, lc } });
+      const nom = limpiarNomSala(nomIn.value);
+      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, lc }, nom ? { nombre: nom } : {}) });
       bt.disabled = false;
       if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; }
       SL.pub = r.abierta !== false; SL.lcCreada = lc || ""; VIVO.salas = null;
+      if (nom) guardarNomSala(r.cod, nom, false);
       entrarSala(r.cod);
-      A.avisar("Sala " + r.cod + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace"));
+      A.avisar((nom ? "Sala «" + nom + "» (" + r.cod + ")" : "Sala " + r.cod) + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace"));
       repintar();
       syncSalasTrasEvento();
     };
     const formEntrar = h("div", { class: "jg-form" }, cod, h("button", { class: "btn", type: "button", onclick: async () => { const c = cod.value.trim().toUpperCase(); const i = await pedir("/sala/info?c=" + encodeURIComponent(c), { sin: true });
       if (i.error) { pista.textContent = "Esa sala no existe o ya venció."; pista.className = "jg-pista mal"; return; } entrarSala(c); repintar(); syncSalasTrasEvento(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" })));
-    if (SL.cod) return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás activo en la sala ", h("b", { text: SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + ". El bono del +25 % suma únicamente por tu sala activa."),
-      h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))),
-      h("details", { class: "jg-sala-extra" }, h("summary", { text: "Crear otra sala o entrar por código" }),
-        h("div", { class: "jg-sala-extra-c" },
-          h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
-          h("div", { class: "jg-acciones" }, h("button", { class: "btn chico oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear otra sala" }))),
-          formEntrar, pista)));
-    return tarjeta("Leer en compañía", ico("sala"), h("p", { text: "Crea una sala y comparte su enlace: verán dónde lee cada quien, en vivo, y mientras lean el mismo capítulo cada verso da un 25 % más de experiencia." }),
+    if (SL.cod) {
+      const nomAct = nombreSalaDe(SL.cod, SL.nombre);
+      return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás activo en ", h("b", { text: nomAct ? "«" + nomAct + "» (" + SL.cod + ")" : "la sala " + SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + ". El bono del +25 % suma únicamente por tu sala activa."),
+        h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))),
+        h("details", { class: "jg-sala-extra" }, h("summary", { text: "Crear otra sala o entrar por código" }),
+          h("div", { class: "jg-sala-extra-c" },
+            nomIn,
+            h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
+            h("div", { class: "jg-acciones" }, h("button", { class: "btn chico oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear otra sala" }))),
+            formEntrar, pista)));
+    }
+    return tarjeta("Leer en compañía", ico("sala"), h("p", { text: "Crea una sala con el nombre que elijas y comparte su enlace: verán dónde lee cada quien, en vivo, y mientras lean el mismo capítulo cada verso da un 25 % más de experiencia." }),
+      nomIn,
       h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear una sala" }))),
       formEntrar, pista);
@@ -8138,8 +8478,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const i = await pedir("/sala/info?c=" + encodeURIComponent(cod), { sin: true });
     if (cont !== S.cont || !zona.isConnected) return;
     if (i.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: "Esa sala no existe o ya venció (duran 7 días). Puedes crear una nueva desde tu panel." }), h("a", { class: "btn", href: "#/escudrina" }, h("span", { text: "Ir a mi panel" }))));
+    if (i.nombre) guardarNomSala(cod, i.nombre, false);
     entrarSala(cod); A.store.set("jg:salaInv", null);
-    zona.replaceChildren(h("section", { class: "jg-tarjeta jg-heroe" }, h("p", { class: "jg-tit", text: "Sala " + cod }), h("p", { class: "jg-mini", text: "La creó " + i.anf + " · " + plural(i.n, "persona", "personas") + " ahora" }),
+    const nomS = nombreSalaDe(cod, i.nombre);
+    zona.replaceChildren(h("section", { class: "jg-tarjeta jg-heroe" }, h("p", { class: "jg-tit", text: nomS ? nomS : "Sala " + cod }), h("p", { class: "jg-mini", text: (nomS ? "Sala " + cod + " · " : "") + "La creó " + i.anf + " · " + plural(i.n, "persona", "personas") + " ahora" }),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => { const a = SL.miembros.find((x) => x.anf); if (a && a.lc) { const [l, c] = a.lc.split("."); A.irA("#/" + l + "/" + c + "/l" + (a.v ? "/" + a.v : "")); } else A.irA("#/MAT/1"); } }, h("span", { text: "Ir a leer con " + i.anf })),
         h("button", { class: "btn", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Ver la sala" })))));
     animarCifras(zona);
@@ -8181,6 +8523,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (!ap || /^lector\b/i.test(ap) || /^tú$/i.test(ap)) return h("b", { text: ap || "Lector" });
     return h("button", { class: "jg-jug-btn", type: "button", title: "Ver perfil público de " + ap, onclick: (e) => { e.stopPropagation(); abrirJugadorPublico(ap); } }, ap);
   }
+  const ET_UMBRAL = [0, 250, 600, 1200, 2400];
   function abrirJugadorPublico(apodo) {
     const ap = String(apodo || "").trim();
     if (!ap) return;
@@ -8193,35 +8536,54 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         return zona.replaceChildren(h("p", { class: "jg-mini jg-jp-priv", text: "Este lector mantiene su perfil reservado o aún no tiene datos públicos disponibles." }));
       }
       const [l, c] = embDe(j.emb);
-      const etN = Math.max(1, Math.min(5, (j.etapa | 0) || (j.poder >= 2400 ? 5 : j.poder >= 1200 ? 4 : j.poder >= 600 ? 3 : j.poder >= 250 ? 2 : 1)));
+      const poder = Math.max(0, j.poder | 0);
+      const etN = Math.max(1, Math.min(5, (j.etapa | 0) || (poder >= 2400 ? 5 : poder >= 1200 ? 4 : poder >= 600 ? 3 : poder >= 250 ? 2 : 1)));
       const et = ET_PUB[etN - 1];
+      const baseEt = ET_UMBRAL[etN - 1], sigEt = ET_UMBRAL[etN] || null;
+      const pctEt = sigEt ? Math.max(4, Math.min(100, Math.round((100 * (poder - baseEt)) / Math.max(1, sigEt - baseEt)))) : 100;
       const lugar = [j.ciudad, j.pais ? nombrePais(j.pais) : ""].filter(Boolean).join(" · ");
       const chips = [];
       chips.push(h("span", { class: "jg-chip jg-jp-et", style: "--et:" + et[3] + ";--et-l:" + et[4], text: "Etapa " + et[1] + " · " + et[2] }));
       if (j.fundador && j.n) chips.push(h("span", { class: "jg-chip", text: "Primicia n.º " + fmt(j.n) }));
       if (j.marco && marcos()[j.marco - 1]) chips.push(h("span", { class: "jg-chip tenue", text: marcos()[j.marco - 1][1] }));
+      const hero = h("section", { class: "jg-jp-hero", style: "--et:" + et[3] + ";--et-l:" + et[4] },
+        h("div", { class: "jg-jp-emb-wrap" },
+          h("span", { class: "jg-jp-aro", "aria-hidden": "true" }),
+          h("span", { class: "jg-jp-aro b", "aria-hidden": "true" }),
+          h("span", { class: "jg-jp-emb" }, emblema(l, c, j.marco, j.foto))),
+        h("div", { class: "jg-jp-id" },
+          h("h3", { text: j.apodo || ap }),
+          h("p", { class: "jg-mini", text: (j.rangoNombre || "Lector") + " · nivel " + fmt(j.nivel | 0) + (lugar ? " · " + lugar : "") })),
+        h("div", { class: "jg-chips" }, chips),
+        h("div", { class: "jg-jp-track" },
+          h("div", { class: "jg-jp-tr-cab" },
+            h("span", { text: sigEt ? "Camino a Etapa " + ET_PUB[etN][1] + " (" + fmt(sigEt) + ")" : "Etapa cumbre alcanzada" }),
+            h("b", { text: fmt(poder) + " poder" })),
+          h("div", { class: "jg-jp-bar", "aria-hidden": "true" }, h("i", { style: "width:" + pctEt + "%" })),
+          h("div", { class: "jg-jp-pasos", "aria-hidden": "true" }, ET_PUB.map(([n, rom]) => h("span", { class: n <= etN ? "on" : "", text: rom })))));
       const vivo = j.act || j.lc ? h("div", { class: "jg-jp-vivo" },
         h("span", { class: "jg-jp-dot", "aria-hidden": "true" }),
         h("span", {}, h("b", { text: j.act || "En línea" }), j.lc ? " · " + nombreLC(j.lc) : ""),
         j.lc ? h("a", { class: "btn chico", href: "#/" + j.lc.replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null) : null;
-      const lauros = j.lauros || {};
+      const lauros = j.lauros || {}, piedrasN = Math.max(0, Math.min(12, j.piedrasN | 0));
       const tiles = [
-        [fmt(j.poder | 0), "Poder", "Etapa " + et[1] + " · " + et[2]],
-        ["Nivel " + fmt(j.nivel | 0), j.rangoNombre || "Lector", j.fundador ? "Primicia" : "Rango actual"],
-        [plural(j.pers | 0, "día", "días"), "Perseverancia", "mejor: " + fmt(j.persMejor | 0) + " d"],
-        [fmt(j.vc | 0), "Versos leídos", j.lk ? plural(j.lk, "lectura plena", "lecturas plenas") : "confirmados"],
-        [(j.piedrasN | 0) + " / 12", "Piedras", lauros.doce ? "fundamento completo" : "del fundamento"],
-        [fmt(lauros.trenzado | 0), "Lauros", lauros.libros ? plural(lauros.libros, "libro completo", "libros completos") : "trenzados"],
+        ["arbol", fmt(poder), "Poder", "Etapa " + et[1] + " · " + et[2], null],
+        ["arriba", "Nivel " + fmt(j.nivel | 0), j.rangoNombre || "Lector", j.fundador ? "Primicia" : "Rango actual", null],
+        ["llama", plural(j.pers | 0, "día", "días"), "Perseverancia", "mejor: " + fmt(j.persMejor | 0) + " d", null],
+        ["libro", fmt(j.vc | 0), "Versos leídos", j.lk ? plural(j.lk, "lectura plena", "lecturas plenas") : "confirmados", null],
+        ["dracma", piedrasN + " / 12", "Piedras", lauros.doce ? "fundamento completo" : "del fundamento", h("span", { class: "jg-jp-gemas", "aria-hidden": "true" }, Array.from({ length: 12 }, (_, k) => h("i", { class: k < piedrasN ? "on" : "" })))],
+        ["liga", fmt(lauros.trenzado | 0), "Lauros", lauros.libros ? plural(lauros.libros, "libro completo", "libros completos") : "trenzados", null],
       ];
+      const miPoder = S.yo && S.yo.av ? (S.yo.av.poder | 0) : null;
+      const esOtro = S.yo && S.yo.apodo && S.yo.apodo !== (j.apodo || ap);
+      const pie = h("div", { class: "jg-jp-pie" },
+        h("span", { text: esOtro && miPoder != null ? "Tu poder actual: " : "Códice Viviente · " }, esOtro && miPoder != null ? h("b", { text: fmt(miPoder) }) : h("b", { text: "Escudriña" })),
+        h("span", { text: esOtro && miPoder != null ? (poder > miPoder ? "Te lleva " + fmt(poder - miPoder) + " de poder · ¡gran meta!" : poder === miPoder ? "¡Exactamente al mismo poder!" : "Llevas " + fmt(miPoder - poder) + " de ventaja") : "Cada verso confirmado forja el árbol interior" }));
       zona.replaceChildren(
-        h("div", { class: "jg-jp-cab", style: "--et:" + et[3] },
-          h("span", { class: "jg-jp-emb" }, emblema(l, c, j.marco, j.foto)),
-          h("div", { class: "jg-jp-id" },
-            h("h3", { text: j.apodo || ap }),
-            h("p", { class: "jg-mini", text: (j.rangoNombre || "Lector") + " · nivel " + fmt(j.nivel | 0) + (lugar ? " · " + lugar : "") }))),
-        h("div", { class: "jg-chips jg-chips-yo" }, chips),
+        hero,
         vivo,
-        h("ul", { class: "jg-jp-grid" }, tiles.map(([v, t, s]) => h("li", {}, h("b", { text: v }), h("span", { text: t }), h("small", { text: s })))));
+        h("ul", { class: "jg-jp-grid" }, tiles.map(([ic, v, t, s, ex]) => h("li", {}, h("span", { class: "jg-jp-ico", "aria-hidden": "true" }, ico(ic)), h("b", { text: v }), h("span", { text: t }), h("small", { text: s }), ex))),
+        pie);
     };
     const hit = CACHE_JUG.get(ap);
     if (hit && Date.now() - hit.t < 20e3) return pintar(hit.d);
@@ -8233,13 +8595,14 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
+    abrirJugador: abrirJugadorPublico,
     actividadRuta(ruta) { if (S.token) latirPresencia(false, ruta); },
     // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
-    retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; latirPresencia(true); if (S.cont && S.cont.isConnected) repintar(); },
+    retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; latirPresencia(true); if (A.nube) { A.nube.bajado = false; A.nube.bajar(); } if (S.cont && S.cont.isConnected) repintar(); },
     // AA9: hoy (marcado hoy), antes (marcado otro día), repaso (marcado hoy como repaso)
     estadoVerso: (c, cap, v) => (S.token && R.lib === c && R.cap === cap ? { hoy: yaLeido(v), antes: marcadoAntes(c + "." + cap, v), repaso: esRepaso(c, cap, v), veces: vecesDe(c + "." + cap, v), k: lecturasK() } : null),
     // el verso que se está leyendo (el del hilo de luz): referencia al cambiar de vista y para sincronizar el marcador flotante (14-nov-2026 · Argon 23-nov-2026)
