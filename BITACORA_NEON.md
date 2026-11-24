@@ -589,3 +589,47 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - Auditoría léxica y de glifos en el diff completo: **CLEAN (0 palabras o elementos prohibidos)**.
 - Suite Playwright 3× HD (`280 / 360 / 412 / 1280 px`, temas oscuro y claro, `--k = 1.42`): **0 errores de consola/página, 0 px de desborde, todas las pruebas funcionales en verde**.
 - `python3 wix/sellar.py`: **al día** (`84e2be51016c`).
+
+---
+
+## Entrada #9 — 23 de noviembre de 2026 (Contraste global +5 %, Modo Contemplar simétrico, Ficha de jugador Relicario Astral, Nombres de sala 1/día, Nube `/nube`, Planes `A4` y Batalla contra *El Coloso* `B4`/`B5`)
+
+**Rama:** `neon/pr9-pulido-nube-planes-coloso` (desde `main` en `5dce72f`)
+**Archivos modificados:** `app.css`, `app.js`, `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados
+
+1. **Contraste global +5 % en toda la página (`app.css`):**
+   - Ajuste directo de variables de color en `:root` (oscuro: `--bg: #040405`, `--tinta: #f8f3e8`, `--tinta-2: #ebe4d6`, `--tenue: #b7afa3`, `--oro: #d5b470`, `--oro-vivo: #f7e2ae`, hoja `86 %`) y `:root[data-theme="light"]` (Pergamino: `--bg: #f6f1e6`, `--tinta: #0d0b08`, `--tinta-2: #221e17`, `--tenue: #51493f`, `--oro: #70531a`, `--oro-vivo: #533c0f`, hoja `92 %`), sin filtros CSS que afecten capas fijas ni coste de CPU.
+2. **Modo «Contemplar» (`A9`) con simetría superior/inferior inteligente en cualquier capítulo (`app.css` + `app.js`):**
+   - Ocultamiento de `.barra` y `.pie` con `display: none !important`, centrado vertical automático (`min-height: 100dvh; display: grid; align-content: center;`), márgenes exteriores idénticos (`--cont-y: clamp(48px, 6.2dvh, 62px)` → verificado **48 px arriba == 48 px abajo** tanto en capítulos breves como `3 YÔḥānā́n 1` como en largos como `Mattáy 1`), folio enmarcado en móvil y escritorio, cintillo discreto del libro (`.cont-lib`) y píldora compacta `Salir de Contemplar` alojada en el margen inferior.
+3. **Ficha pública del jugador renovada a «Relicario Astral» (`abrirJugadorPublico`, `juego.js`):**
+   - Cabecera monumental centrada con halo radial según Etapa I–V, doble aro astrolabio contrarrotatorio GPU alrededor del emblema ampliado (`74 px`), barra de progreso de poder hacia la siguiente Etapa con los 5 escalones romanos (`I · II · III · IV · V`), banda verde de actividad en vivo con salto directo «Ir», 6 medallones biselados con íconos vectoriales y mini-rejilla simétrica `6 × 2` de las 12 piedras del fundamento, y pie respetuoso con comparativa amable de poder. Exportado también en `BiExJuego.abrirJugador`.
+4. **Nombres personalizados de salas con cambio 1 vez al día (`juego.js`):**
+   - Campo opcional de nombre al crear una sala (`POST /sala/crear { abierta, lc, nombre }`) y control de cambio dentro de `abrirSala()` para el anfitrión con bloqueo automático de 24 horas (`puedeRenombrarSala`), envío por WebSocket (`{ t: "nombre", nombre }`) y petición `POST /sala/nombre` (respetando `nombre_espera`), visible en la píldora flotante, la ventana de sala y las tarjetas de *Salas abiertas*.
+   - **Nota técnica para el Worker (`biex-juego`):** el cliente ya envía `nombre` en `POST /sala/crear`, soporta `POST /sala/nombre { c, nombre }` (con error `nombre_espera` 1/día) y mensajes WS `{ t: "nombre", nombre }`; en cuanto el Worker guarde y devuelva `nombre` en `/salas` y `/sala/info`, el nombre personalizado se propagará automáticamente a todos los lectores.
+5. **Sincronización en la nube (`GET/PUT /nube`, `NUBE_DAT` en `app.js`):**
+   - Motor `NUBE_DAT` (`window.BiExNube` + `A.nube`) para `{ planes, estudio, ajedrez, ts }` con tope de seguridad < 122 KB, sincronización al iniciar/retomar pestaña y resolución automática sin pérdida ante `{ conflicto: true }` (unión de días cumplidos y reintento con `forzar: true`). Calcula automáticamente `planes.rk = { planId, pct, dias }`.
+6. **`A4` · Planes de lectura mejorados (`app.js` + `app.css`):**
+   - **4 hitos de travesía** (`25 %`, `50 %`, `75 %`, `100 %`) con desbloqueo luminoso en cada uno de los 6 planes.
+   - **Dato clave y aprendizaje de hoy** generado con fechas históricas reales del catálogo BiEx y síntesis por libro.
+   - **Paso amable neurodivergente (tipo Habitica sin culpa):** 3 micro-pasos claros, botón directo «Leer en Contemplar» y confirmación positiva.
+   - **Ranking en vivo del plan (`GET /planes/ranking?plan=<id>`):** casilla voluntaria «Aparecer en el ranking», lista en tiempo real con perfiles clicables e indicador de nube sincronizada.
+7. **`B4` + `B5` · Batalla táctica cooperativa contra *El Coloso de la Tradición* (`GET /coloso`, `POST /coloso/accion`, `#/escudrina/coloso`, `juego.js` + `app.js`):**
+   - `tarjetaColoso` en *Hoy* y *Mundo* detecta en vivo la incursión semanal (`estado: "activo" | "derrotado"`), muestra resistencia restante, cargas listas y acceso directo a la arena `#/escudrina/coloso`.
+   - Arena completa `#/escudrina/coloso` con monumento SVG vectorial puro del Coloso (estratos de oro, plata, bronce, hierro y barro con grietas luminosas progresivas según HP, cero cruces), barra de 6 cargas cristalinas, 3 habilidades manuales estratégicas (`Golpe certero` 1c / `Palabra afilada` 2c / `Fuerza plena` 4c) con estimación escalada por poder (`1 + poder/2000`), daño flotante al impactar, bloque **B5** de enseñanza con el verso real cargado dinámicamente desde `A.versos` (`jefe.cita`) y clasificación de mayores aportes clicable.
+
+### 2. Capturas verificadas a 3× de densidad (Entrada #9)
+
+*(Capturas 3× HD verificadas y archivadas en la bitácora local de sesión.)*
+
+### 3. Aprendizajes clave (Entrada #9)
+1. **Lista blanca de subrutas en `app.js` (`mostrarRuta`):** cualquier subruta nueva de `#/escudrina/*` debe agregarse también a la expresión regular y al arreglo `SUB` de `app.js:7519-7520`; ya quedaron registradas `coloso` y `ajedrez`.
+2. **Simetría vertical real en Modo Contemplar:** pasar `.barra` y `.pie` a `display: none !important` + `align-content: center` en `100dvh` con `--cont-y` idéntico logró `48 px == 48 px` en capítulos cortos y largos.
+3. **Contraste +5 % sin `filter` en raíz:** ajustar los tokens de color directamente dio +5 % real en ambos temas con 0 % de coste de composición y sin afectar elementos `position: fixed`.
+
+### 4. Comprobaciones pasadas (Entrada #9)
+- `node --check` en todos los scripts y validación JSON / llaves CSS (`diff 0`): **correcto**.
+- Auditoría léxica, iconográfica y de transliteraciones verbatim: **CLEAN**.
+- Suite Playwright 3× HD (`280 / 360 / 412 / 1280 px`, temas oscuro y Pergamino, `--k = 1.42`): **0 errores de consola/página, 0 px de desborde, todas las comprobaciones en verde**.
+- `python3 wix/sellar.py`: **al día** (`fb791722a585`).
