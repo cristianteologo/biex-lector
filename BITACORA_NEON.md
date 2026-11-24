@@ -633,3 +633,41 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - Auditoría léxica, iconográfica y de transliteraciones verbatim: **CLEAN**.
 - Suite Playwright 3× HD (`280 / 360 / 412 / 1280 px`, temas oscuro y Pergamino, `--k = 1.42`): **0 errores de consola/página, 0 px de desborde, todas las comprobaciones en verde**.
 - `python3 wix/sellar.py`: **al día** (`fb791722a585`).
+
+
+---
+
+## Entrada #10 — 24 de noviembre de 2026 (Rediseño cinematográfico de *El Coloso de la Tradición*, contraste global +3 %, Hoy centrado, Contemplar con botones gemelos, renombrado visible de Salas y Compañía, y retorno real en `‹ Escudriña`)
+
+**Rama:** `neon/pr10-coloso-epico-y-pulidos` (desde `main` en `d7cca1f`)
+**Archivos modificados / añadidos:** `img/coloso-velo.webp`, `app.css`, `app.js`, `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados
+
+1. **Rediseño cinematográfico de *El Coloso de la Tradición* (`B4` + `B5`, `img/coloso-velo.webp` + `juego.js`):**
+   - **Obra chiaroscuro de galería (`img/coloso-velo.webp`, `1152×648`, 46,5 KB):** presencia monumental velada y ambigua («sí y no» perceptible entre humo denso obsidiana y grietas doradas fundidas), 100 % libre de cruces, estrellas de cinco puntas o rayos solares, servida a densidad nativa 1.7×–3.0× (jamás ampliada).
+   - **Escenario volumétrico vivo (`montarAtmosferaColoso`):** respiración GPU (`transform`/`opacity`) + doble velo de bruma abisal en deriva opuesta + motor `<canvas>` HiDPI con bruma viva, brasas doradas ascendentes, pulso interno de fracturas proporcional al daño recibido y **onda expansiva dorada con lluvia radial de 36 chispas** al impactar (pausado automáticamente vía `IntersectionObserver`, `visibilitychange`, `html.con-modal`, `html.desplazando`, `data-mov="no"` y `prefers-reduced-motion`).
+   - **Pedestal monumental de resistencia:** barra segmentada con 3 marcas de fase grabadas (`25 % / 50 % / 75 %`), subtítulo de fase narrativo (*Fase I–IV*), 4 fichas tácticas, cinta de recompensa por victoria y scroll suave al escenario al golpear para ver el impacto en vivo.
+   - **Controles tácticos de reliquia:** conducto de 6 cristales romboidales facetados + 3 medallones de habilidad (`Golpe certero` bronce, `Palabra afilada` zafiro, `Fuerza plena` oro fundido imperial con destello de disponibilidad) con sigilos vectoriales a medida sin cruces/estrellas/rayos.
+   - **Tarjeta previa en *Hoy* y *Mundo* (`tarjetaColoso`):** miniatura panorámica cinematográfica de `img/coloso-velo.webp` con viñeta obsidiana y barra de resistencia segmentada.
+   - **Aviso de prelanzamiento (`textoConserva()`):** indica explícitamente tanto en la tarjeta previa como en la arena que quienes participen desde el prelanzamiento ya suman experiencia, dracmas y aporte real, conservando aleatoriamente `entre el 0,72 % y el 40 %` al abrir el lanzamiento oficial.
+2. **Contraste global calibrado a +3 % (`app.css`):**
+   - Ajustado desde el +5 % del PR #9 a exactamente +3 % (interpolación al 60 % desde la base del 12-nov) tanto en tema oscuro (`--bg: #050506`, `--tinta: #f6f0e4`, `--oro: #d0af6b`, `.hoja` 84 %) como en tema claro Pergamino (`--bg: #f5efe4`, `--tinta: #100d0a`, `--oro: #75571d`, `.hoja` 90 %).
+3. **Hoy — Texto de progreso de nivel centrado (`juego.js`):**
+   - `.jg-nivel` pasa a `justify-content: center; text-align: center;` para centrar la leyenda bajo la barra dorada de nivel.
+4. **Modo «Contemplar» (`A9`) — Botones inferiores gemelos sin colisión (`app.css` + `app.js`):**
+   - En `html.contemplar`, `.jg-lb` (`Leído · VERSO`) se alinea a la izquierda (`left: max(12px, ...)`, `bottom: 8px`, `min-height: 32px`, `transform: none`) en simetría exacta con `.btn-cont-salir` a la derecha (`right: max(12px, ...)`, `bottom: 8px`, `min-height: 32px`); en pantallas `<= 440 px` el botón derecho compacta su texto visible a «Salir» manteniendo el `aria-label` completo, logrando **147 px de separación en `360 px`** y **67 px en `280 px`** con `0 px` de desborde.
+5. **Renombrado visible 1 vez/día en Salas y Compañías (`juego.js`):**
+   - El campo `Nombre de la sala (opcional)` de `tarjetaSala` ahora usa `.jg-in` (mismo acabado obsidiana-oro que `.jg-form input`); las salas activas muestran el control de renombrado directo en su propia tarjeta (además del modal `abrirSala`).
+   - Añadido control de renombrado 1 vez al día dentro de `pintarCompania` (para quien cuida la compañía), enviando `POST /compania/nombre { nombre }` con enfriamiento de 24 h (`jg:compNom`) y sincronización visual inmediata.
+6. **Enlace superior izquierdo `‹ Escudriña` vuelve a la vista anterior real (`juego.js`):**
+   - Nuevo helper `enlaceVolver(dest)` que invoca `A.volver(dest)` (historial real de la app con respaldo inteligente a la pestaña padre: `#/escudrina/juntos`, `#/escudrina/mundo`, `#/escudrina/mas`), aplicado en `cabSub`, `pintarClasificacion` y `pintarCuenta`.
+
+### 2. Pendientes acumulados opcionales para el Worker de Opus (reservados hasta terminar todos los PRs)
+- `POST /sala/nombre` (`{ c, nombre }` con enfriamiento de 24 h por sala y difusión WS `{ t: "nombre", nombre }`) y devolver `nombre` en `/salas` y `/sala/info`.
+- `POST /compania/nombre` (`{ nombre }`, 3–30 caracteres, solo cuidador de la compañía, enfriamiento de 24 h por compañía) para persistir el cambio de nombre en D1/KV entre dispositivos.
+
+### 3. Comprobaciones pasadas (Entrada #10)
+- `node --check` en todos los scripts (`app.js`, `juego.js`, `busqueda.js`, `intro.js`, `intro-cargador.js`, `sw.js`): **correcto**.
+- Suite Playwright 3× HD (`280 / 360 / 390 / 1280 px`, temas oscuro y Pergamino, impacto en vivo de `Fuerza plena`, retorno real `Compañía → ‹ Escudriña → Juntos`, contraste `+3 %`, simetría de píldoras inferiores en Contemplar): **0 errores de consola, 0 px de desborde, todas las aserciones en verde**.
+- `python3 wix/sellar.py`: **al día**.
