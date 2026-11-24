@@ -88,6 +88,7 @@
     tiempo: '<path d="M4 12h16" ' + L1 + '/><circle cx="7" cy="12" r="1.6" fill="currentColor"/><circle cx="12.5" cy="12" r="1.6" fill="currentColor"/><circle cx="18" cy="12" r="2.4" ' + L1 + '/><path d="M7 8.5V6M12.5 15.5V18M18 8V5.5" ' + L1 + '/>',
     filtro: '<path d="M4.5 5.5h15l-5.8 7v5.3l-3.4 1.7v-7z" ' + L1 + '/>',
     voz: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" ' + L1 + '/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" ' + L1 + '/>',
+    contemplar: '<path d="M2.6 12s3.6-6 9.4-6 9.4 6 9.4 6-3.6 6-9.4 6-9.4-6-9.4-6z" ' + L1 + '/><circle cx="12" cy="12" r="2.7" ' + L1 + '/>',
     pausa: '<path d="M9 6v12M15 6v12" ' + L1 + '/>',
     play: '<path d="M8 5.5l11 6.5-11 6.5z" ' + L1 + '/>',
     marcador: '<path d="M7 4h10a.5.5 0 0 1 .5.5V20l-5.5-4-5.5 4V4.5A.5.5 0 0 1 7 4z" ' + L1 + '/>',
@@ -1446,12 +1447,23 @@
   function abrirApariencia() {
     abrirModal(() => {
       const ws = D && D.portada ? D.portada.p.slice(0, 5) : [];
-      const valor = { tam: () => ap.tam, letra: () => ap.letra, inter: () => ap.inter, mov: () => ap.mov, dal: () => ap.dal || "", tema: temaActual, caja: () => prefs.caja, vib: () => store.get("vib", "normal") };
+      const valor = { tam: () => ap.tam, letra: () => ap.letra, inter: () => ap.inter, mov: () => ap.mov, dal: () => ap.dal || "", tema: temaActual, caja: () => prefs.caja, vib: () => store.get("vib", "normal"), cont: () => document.documentElement.classList.contains("contemplar") ? "si" : "no" };
       const muestraGs = ws.map((w) => h("span", { class: "g", lang: "grc", "data-gk": w.g }, gk(w.g)));
       const cambiar = {
         tema: (v) => ponerTema(v),
         caja: (v) => { prefs.caja = v; guardarPrefs(); aplicarCaja(); },
         vib: (v) => { store.set("vib", v); try { if (navigator.vibrate) { if (v === "normal") navigator.vibrate([14, 30, 18]); else if (v === "suave") navigator.vibrate(8); } } catch (e) { /* sin vibración */ } },
+        cont: (v) => {
+          const on = v === "si";
+          if (on && (!esc.libro || esc.modo === "a")) {
+            const u = store.get("ultimo", null);
+            const dest = u && u.c && u.cap ? "#/" + u.c + "/" + u.cap : "#/MAT/1";
+            cerrarModal(); location.hash = dest; setTimeout(() => ponerContemplar(true), 220);
+            return;
+          }
+          ponerContemplar(on);
+          if (on) cerrarModal();
+        },
       };
       const nomTam = h("span", { text: NOMBRES_TAM[ap.tam - 1] });
       const grupo = (k, ops, clase) => {
@@ -1477,6 +1489,9 @@
           fila("Interlineado", grupo("inter", [["normal", op("Normal")], ["amplio", op("Amplio", "Más aire entre las líneas")]])),
           fila("Tema", grupo("tema", [["dark", op("Oscuro", "Negro, marfil y oro")], ["light", op("Pergamino", "Fondo claro, tinta oscura")]])),
           fila("Griego", grupo("caja", [["min", op("αβγ", "Minúsculas con acentos y espíritus", "grc")], ["may", op("ΑΒΓ", "Mayúsculas sin marcas, como los códices unciales", "grc")]])),
+          fila("Enfoque", grupo("cont", [
+            ["no", op("Habitual", "Barras y herramientas de estudio visibles")],
+            ["si", op("Contemplar", "Solo el texto sagrado, sin barras ni distracciones")]])),
           fila("Movimiento", grupo("mov", [["si", op("Con animaciones")], ["no", op("Sin animaciones", "Todo aparece al instante")]])),
           fila("Vibración (recompensas)", grupo("vib", [
             ["normal", op("Normal", "Vibración completa en premios y toques (también en Modo tranquilo)")],
@@ -2236,6 +2251,7 @@
     const filtro = modo !== "a" && versos ? h("label", { class: "filtro-niv" + (prefs.nivel ? " activo" : ""), title: "Mostrar los versos según su nivel de avance" }, svg(ICO.filtro),
       h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); if (a) a.barra = true; RP.anclaEnSitio = a || { barra: true, v: null }; prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); } },
         FILTROS.map(([k, t]) => { const vs = k ? versos.filter((x) => pasaFiltro(x, k)) : versos; let n = " · " + vs.length; if (k === "base" && vs.length) n += " · " + Math.round(vs.reduce((acc, x) => acc + (+x.k || 0), 0) / vs.length) + " % traducido"; return h("option", { value: k, selected: (prefs.nivel || "") === k ? true : null, "data-corto": (FILTRO_CORTO[k] || t) + n, text: t + n }); }))) : null;
+    const contemplar = modo !== "a" ? h("button", { class: "btn-icono btn-cont", type: "button", "aria-pressed": String(document.documentElement.classList.contains("contemplar")), "aria-label": "Modo Contemplar: leer sin barras ni distracciones", title: "Modo Contemplar (Mayús+C)", onclick: () => ponerContemplar(!document.documentElement.classList.contains("contemplar")) }, svg(ICO.contemplar)) : null;
     const opciones = modo !== "a" ? h("button", { class: "btn-icono btn-opc", type: "button", "aria-label": "Opciones del texto: colores, corchetes y paréntesis", title: "Opciones del texto", onclick: abrirOpciones }, svg(ICO.opciones)) : null;
     // En el centro de la barra: el libro (transliteración y nombre en español) y el capítulo en hebreo con su numeral romano
     const capH = String((b.caps[cap - 1] || {}).h || "").match(/^(.*?)\s*\[[^\]]*\]\s*(\S+)?\s*$/);
@@ -2251,7 +2267,7 @@
         h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), h("span", { class: "cap-n" }, "Cap. " + cap, h("span", { class: "cap-de", text: "/" + b.caps.length }))), // (BiEx, 14-nov-2026) cuántos capítulos tiene el libro
         h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der))),
       h("span", { class: "bh-salto", "aria-hidden": "true" }),
-      disp, filtro, opciones,
+      disp, filtro, contemplar, opciones,
       // franja fina al pie de la barra: el libro y el capítulo en el centro (en escritorio, con las flechas del capítulo a los lados)
       h("div", { class: "bh-franja" },
         h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
@@ -4070,7 +4086,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "e5a5a20af8", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "44a56ceec3", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -6750,6 +6766,29 @@
   let yInm = window.scrollY, tInm = 0, tDesp = 0;
   // (con la lupa puesta las barras no se retiran: la del capítulo va en el flujo y su cambio de altura movería la página)
   const inmersivo = (si) => { if (si && document.documentElement.classList.contains("lupa")) si = false; if (si) { medirBarraHoja(); marcarPegada(); } document.documentElement.classList.toggle("inmersivo", !!si); };
+  // A9 · Modo «Contemplar» (Neon, 23-nov-2026): solo el texto sagrado, sin barras ni distracciones; sale con el botón discreto o Esc
+  let btnContSalir = null;
+  function ponerContemplar(si, silencioso) {
+    const on = !!si;
+    if (on && !btnContSalir) {
+      btnContSalir = h("button", { class: "btn-cont-salir", type: "button", "aria-label": "Salir del modo Contemplar", title: "Salir de Contemplar (Esc)", onclick: () => ponerContemplar(false) },
+        svg(ICO.contemplar), h("span", { text: "Salir de Contemplar" }));
+      document.body.append(btnContSalir);
+    }
+    document.documentElement.classList.toggle("contemplar", on);
+    if (on) inmersivo(false);
+    for (const b of document.querySelectorAll(".btn-cont")) b.setAttribute("aria-pressed", String(on));
+    if (!silencioso) avisar(on ? "Modo Contemplar: solo el texto sagrado · Esc o toca abajo para salir" : "Saliste del modo Contemplar");
+  }
+  window.addEventListener("keydown", (e) => {
+    if (modal.open) return;
+    const tg = e.target && e.target.tagName;
+    if (tg === "INPUT" || tg === "TEXTAREA" || tg === "SELECT" || (e.target && e.target.isContentEditable)) return;
+    if (e.key === "Escape" && document.documentElement.classList.contains("contemplar")) { e.preventDefault(); ponerContemplar(false); }
+    else if (e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "C" || e.key === "c") && esc.libro && esc.modo !== "a") {
+      e.preventDefault(); ponerContemplar(!document.documentElement.classList.contains("contemplar"));
+    }
+  });
   // ¿la barra del capítulo está pegada arriba? (el centinela, justo antes de ella, ya pasó por debajo de su tope)
   function marcarPegada() {
     const bh = $(".barra-hoja"), c = $(".bh-centinela"); if (!bh || !c) return;
@@ -6768,7 +6807,7 @@
     const y = window.scrollY, dy = y - yInm; yInm = y;
     marcarPegada();
     // los saltos del propio lector (restaurar una posición, abrir un verso) no cuentan como lectura
-    if (RP.objetivo != null || modal.open || performance.now() - (RP.fin || 0) < 900) { clearTimeout(tInm); return; }
+    if (RP.objetivo != null || modal.open || document.documentElement.classList.contains("contemplar") || performance.now() - (RP.fin || 0) < 900) { clearTimeout(tInm); return; }
     if (y < 160 || menuAbierto) { clearTimeout(tInm); inmersivo(false); return; }
     if (dy < -4) { clearTimeout(tInm); inmersivo(false); }
     else if (dy > 4 && !document.documentElement.classList.contains("inmersivo")) { clearTimeout(tInm); tInm = setTimeout(() => { if (window.scrollY > 160 && !menuAbierto) inmersivo(true); }, 900); }
@@ -7287,7 +7326,11 @@
       if (!store.get("jg:t", null)) { const pr = store.get("jg:inv", null); if (!(pr && pr.c && Date.now() - (pr.t || 0) < 30 * 864e5)) store.set("jg:inv", { c: cod, t: Date.now() }); }
       if (partes.length > 3) { const d = "#/" + partes.slice(3).join("/"); ponerHash(d); if (!store.get("jg:t", null)) setTimeout(() => cargarJuego().then((J) => J.franja(cod)).catch(() => {}), 1500); return mostrarRuta(d); }
     }
-    if (partes[0] !== "escudrina" && !(D && libroDe(String(partes[0] || "").toUpperCase())) && window.BiExJuego) window.BiExJuego.salir();
+    const esLibroRuta = !!(D && libroDe(String(partes[0] || "").toUpperCase()));
+    if (!(esLibroRuta && partes[2] !== "a") && document.documentElement.classList.contains("contemplar")) ponerContemplar(false, true);
+    if (partes[0] !== "escudrina" && !esLibroRuta && window.BiExJuego) window.BiExJuego.salir();
+    if (window.BiExJuego && window.BiExJuego.actividadRuta) window.BiExJuego.actividadRuta(ruta);
+    else if (store.get("jg:t", null) && partes[0] === "fuente-q") cargarJuego().then((J) => J.actividadRuta && J.actividadRuta(ruta)).catch(() => {});
     rutaVista = ruta;
     creditosPie(!partes.length || (partes[0] === "escudrina" && partes[1] === "mas"));
     // AC2: en el ranking sobra la nota del pie sobre los versos; tampoco va en Escudriña (BiEx, 15-nov-2026, adjunto 8)

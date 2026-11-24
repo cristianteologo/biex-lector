@@ -543,3 +543,49 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - Auditoría léxica, iconográfica y de colisiones CSS en todo el diff: **0 palabras prohibidas, 0 glifos prohibidos, 0 choques de clases**.
 - Suite Playwright 3× HD (`280 px`, `360 px`, `412 px`, `1280 px`, temas oscuro y claro, `--k = 1.42`, `data-mov="no"`): **0 errores de consola, 0 px de desplazamiento lateral, todas las aserciones de PR #7 en verde (`ALL_PR7_VERIFICATIONS_PASSED`)**.
 - `python3 wix/sellar.py && git diff --exit-code --stat`: **al día** (`45dc6c09b41c`).
+
+---
+
+## Entrada #8 — 23 de noviembre de 2026 (Presencia en vivo, Ficha pública de jugador, Escalera de reasignación, `B7`, `rango=todos`, `B1` sin Facebook y `A9` Modo «Contemplar»)
+
+**Rama:** `neon/pr8-presencia-jugador-b1-contemplar` (desde `origin/main` en `d4b3758`, que ya incluye los meses hebreos `MESES_HEB` actualizados)
+**Servidor verificado en producción (`biex-juego`, commit `5084523`):** `/salud` (`google: "bien"`, `buzon: "bien"`, sin Facebook), `/config` (`facebook: false`), `/clasificacion?rango=todos`, `/jugador?a=`, `/planes/ranking`, `/coloso` (401 autenticado) y `/rollo/clave` (JWK ES256).
+**Archivos modificados:** `app.css`, `app.js`, `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados
+
+1. **Presencia en vivo (`POST /presencia`, `juego.js` + `app.js`):**
+   - Nuevo latido ligero `PRES` (`latirPresencia`) que informa la actividad exacta del lector con deduplicación (intervalo de 90 s, pausa con pestaña oculta y disparo inmediato al cambiar de ruta o entrar/salir de una sala): **`Leyendo`**, **`Analizando`**, **`En Fuente Q`**, **`En Escudriña`** y **`En sala`** (con `lc` del capítulo cuando aplica).
+   - También carga el módulo en segundo plano cuando una cuenta iniciada entra directamente en frío a `#/fuente-q`.
+2. **Ficha pública interactiva de jugador (`GET /jugador?a=<apodo>`, `juego.js`):**
+   - `nombreClicable(apodo)` + `abrirJugadorPublico(apodo)` con caché corta de 20 s: al tocar cualquier apodo público en **Clasificación**, **Liga**, **Compañía**, **Salas abiertas**, **Sala en vivo** o **Quién está leyendo**, se abre una ventana limpia con emblema/marco/foto, insignia de **Etapa I–V** con alto contraste en tema oscuro y Pergamino, insignia de **Primicia**, banda verde de actividad en vivo con enlace directo **«Ir»** al capítulo y rejilla simétrica de **6 métricas** (*Poder*, *Nivel*, *Perseverancia*, *Versos leídos*, *Piedras*, *Lauros*).
+   - Si el perfil está reservado (`404`), muestra un aviso respetuoso sin romper la vista.
+3. **Escalera de reasignación gratuita de atributos (`av.reasigGratis`, `av.reasigProx`, `av.reasigSem`, `juego.js`):**
+   - `tarjetaAtributos` muestra si el restablecimiento gratis está disponible o, tras usarlo, la **fecha exacta** del próximo restablecimiento gratis y el tramo vigente de la escalera (**1 → 2 → 3 → 3 semanas**), junto al botón `Reasignar · 60 dr.`.
+4. **Límite claro de 2 salas simultáneas (`max_salas`, `juego.js`):**
+   - Añadido `MENSAJES.max_salas` en español claro y retirado `sin_facebook`.
+5. **`B7` · Insignia de dificultad en la prueba de capítulo (`dificultad: 1|2|3`, `juego.js`):**
+   - `abrirPrueba` muestra el nivel de dificultad asignado por el servidor en el subtítulo (`Dificultad I / II / III`) y en una insignia temática adaptada a tema oscuro y Pergamino (`Dificultad I · Nivel inicial`, `Dificultad II · Nivel intermedio`, `Dificultad III · Nivel profundo`).
+6. **Clasificación «Todos los rangos» en una sola petición (`rango=todos`, `juego.js`):**
+   - `cargarTodos()` consulta primero `GET /clasificacion?...&rango=todos` (1 sola llamada cacheada en borde en lugar de N peticiones paralelas por rango), conservando el respaldo automático si alguna respuesta no trae `lista`.
+7. **`B1` · Retiro completo de botones de entrada/vínculo con Facebook (`juego.js`):**
+   - Eliminados los botones de inicio, registro y vinculación con Facebook en `pintarInicio` y `tarjetaAsegurar` (se mantiene intacto el botón de compartir en Facebook y el aviso honesto «vínculo anterior conservado» en *Cuenta* para perfiles antiguos).
+8. **`A9` · Modo «Contemplar» (`app.js` + `app.css`):**
+   - Modo de lectura serena centrado exclusivamente en el texto sagrado: accesible desde el botón de ojo en la barra del capítulo (`.btn-cont`), desde **Lectura y apariencia (`Aa`) → Enfoque: Contemplar**, y con **`Mayús+C`**.
+   - Oculta la barra superior (`transform` + `opacity: 0` por compositor), la barra de capítulo, la cabecera estadística del libro (`.banda`), el riel lateral (`.riel`), las barras de revisión/reordenamiento (`.encab-cifras`), la nota semanal (`.nota-obra`) y los elementos flotantes del juego; colapsa `.libro-grid` a columna única centrada con interlineado holgado (`1.92`) y ofrece la píldora discreta **«Salir de Contemplar»** abajo a la derecha (o tecla **`Esc`**), saliendo automáticamente al cambiar a *Análisis* o fuera del texto bíblico.
+
+### 2. Capturas verificadas a 3× de densidad (Entrada #8)
+
+*(Capturas 3× HD verificadas y archivadas en la bitácora local de sesión.)*
+
+### 3. Aprendizajes clave (Entrada #8)
+1. **Ocultamiento integral de Modo Contemplar (`app.css`):** ocultar solo `.barra` y `.barra-hoja` dejaba visibles `.banda`, `.riel`, `.nota-obra` y `.encab-cifras`; la inspección 3× HD permitió ocultarlos todos y colapsar `.libro-grid` a columna única centrada, elevando `.aviso-flot` para evitar cruce con `.btn-cont-salir`.
+2. **Orden flex en escritorio (`min-width: 1024px`):** al añadir `.btn-cont` a `.barra-hoja`, fue imprescindible darle `order: 3` (y `.btn-opc` `order: 4`) en la media query de escritorio para que no saltara al inicio junto a `.seg-modo`.
+3. **Contraste de fichas de Etapa en tema Pergamino:** los colores claros pensados para fondo oscuro (`#ffe39a` en Etapa IV) perdían legibilidad sobre crema claro; definir pares `--et` / `--et-l` en CSS garantizó contraste AAA en ambos temas.
+
+### 4. Comprobaciones pasadas (Entrada #8)
+- `node --check` en `app.js`, `juego.js`, `busqueda.js`, `intro.js`, `intro-cargador.js`, `sw.js`, `functions/api/juego/[[ruta]].js`: **correcto**.
+- Validación JSON y balanceo de llaves CSS (`app.css`): **correcto (diff 0)**.
+- Auditoría léxica y de glifos en el diff completo: **CLEAN (0 palabras o elementos prohibidos)**.
+- Suite Playwright 3× HD (`280 / 360 / 412 / 1280 px`, temas oscuro y claro, `--k = 1.42`): **0 errores de consola/página, 0 px de desborde, todas las pruebas funcionales en verde**.
+- `python3 wix/sellar.py`: **al día** (`84e2be51016c`).
