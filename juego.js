@@ -24,7 +24,7 @@
   // [griego, nombre tradicional, color, transliteración BiEx (Prompt B, híbrida mixta; BiEx, 9-nov-2026: «más exclusividad y novedad»)]
   const PIEDRAS = [["ἴασπις", "jaspe", "#5f9f72", "Ἴαspις"], ["σάπφειρος", "zafiro", "#3f72d8", "Sάpfειrος"], ["χαλκηδών", "calcedonia", "#93a9c2", "Χαlκēδṓn"], ["σμάραγδος", "esmeralda", "#22a876", "Smάrαgδος"], ["σαρδόνυξ", "sardónice", "#c2643f", "Sαrδόnυc̅ṣ"], ["σάρδιον", "cornalina", "#cc452f", "Sάrδιοn"], ["χρυσόλιθος", "crisólito", "#c3c23c", "Χrυsόlιdsος"], ["βήρυλλος", "berilo", "#4db9ae", "Βḗrυllος"], ["τοπάζιον", "topacio", "#e4a92f", "Τοpάζιοn"], ["χρυσόπρασος", "crisopraso", "#86d070", "Χrυsόprαsος"], ["ὑάκινθος", "jacinto", "#e57b3d", "῾Hυάκιndsος"], ["ἀμέθυστος", "amatista", "#9663d0", "Ἀmέdsυsτος"]];
   const piedraNombre = (i) => PIEDRAS[i][3] + " [" + PIEDRAS[i][1] + "]";
-  const ORDINAL = ["primera", "segunda", "tercera", "cuarta", "quinta", "sexta", "séptima", "octava", "novena", "décima", "undécima", "duodécima"];
+  const ORDINAL = ["primer", "segundo", "tercer", "cuarto", "quinto", "sexto", "séptimo", "octavo", "noveno", "décimo", "undécimo", "duodécimo"];
 
   // ------------------------------------------------------------------ utilidades
   const fmt = (n) => Number(n || 0).toLocaleString("es");
@@ -129,11 +129,15 @@
     ya_en_compania: "Ya estás en una compañía: para unirte a otra, primero sal de la tuya.", nombre_usado: "Ese nombre ya lo tiene otra compañía.", compania: "Ese código de compañía no existe.",
     compania_llena: "Esa compañía ya tiene 24 personas.", sala: "Esa sala no existe o ya venció.", llena: "Esa sala ya tiene 24 personas.", max_salas: "Ya tienes 2 salas abiertas a la vez (el máximo). Cierra una o espera a que venza antes de abrir otra.",
     apodo_espera: "Tu apodo se puede cambiar una vez cada 3 semanas.", lugar_espera: "Tu ciudad se puede cambiar una vez cada 2 meses.", dracmas: "Todavía no tienes las dracmas suficientes para esto." };
-  // AF14 (21-nov-2026): los fallos del servidor dicen qué pasó y, si no tienen mensaje propio, llevan su código discreto
+  // AF14 (21-nov-2026) + PR #17 (Opus 28842cf): los fallos del servidor dicen qué pasó y, si no tienen mensaje propio, llevan su código discreto
   Object.assign(MENSAJES, { interno: "El servidor del juego tuvo un tropiezo. Vuelve a intentarlo en un momento.", preguntas: "Las preguntas de este capítulo no llegaron. Vuelve a intentarlo en un momento.",
     vencida: "Esa prueba venció sin responderse: ábrela de nuevo para recibir otra.", rapido: "Toma un momento para leer cada pregunta antes de ver el resultado.", prueba: "Esa prueba ya se respondió.",
-    sin_cargas: "Aún no tienes suficientes cargas para esa habilidad. Recuperas 1 carga cada 3 horas.", derrotado: "El Coloso de la Tradición ya fue derrotado esta semana.", habilidad: "Esa habilidad táctica no está disponible.", nombre_espera: "El nombre de la sala se puede cambiar una vez al día." });
-  const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : MENSAJES[r.error])) || "Algo no salió bien" + (r && r.error ? " (código «" + String(r.error).slice(0, 24) + "»)" : "") + ". Vuelve a intentarlo.";
+    sin_cargas: "Aún no tienes suficientes cargas para esa habilidad. Recuperas 1 carga cada 3 horas.", derrotado: "El Coloso de la Tradición ya fue derrotado esta semana.", habilidad: "Esa habilidad táctica no está disponible.",
+    nombre_espera: "El nombre se puede cambiar una vez al día.", no_anfitrion: "Solo quien creó la sala puede realizar esta acción.", no_cuidador: "Solo quien cuida la compañía puede cambiar su nombre.",
+    muy_rapido: "Toma un instante entre ataques para concentrar tu siguiente golpe.", a_ti_mismo: "No puedes enviarte beneficios a ti mismo.", ya_animaste: "Ya le enviaste ánimo hoy a este lector.",
+    nivel_bajo: "Necesitas alcanzar el nivel 3 para enviar dracmas o experiencia doble.", sin_saldo: "No tienes saldo suficiente para ese envío.",
+    tope_diario: "Ya alcanzaste el tope diario para este tipo de gesto.", destinatario_lleno: "Este lector ya alcanzó su tope de gestos recibidos hoy.", no_existe: "No encontramos a ese lector." });
+  const mensaje = (r) => (r && (r.detalle && (r.error === "apodo" || r.error === "nombre") ? r.detalle : (r.mensaje || MENSAJES[r.error]))) || "Algo no salió bien" + (r && r.error ? " (código «" + String(r.error).slice(0, 24) + "»)" : "") + ". Vuelve a intentarlo.";
 
   function guardarSesion(token, yo) {
     S.token = token; A.store.set("jg:t", token);
@@ -162,14 +166,21 @@
     const ult = Number(A.store.get("jg:avT", 0)) || 0, l = yo.avisos || [];
     if (l.length) {
       A.store.set("jg:avT", Math.max(ult, ...l.map((a) => a.t || 0)));
-      const nuevos = ult ? l.filter((a) => a.t > ult && (a.k === "liga" || a.k === "compania" || a.k === "mision")) : [];
-      if (nuevos.length) setTimeout(() => { for (const a of nuevos.reverse()) { if (a.k === "liga" && a.nvNuevo > a.nv) celebracion(Object.assign({ tipo: "liga" }, a)); else A.avisar(NOVEDAD[a.k](a)); } }, 1300);
+      const nuevos = ult ? l.filter((a) => a.t > ult && (a.k === "liga" || a.k === "compania" || a.k === "mision" || a.k === "beneficio")) : [];
+      if (nuevos.length) setTimeout(() => { for (const a of nuevos.reverse()) { if (a.k === "liga" && a.nvNuevo > a.nv) celebracion(Object.assign({ tipo: "liga" }, a)); else if (NOVEDAD[a.k]) A.avisar(NOVEDAD[a.k](a)); } }, 1300);
     }
     if (yo.inv) A.store.set("jg:mio", yo.inv);
-    if (yo.miSala && yo.miSala.c && !SL.cod && !SL.salioManual && S.token) {
-      if (yo.miSala.nombre) guardarNomSala(yo.miSala.c, yo.miSala.nombre, false);
-      if (yo.miSala.abierta !== undefined) SL.pub = !!yo.miSala.abierta;
-      entrarSala(yo.miSala.c);
+    if (yo.miSala && yo.miSala.c) {
+      const ms = yo.miSala, cr = Number(ms.creadaEn) || 0, estVence = Number(ms.vence) || (cr ? cr + 7 * 864e5 : 0);
+      guardarHistMiSala({ c: ms.c, nombre: ms.nombre || "", creadaEn: cr, vence: estVence, soyAnf: true });
+      if (ms.nombre) guardarNomSala(ms.c, ms.nombre, false);
+      if (ms.abierta !== undefined) SL.pub = !!ms.abierta;
+      if (ms.nomEn) SL.nomEn = Number(ms.nomEn) || SL.nomEn;
+      if (estVence) SL.vence = estVence;
+      if (!SL.cod && !SL.salioManual && S.token) entrarSala(ms.c);
+      else consultarVenceSala(ms.c);
+    } else if (yo.miSala === null) {
+      comprobarSalaVencida(null);
     }
     registrarPoder(yo, yo.av);
     A.store.set("jg:inv", null);
@@ -1057,7 +1068,6 @@ html[data-mov="no"] .ap-vida{display:none}
 .jg-sello.hecho button{opacity:.5!important}
 .jg-pop{z-index:83!important;bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
 html.jg-con-muelle .jg-pop{bottom:calc(196px + env(safe-area-inset-bottom,0px))!important}
-html.jg-con-muelle .aviso-flot{bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 .jg-coleccion{display:grid;gap:10px;margin:12px 0;padding:13px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:linear-gradient(125deg,color-mix(in srgb,var(--oro) 12%,transparent),transparent 70%)}
 .jg-col-cab{display:flex;align-items:center;gap:11px;min-width:0}
 .jg-col-cab>div{display:grid;gap:2px;min-width:0}
@@ -1647,14 +1657,23 @@ html[data-mov="no"] .jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}html[d
 .jg-muelle a[data-n]::after{content:attr(data-n);position:absolute;top:3px;left:calc(50% + 7px);min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:var(--oro);color:var(--sobre-oro,#16120b);font:600 .62rem/16px var(--f-ui);text-align:center}
 html.con-modal .jg-muelle{opacity:0;pointer-events:none}
 html.jg-con-muelle .saltos-rap,html.jg-con-muelle .adelante{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
-html.jg-con-muelle .aviso-flot{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
 html.jg-con-muelle body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 /* AL6 (22-nov-2026): la píldora de la Sala ya no pide espacio extra al final: se acomoda en su hueco del pie */
 html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:0 12px;font-size:.84rem}
-html.jg-con-muelle.jg-con-sala .aviso-flot{bottom:calc(140px + env(safe-area-inset-bottom,0px))}
-html.jg-con-sala:not(.jg-con-muelle) .aviso-flot{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
-html.jg-con-lb:not(.jg-con-muelle) .aviso-flot{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
-html.jg-con-lb.jg-con-sala:not(.jg-con-muelle) .aviso-flot{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+.jg-sala-av{display:grid;gap:6px;padding:11px 13px;border-radius:13px;border:1px solid color-mix(in srgb,#e5a94c 48%,var(--linea-2));background:color-mix(in srgb,#e5a94c 10%,var(--hoja-2));font:400 .83rem/1.45 var(--f-ui);color:var(--tinta)}
+.jg-sala-av b{color:var(--oro-vivo);font-weight:600}
+.jg-sala-av-pie{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.jg-ben{display:grid;gap:10px;padding:13px 14px;border-radius:15px;border:1px solid color-mix(in srgb,var(--oro) 34%,var(--linea-2));background:color-mix(in srgb,var(--hoja-2) 84%,transparent)}
+.jg-ben-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.jg-ben-cab b{font:600 .7rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro)}
+.jg-ben-cab small{font:400 .74rem/1.2 var(--f-ui);color:var(--tenue)}
+.jg-ben-fila{display:flex;flex-wrap:wrap;gap:7px}
+.jg-ben-fila .btn{flex:1 1 auto;justify-content:center}
+.jg-ben-est{margin:0;font:400 .8rem/1.4 var(--f-ui);color:var(--tinta-2)}
+.jg-ben-est.ok{color:#6fc08f}
+:root[data-theme="light"] .jg-ben-est.ok{color:#237246}
+.jg-ben-est.mal{color:#e07b6b}
+:root[data-theme="light"] .jg-ben-est.mal{color:#a83324}
 .jg-cab-d{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
 .jg-ayuda{display:inline-flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);text-decoration:none;font:500 .78rem/1 var(--f-ui);letter-spacing:.03em;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .jg-ayuda svg{width:16px;height:16px}
@@ -2718,7 +2737,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     marco(cont, cabecera(),
       avisoEnApp(), franjaInv, franjaGrupo, tarjetaPrerregistro(entrada),
       tarjeta("Cómo se juega", null,
-        h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, una de las doce piedras del fundamento o un lauro trenzado incorruptible." }),
+        h("p", { text: "Lee la Nueva Voluntad y cada verso que de verdad lees te da experiencia. Cada día tienes de 2 a 5 misiones pequeñas, a tu ritmo y sin culpa. Al leer puedes hallar, muy de vez en cuando, uno de los doce cantos [bloques] del fundamento o un lauro trenzado incorruptible." }),
         h("p", { class: "jg-mini", text: "Hay clasificaciones por ciudad, departamento o estado, país y continente, separadas por rango para que nadie compita en desventaja, y el prestigio local de cada ciudad. Cada persona que llega con tu enlace hace crecer tu árbol de la siembra. Puedes crear tu cuenta oficial, o sencillamente participar con un código de invitado, sin necesidad de correo, nombre ni contraseña." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/guia", onclick: () => { S.guiaPaso = 0; } }, ico("jugar"), h("span", { text: "Ver cómo se juega, paso a paso" })))),
       h("div", { class: "jg-dos" },
@@ -3120,18 +3139,18 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         // (no con cada verso), y se dice cuánto sube y cuántos hallazgos van sin lauro
         h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + (y.lauroP * 100).toFixed(2).replace(".", ",") + "\u00a0%" })),
         h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(2) + "%" })),
-        h("p", { class: "jg-mini", text: (() => { const k = Math.max(0, Math.round((y.lauroP - 0.03) / 0.015)); return "Sube un 1,50 % con cada piedra que hallas" + (k ? " (llevas " + plural(k, "hallazgo", "hallazgos") + " sin lauro)" : "") + " y vuelve a empezar al conseguir un lauro. Cambia con cada hallazgo, no con cada verso."; })() })) : null,
-      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste las doce piedras: tu experiencia vale un 5 % más para siempre." : "Piedras del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar una, muy de vez en cuando." }));
+        h("p", { class: "jg-mini", text: (() => { const k = Math.max(0, Math.round((y.lauroP - 0.03) / 0.015)); return "Sube un 1,50 % con cada canto que hallas" + (k ? " (llevas " + plural(k, "hallazgo", "hallazgos") + " sin lauro)" : "") + " y vuelve a empezar al conseguir un lauro. Cambia con cada hallazgo, no con cada verso."; })() })) : null,
+      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste los doce cantos: tu experiencia vale un 5 % más para siempre." : "Cantos [bloques] del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar uno, muy de vez en cuando." }));
   }
   function verPiedra(i, veces) {
     const pd = PIEDRAS[i];
-    A.abrirModal(() => A.cajaModal(A.cabModal("Las doce piedras", "Ἀpοκάlυpsις 21:19-20"), h("div", { class: "jg-cel" },
+    A.abrirModal(() => A.cajaModal(A.cabModal("Los doce cantos [bloques]", "Ἀpοκάlυpsις 21:19-20"), h("div", { class: "jg-cel" },
       h("div", { class: "arte jg-pd-modal", style: "--pg:" + pd[2] },
         veces > 0 ? h("span", { class: "jg-pd-halo", "aria-hidden": "true" }) : null,
         h("span", { class: "jg-pd-gema" }, gema(i, veces > 0)),
         h("span", { class: "jg-pd-sombra", "aria-hidden": "true" })),
       h("h3", { text: piedraNombre(i) }), h("p", { class: "jg-mini", lang: "grc", text: pd[0] }),
-      h("p", { text: "La " + ORDINAL[i] + " piedra del fundamento del muro de la ciudad. " + (veces ? "La hallaste " + plural(veces, "vez", "veces") + "." : "Aún no la hallas: sigue leyendo.") }),
+      h("p", { text: "El " + ORDINAL[i] + " canto [bloque] del fundamento de la muralla de la ciudad. " + (veces ? "Lo hallaste " + plural(veces, "vez", "veces") + "." : "Aún no lo hallas: sigue leyendo.") }),
       h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
   }
   const NOVEDAD = { frag: (a) => (a.n === 1 ? "Hallaste un fragmento de papiro" : "Hallaste " + a.n + " fragmentos de papiro") + (a.c ? " · " + a.c + " de " + (a.meta || 70) + " en tu rollo (Tesoro)" : "") + ".", drl: (a) => "Hallaste " + a.dr + " dracmas al marcar «Leído».",
@@ -3149,6 +3168,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
     mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") + ".",
     renMedia: (a) => (a.m % 2 ? "Siete días seguidos de perseverancia: ganaste un descanso y media pieza de Renuevo (te falta otra media para un Renuevo sin dracmas)." : "Siete días seguidos de perseverancia: ganaste un descanso y completaste una pieza de Renuevo: tu próximo Renuevo sale sin dracmas."),
+    beneficio: (a) => {
+      const de = a.de || "Un lector";
+      if (a.tipo === "dracmas") return de + " te envió " + plural(a.cant | 0, "dracma", "dracmas") + " de compañía.";
+      if (a.tipo === "xp2") return de + " compartió contigo " + plural(a.cant | 0, "hora", "horas") + " de experiencia doble.";
+      return de + " te envió ánimo en tu lectura de hoy.";
+    },
     adelantado: (a) => {
       const quien = (a.a || "Un lector") + (a.nv ? " (nivel " + a.nv + ")" : "") + (a.otros > 0 ? " y " + plural(a.otros, "lector más", "lectores más") : "");
       const tramo = a.de && a.pos ? ": pasaste del puesto " + fmt(a.de) + " al " + fmt(a.pos) : a.pos ? " (ahora vas en el puesto " + fmt(a.pos) + ")" : "";
@@ -3460,7 +3485,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   const GUIA = [
     ["Lee de verdad", "Abre cualquier capítulo de la Nueva Voluntad y lee a tu ritmo. Cada verso que lees te da el 30 % de su experiencia; al terminarlo, toca «Leído» (abajo, al centro: brilla el número del verso que marcas) y suma el 70 % restante, con la posibilidad de hallar fragmentos de papiro y dracmas. Solo cuentan como leídos los versos que marcas, el capítulo que marcas al final cuando lo leíste con calma y las preguntas de la prueba bien respondidas.", "versos"],
     ["Misiones pequeñas cada día", "Cada día recibes de 2 a 5 misiones sencillas, como leer unos versos o completar un capítulo. Sin prisa y sin culpa: si un día no puedes, tu avance sigue ahí.", "misiones"],
-    ["Hallazgos", "Muy de vez en cuando, un verso revela una de las doce piedras del fundamento o un lauro trenzado incorruptible. Solo aparecen leyendo.", "hallazgos"],
+    ["Hallazgos", "Muy de vez en cuando, un verso revela uno de los doce cantos [bloques] del fundamento o un lauro trenzado incorruptible. Solo aparecen leyendo.", "hallazgos"],
     ["Perseverancia", "Cada día que lees suma a tu perseverancia. Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).", "perseverancia"],
     ["Nunca a solas", "Entra en la liga de la semana, aporta a la misión mundial, forma una compañía de 2 a 24 personas o abre una sala para leer en compañía.", "juntos"],
     ["Tu siembra", "Comparte tu enlace. Quien llega contigo empieza con 3 horas de experiencia doble, y tu árbol de la siembra crece generación tras generación.", "siembra"],
@@ -4053,7 +4078,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         else if (habEs === "palabra" || brecha) vibrar([24, 18, 48, 18, 28]);
         else vibrar([18, 22, 34]);
         sonar("chispa");
-        const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab, precision, postura: postAct.id } });
+        const r = await pedir("/coloso/accion", { metodo: "POST", cuerpo: { hab, precision, brecha: !!brecha, postura: postAct.id } });
         enviandoAcc = false;
         if (r.error) return A.avisar(mensaje(r));
         const dano = Number(r.dano || r.impacto || 0);
@@ -4070,8 +4095,9 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         if (crit || precision === "resonancia" || brecha) rachaTac++;
         else rachaTac = 0;
         idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
+        const bonoMult = r.bono && Number(r.bono.mult) > 1 ? " · ×" + String(Number(r.bono.mult).toFixed(2)).replace(".", ",").replace(/,00$/, "") : "";
         const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "Impacto firme";
-        A.avisar((etiq ? etiq + " " : "") + (dano ? "Impacto de " + fmt(dano) + " contra El Coloso" : "Acción registrada contra El Coloso"));
+        A.avisar((etiq ? etiq + " " : "") + (dano ? "Impacto de " + fmt(dano) + bonoMult + " contra El Coloso" : "Acción registrada contra El Coloso"));
         pintar(nuevo, { dano: dano || 1, hab: habEs, nom: nomHab || habEs, crit, brecha, etiq });
         const escEl = zona.querySelector(".jg-col-escena");
         if (escEl && escEl.getBoundingClientRect().top < 40) escEl.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" });
@@ -5842,8 +5868,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const puedePunto = P.dr >= av.precioPunto, puedeReasig = gratis || P.dr >= 60;
     const hayRep = av.tot - av.pts > 0;
     const notaReasig = hayRep ? h("p", { class: "jg-mini ap-reasig-nota", text: gratis
-      ? "Tienes un restablecimiento gratis disponible (escalera al usarlo: 1 semana, luego 2, y en adelante cada 3 semanas)."
-      : (fmtProx ? "Próximo restablecimiento gratis el " + fmtProx + " (tramo de " + plural(semN, "semana", "semanas") + "). Ahora puedes reasignar por 60 dracmas." : "Tu próximo restablecimiento gratis se habilita al cumplirse el plazo (1 → 2 → 3 semanas); ahora cuesta 60 dracmas.") }) : null;
+      ? "Tienes un restablecimiento gratis disponible."
+      : (fmtProx ? "Próximo restablecimiento gratis el " + fmtProx + ". Ahora puedes reasignar por 60 dracmas." : "Tu próximo restablecimiento gratis se habilita al cumplirse el plazo; ahora cuesta 60 dracmas.") }) : null;
     const secAt = tarjeta("Atributos", ico("arbol"),
       h("div", { class: "ap-cab" }, h("div", { class: "ap-cab-l" }, quedan, saldoDr), h("div", { class: "ap-cab-r" }, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
       lista, desc,
@@ -7568,7 +7594,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const x = op.x || {};
     let l1, l2, l3;
     if (op.tipo === "lauro") { l1 = "Hallé un lauro trenzado"; l2 = "incorruptible"; l3 = "1 Κοrίndsιοι 9:25"; }
-    else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][3] + " [" + PIEDRAS[x.i][1] + "],"; l2 = "una de las doce piedras"; l3 = "Ἀpοκάlυpsις 21:19-20"; }
+    else if (op.tipo === "piedra") { l1 = "Hallé " + PIEDRAS[x.i][3] + " [" + PIEDRAS[x.i][1] + "],"; l2 = "uno de los doce cantos"; l3 = "Ἀpοκάlυpsις 21:19-20"; }
     else if (op.tipo === "rango") { l1 = "Llegué al rango de"; l2 = x.rango || y.rangoNombre || ""; l3 = "nivel " + (x.nivel || y.nivel || 1); }
     else if (P2) { l1 = "Leeremos juntos, por primera vez en español,"; l2 = "lo que en verdad dice la Escritura"; l3 = y.practica ? "1440 Primicias · reserva la tuya" : "en el orden de los acontecimientos"; }
     else { l1 = "Ya tengo mi lugar entre"; l2 = "las 1440 Primicias"; l3 = y.fundador ? "Primicia n.º " + fmt(y.n) : "Únete antes del lanzamiento"; }
@@ -9076,7 +9102,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     // (el servidor lo exige igual: Sala.presentes cuenta a los demás en ese capítulo durante los últimos 3 minutos); crear la sala no basta
     if (bonoSalaVivo()) out.push(["×1,25", "Leer en compañía: experiencia ×1,25 mientras alguien más de la sala lee contigo el mismo capítulo", "sala"]);
     if (y.nivel < 20) out.push([y.nivel < 10 ? "+50 %" : "+25 %", "Primeros pasos: experiencia " + (y.nivel < 10 ? "+50 % hasta el nivel 10" : "+25 % hasta el nivel 20"), "ini"]);
-    if (y.lauros && y.lauros.doce) out.push(["+5 %", "Las doce piedras del fundamento: experiencia +5 % para siempre", "doce"]);
+    if (y.lauros && y.lauros.doce) out.push(["+5 %", "Los doce cantos [bloques] del fundamento: experiencia +5 % para siempre", "doce"]);
     return out;
   }
   function pintarMedidor() {
@@ -9269,7 +9295,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (!x._sin) sonar("hallazgo");
     let arte, titulo, texto, compartirT;
     if (x.tipo === "lauro") { arte = lauro(); titulo = h("h3", { text: "¡Un lauro trenzado incorruptible!" }); texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Timoteo 2:5). Durante tus próximos 30 minutos de lectura tu experiencia vale el doble: el tiempo solo corre mientras lees y no vence."; compartirT = "¡Hallé un lauro trenzado incorruptible en Escudriña, el juego de Biblia Exacta!"; }
-    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", { text: piedraNombre(x.i) }); texto = "Hallaste la " + ORDINAL[x.i] + " piedra del fundamento (Ἀpοκάlυpsις 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste las doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", una de las doce piedras del fundamento, en Escudriña, el juego de Biblia Exacta."; }
+    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", { text: piedraNombre(x.i) }); texto = "Hallaste el " + ORDINAL[x.i] + " canto [bloque] del fundamento (Ἀpοκάlυpsις 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste los doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", uno de los doce cantos [bloques] del fundamento, en Escudriña, el juego de Biblia Exacta."; }
     else if (x.tipo === "liga") { arte = gema(x.nvNuevo - 1, true); titulo = h("h3", { text: "¡Subiste a la liga " + ligaNombre(x.nvNuevo) + "!" }); texto = "Quedaste en el puesto " + x.pos + " de " + x.n + " de tu grupo" + (x.h ? ": +" + horas(x.h * 3600e3) + " de experiencia doble y " + x.dr + " dracmas" : "") + ". Esta semana lees en el " + ORDF[x.nvNuevo - 1] + " fundamento."; compartirT = "¡Subí a la liga " + ligaNombre(x.nvNuevo) + " en Escudriña!"; }
     else if (x.tipo === "raro") { const d = ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) || [x.id, "aura", "Accesorio raro", ""]; arte = A.svg(muestraAcc(d[0], d[1]), "0 0 48 48"); titulo = h("h3", { text: d[2] }); texto = "Reuniste 70 fragmentos de papiro marcando «Leído»: se abrió un accesorio raro" + (d[3] ? " (" + d[3] + ")" : "") + ". Ya está en tu Árbol, en la tienda, para llevarlo puesto. Solo se consigue leyendo."; compartirT = "Reuní 70 fragmentos de papiro leyendo la Nueva Voluntad y se abrió «" + d[2] + "» en Escudriña, el juego de Biblia Exacta."; }
     else { arte = emblema(S.yo && S.yo.emb ? S.yo.emb.l : "α", S.yo && S.yo.emb ? S.yo.emb.c : 0, S.yo && S.yo.marco); titulo = h("h3", { text: "Nuevo rango: " + x.rango }); texto = "Llegaste al nivel " + x.nivel + ". Desde ahora compites en la clasificación de " + x.rango + "."; compartirT = "Llegué al rango de " + x.rango + " en Escudriña, el juego de Biblia Exacta."; }
@@ -9636,7 +9662,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const st = (i) => "--ft:" + FT_LIGA[i] + "s;--fd:-" + (i * 0.43).toFixed(2) + "s";
     if (!alTocar) return observarFlotantes(h("div", { class: "jg-escalera-p", role: "img", "aria-label": "Liga " + ligaNombre(nv) + ": " + ORDF[nv - 1] + " fundamento de 12" },
       PIEDRAS.map((p, i) => h("span", { class: "jg-pel" + (i + 1 === nv ? " act" : i + 1 < nv ? " ya" : ""), style: st(i), title: "Liga " + ligaNombre(i + 1) }, ...cuerpo(i)))));
-    return observarFlotantes(h("div", { class: "jg-escalera-p", role: "group", "aria-label": "Las doce ligas: toca una piedra para ver quiénes leen en ese fundamento" },
+    return observarFlotantes(h("div", { class: "jg-escalera-p", role: "group", "aria-label": "Las doce ligas: toca un canto para ver quiénes leen en ese fundamento" },
       PIEDRAS.map((p, i) => h("button", { type: "button", class: "jg-pel" + (i + 1 === nv ? " act ver" : i + 1 < nv ? " ya" : ""), style: st(i), "aria-pressed": i + 1 === nv ? "true" : "false",
         "aria-label": "Liga " + ligaNombre(i + 1) + ", " + ORDF[i] + " fundamento" + (i + 1 === nv ? " (la tuya)" : ""), title: "Liga " + ligaNombre(i + 1),
         onclick: (e) => { const yo = e.currentTarget; for (const b of yo.parentNode.children) { const sel = b === yo; b.classList.toggle("ver", sel); b.setAttribute("aria-pressed", sel ? "true" : "false"); } alTocar(i + 1); } }, ...cuerpo(i)))));
@@ -9690,7 +9716,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   async function pintarLiga(cont) {
     document.title = "Liga de la semana · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu liga…" }));
-    marco(cont, cabSub("Liga de la semana", "La semana va " + textoSemana() + ". Cada liga lleva el nombre de una de las doce piedras del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento.", "#/escudrina/mundo"), zona);
+    marco(cont, cabSub("Liga de la semana", "La semana va " + textoSemana() + ". Cada liga lleva el nombre de uno de los doce cantos [bloques] del fundamento (Ἀpοκάlυpsις 21:19-20): se sube de fundamento en fundamento.", "#/escudrina/mundo"), zona);
     const r = await pedir("/liga");
     if (cont !== S.cont || !zona.isConnected) return;
     if (r.error) return zona.replaceChildren(tarjeta(null, null, h("p", { text: mensaje(r) })));
@@ -9707,7 +9733,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       verZona.replaceChildren(tarjetaFundamento(k, v)); animarCifras(verZona);
     };
     zona.replaceChildren(
-      h("section", { class: "jg-tarjeta jg-heroe" }, resumenLiga(r, false), escaleraPiedras(nv, verFundamento), h("p", { class: "jg-mini jg-esc-nota", text: "Toca una piedra para ver quiénes leen en ese fundamento esta semana." })),
+      h("section", { class: "jg-tarjeta jg-heroe" }, resumenLiga(r, false), escaleraPiedras(nv, verFundamento), h("p", { class: "jg-mini jg-esc-nota", text: "Toca un canto para ver quiénes leen en ese fundamento esta semana." })),
       verZona,
       tarjeta("Premios", null, h("p", { class: "jg-mini", text: PREMIOS_LIGA })));
     animarCifras(zona);
@@ -9794,8 +9820,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const bt = ev.currentTarget; bt.disabled = true;
       const x = await pedir("/compania/nombre", { metodo: "POST", cuerpo: { nombre: nuevo } });
       bt.disabled = false;
-      if (x && x.error === "nombre_espera") { renPista.textContent = mensaje(x); renPista.className = "jg-pista mal"; return; }
-      if (x && !x.error && x.yo) actualizarYo(x.yo);
+      if (x && x.error) { renPista.textContent = x.error === "nombre_espera" && x.faltaMs ? "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + x.faltaMs) + "." : mensaje(x); renPista.className = "jg-pista mal"; return; }
+      if (x && x.yo) actualizarYo(x.yo);
+      else if (x && x.comp && S.yo) { S.yo.comp = Object.assign({}, S.yo.comp || {}, x.comp); A.store.set("jg:yo", S.yo); }
       guardarNomComp(c.cod, nuevo, true);
       A.avisar("Nombre de la compañía actualizado a «" + nuevo + "»");
       repintar();
@@ -9944,7 +9971,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
 
   // ================================================================== lectura en compañía (salas en tiempo real)
-  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "", nombre: "", nomEn: 0, salioManual: false };
+  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "", nombre: "", nomEn: 0, salioManual: false, vence: 0, venceConsultada: "" };
   const limpiarNomSala = (s) => String(s || "").replace(/\s+/g, " ").trim().slice(0, 36);
   const nombresSalaLoc = () => { const m = A.store.get("jg:salaNom", null); return m && typeof m === "object" ? m : {}; };
   const nombreSalaDe = (cod, srvNom) => {
@@ -9969,13 +9996,92 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const falta = ult ? (ult + 864e5) - Date.now() : 0;
     return { ok: falta <= 0, faltaMs: Math.max(0, falta) };
   };
+  // PR #17 · Seguimiento de vencimiento de sala propia (aviso 2 días antes + aviso al cerrar definitivamente a los 7 días)
+  function guardarHistMiSala(d) {
+    if (!A || !A.store) return;
+    if (!d || !d.c) { A.store.set("jg:miSalaHist", null); return; }
+    const prev = A.store.get("jg:miSalaHist", null) || {};
+    const next = {
+      c: String(d.c).toUpperCase(),
+      nombre: limpiarNomSala(d.nombre || (prev.c === d.c ? prev.nombre : "")),
+      creadaEn: Number(d.creadaEn) || (prev.c === d.c ? Number(prev.creadaEn) || 0 : Date.now()),
+      vence: Number(d.vence) || (prev.c === d.c ? Number(prev.vence) || 0 : Date.now() + 7 * 864e5),
+      soyAnf: d.soyAnf !== false,
+    };
+    A.store.set("jg:miSalaHist", next);
+  }
+  function avisoVenceSala() {
+    const hist = A && A.store ? A.store.get("jg:miSalaHist", null) : null;
+    const cod = SL.cod || (hist && hist.c) || "";
+    if (!cod) return null;
+    const anf = SL.miembros.find((x) => x.anf);
+    const soyAnf = SL.cod ? (!anf || anf.j === SL.yo6 || (hist && hist.c === SL.cod && hist.soyAnf)) : !!(hist && hist.soyAnf);
+    if (!soyAnf) return null;
+    const vence = Math.max(Number(SL.cod === cod ? SL.vence : 0) || 0, Number(hist && hist.c === cod ? hist.vence : 0) || 0);
+    if (!vence) return null;
+    const faltaMs = vence - Date.now();
+    if (faltaMs <= 0 || faltaMs > 2 * 864e5) return null;
+    const nom = nombreSalaDe(cod, hist && hist.c === cod ? hist.nombre : "");
+    return { cod, nom, vence, faltaMs, faltaTxt: restaTexto(vence) };
+  }
+  function notificarPreVencimiento() {
+    const av = avisoVenceSala();
+    if (!av || !A || !A.store) return;
+    const k = "av:" + av.cod + ":" + Math.floor(av.vence / 864e5);
+    if (A.store.get("jg:salaPreAv", "") === k) return;
+    A.store.set("jg:salaPreAv", k);
+    const et = av.nom ? "«" + av.nom + "»" : "Sala " + av.cod;
+    if (A.notificar) A.notificar("biex-sala-vence-" + av.cod, "Tu sala cerrará pronto por inactividad", et + " vence en " + av.faltaTxt + " (límite de 7 días). Entra o lee un verso para renovarla.", "#/escudrina/juntos", "sala");
+    try { document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
+  }
+  async function consultarVenceSala(cod) {
+    cod = String(cod || "").toUpperCase();
+    if (!cod || SL.venceConsultada === cod) return;
+    SL.venceConsultada = cod;
+    try {
+      const i = await pedir("/sala/info?c=" + encodeURIComponent(cod), { sin: true });
+      if (i && !i.error) {
+        if (i.nombre) guardarNomSala(cod, i.nombre, false);
+        if (i.vence) {
+          const vTs = Number(i.vence) || 0;
+          if (vTs) {
+            if (cod === SL.cod) SL.vence = vTs;
+            const hist = A.store.get("jg:miSalaHist", null);
+            if (hist && hist.c === cod) guardarHistMiSala(Object.assign({}, hist, { nombre: i.nombre || hist.nombre, vence: vTs }));
+            notificarPreVencimiento();
+            try { document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
+            if (S.cont && /^#\/escudrina\/juntos\b/.test(location.hash)) repintar();
+          }
+        }
+      } else if (i && i.error === "sala") {
+        comprobarSalaVencida(cod);
+      }
+    } catch (e) {}
+  }
+  function comprobarSalaVencida(codCerrada) {
+    if (!A || !A.store) return;
+    const hist = A.store.get("jg:miSalaHist", null);
+    if (!hist || !hist.c || !hist.soyAnf) return;
+    if (codCerrada && hist.c !== codCerrada) return;
+    const yaVencio = !!codCerrada || (hist.vence && hist.vence <= Date.now()) || (!SL.cod && S.yo && S.yo.miSala === null);
+    if (!yaVencio) return;
+    const nom = nombreSalaDe(hist.c, hist.nombre);
+    A.store.set("jg:salaVencida", { c: hist.c, nombre: nom, en: Date.now() });
+    A.store.set("jg:miSalaHist", null);
+    A.avisar("Tu sala " + (nom ? "«" + nom + "»" : hist.c) + " se cerró automáticamente tras 7 días sin actividad. Puedes crear una nueva en Juntos.");
+    try { document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
+    if (S.cont && /^#\/escudrina\/juntos\b/.test(location.hash)) repintar();
+  }
   function entrarSala(cod) {
     cod = String(cod || "").toUpperCase(); if (!/^[2-9A-HJKMNP-Z]{6}$/.test(cod) || !S.token) return false;
     if (SL.cod === cod && SL.ws && SL.ws.readyState <= 1) return true;
     salirSala(true);
-    Object.assign(SL, { cod, cerrada: false, salioManual: false, intentos: 0, miembros: [], seguir: false, guia: false, nombre: nombreSalaDe(cod, ""), nomEn: Number((nombresSalaLoc()[cod] || {}).t) || 0 });
+    const hist = A.store.get("jg:miSalaHist", null);
+    const vencePrev = hist && hist.c === cod ? (Number(hist.vence) || 0) : 0;
+    Object.assign(SL, { cod, cerrada: false, salioManual: false, intentos: 0, miembros: [], seguir: false, guia: false, nombre: nombreSalaDe(cod, ""), nomEn: Number((nombresSalaLoc()[cod] || {}).t) || 0, vence: vencePrev, venceConsultada: "" });
     A.store.set("jg:sala", { c: cod, t: Date.now() });
     pintarSalaPildora();
+    consultarVenceSala(cod);
     conectarSala(); latirPresencia(true); return true;
   }
   // BiEx (10-nov-2026): la sala quedó en «conectando…» hasta recargar. Ahora: tope de 10 s para abrir, latido que detecta
@@ -9988,7 +10094,15 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     // boleto de un minuto, solo para esta sala: la sesión nunca va en la dirección del WebSocket
     let bo; try { bo = await pedir("/sala/boleto", { metodo: "POST", cuerpo: { c: SL.cod } }); } catch (e) { bo = { error: "red" }; }
     SL.conectando = false;
-    if (bo.error) { if (bo.error === "sala") { A.avisar("Esa sala ya no existe"); salirSala(true); } else otra(6000); return; }
+    if (bo.error) {
+      if (bo.error === "sala") {
+        const codPerd = SL.cod, hist = A.store.get("jg:miSalaHist", null);
+        salirSala(true);
+        if (hist && hist.c === codPerd && hist.soyAnf) comprobarSalaVencida(codPerd);
+        else A.avisar("Esa sala cerró o venció tras 7 días de inactividad");
+      } else otra(6000);
+      return;
+    }
     if (SL.cerrada) return;
     let ws; try { ws = new WebSocket(API_ABS.replace(/^http/, "ws") + "/sala/ws?c=" + SL.cod + "&b=" + encodeURIComponent(bo.b)); } catch (e) { otra(6000); return; }
     SL.ws = ws; SL.pong = Date.now();
@@ -10019,11 +10133,21 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   function salirSala(silencio) {
     SL.cerrada = true; if (!silencio) SL.salioManual = true; clearInterval(SL.t);
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
-    SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; SL.nombre = ""; SL.nomEn = 0; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
+    SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; SL.nombre = ""; SL.nomEn = 0; SL.vence = 0; SL.venceConsultada = ""; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
     VIVO.salas = null;
     if (!silencio) { A.avisar("Saliste de la sala"); syncSalasTrasEvento(); latirPresencia(true); }
   }
   function mensajeSala(m) {
+    if (m.t === "cerrada") {
+      const codC = SL.cod, nomC = nombreSalaDe(codC, SL.nombre), hist = A.store.get("jg:miSalaHist", null);
+      salirSala(true);
+      if (SL.abierta) { SL.abierta = false; try { A.cerrarModal(); } catch (e) {} }
+      if (hist && hist.c === codC) A.store.set("jg:miSalaHist", null);
+      if (S.yo && S.yo.miSala && S.yo.miSala.c === codC) S.yo.miSala = null;
+      A.avisar("La sala " + (nomC ? "«" + nomC + "»" : codC || "") + " fue cerrada");
+      syncSalasTrasEvento();
+      return;
+    }
     if (m.t === "abierta") { SL.pub = !!m.on; if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } } syncSalasTrasEvento(); return; }
     if (m.t === "nombre") {
       SL.nombre = limpiarNomSala(m.nombre); if (m.nomEn) SL.nomEn = Number(m.nomEn) || SL.nomEn;
@@ -10035,8 +10159,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (m.abierta !== undefined) SL.pub = !!m.abierta;
       if (m.nombre !== undefined) SL.nombre = limpiarNomSala(m.nombre);
       if (m.nomEn) SL.nomEn = Number(m.nomEn) || SL.nomEn;
+      if (m.vence) SL.vence = Number(m.vence) || SL.vence;
       if (SL.cod) A.store.set("jg:sala", { c: SL.cod, t: Date.now() });
       SL.miembros = m.miembros || []; SL.anf = m.anf || ""; if (m.yo) SL.yo6 = m.yo;
+      const anf = SL.miembros.find((x) => x.anf);
+      if (SL.cod && (!anf || anf.j === SL.yo6)) guardarHistMiSala({ c: SL.cod, nombre: SL.nombre, vence: SL.vence || Date.now() + 7 * 864e5, soyAnf: true });
       const yo = SL.miembros.find((x) => x.j === SL.yo6); SL.guia = !!(yo && yo.guia);
       pintarSalaPildora(); pintarMarcas(); if (S.yo) pintarMedidor();
       if (SL.abierta) { try { A.reemplazarModal(SL.vista); } catch (e) { SL.abierta = false; } }
@@ -10124,7 +10251,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         const bt = ev.currentTarget; bt.disabled = true;
         const r = await pedir("/sala/nombre", { metodo: "POST", cuerpo: { c: SL.cod, nombre: nuevo } });
         bt.disabled = false;
-        if (r && r.error === "nombre_espera") { renPista.textContent = mensaje(r); renPista.className = "jg-pista mal"; return; }
+        if (r && r.error) { renPista.textContent = r.error === "nombre_espera" && r.faltaMs ? "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + r.faltaMs) + "." : mensaje(r); renPista.className = "jg-pista mal"; return; }
         try { if (SL.ws && SL.ws.readyState === 1) SL.ws.send(JSON.stringify({ t: "nombre", nombre: nuevo })); } catch (e) { /* ignorar */ }
         guardarNomSala(SL.cod, nuevo, true);
         pintarSalaPildora(); syncSalasTrasEvento();
@@ -10135,8 +10262,12 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de la sala" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
         h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrar }, h("span", { text: "Guardar" }))),
         renPista) : null;
+      const avVence = soyAnf ? avisoVenceSala() : null;
+      const cajaAv = avVence ? h("div", { class: "jg-sala-av", role: "note" },
+        h("b", { text: "Aviso de cierre automático · falta " + avVence.faltaTxt }),
+        h("span", { text: "Las salas sin actividad se cierran automáticamente a los 7 días. Lee un verso en compañía para mantenerla viva, o podrás crear una nueva cuando cierre." })) : null;
       return A.cajaModal(A.cabModal(nomAct ? nomAct : "Sala " + SL.cod, nomAct ? "Sala " + SL.cod + " · Lectura en compañía" : "Lectura en compañía"), h("div", { class: "jg" },
-        h("p", { class: "jg-mini", text: "Cuando al menos dos personas de la sala leen el mismo capítulo, cada verso les da un 25 % más de experiencia (crear la sala no basta)." }), lista,
+        h("p", { class: "jg-mini", text: "Cuando al menos dos personas de la sala leen el mismo capítulo, cada verso les da un 25 % más de experiencia (crear la sala no basta)." }), cajaAv, lista,
         cajaNom,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.pub !== false, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "abierta", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Sala abierta: aparece en la lista de Juntos y cualquiera puede entrar" })) : null,
         soyAnf ? h("label", { class: "jg-check" }, h("input", { type: "checkbox", checked: SL.guia, onchange: (e) => { try { SL.ws.send(JSON.stringify({ t: "guia", on: e.currentTarget.checked })); } catch (er) { /* ignorar */ } } }), h("span", { text: "Guiar la lectura (quien te siga irá contigo)" }))
@@ -10149,6 +10280,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
             const bt = ev.currentTarget; bt.disabled = true; const cod = SL.cod;
             try { await pedir("/sala/cerrar", { metodo: "POST", cuerpo: { c: cod } }); } catch (e) { /* si el servidor aún no expone /sala/cerrar, igual se sale localmente */ }
             SL.salioManual = true;
+            guardarHistMiSala(null);
             if (S.yo && S.yo.miSala && S.yo.miSala.c === cod) S.yo.miSala = null;
             salirSala(true); SL.abierta = false; A.cerrarModal();
             A.avisar("Sala cerrada"); syncSalasTrasEvento(); latirPresencia(true);
@@ -10255,7 +10387,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       zona.replaceChildren(
         h("div", { class: "jg-salas-cab" }, h("p", { class: "jg-mini jg-salas-n", text: totTxt }), btnRef),
         h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb); const esMia = x.c === SL.cod; const nomS = nombreSalaDe(x.c, x.nombre);
-          const nPers = (x.n | 0) > 0 ? plural(x.n, "persona", "personas") : "en espera · abierta";
+          const nCon = x.conectados != null ? (x.conectados | 0) : (x.n | 0);
+          const nPers = x.estado === "en_espera" || nCon <= 0 ? "en espera · abierta" : plural(nCon, "persona", "personas");
           return h("li", { class: esMia ? "yo" : "" }, emblema(l, c, x.marco || 0, x.foto),
             h("span", { class: "n" },
               h("b", {}, nomS ? nomS + " · " + nombreLC(x.lc) : nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
@@ -10304,18 +10437,39 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const bt = e.currentTarget; bt.disabled = true;
       const lc = R.lib ? R.lib + "." + R.cap : (SL.lcAct || ultimoLC());
       const nom = limpiarNomSala(nomIn.value);
-      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, persistente: ab.checked, lc }, nom ? { nombre: nom } : {}) });
+      const histPrev = A.store.get("jg:miSalaHist", null);
+      const anfAct = SL.miembros.find((x) => x.anf);
+      const codPrev = (SL.cod && (!anfAct || anfAct.j === SL.yo6)) ? SL.cod : (S.yo && S.yo.miSala && S.yo.miSala.c) || (histPrev && histPrev.soyAnf ? histPrev.c : "");
+      let cerroPrev = false;
+      // PR #17: si el creador ya tenía una sala previa abierta, se cierra automáticamente antes de abrir la nueva
+      if (codPrev) {
+        try { const rc = await pedir("/sala/cerrar", { metodo: "POST", cuerpo: { c: codPrev } }); if (rc && !rc.error) cerroPrev = true; } catch (er) {}
+        guardarHistMiSala(null);
+        if (S.yo && S.yo.miSala && S.yo.miSala.c === codPrev) S.yo.miSala = null;
+      }
+      let r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, persistente: ab.checked, lc }, nom ? { nombre: nom } : {}) });
+      if (r && r.error === "max_salas" && codPrev && !cerroPrev) {
+        try { await pedir("/sala/cerrar", { metodo: "POST", cuerpo: { c: codPrev } }); cerroPrev = true; } catch (er) {}
+        r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, persistente: ab.checked, lc }, nom ? { nombre: nom } : {}) });
+      }
       bt.disabled = false;
       if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; }
       SL.pub = r.abierta !== false; SL.lcCreada = lc || ""; VIVO.salas = null;
+      A.store.set("jg:salaVencida", null);
       if (nom) guardarNomSala(r.cod, nom, false);
+      guardarHistMiSala({ c: r.cod, nombre: nom || r.nombre || "", creadaEn: Date.now(), vence: Date.now() + 7 * 864e5, soyAnf: true });
       entrarSala(r.cod);
-      A.avisar((nom ? "Sala «" + nom + "» (" + r.cod + ")" : "Sala " + r.cod) + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace"));
+      A.avisar((cerroPrev ? "Se cerró automáticamente tu sala anterior. " : "") + (nom ? "Sala «" + nom + "» (" + r.cod + ")" : "Sala " + r.cod) + (r.abierta !== false ? " abierta: aparece en la lista y puedes invitar a quien quieras" : " creada: entra quien tenga su enlace"));
       repintar();
       syncSalasTrasEvento();
     };
     const formEntrar = h("div", { class: "jg-form" }, cod, h("button", { class: "btn", type: "button", onclick: async () => { const c = cod.value.trim().toUpperCase(); const i = await pedir("/sala/info?c=" + encodeURIComponent(c), { sin: true });
       if (i.error) { pista.textContent = "Esa sala no existe o ya venció."; pista.className = "jg-pista mal"; return; } entrarSala(c); repintar(); syncSalasTrasEvento(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" })));
+    const vencida = A.store.get("jg:salaVencida", null);
+    const cajaVenc = !SL.cod && vencida && vencida.c ? h("div", { class: "jg-sala-av", role: "status" },
+      h("b", { text: "Tu sala anterior se cerró por inactividad (7 días)" }),
+      h("span", { text: (vencida.nombre ? "«" + vencida.nombre + "» (" + vencida.c + ")" : "La sala " + vencida.c) + " completó 7 días sin actividad y se cerró automáticamente. Crea una nueva abajo cuando quieras volver a leer en compañía." }),
+      h("div", { class: "jg-sala-av-pie" }, h("button", { class: "btn chico", type: "button", onclick: () => { A.store.set("jg:salaVencida", null); repintar(); } }, h("span", { text: "Entendido" })))) : null;
     if (SL.cod) {
       const nomAct = nombreSalaDe(SL.cod, SL.nombre);
       const anf = SL.miembros.find((x) => x.anf);
@@ -10331,7 +10485,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         const bt = ev.currentTarget; bt.disabled = true;
         const r = await pedir("/sala/nombre", { metodo: "POST", cuerpo: { c: SL.cod, nombre: nuevo } });
         bt.disabled = false;
-        if (r && r.error === "nombre_espera") { renPista.textContent = mensaje(r); renPista.className = "jg-pista mal"; return; }
+        if (r && r.error) { renPista.textContent = r.error === "nombre_espera" && r.faltaMs ? "Ya cambiaste el nombre hoy · disponible en " + restaTexto(Date.now() + r.faltaMs) + "." : mensaje(r); renPista.className = "jg-pista mal"; return; }
         try { if (SL.ws && SL.ws.readyState === 1) SL.ws.send(JSON.stringify({ t: "nombre", nombre: nuevo })); } catch (e) { /* ignorar */ }
         guardarNomSala(SL.cod, nuevo, true);
         pintarSalaPildora(); syncSalasTrasEvento();
@@ -10342,17 +10496,23 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de tu sala" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
         h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrarDir }, h("span", { text: "Guardar" }))),
         renPista) : null;
+      const avV = soyAnf ? avisoVenceSala() : null;
+      const cajaAvV = avV ? h("div", { class: "jg-sala-av", role: "note" },
+        h("b", { text: "Cierre automático próximo · falta " + avV.faltaTxt }),
+        h("span", { text: "Tu sala se cerrará automáticamente al cumplir 7 días sin actividad. Lee un verso aquí para mantenerla activa o crea una nueva cuando cierre." })) : null;
       return tarjeta("Leer en compañía", ico("sala"), h("p", {}, "Estás activo en ", h("b", { text: nomAct ? "«" + nomAct + "» (" + SL.cod + ")" : "la sala " + SL.cod }), " con " + plural(SL.miembros.length, "persona", "personas") + ". El bono del +25 % suma únicamente por tu sala activa."),
+        cajaAvV,
         h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Abrir la sala" }))),
         cajaRen,
         h("details", { class: "jg-sala-extra" }, h("summary", { text: "Crear otra sala o entrar por código" }),
           h("div", { class: "jg-sala-extra-c" },
             nomIn,
             h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
-            h("div", { class: "jg-acciones" }, h("button", { class: "btn chico oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear otra sala" }))),
+            h("p", { class: "jg-mini", text: "Al crear una nueva sala, tu sala previa se cierra automáticamente." }),
+            h("div", { class: "jg-acciones" }, h("button", { class: "btn chico oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear nueva sala" }))),
             formEntrar, pista)));
     }
-    return tarjeta("Leer en compañía", ico("sala"), h("p", { text: "Crea una sala con el nombre que elijas y comparte su enlace: verán dónde lee cada quien, en vivo, y mientras lean el mismo capítulo cada verso da un 25 % más de experiencia." }),
+    return tarjeta("Leer en compañía", ico("sala"), cajaVenc, h("p", { text: "Crea una sala con el nombre que elijas y comparte su enlace: verán dónde lee cada quien, en vivo, y mientras lean el mismo capítulo cada verso da un 25 % más de experiencia. Las salas abiertas duran hasta 7 días sin actividad." }),
       nomIn,
       h("label", { class: "jg-check" }, ab, h("span", { text: "Sala abierta (aparece en la lista de salas y cualquiera puede entrar)" })),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: crear }, ico("sala"), h("span", { text: "Crear una sala" }))),
@@ -10470,11 +10630,43 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         ["arriba", "Nivel " + fmt(j.nivel | 0), j.rangoNombre || "Lector", j.fundador ? "Primicia" : "Rango actual", null],
         ["llama", plural(j.pers | 0, "día", "días"), "Perseverancia", "mejor: " + fmt(j.persMejor | 0) + " d", null],
         ["libro", fmt(j.vc | 0), "Versos leídos", j.lk ? plural(j.lk, "lectura plena", "lecturas plenas") : "confirmados", null],
-        ["dracma", piedrasN + " / 12", "Piedras", lauros.doce ? "fundamento completo" : "del fundamento", h("span", { class: "jg-jp-gemas", "aria-hidden": "true" }, Array.from({ length: 12 }, (_, k) => h("i", { class: k < piedrasN ? "on" : "" })))],
+        ["dracma", piedrasN + " / 12", "Cantos", lauros.doce ? "fundamento completo" : "del fundamento", h("span", { class: "jg-jp-gemas", "aria-hidden": "true" }, Array.from({ length: 12 }, (_, k) => h("i", { class: k < piedrasN ? "on" : "" })))],
         ["liga", fmt(lauros.trenzado | 0), "Lauros", lauros.libros ? plural(lauros.libros, "libro completo", "libros completos") : "trenzados", null],
       ];
       const miPoder = S.yo && S.yo.av ? (S.yo.av.poder | 0) : null;
-      const esOtro = S.yo && S.yo.apodo && S.yo.apodo !== (j.apodo || ap);
+      const apDest = j.apodo || ap;
+      const esOtro = !!(S.token && S.yo && S.yo.apodo && S.yo.apodo !== apDest && !/^Lector\b/i.test(apDest));
+      const cajaBen = esOtro ? (() => {
+        const est = h("p", { class: "jg-ben-est", role: "status", text: "Comparte ánimo gratis hoy, o envía dracmas / horas de experiencia doble (desde nivel 3)." });
+        const nvYo = (S.yo && S.yo.nivel) | 0;
+        const enviar = async (tipo, cant, bt) => {
+          bt.disabled = true;
+          est.className = "jg-ben-est"; est.textContent = "Enviando gesto…";
+          const r = await pedir("/jugador/beneficio", { metodo: "POST", cuerpo: { para: apDest, tipo, cant } });
+          bt.disabled = false;
+          if (r.error) { est.className = "jg-ben-est mal"; est.textContent = mensaje(r); return; }
+          if (r.yo) actualizarYo(r.yo);
+          sonar("chispa");
+          est.className = "jg-ben-est ok";
+          const que = tipo === "animo" ? "ánimo" : tipo === "dracmas" ? plural(cant, "dracma", "dracmas") : plural(cant, "hora", "horas") + " de experiencia doble";
+          est.textContent = "Enviaste " + que + " a " + apDest + (r.restan != null ? " · te quedan " + fmt(r.restan) + " hoy." : ".");
+          A.avisar("Gesto enviado a " + apDest);
+        };
+        const btnB = (tipo, cant, txt, reqNv, oro) => h("button", {
+          class: "btn chico" + (oro ? " oro" : ""), type: "button",
+          disabled: reqNv && nvYo < reqNv ? true : null,
+          title: reqNv && nvYo < reqNv ? "Disponible desde el nivel " + reqNv : txt,
+          onclick: (e) => enviar(tipo, cant, e.currentTarget),
+        }, h("span", { text: txt }));
+        return h("section", { class: "jg-ben" },
+          h("div", { class: "jg-ben-cab" }, h("b", { text: "Gesto de compañía" }), h("small", { text: nvYo >= 3 ? "Nivel " + nvYo + " · habilitado" : "Dracmas y ×2 desde nivel 3" })),
+          h("div", { class: "jg-ben-fila" },
+            btnB("animo", 1, "Enviar ánimo", 0, true),
+            btnB("dracmas", 5, "+5 dr.", 3, false),
+            btnB("dracmas", 10, "+10 dr.", 3, false),
+            btnB("xp2", 1, "+1 h ×2", 3, false)),
+          est);
+      })() : null;
       const pie = h("div", { class: "jg-jp-pie" },
         h("span", { text: esOtro && miPoder != null ? "Tu poder actual: " : "Códice Viviente · " }, esOtro && miPoder != null ? h("b", { text: fmt(miPoder) }) : h("b", { text: "Escudriña" })),
         h("span", { text: esOtro && miPoder != null ? (poder > miPoder ? "Te lleva " + fmt(poder - miPoder) + " de poder · ¡gran meta!" : poder === miPoder ? "¡Exactamente al mismo poder!" : "Llevas " + fmt(miPoder - poder) + " de ventaja") : "Cada verso confirmado forja el árbol interior" }));
@@ -10482,6 +10674,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         hero,
         vivo || ultEl,
         h("ul", { class: "jg-jp-grid" }, tiles.map(([ic, v, t, s, ex]) => h("li", {}, h("span", { class: "jg-jp-ico", "aria-hidden": "true" }, ico(ic)), h("b", { text: v }), h("span", { text: t }), h("small", { text: s }), ex))),
+        cajaBen,
         pie);
     };
     const hit = CACHE_JUG.get(ap);
@@ -10499,6 +10692,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
     abrirJugador: abrirJugadorPublico,
+    estadoSalaVence: () => ({ aviso: avisoVenceSala(), vencida: A && A.store ? A.store.get("jg:salaVencida", null) : null }),
     actividadRuta(ruta) { if (S.token) latirPresencia(false, ruta); },
     // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
     retomarSesion() { if (!A) return; const t = A.store.get("jg:t", null); if (!t || t === S.token) return; S.token = t; S.yo = null; latirPresencia(true); if (A.nube) { A.nube.bajado = false; A.nube.bajar(); } if (S.cont && S.cont.isConnected) repintar(); },
