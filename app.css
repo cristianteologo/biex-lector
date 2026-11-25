@@ -116,7 +116,7 @@ a { color: var(--oro); text-underline-offset: 3px; }
 #app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
 #app > .pagina { flex: 1 0 auto; }
 /* (7-nov-2026) la altura mínima solo mientras carga: en las vistas cortas dejaba una franja vacía antes del pie */
-.pagina:has(> .cargando, > .in > .cargando) { min-height: 60vh; }
+.pagina:has(> .cargando, > .in > .cargando) { min-height: 68svh; display: grid; place-items: center; }
 .cargando, .vacio, .error { color: var(--tenue); padding: 60px 16px; text-align: center; font-family: var(--f-ui); }
 .cargando::before { content: ""; display: block; width: 34px; height: 34px; margin: 0 auto 14px; border-radius: 50%; border: 1px solid var(--linea); border-top-color: var(--oro); animation: giro 1s linear infinite; }
 @keyframes giro { to { transform: rotate(360deg); } }
@@ -2220,22 +2220,21 @@ html.lupa-ajuste, html.lupa-ajuste body { scroll-behavior: auto !important; over
 @media (prefers-reduced-motion: reduce) { .btn::after { animation: none !important; } }
 html[data-mov="no"] .btn::after { animation: none !important; }
 @media print { .btn { background: none; box-shadow: none; border-color: currentColor; } }
-/* Portada: acciones simétricas (una principal a lo ancho y las demás en pares iguales) */
-.hero .acciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: min(100%, 600px); margin: 0 auto; }
-.hero .acciones > .btn { min-width: 0; min-height: 48px; padding: 10px 14px; white-space: normal; text-align: center; line-height: 1.3; }
-.hero .acciones > .btn:not(.seguir) { flex-direction: column; gap: 7px; min-height: 76px; border-radius: 22px; font-size: .74rem; letter-spacing: .09em; }
-.hero .acciones > .btn:not(.seguir) svg { width: 19px; height: 19px; opacity: .9; }
+/* Portada: acciones simétricas y proporcionadas (una principal a lo ancho y las demás en columnas equilibradas) */
+.hero .acciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; width: min(100%, 540px); margin: 0 auto; }
+.hero .acciones > .btn { min-width: 0; min-height: 46px; padding: 9px 14px; white-space: normal; text-align: center; line-height: 1.28; }
+.hero .acciones > .btn:not(.seguir) { flex-direction: column; gap: 5px; min-height: 58px; border-radius: 18px; font-size: .73rem; letter-spacing: .09em; }
+.hero .acciones > .btn:not(.seguir) svg { width: 17px; height: 17px; opacity: .9; }
 .hero .acciones > .btn:first-child, .hero .acciones > .btn:nth-child(even):last-child { grid-column: 1 / -1; }
-.hero .acciones > .btn.seguir { padding: 12px 20px 13px; min-height: 64px; }
-.seguir .seg-t { display: grid; gap: 4px; justify-items: center; min-width: 0; }
-.seguir .seg-t small { display: inline-flex; align-items: center; gap: 8px; font-size: .72rem; letter-spacing: .22em; opacity: .9; }
+.hero .acciones > .btn.seguir { padding: 10px 18px 11px; min-height: 56px; border-radius: 20px; }
+.seguir .seg-t { display: grid; gap: 3px; justify-items: center; min-width: 0; }
+.seguir .seg-t small { display: inline-flex; align-items: center; gap: 7px; font-size: .7rem; letter-spacing: .2em; opacity: .9; }
 .seguir .seg-t small svg { width: 14px; height: 14px; }
-.seguir .seg-l { font-family: var(--f-display); font-size: 1.22rem; line-height: 1.15; letter-spacing: .01em; text-transform: none; font-weight: 500; text-wrap: balance; }
+.seguir .seg-l { font-family: var(--f-display); font-size: 1.16rem; line-height: 1.15; letter-spacing: .01em; text-transform: none; font-weight: 500; text-wrap: balance; }
 .seguir .seg-l .trad { font-size: .78em; }
-@media (min-width: 900px) { .hero .acciones { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 980px); } .hero .acciones > .btn:nth-child(even):last-child { grid-column: auto; }
-  /* BiEx (21-nov-2026, con la propuesta de Neon): sin «Seguir leyendo» quedan una principal y tres más: tres columnas iguales
-     (antes, tres botones en una rejilla de cuatro dejaban un hueco a la derecha) */
-  .hero .acciones:not(:has(> .btn:nth-child(5))) { grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 860px); } }
+@media (min-width: 900px) { .hero .acciones { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 880px); } .hero .acciones > .btn:nth-child(even):last-child { grid-column: auto; }
+  /* BiEx (21-nov-2026 + PR #15): sin «Seguir leyendo» quedan una principal y tres más en proporciones armoniosas */
+  .hero .acciones:not(:has(> .btn:nth-child(5))) { grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 760px); } }
 /* Primera carga (10-nov-2026): igual a la de la inserción del sitio oficial (centrada en la pantalla, misma letra y mismo
    giro) y sin el pie a media pantalla, para que al abrir el lector no haya brinco */
 .cargando.inicio { position: fixed; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; margin: 0; pointer-events: none;
@@ -3006,8 +3005,8 @@ html[data-letra="dislexia"] :is(.hero-tit h1, .seccion-cab h2, .panel h1, .panel
 .cn-buscar { flex: 1 1 200px; min-width: 0; font: 400 .88rem/1.3 var(--f-ui); padding: 8px 12px; border-radius: 11px; border: 1px solid var(--linea); background: var(--hoja); color: var(--tinta); }
 .cn-buscar:focus { outline: 2px solid var(--oro); outline-offset: 1px; }
 .cn-foco { flex: 0 1 260px; min-width: 0; }
-.cn-presets { display: flex; flex-wrap: wrap; gap: 6px; }
-.cn-pre { appearance: none; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--linea-2); background: color-mix(in srgb, var(--hoja) 76%, transparent); color: var(--tinta-2); font: 500 .74rem/1.2 var(--f-ui); cursor: pointer; transition: border-color .18s, color .18s, background-color .18s; }
+.cn-presets { display: flex; flex-wrap: wrap; gap: 7px; }
+.cn-pre { appearance: none; min-height: 32px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--linea-2); background: color-mix(in srgb, var(--hoja) 76%, transparent); color: var(--tinta-2); font: 500 .75rem/1.2 var(--f-ui); cursor: pointer; transition: border-color .18s, color .18s, background-color .18s; }
 .cn-pre:hover, .cn-pre[aria-pressed="true"] { border-color: var(--oro); color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 14%, transparent); }
 .cn-pre span[lang="grc"] { font-family: var(--f-griego); font-weight: 500; }
 .cn-escena { position: relative; border-radius: 20px; overflow: hidden; user-select: none; -webkit-user-select: none; border: 1px solid color-mix(in srgb, var(--oro) 48%, var(--linea-2)); background: radial-gradient(95% 75% at 50% 35%, rgba(208, 175, 107, .09), transparent 64%), radial-gradient(75% 65% at 85% 88%, rgba(86, 126, 206, .09), transparent 68%), #060609; box-shadow: inset 0 1px 0 rgba(255, 240, 198, .14), 0 24px 52px -30px rgba(0, 0, 0, .86); }
@@ -3179,11 +3178,12 @@ html[data-letra="dislexia"] :is(.hero-tit h1, .seccion-cab h2, .panel h1, .panel
 .libs-acc-btn svg { width: 15px; height: 15px; flex: none; color: var(--oro-vivo); }
 .libs-acc-btn:hover, .libs-acc-btn:focus-visible { border-color: var(--oro-vivo); transform: translate3d(0, -1px, 0); }
 
-/* Faro pulsante discreto de pendientes (PR #14: 20 % más compacto · cristal líquido · posición dinámica sin colisiones) */
+/* Faro pulsante discreto de pendientes (PR #14 + PR #15: 29×29 px · cristal líquido · 15 % transparencia) */
 .faro-btn {
   position: fixed; z-index: 62; left: max(17px, env(safe-area-inset-left, 0px)); bottom: var(--faro-b, calc(16px + env(safe-area-inset-bottom, 0px)));
   appearance: none; width: 29px; height: 29px; padding: 0; border-radius: 50%; cursor: pointer;
   display: grid; place-items: center;
+  opacity: .85;
   border: 1px solid color-mix(in srgb, var(--oro-vivo) 58%, rgba(255, 255, 255, .28));
   background: radial-gradient(circle at 32% 24%, rgba(255, 248, 224, .34), color-mix(in srgb, var(--hoja-2) 56%, transparent) 58%, color-mix(in srgb, var(--hoja) 72%, transparent));
   -webkit-backdrop-filter: saturate(1.55) blur(14px); backdrop-filter: saturate(1.55) blur(14px);
@@ -3194,8 +3194,8 @@ html[data-letra="dislexia"] :is(.hero-tit h1, .seccion-cab h2, .panel h1, .panel
 }
 .faro-btn::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
 .faro-btn[hidden] { display: none !important; }
-.faro-btn:hover, .faro-btn:focus-visible { transform: scale(1.09); border-color: var(--oro-vivo); }
-.faro-btn:active { transform: scale(.93); }
+.faro-btn:hover, .faro-btn:focus-visible { opacity: 1; transform: scale(1.09); border-color: var(--oro-vivo); }
+.faro-btn:active { opacity: 1; transform: scale(.93); }
 .faro-btn .faro-nucleo { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--oro-vivo); box-shadow: 0 0 10px color-mix(in srgb, var(--oro-vivo) 88%, transparent); }
 .faro-btn .faro-onda { position: absolute; inset: -2.5px; border-radius: 50%; border: 1.3px solid var(--oro-vivo); opacity: 0; pointer-events: none; animation: faroOnda 2.9s cubic-bezier(.2, .65, .3, 1) infinite; will-change: transform, opacity; }
 .faro-btn .faro-cnt { position: absolute; top: -4px; right: -4px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 999px; background: var(--oro-vivo); color: var(--sobre-oro); font: 700 .55rem/14px var(--f-ui); text-align: center; box-shadow: 0 2px 5px rgba(0, 0, 0, .55); font-variant-numeric: tabular-nums; }
@@ -3206,6 +3206,7 @@ html[data-letra="dislexia"] :is(.hero-tit h1, .seccion-cab h2, .panel h1, .panel
   box-shadow: 0 8px 18px -8px rgba(58, 40, 14, .38), inset 0 1px 1px rgba(255, 255, 255, .95);
 }
 html.contemplar .faro-btn, html.con-modal .faro-btn { opacity: 0; pointer-events: none; transform: scale(.86); }
+html.contemplar .faro-btn .faro-onda, html.con-modal .faro-btn .faro-onda, html.oculto .faro-btn .faro-onda { animation-play-state: paused; }
 html[data-mov="no"] .faro-btn .faro-onda { animation: none; display: none; }
 @media (prefers-reduced-motion: reduce) { .faro-btn .faro-onda { animation: none; display: none; } }
 
@@ -3241,12 +3242,12 @@ html[data-mov="no"] .faro-btn .faro-onda { animation: none; display: none; }
 .faro-tip { display: grid; gap: 6px; padding: 10px 12px; border-radius: 13px; border: 1px solid color-mix(in srgb, var(--oro) 24%, var(--linea-2)); background: linear-gradient(135deg, color-mix(in srgb, var(--oro) 9%, transparent), color-mix(in srgb, var(--hoja-2) 72%, transparent)); }
 .faro-tip-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .faro-tip-et { font: 600 .64rem/1 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--oro); }
-.faro-tip-mas { appearance: none; border: 0; background: none; padding: 2px 6px; border-radius: 999px; font: 500 .7rem/1.1 var(--f-ui); color: var(--tinta-2); cursor: pointer; transition: color .18s, background-color .18s; }
+.faro-tip-mas { appearance: none; border: 0; background: none; padding: 3px 8px; border-radius: 999px; font: 500 .71rem/1.15 var(--f-ui); color: var(--tinta-2); cursor: pointer; transition: color .18s, background-color .18s; }
 .faro-tip-mas:hover, .faro-tip-mas:focus-visible { color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 12%, transparent); }
 .faro-tip p { margin: 0; font: 400 .78rem/1.44 var(--f-ui); color: var(--tinta-2); }
 .faro-tip p b { color: var(--tinta); font-weight: 600; }
 .faro-notif-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding-top: 8px; border-top: 1px solid var(--linea-2); font: 400 .74rem/1.3 var(--f-ui); color: var(--tenue); }
-.faro-notif-btn { appearance: none; border: 1px solid color-mix(in srgb, var(--oro) 44%, var(--linea)); background: color-mix(in srgb, var(--oro) 12%, transparent); color: var(--oro-vivo); border-radius: 999px; padding: 4px 10px; font: 500 .7rem/1.15 var(--f-ui); cursor: pointer; }
+.faro-notif-btn { appearance: none; border: 1px solid color-mix(in srgb, var(--oro) 44%, var(--linea)); background: color-mix(in srgb, var(--oro) 12%, transparent); color: var(--oro-vivo); border-radius: 999px; padding: 4px 10px; font: 500 .7rem/1.15 var(--f-ui); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
 .faro-notif-btn:hover, .faro-notif-btn:focus-visible { border-color: var(--oro-vivo); }
 
 /* Resalte visual momentáneo al llegar a una sección desde Tu faro */
@@ -3263,10 +3264,49 @@ html[data-mov="no"] .faro-resaltar { animation: none; outline: 2px solid var(--o
 .app-notif-est i { width: 7px; height: 7px; border-radius: 50%; background: var(--tenue); }
 .app-notif-est.ok { border-color: color-mix(in srgb, var(--oro) 54%, transparent); color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 12%, var(--hoja-2)); }
 .app-notif-est.ok i { background: #6fd4a4; box-shadow: 0 0 8px rgba(111, 212, 164, .75); }
+.app-notif-est.amb { border-color: color-mix(in srgb, var(--oro) 54%, transparent); color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 10%, var(--hoja-2)); }
+.app-notif-est.amb i { background: var(--oro-vivo); box-shadow: 0 0 7px color-mix(in srgb, var(--oro-vivo) 65%, transparent); }
 .app-notif-est.bloq { border-color: color-mix(in srgb, #e07a6a 54%, transparent); color: #e89b8d; }
 .app-notif-est.bloq i { background: #e07a6a; }
+.app-botones .btn { max-width: 100%; white-space: normal; text-align: center; }
 .app-notif-ops { display: grid; gap: 7px; margin: 10px 0 12px; }
 .app-notif-ops label { display: flex; align-items: center; gap: 9px; font: 400 .86rem/1.35 var(--f-ui); color: var(--tinta-2); cursor: pointer; }
 .app-notif-ops input[type="checkbox"] { accent-color: var(--oro); width: 16px; height: 16px; flex: none; }
+
+/* PR #15 · Consejos contextuales discretos por sección (.guia-ctx) */
+.guia-ctx {
+  display: grid; grid-template-columns: 7px minmax(0, 1fr) auto; align-items: center; gap: 6px 10px;
+  padding: 9px 11px 9px 13px; margin: 0 0 14px; border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--oro) 26%, var(--linea-2));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--oro) 8%, var(--hoja-2)), color-mix(in srgb, var(--hoja) 92%, transparent));
+  font: 400 .8rem/1.42 var(--f-ui); color: var(--tinta-2);
+}
+.guia-ctx > i { width: 7px; height: 7px; border-radius: 50%; background: var(--oro-vivo); box-shadow: 0 0 8px color-mix(in srgb, var(--oro-vivo) 68%, transparent); }
+.guia-ctx-t { min-width: 0; }
+.guia-ctx-t b { color: var(--tinta); font-weight: 600; }
+.guia-ctx-acc { display: inline-flex; align-items: center; gap: 3px; flex: none; }
+.guia-ctx-acc button {
+  appearance: none; min-width: 28px; height: 28px; padding: 0 7px; border-radius: 999px;
+  border: 1px solid transparent; background: transparent; color: var(--tenue);
+  font: 500 .74rem/1 var(--f-ui); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  transition: color .18s, border-color .18s, background-color .18s;
+}
+.guia-ctx-acc button:hover, .guia-ctx-acc button:focus-visible { color: var(--oro-vivo); border-color: color-mix(in srgb, var(--oro) 42%, transparent); background: color-mix(in srgb, var(--oro) 10%, transparent); }
+@media (max-width: 480px) { .guia-ctx { align-items: start; } .guia-ctx > i { margin-top: 6px; } }
+
+/* PR #15 · Simetría, proporciones, contraste WCAG AA Pergamino y ahorro de batería */
+@media (max-width: 520px) {
+  .sn-acc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .sn-acc > .btn { justify-content: center; padding-inline: 10px; font-size: .74rem; }
+}
+.seg.tl-seg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; border-radius: 16px; padding: 4px; }
+.seg.tl-seg > button { flex: 1 1 auto; text-align: center; justify-content: center; padding: 8px 11px; }
+:root[data-theme="light"] .cuenta-m { opacity: 1; }
+:root[data-theme="light"] .cuenta-m small { color: #595146; }
+:root[data-theme="light"] .creditos-det > .creditos-tit { color: #595146; opacity: 1; }
+.cn-caja, .jg-arbol-vivo { user-select: none; -webkit-user-select: none; }
+html.oculto .fondo-vivo *, html.oculto .fondo-vivo *::before, html.oculto .banda::before,
+html.con-modal .fondo-vivo *, html.con-modal .fondo-vivo *::before { animation-play-state: paused !important; }
+
 
 

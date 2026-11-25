@@ -1144,11 +1144,30 @@
     if (pend && !porRuta && pend !== rutaVista) mostrarRuta(pend);
     repintarAdelante();
   });
-  // Neon (23 y 24-nov-2026): al salir de una ventana (Biblioteca, Verso, Tu faro) hacia otra ruta, primero guarda la posición
-  // exacta actual, desenrolla los pasos temporales de la ventana sin redibujar ni disparar hashchange residual y luego navega;
-  // así el gesto «Atrás» regresa exactamente a la vista y posición inmediatamente anteriores.
+  // Neon (23, 24 y 25-nov-2026): al salir de una ventana (Biblioteca, Verso, Tu faro) hacia otra ruta, guarda primero la posición
+  // exacta actual y reemplaza EN SU LUGAR la entrada temporal de la ventana con la ruta nueva (sin hacer history.go(-1) + hashchange
+  // que competía en Chrome Android y en marcos incrustados). Así la entrada inmediatamente anterior queda intacta y el gesto «Atrás»
+  // regresa siempre al píxel exacto de la vista previa.
   function irDesdeModal(accion) {
     anotarPos();
+    const navegarEnSitio = (dest) => {
+      const hh = String(dest || "");
+      const actualH = location.hash || "#/";
+      if (hh && hh === actualH) {
+        try { history.replaceState({ bx: RP.clave }, "", location.href); } catch (e) {}
+        return;
+      }
+      try {
+        history.replaceState({}, "", urlHash(hh));
+      } catch (e) {
+        location.hash = hh;
+        return;
+      }
+      pasosApp++;
+      resolverSeguir();
+      prepararPos();
+      enrutar();
+    };
     const ejecutar = () => {
       if (typeof accion === "function") { accion(); return; }
       const dest = String(accion || "");
@@ -1161,22 +1180,34 @@
       return;
     }
     const n = M.estados;
-    M.porRuta = true; M.noGuardar = true; M.alCerrar = null;
+    M.porRuta = true; M.noGuardar = true; M.alCerrar = null; M.estados = 0;
     modal.classList.add("sin-entrada");
     cerrarModal();
     setTimeout(() => modal.classList.remove("sin-entrada"), 80);
+    // Caso principal (Biblioteca, Verso, Tu faro: n === 1): reemplazar la propia entrada de la ventana in-situ.
+    // La entrada [0] (vista previa exacta con su clave bx y desplazamiento guardado) jamás se toca ni dispara popstate/hashchange.
+    if (n === 1 && typeof accion === "string") {
+      navegarEnSitio(accion);
+      return;
+    }
+    // Ventanas con varios niveles (p. ej. Biblioteca → Libro → Capítulo): desenrollar solo n-1 pasos hasta la entrada [1]
+    // y reemplazar esa entrada in-situ con el destino final.
+    const retro = typeof accion === "string" ? n - 1 : n;
+    if (retro <= 0) { navegarEnSitio(accion); return; }
     M.saltando = true; M.cortar = true; M.destino = null;
     M.sinRuta = { cualquiera: true, url: location.href, hasta: performance.now() + 950 };
     let hecho = false;
     const irAhora = () => {
       if (hecho) return; hecho = true;
       M.saltando = false; M.irTrasSalto = null;
-      // Esperar un turno para que cualquier hashchange residual del history.go(-n) (p. ej. vistaVerso #/JHN/1/l/14 → #/JHN/1)
-      // sea absorbido limpiamente por M.sinRuta antes de escribir el nuevo destino
-      setTimeout(() => { M.sinRuta = null; ejecutar(); }, 0);
+      setTimeout(() => {
+        M.sinRuta = null;
+        if (typeof accion === "string") navegarEnSitio(accion);
+        else ejecutar();
+      }, 0);
     };
     M.irTrasSalto = irAhora;
-    try { history.go(-n); setTimeout(irAhora, 420); } catch (e) { irAhora(); }
+    try { history.go(-retro); setTimeout(irAhora, 420); } catch (e) { irAhora(); }
   }
   // Neon › Argon (23-nov-2026): sincroniza la ventana abierta con el teclado virtual en teléfonos (visualViewport) sin sobresaltos:
   // ancla la posición visual de .mk-nota cuando cargan bloques asíncronos arriba y alinea una sola vez al asentarse el teclado.
@@ -1973,7 +2004,9 @@
     // elimina el parpadeo blanco de «Cargando…» mientras se dibuja la nueva vista
     const mismoCap = hojaHecha === c + "/" + cap && !!$(".libro", vista());
     const enSitio = RP.anclaEnSitio != null && mismoCap;
-    const sinVeloCarga = enSitio || (mismoCap && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"])));
+    // si el libro (y el análisis si aplica) ya está en RAM, no borrar el capítulo ni mostrar spinner de carga (0 flasheos)
+    const yaEnRam = !!cache["datos/libros/" + c + ".json"] && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"]));
+    const sinVeloCarga = enSitio || yaEnRam || (mismoCap && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"])));
     const anclaS = RP.anclaEnSitio; RP.anclaEnSitio = null;
     esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
     if (mismo) { if (v == null) { if (!intentarRestaurar()) velar(false); } else enfocar(v, i); juegoCapitulo(c, cap, modo); return; }
@@ -3259,7 +3292,7 @@
     }
     aplicarFilas(); pintar();
     esc.lista = lista;
-    return [lentes, claves, encabezado(b, cap, "a"), cont, finCap(b, cap, "a")];
+    return [lentes, claves, guiaSeccion("analisis"), encabezado(b, cap, "a"), cont, finCap(b, cap, "a")];
   }
   function abrirPalabraAnalisis(v, i) {
     const b = libroDe(esc.libro), cap = esc.cap;
@@ -4293,7 +4326,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "63b5724f4f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "5fe6e753d5", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4356,6 +4389,7 @@
         fechaHoraJerusalen,
         notificar: (tag, tit, cue, ruta, cat) => BIEX_NOTIF.enviar(tag, tit, cue, ruta, cat),
         ubicarFaro: () => FARO.ubicar(),
+        guiaSeccion: (sec) => guiaSeccion(sec),
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
         irA: (hh) => { location.hash = hh; },
@@ -4400,9 +4434,17 @@
   function vistaJuego(sub) {
     navActual("");
     document.title = "Escudriña · BiEx";
-    vista().replaceChildren(cargando("Abriendo Escudriña…"));
-    saltarA(0);
     const ruta = rutaVista;
+    // PR #15 (0 flasheos): si juego.js ya está en memoria, delegar directo sin borrar #vista ni mostrar spinner;
+    // marco() en juego.js conserva la altura anterior y realiza el cambio limpio sin brincos del pie.
+    if (window.BiExJuego && JGX) {
+      if (!restaurando()) saltarA(0);
+      Promise.resolve(window.BiExJuego.vista(vista(), sub))
+        .catch(() => { if (rutaVista === ruta) vista().replaceChildren(fallo("No se pudo abrir Escudriña.")); });
+      return;
+    }
+    vista().replaceChildren(cargando("Abriendo Escudriña…"));
+    if (!restaurando()) saltarA(0);
     cargarJuego().then((J) => { if (rutaVista === ruta) return J.vista(vista(), sub); })
       .catch(() => { if (rutaVista === ruta) vista().replaceChildren(fallo("No se pudo abrir Escudriña.")); });
   }
@@ -4667,8 +4709,7 @@
   async function vistaConcordancia() {
     document.title = "Concordancia · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Preparando la concordancia…"));
-    alTope();
+    if (!T || !LX) { vista().replaceChildren(cargando("Preparando la concordancia…")); alTope(); }
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
     try { await lexico(); } catch (e) { /* sin el léxico de estudio: la búsqueda por Strong no estará */ }
     let X = null; try { X = await prepararBuscador(); } catch (e) { X = null; }
@@ -4704,8 +4745,7 @@
   }
   async function vistaLema(li, libroAbrir) {
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Cargando el lema…"));
-    alTope();
+    if (!T || !LX) { vista().replaceChildren(cargando("Cargando el lema…")); alTope(); }
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
     try { await lexico(); } catch (e) { /* sin el léxico de estudio */ }
     if (!(li >= 0 && li < T.L.length)) return noEncontrado();
@@ -5123,8 +5163,7 @@
   async function vistaRaices() {
     document.title = "Diccionario de raíces · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Preparando el diccionario de raíces…"));
-    alTope();
+    if (!LX) { vista().replaceChildren(cargando("Preparando el diccionario de raíces…")); alTope(); }
     try { await lexico(); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el diccionario.")); return; }
     let X = null; try { X = await prepararBuscador(); } catch (e) { X = null; }
     const buscar = buscadorLemas(X);
@@ -5174,8 +5213,7 @@
   }
   async function vistaRaiz(r) {
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Cargando la raíz…"));
-    alTope();
+    if (!LX) { vista().replaceChildren(cargando("Cargando la raíz…")); alTope(); }
     try { await lexico(); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el diccionario.")); return; }
     if (!(r >= 0 && r < T.L.length)) return noEncontrado();
     if (LX.F[r] !== r) { r = LX.F[r]; try { history.replaceState(history.state, "", urlHash("#/raiz/" + r)); } catch (e) { /* ignorar */ } }
@@ -5213,8 +5251,7 @@
   async function vistaAnalizador() {
     document.title = "Analizar texto griego · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Preparando el analizador…"));
-    alTope();
+    if (!T || !LX) { vista().replaceChildren(cargando("Preparando el analizador…")); alTope(); }
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
     try { await lexico(); } catch (e) { /* sin el léxico de estudio: el análisis sigue */ }
     if (!T.idxFormas) {
@@ -5290,8 +5327,7 @@
   async function vistaBuscar() {
     document.title = "Búsqueda morfológica · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Preparando la búsqueda…"));
-    alTope();
+    if (!T) { vista().replaceChildren(cargando("Preparando la búsqueda…")); alTope(); }
     try { await tablas(); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos.")); return; }
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
       barraVolver(),
@@ -5464,11 +5500,12 @@
       }
     };
     const mapa = h("div", { class: "tl-mapa" }, lienzo);
-    const seg = h("div", { class: "seg", role: "group", "aria-label": "Qué mostrar" }, [["todo", "Todo"], ["hechos", "Acontecimientos"], ["escritos", "Escritura de los libros"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(ver === k), onclick: () => { store.set("cronoVer", k); vistaCronologia(foco); } }, t)));
+    const seg = h("div", { class: "seg tl-seg", role: "group", "aria-label": "Qué mostrar" }, [["todo", "Todo"], ["hechos", "Acontecimientos"], ["escritos", "Escritura de los libros"]].map(([k, t]) => h("button", { type: "button", "aria-pressed": String(ver === k), onclick: () => { store.set("cronoVer", k); vistaCronologia(foco); } }, t)));
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Nueva Voluntad · c. 7 " + ERA_A + " – 70 " + ERA_D }), h("h1", { class: "texto", text: "Línea del tiempo" }),
         h("p", { class: "nota-ui tl-intro", text: "Lo que narra la Nueva Voluntad y cuándo se escribió cada libro. Todos se escribieron antes del año 70, cuando ῾Hrṓmē [Roma] destruyó Yᵉrūshāláyim [Jerusalén] y su templo, tal como se había anunciado: el propio texto da las claves para entender lo que anuncia, y la historia lo confirma." })),
+      guiaSeccion("cronologia"),
       h("div", { class: "tl-conj", "data-sec": "Vista general" }, mapa, info,
         h("div", { class: "tl-ley" }, h("span", { class: "ev", text: "Acontecimiento" }), h("span", { class: "es", text: "Se escribe un libro" }), h("span", { class: "clave", text: "Año 70 " + ERA_D }), h("span", { class: "nota-era", text: ERA_A + ": antes del Hijo de Dios · " + ERA_D + ": después del Hijo de Dios" }))),
       h("div", { class: "tl-ctl" }, seg),
@@ -5865,6 +5902,7 @@
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Mattáy, Μᾶrκος y Lουκᾶς · el problema sinóptico" }), h("h1", { class: "texto", text: "La fuente Q" }),
         pars(X.lead, "q-lead"), h("p", { class: "q-aviso" }, X.aviso),
         h("nav", { class: "q-indice", "aria-label": "En esta página" }, indice.map(([id, t]) => h("button", { type: "button", class: "q-chip", onclick: () => ir(id) }, t)))),
+      guiaSeccion("fuente-q"),
       sec("q-problema", "1 · El problema", "Tres relatos que se conocen entre sí", pars(X.problema), h("ul", { class: "q-puntos" }, X.puntos.map((t) => h("li", {}, qTexto(t)))), barras,
         h("p", { class: "nota-ui", text: "Cálculo automático: un verso cuenta como paralelo cuando comparte con otro verso varias palabras griegas o frases breves; los versos sueltos dentro de un pasaje paralelo también cuentan. Es una aproximación." })),
       sec("q-sinopsis", "2 · La doble tradición", "Mattáy y Lουκᾶς, palabra por palabra", pars(X.sinopsis),
@@ -6242,14 +6280,17 @@
     const LO = librosEnOrden(), i = LO.indexOf(b), o = LO[i + dir];
     return o ? rutaCap(o, dir > 0 ? 1 : o.caps.length, esc.modo) : null;
   }
+  const zonaPellizcoPropio = (el) => !!(el && el.closest && el.closest(".jg-arbol-vivo, .cn-caja, .cn-lienzo, .tl-mapa, [data-sin-pellizco]"));
   document.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2 && PELLIZCO) {
+      if (zonaPellizcoPropio(e.target) || zonaPellizcoPropio(e.touches[0] && e.touches[0].target) || zonaPellizcoPropio(e.touches[1] && e.touches[1].target)) { gesto = null; pinza = null; return; }
       gesto = null;
       clearTimeout(tInm); // la barra no cambia mientras dura el pellizco (la posición del texto depende de ella)
       const raiz = modal.open ? $(".m-cuerpo", modal) : $("#vista");
       if (!raiz) return;
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2, cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       const bajo = !modal.open && document.elementFromPoint(cx, cy);
+      if (zonaPellizcoPropio(bajo)) { pinza = null; return; }
       const vEl = bajo && bajo.closest && bajo.closest("#vista [id^='v']");
       const rv = vEl ? vEl.getBoundingClientRect() : null;
       pinza = { d0: distT(e.touches), cx, cy, paso: 0, raiz, v: vEl && /^v\d+$/.test(vEl.id) ? +vEl.id.slice(1) : null, frac: rv && rv.height ? (cy - rv.top) / rv.height : 0 };
@@ -6375,6 +6416,7 @@
   }
   window.addEventListener("wheel", (e) => {
     if (!e.ctrlKey) return;
+    if (zonaPellizcoPropio(e.target)) return;
     e.preventDefault(); // sin la ampliación del navegador (sin tope)
     if (gestoSafari || !e.deltaY) return;
     const ahora = performance.now();
@@ -6392,13 +6434,14 @@
   }, { passive: false });
   // Safari en el Mac (gestos propios del panel táctil): un gesto, un paso
   if (!("ontouchstart" in window)) {
-    document.addEventListener("gesturestart", (e) => { e.preventDefault(); gestoSafari = { paso: 0 }; gestoN++; });
+    document.addEventListener("gesturestart", (e) => { if (zonaPellizcoPropio(e.target)) return; e.preventDefault(); gestoSafari = { paso: 0 }; gestoN++; });
     document.addEventListener("gesturechange", (e) => {
+      if (!gestoSafari) return;
       e.preventDefault();
-      if (!gestoSafari || gestoSafari.paso || !(e.scale > 1.12 || e.scale < 0.89)) return;
+      if (gestoSafari.paso || !(e.scale > 1.12 || e.scale < 0.89)) return;
       gestoSafari.paso = 1; pasoGesto(e.scale > 1 ? 1 : -1, e.clientX || innerWidth / 2, e.clientY || innerHeight / 2);
     });
-    document.addEventListener("gestureend", (e) => { e.preventDefault(); gestoSafari = null; });
+    document.addEventListener("gestureend", (e) => { gestoSafari = null; });
   }
   // Ctrl + 0 vuelve también la lupa a su tamaño normal; si cambia el ancho de la ventana, el ancho fijo se mide de nuevo
   document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "0" && nLupa) ponerLupa(0, innerWidth / 2, innerHeight / 2); });
@@ -6541,8 +6584,9 @@
     })().finally(() => { descarga = null; descargaCompleta = false; });
     return descarga;
   }
-  // PR #14 · Gestor de notificaciones nativas (navegador y app instalada PWA, opt-in respetuoso sin spam)
+  // PR #14 + PR #15 · Gestor de notificaciones nativas de máxima compatibilidad (Chrome/Vivaldi/Edge/Firefox/Safari PWA/Android SW + guía clara en marco incrustado Wix e iOS)
   const BIEX_NOTIF = {
+    esIOS() { return /iP(hone|ad|od)/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); },
     leer() {
       const d = store.get("notif", null);
       return Object.assign({ on: false, coloso: true, lectura: true, cosecha: true }, d && typeof d === "object" ? d : {});
@@ -6553,26 +6597,60 @@
       this.sincronizarSW(n);
       return n;
     },
-    soportada() { return !EMBED && typeof Notification !== "undefined"; },
-    permiso() { return this.soportada() ? Notification.permission : "unsupported"; },
-    activa() { return this.soportada() && Notification.permission === "granted" && !!this.leer().on; },
+    estadoSoporte() {
+      const tieneAPI = typeof Notification !== "undefined";
+      // Si ya fue concedido en el origen (incluso visto desde el marco incrustado), funciona directo
+      if (tieneAPI && Notification.permission === "granted") return "ok";
+      if (EMBED) return "embed";
+      if (!window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return "inseguro";
+      if (!tieneAPI) return this.esIOS() && !enApp() ? "ios_safari" : "no_soportado";
+      return "ok";
+    },
+    soportada() { return this.estadoSoporte() === "ok"; },
+    permiso() { return typeof Notification !== "undefined" ? Notification.permission : "unsupported"; },
+    activa() { return typeof Notification !== "undefined" && Notification.permission === "granted" && !!this.leer().on; },
+    async asegurarSW() {
+      if (!puedeSW()) return null;
+      try {
+        if (swReg) return swReg;
+        let reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) reg = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });
+        swReg = reg;
+        return await navigator.serviceWorker.ready.catch(() => reg);
+      } catch (e) { return swReg || null; }
+    },
     async sincronizarSW(cfg) {
       if (!puedeSW()) return;
       const n = cfg || this.leer();
       try { await alSW({ tipo: "notifConfig", on: n.on && this.permiso() === "granted", coloso: n.coloso, lectura: n.lectura, cosecha: n.cosecha }, 2500); } catch (e) {}
     },
+    async pedirPermiso() {
+      if (typeof Notification === "undefined") return "unsupported";
+      if (Notification.permission !== "default") return Notification.permission;
+      try {
+        // Compatibilidad dual: Promesa moderna + callback de versiones anteriores de Safari/WebKit
+        let res = null;
+        const p = new Promise((resolve) => {
+          const ret = Notification.requestPermission((perm) => resolve(perm));
+          if (ret && typeof ret.then === "function") ret.then(resolve, () => resolve("denied"));
+        });
+        res = await p;
+        return res || Notification.permission || "denied";
+      } catch (e) { return Notification.permission || "denied"; }
+    },
     async activar() {
-      if (!this.soportada()) { avisar("Este navegador no permite avisos del dispositivo."); return false; }
-      let perm = Notification.permission;
-      if (perm === "default") {
-        try { perm = await Notification.requestPermission(); } catch (e) { perm = "denied"; }
-      }
+      const est = this.estadoSoporte();
+      if (est === "embed") { avisar("Abre BiEx en su dirección directa para conceder el permiso de avisos."); return false; }
+      if (est === "ios_safari") { avisar("En iPhone y iPad, agrega BiEx a tu pantalla de inicio (Compartir › Agregar a inicio) para habilitar los avisos."); return false; }
+      if (est !== "ok") { avisar("Este navegador no permite avisos del dispositivo."); return false; }
+      const perm = await this.pedirPermiso();
       if (perm !== "granted") {
         this.guardar({ on: false });
         avisar(perm === "denied" ? "Los avisos están bloqueados en los ajustes de tu navegador." : "No se activaron los avisos.");
         return false;
       }
       this.guardar({ on: true });
+      await this.asegurarSW();
       programarPeriodico();
       await this.enviar("biex-bienvenida", "Avisos de Biblia Exacta activos", "Recibirás recordatorios respetuosos de El Coloso, tu cosecha y tu lectura.", "#/escudrina", "sistema", true);
       return true;
@@ -6582,7 +6660,7 @@
       avisar("Avisos del dispositivo pausados.");
     },
     async enviar(tag, titulo, cuerpo, ruta, categoria, forzar) {
-      if (!this.soportada() || Notification.permission !== "granted") return false;
+      if (typeof Notification === "undefined" || Notification.permission !== "granted") return false;
       const cfg = this.leer();
       if (!forzar) {
         if (!cfg.on) return false;
@@ -6595,11 +6673,10 @@
       const icoUrl = new URL("iconos/icon-192.png", location.href).href;
       const opts = { body: String(cuerpo || ""), icon: icoUrl, badge: icoUrl, tag: clave, renotify: !!forzar, data: { ruta: ruta || "#/" } };
       let ok = false;
+      // En Chrome/Vivaldi/Edge de Android es obligatorio pasar por ServiceWorkerRegistration.showNotification()
       try {
-        if (puedeSW()) {
-          const r = swReg || (await navigator.serviceWorker.ready.catch(() => null));
-          if (r && r.showNotification) { await r.showNotification(titulo, opts); ok = true; }
-        }
+        const reg = await this.asegurarSW();
+        if (reg && reg.showNotification) { await reg.showNotification(titulo, opts); ok = true; }
       } catch (e) {}
       if (!ok) {
         try {
@@ -6617,7 +6694,7 @@
       return ok;
     },
   };
-  function vistaApp() {
+  function vistaApp(queryStr) {
     document.title = "Instalar y leer sin conexión · BiEx";
     navActual("");
     const estado = h("div", { class: "app-estado" });
@@ -6626,7 +6703,7 @@
     let fijo = false; // un mensaje final (listo, borrado, error) no lo pisa el recuento
     const pintarAvance = (hecho, total) => { const p = total ? Math.min(100, (100 * hecho) / total) : 0; barra.firstChild.style.width = p.toFixed(1) + "%"; barra.setAttribute("aria-valuenow", String(Math.round(p))); if (!fijo) txt.textContent = mb(hecho) + " de " + mb(total) + " · " + Math.round(p) + " %"; };
     const tarjeta = (ico, t, d, ...hijos) => h("section", { class: "app-card", "data-sec": t }, h("div", { class: "app-ico" }, svg(ico)), h("div", { class: "app-cuerpo" }, h("h2", { text: t }), h("p", { text: d }), ...hijos));
-    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const ios = BIEX_NOTIF.esIOS();
     let instalar;
     if (EMBED || !puedeSW()) {
       instalar = tarjeta(ICO.externo, "Abrir BiEx como aplicación", "Para instalar BiEx con su propio ícono y guardar todo su contenido en tu dispositivo, ábrelo en su dirección de aplicación. Allí verás el botón «Instalar» (o, en iPhone y iPad, Compartir › «Agregar a inicio»).",
@@ -6676,36 +6753,48 @@
     }
     const sinConexion = puedeSW() ? tarjeta(ICO.nube, "Leer sin conexión", "Descarga una sola vez todo el lector: los 27 libros, el análisis de cada palabra, los manuscritos, el buscador, la fuente Q y la guía con su voz. Después se puede navegar sin internet; con conexión, todo se sigue actualizando solo.",
       h("div", { class: "app-desc" }, barra, txt, h("div", { class: "app-botones" }, bDesc, bBorrar)), estado) : null;
-    // PR #14 · Tarjeta de notificaciones reales del navegador / app instalada
+    // PR #14 + PR #15 · Tarjeta de notificaciones reales del navegador / app instalada (compatibilidad total)
     const notifZona = h("div", {});
     const pintarNotif = () => {
-      const sop = BIEX_NOTIF.soportada(), perm = BIEX_NOTIF.permiso(), cfg = BIEX_NOTIF.leer(), act = BIEX_NOTIF.activa();
-      const estCls = act ? " ok" : perm === "denied" ? " bloq" : "";
-      const estTxt = !sop ? (ios && !enApp() ? "En iPhone/iPad: primero agrégala a inicio" : "No disponible en este navegador")
+      const est = BIEX_NOTIF.estadoSoporte(), perm = BIEX_NOTIF.permiso(), cfg = BIEX_NOTIF.leer(), act = BIEX_NOTIF.activa();
+      const estCls = act ? " ok" : est === "embed" || est === "ios_safari" ? " amb" : perm === "denied" ? " bloq" : "";
+      const estTxt = est === "embed" ? "Disponibles en la dirección directa de la app"
+        : est === "ios_safari" ? "En iPhone/iPad: primero agrégala a inicio"
+        : est === "inseguro" ? "Requiere conexión segura (https)"
+        : est !== "ok" ? "Navegador sin soporte de notificaciones"
         : act ? "Activadas en este dispositivo"
         : perm === "denied" ? "Bloqueadas en el navegador"
-        : "Sin activar";
+        : "Listas para activar";
       const chk = (k, lbl) => {
         const inp = h("input", { type: "checkbox", checked: cfg[k] !== false ? true : null, onchange: () => { BIEX_NOTIF.guardar({ [k]: inp.checked }); avisar("Preferencia de avisos guardada"); } });
         return h("label", {}, inp, h("span", { text: lbl }));
       };
-      notifZona.replaceChildren(
+      notifZona.replaceChildren(...[
         h("span", { class: "app-notif-est" + estCls }, h("i", { "aria-hidden": "true" }), h("span", { text: estTxt })),
-        act ? h("div", { class: "app-notif-ops" },
+        ...(est === "embed" ? [
+          h("p", { class: "nota-ui", text: "Estás abriendo BiEx dentro del marco del sitio oficial: por seguridad, los navegadores solo permiten activar notificaciones desde la dirección directa (bibliaexacta.pages.dev) o desde la aplicación instalada." }),
+          h("div", { class: "app-botones" }, h("a", { class: "btn oro", href: APP_URL + "#/app?avisos=1", target: "_blank", rel: "noopener" }, svg(ICO.campana), h("span", { text: "Abrir BiEx y activar avisos" }))),
+        ] : []),
+        est === "ios_safari" ? h("ol", { class: "app-pasos" },
+          h("li", { text: "En Safari, toca Compartir (cuadrado con flecha hacia arriba) y elige «Agregar a inicio»." }),
+          h("li", { text: "Abre BiEx desde el nuevo ícono en tu pantalla de inicio y vuelve a esta tarjeta para activar los avisos." })) : null,
+        est === "ok" && act ? h("div", { class: "app-notif-ops" },
           chk("coloso", "El Coloso de la Tradición (apertura e incursión en vivo)"),
           chk("cosecha", "Cesta de la cosecha lista para recoger"),
           chk("lectura", "Recordatorio suave diario de lectura")) : null,
-        sop ? h("div", { class: "app-botones" },
+        est === "ok" ? h("div", { class: "app-botones" },
           act
             ? [
-              h("button", { class: "btn oro", type: "button", onclick: () => BIEX_NOTIF.enviar("biex-prueba", "Prueba de aviso · Biblia Exacta", "Las notificaciones de tu aplicación instalada funcionan correctamente.", "#/escudrina", "sistema", true) }, svg(ICO.campana), h("span", { text: "Probar notificación" })),
+              h("button", { class: "btn oro", type: "button", onclick: () => BIEX_NOTIF.enviar("biex-prueba", "Prueba de aviso · Biblia Exacta", "Las notificaciones de tu aplicación funcionan correctamente.", "#/escudrina", "sistema", true) }, svg(ICO.campana), h("span", { text: "Probar notificación" })),
               h("button", { class: "btn chico", type: "button", onclick: () => { BIEX_NOTIF.desactivar(); pintarNotif(); } }, h("span", { text: "Pausar avisos" })),
             ]
             : h("button", { class: "btn oro", type: "button", disabled: perm === "denied", onclick: async () => { await BIEX_NOTIF.activar(); pintarNotif(); } }, svg(ICO.campana), h("span", { text: perm === "denied" ? "Bloqueadas en ajustes" : "Activar notificaciones" }))) : null,
-        perm === "denied" ? h("p", { class: "nota-ui", text: "Para habilitarlas de nuevo, toca el candado junto a la dirección web (o Ajustes de la app › Notificaciones en tu teléfono) y permite los avisos para bibliaexacta.pages.dev." }) : null);
+        est === "ok" && perm === "denied" ? h("p", { class: "nota-ui", text: "Para habilitarlas de nuevo, toca el candado junto a la dirección web (o Ajustes de la app › Notificaciones en tu teléfono) y permite los avisos para bibliaexacta.pages.dev." }) : null,
+      ].filter(Boolean));
     };
     pintarNotif();
     const notifTarj = tarjeta(ICO.campana, "Avisos y notificaciones", "Recibe avisos reales en tu navegador o aplicación instalada cuando despierte El Coloso de la Tradición, tu cesta esté llena o quieras un recordatorio sereno de lectura. Sin exceso ni ruido.", notifZona);
+    notifTarj.id = "app-avisos";
     // AA12 (BiEx, 23-nov-2026): guía de widget de escritorio (nativo en Windows 11 con Edge) y accesos rápidos por plataforma
     const guiaWd = (tit, et, pasos, abierto) => h("details", { open: abierto ? "" : null },
       h("summary", {}, h("span", { text: tit }), h("small", { text: et })),
@@ -6739,7 +6828,8 @@
       h("div", { class: "nota-guarda", role: "note", "data-sec": "Marcadores y notas" }, svg(ICO.marcador), h("p", {}, h("b", { text: "Tus marcadores y notas. " }), ...avisoGuarda())),
       h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
     if (sinConexion) pintarEstado();
-    alTope();
+    if (queryStr && /avisos=1/.test(queryStr)) FARO.enfocar("#app-avisos");
+    else alTope();
   }
   // La copia se mantiene al día sola: al abrir BiEx (8 s después) y al volver a la app tras una hora o más, se consulta
   // la publicación vigente y se baja en segundo plano solo lo que cambió (nunca con «ahorro de datos»). Si lo abierto
@@ -6787,13 +6877,15 @@
       }
     } catch (e) { ultVersion = 0; }
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") enCalma(() => revisarVersion(45e3), 1500); });
+  const syncOculto = () => document.documentElement.classList.toggle("oculto", !!document.hidden);
+  syncOculto();
+  document.addEventListener("visibilitychange", () => { syncOculto(); if (document.visibilityState === "visible") enCalma(() => revisarVersion(45e3), 1500); });
   document.addEventListener("resume", () => enCalma(() => revisarVersion(0), 1500));
   window.addEventListener("pageshow", (e) => { if (e.persisted) enCalma(() => revisarVersion(0), 1500); });
   window.addEventListener("focus", () => revisarVersion(120e3));
   window.addEventListener("online", () => setTimeout(() => revisarVersion(0), 2000));
   window.addEventListener("hashchange", () => revisarVersion(180e3));
-  setInterval(() => revisarVersion(15 * 60e3 - 5000), 60e3);
+  setInterval(() => { if (!document.hidden) revisarVersion(15 * 60e3 - 5000); }, 60e3);
   // Aviso discreto: hay una versión publicada más reciente que la que está abierta
   function avisoVersion() {
     if ($(".aviso-version")) return;
@@ -8054,12 +8146,12 @@
   function motorConstelacion(cont, grafo, opts) {
     const o = opts || {};
     const mini = !!o.mini;
-    const canvas = h("canvas", { class: "cn-lienzo", "aria-label": "Mapa interactivo de conexiones" });
+    const canvas = h("canvas", { class: "cn-lienzo", "data-sin-pellizco": "1", "aria-label": "Mapa interactivo de conexiones" });
     const estBadge = h("span", { class: "cn-est" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Calculando constelación…" }));
     const bMas = h("button", { class: "cn-zbtn", type: "button", title: "Acercar", "aria-label": "Acercar", text: "+" });
     const bMen = h("button", { class: "cn-zbtn", type: "button", title: "Alejar", "aria-label": "Alejar", text: "−" });
     const bCen = h("button", { class: "cn-zbtn wide", type: "button", title: "Centrar mapa", text: "Centrar" });
-    const escena = h("div", { class: "cn-escena" + (mini ? " cn-mini" : "") },
+    const escena = h("div", { class: "cn-escena" + (mini ? " cn-mini" : ""), "data-sin-pellizco": "1" },
       h("div", { class: "cn-campo" },
         h("div", { class: "cn-zoom" }, bMen, bMas, bCen),
         estBadge,
@@ -8146,11 +8238,22 @@
     const limites = () => {
       if (!N.length || !W || !H) return { x0: -120, x1: 120, y0: -120, y1: 120, cx: 0, cy: 0, kFit: 1 };
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      // PR #14: ~35 % menos espacio vacío exterior para llenar el lienzo con armonía
-      for (const n of N) { x0 = Math.min(x0, n.x - 26); x1 = Math.max(x1, n.x + 26); y0 = Math.min(y0, n.y - 22); y1 = Math.max(y1, n.y + 30); }
+      // PR #15 (BiEx): reducción de margen exterior en ~25 % (equilibrio entre aire y presencia)
+      for (const n of N) { x0 = Math.min(x0, n.x - 31); x1 = Math.max(x1, n.x + 31); y0 = Math.min(y0, n.y - 26); y1 = Math.max(y1, n.y + 34); }
       const bw = Math.max(120, x1 - x0), bh = Math.max(120, y1 - y0);
-      const kFit = Math.max(0.46, Math.min(1.85, Math.min((W - 36) / bw, (H - 52) / bh)));
+      const kFit = Math.max(0.46, Math.min(1.72, Math.min((W - 44) / bw, (H - 60) / bh)));
       return { x0, x1, y0, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, kFit };
+    };
+    // Límites exactos de paneo en función del lienzo y zoom actual: incluso al llevar el gráfico al extremo
+    // nunca queda un vacío negro dominante (máximo ~12 % de respiración limpia en los bordes).
+    const limitesCam = (L, k) => {
+      const kk = Math.max(0.35, k || cam.k || 1);
+      const bw = Math.max(80, L.x1 - L.x0), bh = Math.max(80, L.y1 - L.y0);
+      const halfW = (W / 2) / kk, halfH = (H / 2) / kk;
+      const padX = Math.max(18, (W * 0.12) / kk), padY = Math.max(18, (H * 0.12) / kk);
+      const spanX = Math.max(14 / kk, (bw / 2) - halfW + padX);
+      const spanY = Math.max(14 / kk, (bh / 2) - halfH + padY);
+      return { bx0: L.cx - spanX, bx1: L.cx + spanX, by0: L.cy - spanY, by1: L.cy + spanY };
     };
     const encuadrar = () => {
       const L = limites();
@@ -8167,9 +8270,10 @@
         if (metaCam) { cam.x = metaCam.x; cam.y = metaCam.y; cam.k = metaCam.k; metaCam = null; }
         else {
           const L = limites();
-          cam.x = Math.max(L.x0, Math.min(L.x1, cam.x));
-          cam.y = Math.max(L.y0, Math.min(L.y1, cam.y));
-          cam.k = Math.max(Math.min(0.45, L.kFit * 0.78), Math.min(3.2, cam.k));
+          cam.k = Math.max(Math.min(0.45, L.kFit * 0.85), Math.min(3.2, cam.k));
+          const B = limitesCam(L, cam.k);
+          cam.x = Math.max(B.bx0, Math.min(B.bx1, cam.x));
+          cam.y = Math.max(B.by0, Math.min(B.by1, cam.y));
         }
         vel.x = 0; vel.y = 0; dibujar(); return;
       }
@@ -8192,18 +8296,16 @@
             vel.x *= 0.84; vel.y *= 0.84;
             mov = true;
           } else { vel.x = 0; vel.y = 0; }
-          // Efecto cauchera/resorte: regresa suavemente a la vista cercana más adecuada de la constelación
-          const kMin = Math.min(0.48, L.kFit * 0.82), kMax = 3.2;
-          const marX = Math.max(18, (L.x1 - L.x0) * 0.14);
-          const marY = Math.max(18, (L.y1 - L.y0) * 0.14);
-          const bx0 = L.x0 - marX, bx1 = L.x1 + marX, by0 = L.y0 - marY, by1 = L.y1 + marY;
-          const tx = cam.x < bx0 ? bx0 : cam.x > bx1 ? bx1 : cam.x;
-          const ty = cam.y < by0 ? by0 : cam.y > by1 ? by1 : cam.y;
+          // Efecto cauchera/resorte: regresa suavemente dentro de los límites ajustados del lienzo
+          const kMin = Math.min(0.48, L.kFit * 0.85), kMax = 3.2;
           const tk = cam.k < kMin ? kMin : cam.k > kMax ? kMax : cam.k;
+          const B = limitesCam(L, tk);
+          const tx = cam.x < B.bx0 ? B.bx0 : cam.x > B.bx1 ? B.bx1 : cam.x;
+          const ty = cam.y < B.by0 ? B.by0 : cam.y > B.by1 ? B.by1 : cam.y;
           const ex = tx - cam.x, ey = ty - cam.y, ek = tk - cam.k;
           if (Math.abs(ex) > 0.35 || Math.abs(ey) > 0.35 || Math.abs(ek) > 0.003) {
-            cam.x += ex * 0.12; cam.y += ey * 0.12; cam.k += ek * 0.14;
-            vel.x *= 0.62; vel.y *= 0.62;
+            cam.x += ex * 0.16; cam.y += ey * 0.16; cam.k += ek * 0.16;
+            vel.x *= 0.55; vel.y *= 0.55;
             mov = true;
           } else {
             cam.x = tx; cam.y = ty; cam.k = tk;
@@ -8409,22 +8511,19 @@
       }
     };
     const sinAnimCn = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-    const pararRespirar = () => { if (respRaf) { cancelAnimationFrame(respRaf); respRaf = 0; } };
-    const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !sinAnimCn();
+    const pararRespirar = () => { if (respRaf) { clearTimeout(respRaf); respRaf = 0; } };
+    const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !document.documentElement.classList.contains("desplazando") && !sinAnimCn();
     const iniciarRespirar = () => {
       if (respRaf || !puedeRespirar()) return;
-      const pasoResp = (ahora) => {
+      // ~14 fps vía temporizador (0 despertares a 60 Hz): respiración orgánica imperceptible con consumo mínimo de batería
+      const pasoResp = () => {
         respRaf = 0;
         if (!puedeRespirar()) return;
-        // ~18 fps (cada 55 ms): respiración viva muy suave con gasto mínimo
-        if (ahora - respUlt >= 55) {
-          respUlt = ahora;
-          tVivo = ahora * 0.001;
-          if (!arrNodo && !panOn && !camRaf) dibujar();
-        }
-        respRaf = requestAnimationFrame(pasoResp);
+        tVivo = performance.now() * 0.001;
+        if (!arrNodo && !panOn && !camRaf) dibujar();
+        respRaf = setTimeout(pasoResp, 72);
       };
-      respRaf = requestAnimationFrame(pasoResp);
+      respRaf = setTimeout(pasoResp, 72);
     };
     const actualizarBadge = () => {
       estBadge.classList.toggle("reposo", dormido);
@@ -8490,6 +8589,7 @@
     let pinchMidW = null;
     canvas.addEventListener("pointerdown", (ev) => {
       ev.preventDefault();
+      try { const sel = window.getSelection && window.getSelection(); if (sel && !sel.isCollapsed) sel.removeAllRanges(); } catch (e) {}
       const pt = ptRel(ev);
       pararCam(); metaCam = null; vel.x = 0; vel.y = 0;
       ptrs.set(ev.pointerId, pt);
@@ -8532,20 +8632,20 @@
       if (panOn && p0) {
         const dx = pt.x - p0.x, dy = pt.y - p0.y;
         if (Math.hypot(dx, dy) > 4) { movido = true; camManual = true; }
-        const L = limites();
-        const marX = Math.max(18, (L.x1 - L.x0) * 0.14), marY = Math.max(18, (L.y1 - L.y0) * 0.14);
-        const bx0 = L.x0 - marX, bx1 = L.x1 + marX, by0 = L.y0 - marY, by1 = L.y1 + marY;
+        const L = limites(), B = limitesCam(L, cam.k);
         const tacto = ev.pointerType === "touch" ? 0.78 : 0.92;
         let stepX = (-dx * tacto) / cam.k, stepY = (-dy * tacto) / cam.k;
-        const excX = cam.x < bx0 ? (bx0 - cam.x) : cam.x > bx1 ? (cam.x - bx1) : 0;
-        const excY = cam.y < by0 ? (by0 - cam.y) : cam.y > by1 ? (cam.y - by1) : 0;
-        const alejX = (cam.x < bx0 && stepX < 0) || (cam.x > bx1 && stepX > 0);
-        const alejY = (cam.y < by0 && stepY < 0) || (cam.y > by1 && stepY > 0);
-        if (alejX && excX > 0) stepX /= 1 + excX / (80 / Math.max(0.45, cam.k));
-        if (alejY && excY > 0) stepY /= 1 + excY / (80 / Math.max(0.45, cam.k));
-        cam.x += stepX; cam.y += stepY;
-        vel.x = Math.max(-22, Math.min(22, vel.x * 0.45 + stepX * 0.55));
-        vel.y = Math.max(-22, Math.min(22, vel.y * 0.45 + stepY * 0.55));
+        const excX = cam.x < B.bx0 ? (B.bx0 - cam.x) : cam.x > B.bx1 ? (cam.x - B.bx1) : 0;
+        const excY = cam.y < B.by0 ? (B.by0 - cam.y) : cam.y > B.by1 ? (cam.y - B.by1) : 0;
+        const alejX = (cam.x < B.bx0 && stepX < 0) || (cam.x > B.bx1 && stepX > 0);
+        const alejY = (cam.y < B.by0 && stepY < 0) || (cam.y > B.by1 && stepY > 0);
+        if (alejX && excX > 0) stepX /= 1 + excX / (34 / Math.max(0.45, cam.k));
+        if (alejY && excY > 0) stepY /= 1 + excY / (34 / Math.max(0.45, cam.k));
+        const topeX = 36 / Math.max(0.45, cam.k), topeY = 36 / Math.max(0.45, cam.k);
+        cam.x = Math.max(B.bx0 - topeX, Math.min(B.bx1 + topeX, cam.x + stepX));
+        cam.y = Math.max(B.by0 - topeY, Math.min(B.by1 + topeY, cam.y + stepY));
+        vel.x = Math.max(-20, Math.min(20, vel.x * 0.45 + stepX * 0.55));
+        vel.y = Math.max(-20, Math.min(20, vel.y * 0.45 + stepY * 0.55));
         p0 = pt; dibujar(); return;
       }
       const nh = hitTest(pt.x, pt.y);
@@ -8575,6 +8675,8 @@
     };
     canvas.addEventListener("pointerup", soltar);
     canvas.addEventListener("pointercancel", soltar);
+    canvas.addEventListener("touchstart", (ev) => { if (ev.touches.length >= 2) ev.stopPropagation(); }, { passive: true });
+    canvas.addEventListener("touchmove", (ev) => { if (ev.touches.length >= 2) { ev.stopPropagation(); if (ev.cancelable) ev.preventDefault(); } }, { passive: false });
     canvas.addEventListener("dblclick", (ev) => {
       const pt = ptRel(ev), n = hitTest(pt.x, pt.y);
       if (n && n.href) location.hash = n.href;
@@ -8587,15 +8689,17 @@
       const antes = aMundo(pt.x, pt.y);
       const fac = ev.deltaY < 0 ? 1.14 : 0.88;
       const L = limites();
-      cam.k = Math.max(Math.min(0.45, L.kFit * 0.78), Math.min(3.2, cam.k * fac));
+      cam.k = Math.max(Math.min(0.45, L.kFit * 0.85), Math.min(3.2, cam.k * fac));
       const desp = aMundo(pt.x, pt.y);
-      cam.x += antes.x - desp.x; cam.y += antes.y - desp.y;
+      const B = limitesCam(L, cam.k);
+      cam.x = Math.max(B.bx0, Math.min(B.bx1, cam.x + antes.x - desp.x));
+      cam.y = Math.max(B.by0, Math.min(B.by1, cam.y + antes.y - desp.y));
       camManual = true;
       dibujar();
       correrCam();
     }, { passive: false });
     bMas.onclick = () => { camManual = true; irA(cam.x, cam.y, Math.min(3.2, cam.k * 1.25)); };
-    bMen.onclick = () => { const L = limites(); camManual = true; irA(cam.x, cam.y, Math.max(Math.min(0.48, L.kFit * 0.82), cam.k * 0.8)); };
+    bMen.onclick = () => { const L = limites(); camManual = true; irA(cam.x, cam.y, Math.max(Math.min(0.48, L.kFit * 0.85), cam.k * 0.8)); };
     bCen.onclick = () => { camManual = false; const L = limites(); irA(L.cx, L.cy, L.kFit); };
 
     const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
@@ -8607,8 +8711,10 @@
     if (ioVis) ioVis.observe(canvas);
     const onVisCn = () => { if (document.hidden) pararRespirar(); else iniciarRespirar(); };
     document.addEventListener("visibilitychange", onVisCn);
+    let ultTemaCn = document.documentElement.getAttribute("data-theme") || "dark";
     const moTema = new MutationObserver(() => {
-      dibujar();
+      const tm = document.documentElement.getAttribute("data-theme") || "dark";
+      if (tm !== ultTemaCn) { ultTemaCn = tm; dibujar(); }
       if (puedeRespirar()) iniciarRespirar(); else pararRespirar();
     });
     moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mov", "class"] });
@@ -8663,7 +8769,7 @@
   async function vistaConstelacion(queryStr) {
     document.title = "Constelación del léxico y notas · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Trazando la constelación…"));
+    if (!T || !LX) vista().replaceChildren(cargando("Trazando la constelación…"));
     alTope();
     try { await Promise.all([tablas(), lexico()]); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el léxico.")); return; }
     const params = new URLSearchParams(queryStr || "");
@@ -8745,6 +8851,7 @@
         h("span", { class: "eyebrow", text: "Cartógrafo interactivo · red de conexiones" }),
         h("h1", { class: "texto", text: "Constelación del léxico" }),
         h("p", { class: "q-lead", text: "Explora cómo se entrelazan las raíces griegas, los 27 libros, las referencias cruzadas y tus notas personales. Arrastra cualquier nodo, acerca la vista o toca una estrella para iluminar su red." })),
+      guiaSeccion("constelacion"),
       h("div", { class: "cn-ctl" }, barraCapas, h("div", { class: "cn-fila" }, buscarIn), zonaPresets),
       zonaMapa)));
     renderMapa();
@@ -8767,7 +8874,7 @@
   async function vistaSinopsis(p1, p2) {
     document.title = "Mesa sinóptica libre · BiEx";
     navActual("#/buscar");
-    vista().replaceChildren(cargando("Preparando la mesa sinóptica…"));
+    if (!T || !LX) vista().replaceChildren(cargando("Preparando la mesa sinóptica…"));
     alTope();
     try { await Promise.all([tablas(), lexico()]); } catch (e) { vista().replaceChildren(fallo("No se pudieron cargar los datos griegos.")); return; }
     let A0 = parseSinRef(p1, { c: "MAT", cap: 5, v: 3 });
@@ -8883,6 +8990,7 @@
         h("span", { class: "eyebrow", text: "Comparación griega palabra por palabra" }),
         h("h1", { class: "texto", text: "Mesa sinóptica libre" }),
         h("p", { class: "q-lead", text: "Elige dos versos cualesquiera de la Nueva Voluntad: los lemas compartidos brillan en oro y las raíces comunes en azul. Toca cualquier palabra o ficha para iluminarla en ambos pasajes." })),
+      guiaSeccion("sinopsis"),
       presets,
       zonaRes,
       zonaGrid)));
@@ -9119,27 +9227,80 @@
     };
   }
 
-  // --- Faro pulsante discreto de pendientes (PR #14: 29 px cristal líquido, ventana flotante compacta, foco exacto y consejos variables)
+  // --- Consejos para principiantes por sección + Faro pulsante discreto de pendientes (PR #14–#15)
   const FARO_TIPS = [
-    { sec: "lectura", t: "Griego al toque", d: "Toca cualquier verso mientras lees para abrir cada palabra griega, su morfología, pronunciación, código Strong y manuscritos." },
-    { sec: "lectura", t: "Modo Contemplar", d: "Activa el ícono del ojo en la barra del capítulo para leer a pantalla limpia, sin distracciones ni barras." },
-    { sec: "lectura", t: "Tarjetas HD 3×", d: "Dentro de cualquier verso, pulsa «Tarjeta HD» para crear y compartir una imagen nítida con la traducción de BiEx y su griego." },
-    { sec: "lectura", t: "Marcadores en 12 colores", d: "Clasifica versos en 12 temas de color y anota reflexiones: todo se reúne en tu Diario cronológico sincronizado en la nube." },
-    { sec: "sinopsis", t: "Mesa sinóptica libre", d: "Desde Biblioteca o desde cualquier verso puedes comparar dos pasajes lado a lado e iluminar sus lemas y raíces griegas compartidas." },
-    { sec: "constelacion", t: "Constelación del léxico", d: "Arrastra cualquier estrella o acerca la vista en la Constelación para explorar familias de raíces, referencias cruzadas y tus notas." },
-    { sec: "escudrina", t: "Tu Árbol y tu poder", d: "Reparte tus puntos de atributo, mejora tu armadura y recoge tu cesta de la cosecha cada día para fortalecer a tu ser interior." },
-    { sec: "escudrina", t: "El Coloso de la Tradición", d: "En la arena del Coloso observa su postura actual: atacar la brecha señalada y acertar la zona dorada del Pulso multiplica el impacto." },
-    { sec: "ajedrez", t: "Ajedrez Bíblico y Enigmas", d: "Al leer 5 versos hoy desbloqueas los Enigmas del Códice; además cada jugada frente a las 13 figuras queda guardada en caché." },
-    { sec: "planes", t: "Planes cronológicos", d: "Sigue la Nueva Voluntad en orden cronológico (30, 90 días o un año) y marca cada día completado a tu propio ritmo." },
-    { sec: "juntos", t: "Leer en compañía", d: "Abre una sala en Escudriña › Juntos para leer el mismo capítulo en tiempo real con amigos y sumar experiencia adicional." },
-    { sec: "app", t: "Sin conexión y avisos", d: "En Herramientas › Instalar y leer sin conexión puedes guardar todo BiEx en tu dispositivo y activar avisos del navegador o app." },
+    // Lectura general
+    { sec: "lectura", t: "Griego al toque", d: "No necesitas saber griego: toca cualquier verso mientras lees para ver cada palabra traducida, cómo se pronuncia y su significado exacto." },
+    { sec: "lectura", t: "Tres formas de leer", d: "Arriba del capítulo puedes alternar entre Lectura (párrafos limpios), Textual (verso a verso) y Análisis (cada palabra griega desglosada)." },
+    { sec: "lectura", t: "Modo Contemplar", d: "Toca el ícono del ojo en la barra del capítulo para ocultar botones y leer con calma, como en una hoja impresa sin distracciones." },
+    { sec: "lectura", t: "Marcadores en 12 colores", d: "Resalta versos por tema (promesas, fe, historia, preguntas…) y guarda notas propias: todo se reúne en tu Diario sincronizado." },
+    { sec: "lectura", t: "Tarjetas HD para compartir", d: "Dentro de cualquier verso pulsa «Tarjeta HD» para generar una imagen nítida con el texto de BiEx y su griego original." },
+    { sec: "lectura", t: "Compara con Jünemann", d: "El ícono del rollo junto al título del capítulo abre la perícopa en la traducción clásica de Jünemann para contrastarla al instante." },
+    // Análisis palabra por palabra
+    { sec: "analisis", t: "Qué estás viendo aquí", d: "Cada tarjeta es una palabra del texto griego original en su orden real. Toca cualquiera para ver su traducción literal, su raíz y dónde más aparece." },
+    { sec: "analisis", t: "Colores que guían la lectura", d: "Los colores agrupan verbos, nombres y adjetivos. En «Color» y «Resaltar» puedes iluminar solo las acciones, los tiempos verbales o los casos." },
+    { sec: "analisis", t: "Lentes a tu medida", d: "Si ves demasiada información a la vez, apaga «Transliteración» o «Morfología» arriba para quedarte solo con el griego y el español." },
+    // Línea del tiempo / Cronología
+    { sec: "cronologia", t: "Orden en que se escribieron", d: "Los libros de la Nueva Voluntad no se redactaron en el orden habitual de la Biblia: aquí los ves según cuándo fueron escritos y los hechos que narran." },
+    { sec: "cronologia", t: "Explora cada hito", d: "Usa los filtros de arriba para centrarte en la vida de YēshŪ́aʿ, los primeros viajes o las cartas, y toca cualquier evento para saltar directo al pasaje." },
+    // La fuente Q
+    { sec: "fuente-q", t: "¿Qué es la fuente Q?", d: "Mattáy y Lουκᾶς comparten más de 200 versos casi iguales que no están en Μᾶrκος. Muchos estudiosos llaman «Q» a esa posible colección compartida." },
+    { sec: "fuente-q", t: "Colores de coincidencia", d: "En la comparativa, los tonos dorados muestran palabras griegas idénticas y en el mismo orden; así puedes ver por ti mismo el parecido real." },
+    // Constelación del léxico
+    { sec: "constelacion", t: "Un mapa vivo de conexiones", d: "Cada estrella es una raíz griega, una palabra o un libro. Toca cualquiera para iluminar sus vínculos y leer abajo qué significa." },
+    { sec: "constelacion", t: "Cómo moverte sin esfuerzo", d: "Arrastra el mapa con un dedo o el ratón, acerca con dos dedos o con + y −, y cambia de capa arriba entre Léxico, Referencias y Tus notas." },
+    { sec: "constelacion", t: "Busca en español o griego", d: "En el buscador de arriba puedes escribir una palabra en español, una transliteración (como «agape» o «logos») o un libro para centrarlo." },
+    // Mesa sinóptica libre
+    { sec: "sinopsis", t: "Compara dos pasajes a la vez", d: "Elige dos versos cualesquiera o toca uno de los ejemplos de arriba: las palabras con el mismo lema griego brillan en oro y las de la misma raíz en azul." },
+    { sec: "sinopsis", t: "Ilumina una palabra en ambos", d: "Toca cualquier ficha dorada o palabra griega para ver dónde reaparece en el otro pasaje, abrir su concordancia o guardar el par en tu diario." },
+    // Escudriña › Hoy
+    { sec: "escudrina", t: "Aprender leyendo a tu ritmo", d: "Al leer un capítulo en BiEx y tocar «Leído» cuando termines un verso, sumas experiencia, dracmas y avanzas tus misiones sin presión." },
+    { sec: "escudrina", t: "Misiones diarias sencillas", d: "Cada día tienes metas breves (leer unos versos o responder una prueba). Si un día no puedes entrar, tu avance y tu cuenta permanecen intactos." },
+    // Escudriña › Tu Árbol
+    { sec: "arbol", t: "Tu ser interior y la cosecha", d: "Reparte tus puntos de atributo libres para subir tu poder y recoge tu cesta de la cosecha cuando se llene: trae experiencia y un verso especial." },
+    { sec: "arbol", t: "Las ramas de tu árbol", d: "En «Las ramas» puedes pellizcar con dos dedos o usar + y − para acercarte a quienes llegaron gracias a tu enlace, sin cambiar el tamaño de la página." },
+    // Escudriña › El Coloso
+    { sec: "coloso", t: "Lee la postura del Coloso", d: "Antes de atacar, mira la brecha que anuncia arriba: usar una habilidad alineada y acertar la zona dorada del Pulso multiplica tu aporte." },
+    { sec: "coloso", t: "Un esfuerzo en comunidad", d: "Todos los lectores debilitan juntos al mismo Coloso durante la incursión. Tus cargas se recargan leyendo y cada golpe queda registrado." },
+    // Escudriña › Ajedrez Bíblico
+    { sec: "ajedrez", t: "Dos modos para entrenar la mente", d: "Enfrenta a 13 figuras bíblicas con dificultad progresiva o resuelve los Enigmas del Códice (que se abren tras leer 5 versos hoy)." },
+    { sec: "ajedrez", t: "Pausa cuando quieras", d: "Cada jugada se guarda automáticamente en caché: puedes salir a leer un capítulo y volver después exactamente en el mismo movimiento." },
+    // Planes, Juntos y App
+    { sec: "planes", t: "Planes cronológicos guiados", d: "Elige un recorrido de 30, 90 días o un año para leer la Nueva Voluntad en orden cronológico y marca cada jornada a tu propio ritmo." },
+    { sec: "juntos", t: "Leer acompañado en vivo", d: "Crea una sala en Escudriña › Juntos o únete a una abierta para recorrer el mismo capítulo con otros lectores y ganar experiencia adicional." },
+    { sec: "app", t: "Lectura sin internet y avisos", d: "Desde aquí puedes guardar toda la Nueva Voluntad en tu dispositivo para leer sin conexión y activar avisos cuando haya eventos o misiones." },
   ];
+  function guiaSeccion(sec) {
+    const off = store.get("guiasOff", null) || {};
+    if (off[sec]) return null;
+    const lista = FARO_TIPS.filter((x) => x.sec === sec);
+    if (!lista.length) return null;
+    let idx = (Math.floor(Date.now() / 180000) + sec.length) % lista.length;
+    const tx = h("span", { class: "guia-ctx-t" });
+    const pintar = () => {
+      const tp = lista[idx];
+      tx.replaceChildren(h("b", { text: "Consejo · " + tp.t + ": " }), tp.d);
+    };
+    pintar();
+    const caja = h("aside", { class: "guia-ctx", role: "note", "aria-label": "Consejo útil de esta sección" },
+      h("i", { "aria-hidden": "true" }),
+      tx,
+      h("div", { class: "guia-ctx-acc" },
+        lista.length > 1 ? h("button", { type: "button", title: "Ver otro consejo de esta sección", onclick: () => { idx = (idx + 1) % lista.length; pintar(); } }, "Otro ↻") : null,
+        h("button", { type: "button", title: "Ocultar consejos en esta sección", "aria-label": "Ocultar consejos en esta sección", onclick: () => {
+          const cur = Object.assign({}, store.get("guiasOff", null) || {});
+          cur[sec] = 1; store.set("guiasOff", cur);
+          caja.remove();
+        } }, "×")));
+    return caja;
+  }
   const FARO = {
     btn: null,
     cnt: null,
     tipIdx: -1,
     focoTimer: 0,
     ubicarTimer: 0,
+    ubicarTimer2: 0,
     pendientes() {
       const out = [];
       const hoy = new Date().toISOString().slice(0, 10);
@@ -9272,15 +9433,18 @@
       const sels = [".jg-med", ".jg-bonos", ".jg-bonos > *", ".adelante.vis", ".jg-muelle", ".jg-sala-p"];
       for (const q of sels) {
         for (const el of document.querySelectorAll(q)) {
-          if (!el.isConnected) continue;
+          if (!el.isConnected || el.hidden) continue;
           const r = el.getBoundingClientRect();
-          if (r.width < 2 || r.height < 2 || r.bottom < vh * 0.45) continue;
+          if (r.width < 2 || r.height < 2 || r.bottom < vh * 0.4) continue;
           const cs = getComputedStyle(el);
-          if (cs.visibility === "hidden" || parseFloat(cs.opacity) < 0.05) continue;
-          if (r.left < 96) minTop = Math.min(minTop, r.top);
+          if (cs.display === "none" || cs.visibility === "hidden") continue;
+          // No omitir .jg-med/.jg-bonos/.jg-muelle durante su transición de entrada (evita solapamiento con el Faro)
+          const siempreReserva = el.matches(".jg-med, .jg-bonos, .jg-bonos > *, .jg-muelle, .jg-sala-p");
+          if (!siempreReserva && parseFloat(cs.opacity) < 0.05) continue;
+          if (r.left < 110) minTop = Math.min(minTop, r.top);
         }
       }
-      const bPx = Math.max(16, Math.min(vh - 96, Math.round(vh - minTop + 12)));
+      const bPx = Math.max(16, Math.min(vh - 96, Math.round(vh - minTop + 14)));
       this.btn.style.setProperty("--faro-b", "calc(" + bPx + "px + env(safe-area-inset-bottom, 0px))");
     },
     enfocar(selector) {
@@ -9311,12 +9475,17 @@
     elegirTip(siguiente) {
       const hh = location.hash || "#/";
       const sec = /^#\/escudrina\/ajedrez/.test(hh) ? "ajedrez"
+        : /^#\/escudrina\/coloso/.test(hh) ? "coloso"
+        : /^#\/escudrina\/arbol/.test(hh) ? "arbol"
         : /^#\/escudrina\/(juntos|sala)/.test(hh) ? "juntos"
         : /^#\/escudrina/.test(hh) ? "escudrina"
         : /^#\/sinopsis/.test(hh) ? "sinopsis"
         : /^#\/constelacion/.test(hh) ? "constelacion"
+        : /^#\/cronologia/.test(hh) ? "cronologia"
+        : /^#\/fuente-q/.test(hh) ? "fuente-q"
         : /^#\/planes/.test(hh) ? "planes"
-        : /^#\/app/.test(hh) ? "app" : "lectura";
+        : /^#\/app/.test(hh) ? "app"
+        : (esc.modo === "a" ? "analisis" : "lectura");
       if (siguiente || this.tipIdx >= 0) {
         this.tipIdx = (this.tipIdx + 1) % FARO_TIPS.length;
         return FARO_TIPS[this.tipIdx];
@@ -9349,7 +9518,9 @@
         this.btn.setAttribute("aria-label", "Tu faro de hoy: " + (lista.length === 1 ? "1 paso pendiente" : lista.length + " pasos pendientes"));
         requestAnimationFrame(() => this.ubicar());
         clearTimeout(this.ubicarTimer);
+        clearTimeout(this.ubicarTimer2);
         this.ubicarTimer = setTimeout(() => this.ubicar(), 260);
+        this.ubicarTimer2 = setTimeout(() => this.ubicar(), 680);
       }
     },
     abrir() {
@@ -9361,16 +9532,29 @@
         tipP.replaceChildren(h("b", { text: tp.t + ": " }), tp.d);
       };
       pintarTip(false);
+      const guiasOcultas = Object.keys(store.get("guiasOff", null) || {}).length > 0;
       const tipCaja = h("div", { class: "faro-tip" },
         h("div", { class: "faro-tip-cab" },
-          h("span", { class: "faro-tip-et", text: "Descubre BiEx" }),
+          h("span", { class: "faro-tip-et", text: "Descubre BiEx (" + FARO_TIPS.length + " consejos)" }),
           h("button", { type: "button", class: "faro-tip-mas", onclick: () => pintarTip(true), text: "Otro consejo ↻" })),
-        tipP);
-      const notifPie = BIEX_NOTIF.soportada() ? h("div", { class: "faro-notif-pie" },
+        tipP,
+        guiasOcultas ? h("button", { type: "button", class: "faro-tip-mas", style: "margin-top:6px", onclick: (ev) => {
+          store.set("guiasOff", {});
+          ev.currentTarget.remove();
+          avisar("Consejos en secciones activados de nuevo");
+        }, text: "Mostrar consejos en secciones" }) : null);
+      const sopNotif = BIEX_NOTIF.estadoSoporte();
+      const notifPie = sopNotif === "ok" ? h("div", { class: "faro-notif-pie" },
         h("span", { text: BIEX_NOTIF.activa() ? "Avisos del dispositivo activos" : "¿Recibir avisos en tu dispositivo?" }),
         BIEX_NOTIF.activa()
-          ? h("button", { type: "button", class: "faro-notif-btn", onclick: () => irDesdeModal("#/app") }, "Ajustar avisos")
-          : h("button", { type: "button", class: "faro-notif-btn", onclick: async (ev) => { const ok = await BIEX_NOTIF.activar(); if (ok && ev.currentTarget.isConnected) ev.currentTarget.textContent = "Activos ✓"; } }, "Activar avisos")) : null;
+          ? h("button", { type: "button", class: "faro-notif-btn", onclick: () => irDesdeModal("#/app?avisos=1") }, "Ajustar avisos")
+          : h("button", { type: "button", class: "faro-notif-btn", onclick: async (ev) => { const ok = await BIEX_NOTIF.activar(); if (ok && ev.currentTarget.isConnected) ev.currentTarget.textContent = "Activos ✓"; } }, "Activar avisos"))
+        : sopNotif === "embed" ? h("div", { class: "faro-notif-pie" },
+          h("span", { text: "Avisos disponibles en la app directa" }),
+          h("a", { class: "faro-notif-btn", href: APP_URL + "#/app?avisos=1", target: "_blank", rel: "noopener" }, "Abrir y activar ↗"))
+        : sopNotif === "ios_safari" ? h("div", { class: "faro-notif-pie" },
+          h("span", { text: "En iPhone/iPad: añade BiEx a inicio" }),
+          h("button", { type: "button", class: "faro-notif-btn", onclick: () => irDesdeModal("#/app?avisos=1") }, "Ver pasos")) : null;
       abrirModal(() => cajaModal(
         cabModal("Tu faro de hoy", lista.length === 1 ? "1 paso sencillo disponible ahora" : lista.length + " pasos disponibles ahora"),
         h("div", { class: "faro-mod" },
@@ -9435,7 +9619,7 @@
     if (partes[0] === "ranking") { esc.libro = null; return vistaRanking(); }
     if (partes[0] === "marcadores") { esc.libro = null; return vistaMarcadores(); }
     if (partes[0] === "planes") { esc.libro = null; return vistaPlanes(partes[1] || ""); }
-    if (partes[0] === "app") { esc.libro = null; return vistaApp(); }
+    if (partes[0] === "app" || /^app\?/.test(partes[0])) { esc.libro = null; return vistaApp(partes[0].includes("?") ? partes[0].split("?")[1] : ""); }
     if (partes[0] === "escudrina") { esc.libro = null; return vistaJuego(partes.slice(1)); }
     if (partes[0] === "niveles") { esc.libro = null; return vistaNiveles(partes[1] || "", partes[2] || ""); }
     const c = partes[0].toUpperCase();
@@ -9605,7 +9789,7 @@
     ponerFechaAct(msAct);
     ponerFechaJer();
     document.addEventListener("visibilitychange", () => { if (!document.hidden) ponerFechaJer(); });
-    setInterval(ponerFechaJer, 60e3);
+    setInterval(() => { if (!document.hidden) ponerFechaJer(); }, 60e3);
     cargar("datos/archivos.json").then((ar) => { const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0; if (f > msAct) { msAct = f; ponerFechaAct(msAct); } }).catch(() => {});
     botonAdelante();
     window.addEventListener("hashchange", () => {

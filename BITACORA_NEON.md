@@ -842,3 +842,52 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3021` bloques), JSON válidos y auditoría editorial (`0` «maestro», `0` «testigo» bíblico, `0` «sorteo», `0` «versículo»): **CLEAN**.
 - Suite Playwright (`verificar_pr14.py`, `360 / 390 / 1024 / 1280 px`, temas oscuro y *Pergamino*): zoom táctil Vivaldi (`"" → "1.25"`), barra `.barra` sin recortes en `tam = 8` y `tam = 9` en escritorio y `360 px`, restauración Atrás al píxel exacto (`1863 === 1863`) en las 3 rutas, Faro `29 × 29 px` con `12 px` libres sobre `×2` y `+50 %`, modal compacto (`0,47` de alto en 1 pendiente), salto y enfoque exacto, `Leído` oculto al pie vía `IntersectionObserver`, Coloso con `.jg-col-dano` visible a `2,2 s` (`3,6 s` total) y `.jg-col-ult` persistente a `3,9 s`, Ajedrez limpio (`Simbología de las piezas`, `Declarante luminoso`, `Declarante en el Asedio`, `Emisario a las naciones`, `0` frases sobrantes), *La cosecha* con botón *Leer último verso* funcional, `#/app` notificaciones verificadas en estado bloqueado y activado, **0 errores de consola y 0 px de desborde, 18/18 capturas 3× HD inspeccionadas a 10/10**.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #15 — 24 de noviembre de 2026
+
+**Rama:** `neon/pr15-armonia-total-transiciones-faro-consejos-notif-bateria` (sobre `main` en `95dc2a0`)
+**Propuesta:** PR #15 · Aislamiento de pellizco, Constelación sin vacío extremo, 29 consejos contextuales, Ajedrez bajo Misiones, Faro 15 %, Atrás blindado (incl. Wix), Notificaciones universales, Batería y Armonía WCAG AA 0-flasheos
+**Archivos modificados:** `app.css`, `app.js`, `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `app.js`, `index.html`, `datos/archivos.json`).
+
+### 1. Cambios realizados
+
+1. **Aislamiento total del gesto de pellizco en las ramas del Árbol y en la Constelación (`app.js` + `juego.js`):**
+   - `zonaPellizcoPropio` filtra `touchstart` (2 dedos), `wheel` con `ctrlKey`/`metaKey` y `gesturestart`/`gesturechange` (Safari) cuando el gesto ocurre dentro de `.jg-arbol-vivo`, `.cn-caja`, `.cn-lienzo`, `.tl-mapa` o `[data-sin-pellizco="1"]`.
+   - En `arbolVivo` («Las ramas») y `motorConstelacion`: se añade `data-sin-pellizco="1"`, `stopPropagation()` en `touchstart`/`touchmove` de 2 dedos y `wheel` con `ctrlKey`/`metaKey`, y `user-select: none` para evitar selección accidental de texto al arrastrar. Pellizcar las ramas o los grafos **nunca** altera el tamaño de letra general de la página.
+2. **29 consejos accesibles para principiantes + franja discreta por sección (`.guia-ctx` en `app.css` + `app.js` + `juego.js`):**
+   - Ampliación de `FARO_TIPS` de 12 a **29 consejos en español llano** para personas con o sin conocimientos previos de griego o estudio bíblico.
+   - Nueva franja contextual plegable y rotativa `guiaSeccion(sec)` (con botones `Otro ↻` y `×` persistente por sección en `biex:guiasOff`, y opción «Mostrar consejos en secciones» dentro del Faro si se ocultó alguna) habilitada en *Análisis*, *Línea del tiempo*, *La fuente Q*, *Constelación*, *Mesa sinóptica libre*, *Escudriña › Hoy*, *Tu Árbol*, *El Coloso*, *Ajedrez Bíblico* y *Juntos*.
+3. **Ajedrez Bíblico debajo de «Misiones de hoy» (`juego.js`):**
+   - Reubicada `tarjetaAjedrez(true)` directamente debajo de `tarjetaMisiones(y)` en la columna izquierda de `.jg-dos` dentro de *Escudriña › Hoy*, equilibrando tanto el flujo vertical móvil como las dos columnas de escritorio (`Misiones + Ajedrez` | `Hoy + Novedades`).
+4. **Faro con 15 % de transparencia y cero solapamientos (`app.css` + `app.js` + `juego.js`):**
+   - `.faro-btn` en reposo con `opacity: .85` (`1` al pasar el cursor, enfocar o tocar).
+   - `FARO.ubicar()` reserva espacio para `.jg-med`, `.jg-bonos`, `.jg-muelle` y `.jg-sala-p` incluso durante su entrada, y `medidor()` invoca `A.ubicarFaro()` de forma síncrona y en `rAF`, eliminando cualquier solapamiento con el escudo de nivel.
+5. **Constelación: margen inicial al 25 % y tope limpio en arrastre extremo (`app.js`):**
+   - El ajuste exterior inicial se suavizó del 35 % al **25 %** (`±31 / -26..+34`, `(W-44)/bw`, `(H-60)/bh`, `kFit <= 1.72`).
+   - Nuevo `limitesCam(L, k)` consciente del tamaño real de pantalla (`halfW`, `halfH`): al arrastrar hacia cualquier esquina extrema, la constelación mantiene un margen limpio (~12 %) en vez de vaciar el 75 % del lienzo en negro.
+6. **Gesto Atrás blindado desde Biblioteca → Mesa sinóptica / Constelación (`app.js`):**
+   - `irDesdeModal` reemplaza in-situ la entrada `[1]` del modal (`history.replaceState({}, "", urlHash(hh))`) en lugar de encadenar `history.go(-1)` + `location.hash`, evitando carreras con Chrome Android y con el `<iframe>` incrustado en Wix (`?incrustado=1`). Probado en 4 rutas directas y dentro de un `<iframe>` HTTP real: devuelve siempre a la vista exacta y al píxel exacto de lectura.
+7. **Notificaciones con máxima compatibilidad cross-browser y modo incrustado (`app.js` + `app.css`):**
+   - `BIEX_NOTIF.estadoSoporte()` distingue `"ok"`, `"embed"` (Wix iframe), `"ios_safari"` (guía paso a paso para agregar a inicio), `"inseguro"` y `"no_soportado"`.
+   - En modo incrustado (`?incrustado=1`), en lugar de «No disponible en este navegador», muestra píldora ámbar **«Disponibles en la dirección directa de la app»**, explicación clara y botón dorado **«Abrir BiEx y activar avisos»** hacia `bibliaexacta.pages.dev/#/app?avisos=1` (que enfoca automáticamente `#app-avisos`).
+   - En Android Chrome utiliza obligatoriamente `ServiceWorkerRegistration.showNotification()` vía `asegurarSW()`, y en Safari antiguo soporta tanto promesa como callback en `requestPermission`.
+8. **Auditoría integral de armonía visual, cero flasheos, contraste WCAG AA y ahorro de batería (`app.css` + `app.js` + `juego.js`):**
+   - **Cero flasheos / CLS en SPA:** `vistaJuego`, `vistaLibro`, `vistaConstelacion`, `vistaSinopsis`, `vistaConcordancia`, `vistaLema`, `vistaRaices`, `vistaRaiz`, `vistaAnalizador`, `vistaBuscar` y `pintarColoso` omiten borrar la vista con `cargando()` cuando los datos ya están en RAM; retirado `opacity: 0` de `html.jg-volviendo`. Resultado: **`0` flasheos en todas las transiciones (`cap → hoy → mundo → arbol → cap`)**.
+   - **Simetría y proporciones:** tarjeta de *El Coloso* en 2 columnas equilibradas en PC (`≥ 780 px`), botón *Actualizar* en línea en *Salas abiertas*, `.hero .acciones` proporcionado, `.sn-acc` en 2 columnas móviles, `.seg.tl-seg` equilibrado en *Cronología*, `.app-botones .btn` protegido contra desbordes.
+   - **Contraste WCAG AA (Deque `axe-core`):** corregidos `.jg-pr-dr` (dracmas en *Misiones*), `.cuenta-m` / `.cuenta-m small` y `.creditos-tit` en tema claro *Pergamino* → **0 violaciones `axe-core` en las 14 combinaciones Oscuro y Pergamino**.
+   - **Ahorro real de batería:** `html.oculto` en `visibilitychange` pausa todas las animaciones de fondo, faro y Escudriña; `R.reloj` (250 ms) y `PRES.iv` se detienen en segundo plano (`0 %` CPU oculto); `arbolVivo` pausa sus animaciones `orbita`/`luz` fuera de pantalla; respiración de Constelación limitada a ~14 fps y auto-pausada; `moTema` ya no repinta el canvas al hacer scroll; todos los `setInterval` (`revisarVersion`, `ponerFechaJer`, `tarjetaMisiones`, `tarjetaNovedades`, `cuentaAtras`, `tPost`, `horaZona`, `relojCiudades`, `relevo`) respetan `document.hidden`.
+
+### 2. Aprendizajes clave (Entrada #15)
+1. **Reemplazar la entrada `[1]` del modal (`history.replaceState`) supera cualquier cadena `history.go(-1)` + `location.hash`:** evita por completo las condiciones de carrera en el historial conjunto de Chrome Android y en los `<iframe>` incrustados como el de Wix.
+2. **La inspección visual 3× HD + `axe-core` atrapa defectos invisibles para los tests unitarios:** detectó el array literal pasado a `Element.replaceChildren()` en modo `embed`, el `opacity: .82` heredado del padre `.cuenta-m` en tema *Pergamino*, el leve desborde del botón largo en `390 px` y el velo negro residual de `jg-volviendo`.
+3. **Los límites de cámara en un grafo deben restar la mitad real del viewport (`halfW`, `halfH`):** acotar el centro de la cámara contra el bounding-box crudo del grafo permite empujar el contenido hacia una esquina dejando 75 % de vacío negro; restar `halfW`/`halfH` garantiza encuadre sólido en cualquier zoom.
+
+### 3. Comprobaciones pasadas (Entrada #15)
+- `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3044` bloques), auditoría editorial limpia (`0` «maestro», `0` «testigo bíblico», `0` «sorteo», `0` «versículo»): **CLEAN**.
+- Deque **`axe-core`** en **7 vistas × 2 temas (Oscuro + Pergamino)**: **0 violaciones (14/14 limpio)**.
+- Auditoría integral `auditor_biex_completo.py` (18 vistas × 4 viewports `360 / 390 / 768 / 1280 px`): **0 errores de consola**, **0 flasheos** en todas las transiciones SPA (`cap → hoy → mundo → arbol → cap`).
+- Suite dedicada `verificar_pr15.py` + capturas 3× HD: Faro `opacity: 0.85` con `58 px` libres sobre `.jg-med`, 29 consejos rotativos + guías contextuales por sección, Ajedrez debajo de Misiones en móvil y PC, Coloso 2 columnas en PC (`380 px` + `648 px`), pellizco aislado en `.jg-arbol-vivo` y `.cn-lienzo` (`tam` sin cambios), pan extremo de Constelación acotado, Atrás desde Biblioteca verificado en 4 rutas directas (con scroll exacto `520 === 520`) y en `<iframe>` Wix real, notificaciones verificadas en modo directo y modo incrustado (`?incrustado=1`), pausa de batería en `document.hidden` verificada (`oculto: true`, `paused`). Todas las capturas 3× HD revisadas visualmente a **10/10**.
+- `python3 wix/sellar.py`: **al día**.
