@@ -928,3 +928,48 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `#/app` (Oscuro y Pergamino, 3× HD): tarjeta «Actualizar versión y reparar caché», casilla «Alguien entra en tu sala de lectura abierta», **0 violaciones `axe-core`**, `0 px` de desborde.
 - Salas persistentes (`juego.js`, móvil 3× HD): reconexión automática tras **3 días** (`retomarSala`), refresco del timestamp en WS `estado`, recuperación multidispositivo con `yo.miSala`, texto «en espera · abierta» cuando `n = 0`, botones «Salir un momento» y «Cerrar sala» (`POST /sala/cerrar`), **0 violaciones `axe-core`**, **0 errores de consola / página**.
 - `python3 wix/sellar.py`: **al día**.
+
+---
+
+## Entrada #17 · PR #17 · Brochazos caligráficos de portada, Atlas bíblico interactivo, Repaso espaciado de raíces, ciclo completo de salas (7 días), integración Opus `28842cf` y precisión léxica (2026-11-25)
+
+### 1. Cambios entregados
+1. **Rediseño artístico de los 5 botones de portada en pincelada de brocha plana (`.hero .acciones > .btn`, `app.css`):**
+   - Sustituidas las siluetas anteriores por **trazos caligráficos pintados en SVG puro de brocha plana** (haces de cerdas paralelas, estrías de brocha seca *kasure*, colas de cerdas divididas y motas de pan de oro/sepia en los bordes, **0 `<filter>` SVG**).
+   - Legibilidad WCAG AA/AAA en *Obsidiana* (pan de oro bruñido en el principal + tinta ahumada con estrías doradas en secundarios) y *Pergamino* (oro antiguo + aguada sepia cálida), `0 px` de desborde `280–1280 px`, **0 violaciones `axe-core`**.
+2. **Línea de verso marcado estrictamente detrás de marcas léxicas (`.vs.mk`, `app.css`):**
+   - Retirado el `box-shadow` que montaba sobre las palabras subrayadas; la línea de verso marcado pasa a `background-image: linear-gradient(...)` a `100% 100%` con `z-index: 0`, mientras `.rara-l` / `.rara-t` quedan con `position: relative; z-index: 1` y `text-underline-offset: 2px`, dejando el subrayado azul punto-raya claramente por delante y encima del filete del marcador (verificado a 3× HD en `Yαʿăqṓḇ [Santiago] 1:21`).
+3. **Cero solapamientos de íconos flotantes y avisos + armonización del texto base (`app.css`, `app.js`):**
+   - `.aviso-flot` movido a la zona superior centrada (`html.en-cap` lo desplaza `60 px` bajo `.barra` para librar `.barra-hoja`, usando clase O(1) en `mostrarRuta` sin `:has()`).
+   - Despeje inferior de `.hoja` ampliado a `96 px` en móvil y ocultación automática del texto `≈ N min` en `saltosRapidos` al acercarse al pie (`p > 0.88`, despejando `.ps-cap` con `0 px` de choque).
+   - Tamaño base de lectura armonizado con el resto de la interfaz: `.vl .vt` `1.04rem` y `.continuo p` `1.05rem` (`~15.75 px` computados a `tam = 3`).
+4. **Correcciones editoriales permanentes y precisión léxica cotejada contra `datos/libros/` (`app.js`, `juego.js`):**
+   - **«Originario» / «Originador», nunca «Original»:** corregidas las 5 cadenas de interfaz de manuscritos, texto griego y títulos en `app.js` (p. ej. *Griego originario*, *Manuscritos originarios*). Nota para BiEx/Opus: queda 1 cadena `"el texto original,"` dentro de `datos/estudios.json` (no editado a mano por norma de `CLAUDE.md`, para ajustar en el generador del Taller).
+   - **«Canto [bloque]» / «Cantos [bloques]», nunca «piedra» / «piedras»:** sustituidas todas las menciones visibles en `juego.js` (con morfología masculina exacta: `primer`..`duodécimo canto [bloque] del fundamento`, `Lo hallaste`, `muralla de la ciudad`, tarjeta `Cantos` en ficha pública) y en el plan `1PE` de `app.js` (`1 Pέτrος 2:5`: «cantos [bloques] viviendo»), preservando intactas las claves JSON internas del Worker (`y.piedras`, `x.tipo === "piedra"`).
+   - Eliminada la frase innecesaria `"(escalera al usarlo: 1 semana, luego 2, y en adelante cada 3 semanas)."` de la tarjeta *Atributos* en `juego.js`.
+   - Cotejadas palabra por palabra las **42 descripciones del Atlas bíblico** directamente contra los versos citados en `datos/libros/` (`recinto sagrado`, `Pésaḥ [Paso por encima]`, `fecha de la quincuagésima`, `reunión`, `convocación fuera [asamblea]`, `aprendices [estudiantes]`, `más viejos [mayores]`, `fuente de Yaʿăqṓḇ`, `espíritu [soplo] consagrado [santificado]`, `documento [rollo] de Yᵉshaʿyā́HŪ [Isaías]`, `los entrañables [afectuosos]`, `entrada [abertura] abierta`, `tribulación [aflicción]`, `para un Dios desconocido`, etc.).
+5. **Ciclo de vida completo de salas (7 días) e integración total con Opus `28842cf` (`juego.js`, `app.js`):**
+   - Aviso anticipado de **48 horas antes del cierre automático** (`.jg-sala-av` en *Leer en compañía* y modal de sala, alerta en `FARO.pendientes()` vía `estadoSalaVence()` y notificación del dispositivo).
+   - **Cierre automático** (`POST /sala/cerrar`) de la sala anterior del anfitrión al crear una nueva sala.
+   - **Aviso definitivo a creadores tras 7 días de inactividad** (`comprobarSalaVencida`, historial `jg:miSalaHist` y mensaje WS `{ t: "cerrada" }`) invitándolos a crear una nueva sala.
+   - Integración completa del paquete de servidor `28842cf`: envío de `brecha: !!brecha` en `POST /coloso/accion` + visualización de `r.bono.mult`; sincronización y manejo de errores en `POST /compania/nombre`; panel interactivo **«Gesto de compañía»** (`POST /jugador/beneficio`, 4 botones) dentro de la ficha pública del jugador; y telemetría liviana de errores `POST /error` en `app.js` (tope 2/sesión).
+6. **Insignia 1 · Atlas bíblico interactivo (`#/mapa` y `#/mapa/<id>`, `app.js` + `app.css`):**
+   - **42 enclaves históricos** de la Nueva Voluntad sobre mapa SVG puro (`960 × 540`) del Levante y el Mediterráneo (con mar de Gālī́l, río Yardḗn y mar Muerto), 4 capas filtrables (*Todo el mapa (42)*, *Vida de YēshŪ́aʿ*, *Viajes de Pαῦlος [Pablo]* con 4 rutas trazadas, *7 convocaciones · Ἀpοκάlυpsις*).
+   - Zoom/arrastre con pellizco aislado (`data-sin-pellizco="1"`), tipografía compensada al zoom y desplazamientos cartográficos direccionales (`ATLAS_OFF`) sin solape, progreso de lectura en verde (`LEI.es`), directorio buscable, accesos desde Biblioteca y Herramientas, y chips clicables `.fv-lugares` dentro de `vistaVerso`.
+7. **Insignia 2 · Tarjetas de repaso breve de raíces griegas — 1 min/día (`#/raices/repaso`, `app.js` + `app.css`):**
+   - Repaso espaciado Leitner de 5 cajas (1, 2, 4, 8, 16 días) guardado en `estudio.repasoRaices` (sincronizado automáticamente con `/nube`), filtrado a raíces griegas sustantivas (verbos, sustantivos y adjetivos con `["V", "N", "A"].includes(claseLema(r))`, priorizando familias derivadas `fam.length >= 2`), rondas de 6 tarjetas, barra de avance accesible (`aria-label`), familia de palabras y libros principales de la Nueva Voluntad.
+
+### 2. Normas editoriales permanentes añadidas a la memoria de Neon (Entrada #17)
+1. **Manuscritos e idioma fuente:** usar siempre **«originario» / «originador»**, nunca **«original»** (no existen autógrafos originales, sino manuscritos originarios con idioma originador de traducción).
+2. **`λίθος` y morfología bíblica:** usar siempre **`canto [bloque]` / `cantos [bloques]`** (masculino), nunca «piedra»/«piedras», cuidando siempre la concordancia de género en ordinales y pronombres.
+3. **Cotejo obligatorio con el corpus (`datos/libros/`):** antes de escribir cualquier resumen, ficha geográfica, misión o concepto derivado de pasajes bíblicos, contrastar literalmente los versos en `datos/libros/` para respetar al 100 % el vocabulario y la morfología de BiEx.
+
+### 3. Aprendizajes técnicos (Entrada #17)
+1. **Nunca usar `:has()` sobre contenedores grandes (`body:has(.barra-hoja)`):** sustituido por clase O(1) `html.en-cap` alternada en `mostrarRuta`.
+2. **No sobreescribir `font-size` SVG desde CSS con el shorthand `font:`:** `.mp-pin text` debe omitir el tamaño fijo en CSS para que el escalado inverso al zoom (`tx.style.fontSize`) mantenga las etiquetas cartográficas nítidas y contenidas al acercar el mapa.
+3. **Accesibilidad en SVG interactivos y barras de avance (`axe-core`):** un `<svg>` con pins interactivos (`role="button" tabindex="0"`) debe llevar `role="group"` (no `role="img"`, que dispara `nested-interactive`); toda barra `role="progressbar"` debe declarar `aria-label`.
+
+### 4. Comprobaciones pasadas (Entrada #17)
+- `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3192/3192`), cero `:has()`, auditoría léxica sobre todo el diff y las 42 entradas del Atlas cotejadas contra `datos/libros/`: **CLEAN**.
+- Suite Playwright 3× HD (`verificar_pr17.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core`: **`pageerrors=0`, `axe_violations=0`, `0 px` de desborde en todas las vistas (`280 px` incluido)**, todas las capturas 3× HD inspeccionadas visualmente a **10/10**.
+- `python3 wix/sellar.py`: **al día** (`f8da4cf622e2`).

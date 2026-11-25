@@ -108,6 +108,8 @@
     orden: '<path d="M4 7.5h11M4 12h8M4 16.5h13" ' + L1 + '/><path d="M17.5 4.5l3 3-3 3" ' + L1 + '/>',
     libros: '<path d="M4.6 4.6h3.3v14.8H4.6zM9.4 4.6h3.3v14.8H9.4z" ' + L1 + '/><path d="M14.3 5.9l3.1-.8 3.4 14.1-3.1.8z" ' + L1 + '/><path d="M3 19.4h18M6.25 8v2.4M11.05 8v2.4" ' + L1 + '/>',
     juego: '<path d="M7 4.5h10l3.5 4.6L12 19.5 3.5 9.1z" ' + L1 + '/><path d="M3.5 9.1h17M9.6 4.5L8.2 9.1 12 19.5l3.8-10.4-1.4-4.6" ' + L1 + '/>',
+    mapa: '<path d="M3.5 6.5l5.5-2 6 2.2 5.5-2v12.8l-5.5 2-6-2.2-5.5 2z" ' + L1 + '/><path d="M9 4.5v12.8M15 6.7v12.8" ' + L1 + '/>',
+    tarjetas: '<rect x="5.5" y="6.5" width="14.5" height="12.5" rx="2" ' + L1 + '/><path d="M3.5 14.5V6a2 2 0 0 1 2-2h10.5" ' + L1 + '/><path d="M9 11h7.5M9 14.5h5" ' + L1 + '/>',
   };
   const fmt = (n) => Number(n).toLocaleString("es");
   const pct = (x) => (x >= 10 ? x.toFixed(1) : x.toFixed(2)).replace(".", ",") + " %";
@@ -1926,10 +1928,12 @@
         hr(ICO.constelacion, "Constelación del léxico", "Red visual interactiva de raíces griegas, lemas, referencias cruzadas y tus notas en 12 colores.", "Explorar el mapa", "#/constelacion"),
         hr(ICO.lista, "Concordancia", "Todas las apariciones de un lema en la Nueva Voluntad, con su forma, su traducción y su verso. También por su código Strong.", "Buscar una palabra", "#/lema"),
         hr(ICO.raiz, "Diccionario de raíces", "Las palabras de la Nueva Voluntad reunidas por su raíz: prefijos visibles, formación, origen hebreo o arameo, tabla de formas y cómo se traduce cada una.", "Explorar las raíces", "#/raices"),
+        hr(ICO.tarjetas, "Repaso de raíces · 1 min", "Tarjetas breves de repaso espaciado con las familias griegas más importantes de la Nueva Voluntad, sincronizadas con tu cuenta.", "Repasar hoy", "#/raices/repaso"),
         hr(ICO.filtros, "Búsqueda morfológica", "Combina rasgos: los aoristos pasivos de un libro, los participios de un lema, los genitivos de un capítulo…", "Buscar", "#/buscar"),
         hr(ICO.texto, "Analizar texto griego", "Escribe o pega cualquier pasaje en griego y toca cada palabra: su lema, su morfología, su código Strong, su pronunciación y su raíz.", "Analizar un texto", "#/analizar")),
       cat("Historia del texto",
         item(ICO.manuscrito, "Manuscritos antiguos", "Cada verso en los papiros y códices más antiguos: qué dicen, en qué difieren y su transcripción letra por letra.", "ms", 3),
+        hr(ICO.mapa, "Atlas bíblico", "Mapa interactivo del Mediterráneo y el Levante: los lugares de la vida de YēshŪ́aʿ, los viajes de Pαῦlος [Pablo] y las 7 convocaciones fuera [asambleas] de Ἀpοκάlυpsις.", "Explorar el mapa", "#/mapa"),
         hr(ICO.tiempo, "Línea del tiempo", "Los acontecimientos y la fecha en que se escribió cada libro, hasta la destrucción del templo en el año 70.", "Abrir", "#/cronologia"),
         hr(ICO.tiempo, "Por qué estas fechas", "Las razones de la datación temprana que sigue BiEx: el año 70, el final de Prάc̅ṣεις y el templo en presente.", "Leer", "#/fechas"),
         hr(ICO.chispa, "Lo que pocos saben", "Datos de la historia del texto y de las traducciones que cambian la manera de leer, con sus pasajes y sus fuentes.", "Descubrir", "#/datos"),
@@ -2375,7 +2379,9 @@
       onkeydown: (e) => { if (e.key === "Enter") { const c = chips.find((x) => !x.hidden); if (c) c.click(); } } });
     const accLib = h("div", { class: "libs-acc" },
       h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/sinopsis" + (b ? "/" + b.c + "." + (esc.cap || 1) + ".1" : "")) }, svg(ICO.sinopsis), h("span", { text: "Mesa sinóptica" })),
-      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/constelacion" + (b ? "?capa=refs&libro=" + b.c : "")) }, svg(ICO.constelacion), h("span", { text: "Constelación" })));
+      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/constelacion" + (b ? "?capa=refs&libro=" + b.c : "")) }, svg(ICO.constelacion), h("span", { text: "Constelación" })),
+      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/mapa") }, svg(ICO.mapa), h("span", { text: "Atlas bíblico" })),
+      h("button", { type: "button", class: "libs-acc-btn", onclick: () => irDesdeModal("#/raices/repaso") }, svg(ICO.tarjetas), h("span", { text: "Repaso · 1 min" })));
     abrirModal(() => cajaModal(cabModal("Los 27 libros", b ? "Estás en " + nombreLibro(b) + " " + esc.cap + " · elige un libro" : "Elige un libro y luego su capítulo"),
       // (14-nov-2026) la lupa y la lista van juntas en el cuerpo de la ventana: la lista no es el pie (se montaba sobre la lupa)
       [accLib, h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), lupa),
@@ -4086,7 +4092,7 @@
     // AL13 (BiEx, 22-nov-2026, 18:53): la nota dice que el título también cambia en las palabras que se forman con él, y las dos citas
     // van en su propia línea, centradas y enteras (en el teléfono, una debajo de la otra): simétricas
     const pie = h("div", { class: "jnm-pie" },
-      h("p", { text: "Traducción íntegra de la edición de Wilhelm [Guillermo] Jünemann Beckschäfer (dominio público), con la única modificación de BiEx de usar el Nombre que es sobre todo nombre y el título original, también en las palabras que se forman con él:" }),
+      h("p", { text: "Traducción íntegra de la edición de Wilhelm [Guillermo] Jünemann Beckschäfer (dominio público), con la única modificación de BiEx de usar el Nombre que es sobre todo nombre y el título originario, también en las palabras que se forman con él:" }),
       h("p", { class: "jnm-citas" }, h("a", { href: "#/ACT/4/l/12", text: lib("ACT") + " 4:12" }), h("span", { class: "jnm-sep", "aria-hidden": "true", text: "·" }), h("a", { href: "#/PHP/2/l/9", text: lib("PHP") + " 2:9-10" })),
       h("small", { text: "Texto digital: corpus paralelo GIL-UNAM (CC0)." }));
     abrirModal(() => cajaModal(cabModal("La perícopa en Jünemann", nombreLibro(b) + " " + cap + ":" + (a === z ? a : a + "–" + z)), cuerpo));
@@ -4322,7 +4328,7 @@
                   corForzado = prevCor;
                 }
                 cmpBody.replaceChildren(h("div", { class: "fv-cmp-grid" },
-                  grTxt ? col("Griego original", grTxt, "gr") : null,
+                  grTxt ? col("Griego originario", grTxt, "gr") : null,
                   col("Textual · completa con matices", nodoTex),
                   col(L.o ? "Lectura · limpia y orden natural" : "Lectura · limpia", nodoLec),
                   col("Jünemann (traducción clásica)", jnmV || "Este verso no figura en la edición de Jünemann.")));
@@ -4333,6 +4339,17 @@
             });
             return det;
           })() : null,
+          (() => {
+            const lugs = lugaresDeVerso(b.c, cap, ctx.v);
+            if (!lugs.length) return null;
+            return h("div", { class: "fv-lugares", "aria-label": "Lugares en el Atlas bíblico" }, lugs.map((lug) =>
+              h("a", {
+                class: "fv-lugar",
+                href: "#/mapa/" + lug.id,
+                title: "Ver " + lug.n + " [" + lug.tr + "] en el Atlas bíblico",
+                onclick: (e) => { e.preventDefault(); irDesdeModal("#/mapa/" + lug.id); },
+              }, svg(ICO.mapa), h("span", { text: lug.n + " [" + lug.tr + "]" }))));
+          })(),
           h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona,
             (() => {
               // AF2: la perícopa del verso (los mismos inicios que la lectura) y el capítulo entero
@@ -4369,7 +4386,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "5b08c92a1f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "1577467a95", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5248,7 +5265,9 @@
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel" },
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "Diccionario de raíces" }), h("h1", { text: "Las palabras por su raíz" }),
-        h("p", { class: "nota-ui", text: "Cada raíz reúne las palabras de la Nueva Voluntad que la comparten: sus prefijos visibles, su formación, su origen y cómo se traduce cada una según su morfología y su contexto. Busca en griego, con letras latinas, por su traducción o por su código Strong." })),
+        h("p", { class: "nota-ui", text: "Cada raíz reúne las palabras de la Nueva Voluntad que la comparten: sus prefijos visibles, su formación, su origen y cómo se traduce cada una según su morfología y su contexto. Busca en griego, con letras latinas, por su traducción o por su código Strong." }),
+        h("div", { style: "margin-top:12px;display:flex;flex-wrap:wrap;gap:9px;align-items:center" },
+          h("a", { class: "btn chico oro", href: "#/raices/repaso" }, svg(ICO.tarjetas), h("span", { text: "Repaso diario · 1 min" })))),
       h("div", { class: "cc-buscar" }, svg(ICO.buscar), entrada),
       h("div", { class: "tarjeta" }, h("div", { class: "apl-cab" }, titulo, ords), lista))));
     pintar();
@@ -7238,8 +7257,8 @@
       const p = avance(); caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98); if (!ATADO) girar();
       actualizarBtnMk();
       // AL5: si el desplazamiento terminó al final de la página, el plazo corto vale desde ya (el aviso de este cálculo llega 0,18 s tarde)
-      if (p > 0.98 && caja.classList.contains("vis") && secLista.hidden && mkPan.hidden) { clearTimeout(reloj); reloj = setTimeout(ocultarQuieto, 1000); }
-      const n = Math.round((contar() * (1 - p)) / 180), txt = n >= 1 ? "≈ " + n + " min" : "";
+      if (p > 0.94 && caja.classList.contains("vis") && secLista.hidden && mkPan.hidden) { clearTimeout(reloj); reloj = setTimeout(ocultarQuieto, 900); }
+      const n = p > 0.88 ? 0 : Math.round((contar() * (1 - p)) / 180), txt = n >= 1 ? "≈ " + n + " min" : "";
       if (mins.textContent !== txt) mins.textContent = txt;
       caja.classList.toggle("con-min", !!txt);
     }
@@ -7249,8 +7268,8 @@
     document.addEventListener("pointerdown", (e) => {
       if (!secLista.hidden && !caja.contains(e.target)) alternarSecs(false);
       if (!mkPan.hidden && !caja.contains(e.target)) { alternarMk(false); mostrar(); }
-      // AL5: un toque en el pie (créditos, autoría) aparta al instante los saltos rápidos para leer lo que tapaban
-      if (caja.classList.contains("vis") && !caja.contains(e.target) && e.target.closest && e.target.closest(".pie")) { clearTimeout(reloj); caja.classList.remove("vis"); alternarSecs(false); alternarMk(false); }
+      // AL5 + PR #17: un toque en el pie o en Pulso del texto (.ps-cap) aparta al instante los saltos rápidos para no tapar nada
+      if (caja.classList.contains("vis") && !caja.contains(e.target) && e.target.closest && e.target.closest(".pie, .ps-cap")) { clearTimeout(reloj); caja.classList.remove("vis"); alternarSecs(false); alternarMk(false); }
     }, true);
     const alSalirCaja = (e) => {
       if (e && e.relatedTarget && caja.contains(e.relatedTarget)) return;
@@ -7450,7 +7469,7 @@
     TIT: "Une doctrina íntegra con conducta digna en la vida pública y doméstica.",
     "2TI": "Testamento final de fidelidad: guardar el depósito, resistir con temple y aprovechar toda Escritura inspirada.",
     HEB: "Contrasta sombras y realidad plena, llamando a acercarse con confianza y correr con perseverancia.",
-    "1PE": "Fortalece a lectores extranjeros y probados recordando su identidad como piedras vivas.",
+    "1PE": "Fortalece a lectores extranjeros y probados recordando su identidad como cantos [bloques] viviendo.",
     "2PE": "Advierte contra distorsiones de las Escrituras y anima a añadir virtud, conocimiento y dominio propio.",
     "1JN": "Distingue luz y oscuridad: conocer de verdad se demuestra caminando en verdad y benevolencia.",
     "2JN": "Equilibrio breve entre firmeza en la enseñanza verdadera y hospitalidad con discernimiento.",
@@ -7988,6 +8007,7 @@
     const st = raw && typeof raw === "object" ? Object.assign({}, raw) : {};
     if (!st.diario || typeof st.diario !== "object") st.diario = {};
     if (!st.pares || typeof st.pares !== "object") st.pares = {};
+    if (!st.repasoRaices || typeof st.repasoRaices !== "object") st.repasoRaices = {};
     return st;
   }
   function guardarEstudio(st) {
@@ -9354,7 +9374,7 @@
           h("div", { class: "tc-prev-box" }, cv),
           botonesTema,
           h("div", { class: "tc-ops" },
-            h("label", {}, chkGr, h("span", { text: "Incluir griego original" })),
+            h("label", {}, chkGr, h("span", { text: "Incluir griego originario" })),
             h("label", {}, chkAmp, h("span", { text: "Letra más amplia" }))),
           h("div", { class: "tc-acc" },
             h("button", { class: "btn oro", type: "button", onclick: descargarPng }, svg(ICO.descargar), h("span", { text: "Descargar PNG HD" })),
@@ -9362,17 +9382,17 @@
     };
   }
 
-  // --- Consejos para principiantes por sección + Faro pulsante discreto de pendientes (PR #14–#15)
+  // --- Consejos para principiantes por sección + Faro pulsante discreto de pendientes (PR #14–#17)
   const FARO_TIPS = [
     // Lectura general
     { sec: "lectura", t: "Griego al toque", d: "No necesitas saber griego: toca cualquier verso mientras lees para ver cada palabra traducida, cómo se pronuncia y su significado exacto." },
     { sec: "lectura", t: "Tres formas de leer", d: "Arriba del capítulo puedes alternar entre Lectura (párrafos limpios), Textual (verso a verso) y Análisis (cada palabra griega desglosada)." },
     { sec: "lectura", t: "Modo Contemplar", d: "Toca el ícono del ojo en la barra del capítulo para ocultar botones y leer con calma, como en una hoja impresa sin distracciones." },
     { sec: "lectura", t: "Marcadores en 12 colores", d: "Resalta versos por tema (promesas, fe, historia, preguntas…) y guarda notas propias: todo se reúne en tu Diario sincronizado." },
-    { sec: "lectura", t: "Tarjetas HD para compartir", d: "Dentro de cualquier verso pulsa «Tarjeta HD» para generar una imagen nítida con el texto de BiEx y su griego original." },
+    { sec: "lectura", t: "Tarjetas HD para compartir", d: "Dentro de cualquier verso pulsa «Tarjeta HD» para generar una imagen nítida con el texto de BiEx y su griego originario." },
     { sec: "lectura", t: "Compara con Jünemann", d: "El ícono del rollo junto al título del capítulo abre la perícopa en la traducción clásica de Jünemann para contrastarla al instante." },
     // Análisis palabra por palabra
-    { sec: "analisis", t: "Qué estás viendo aquí", d: "Cada tarjeta es una palabra del texto griego original en su orden real. Toca cualquiera para ver su traducción literal, su raíz y dónde más aparece." },
+    { sec: "analisis", t: "Qué estás viendo aquí", d: "Cada tarjeta es una palabra del texto griego originario en su orden real. Toca cualquiera para ver su traducción literal, su raíz y dónde más aparece." },
     { sec: "analisis", t: "Colores que guían la lectura", d: "Los colores agrupan verbos, nombres y adjetivos. En «Color» y «Resaltar» puedes iluminar solo las acciones, los tiempos verbales o los casos." },
     { sec: "analisis", t: "Lentes a tu medida", d: "Si ves demasiada información a la vez, apaga «Transliteración» o «Morfología» arriba para quedarte solo con el griego y el español." },
     // Línea del tiempo / Cronología
@@ -9388,6 +9408,12 @@
     // Mesa sinóptica libre
     { sec: "sinopsis", t: "Compara dos pasajes a la vez", d: "Elige dos versos cualesquiera o toca uno de los ejemplos de arriba: las palabras con el mismo lema griego brillan en oro y las de la misma raíz en azul." },
     { sec: "sinopsis", t: "Ilumina una palabra en ambos", d: "Toca cualquier ficha dorada o palabra griega para ver dónde reaparece en el otro pasaje, abrir su concordancia o guardar el par en tu diario." },
+    // Atlas bíblico
+    { sec: "mapa", t: "Capas históricas vivas", d: "Cambia arriba entre el mapa completo, la vida de YēshŪ́aʿ, los viajes de Pαῦlος [Pablo] o las 7 convocaciones fuera [asambleas] de Ἀpοκάlυpsις; cada punto abre sus pasajes." },
+    { sec: "mapa", t: "Tu progreso en el mapa", d: "Los puntos en verde señalan lugares cuyos versos ya marcaste como leídos. Pellizca con dos dedos o usa + y − para acercarte sin deformar la página." },
+    // Repaso de raíces · 1 min
+    { sec: "repaso", t: "Un minuto que fija familias enteras", d: "Cada tarjeta muestra una raíz griega de la Nueva Voluntad. Al evaluar si la recordaste, el sistema espaciado programa su próximo repaso en 1, 2, 4, 8 o 16 días." },
+    { sec: "repaso", t: "Sincronizado con tu cuenta", d: "Tus cajas de repaso se guardan en tu dispositivo y se sincronizan con la nube al entrar en Escudriña, para continuar desde cualquier pantalla." },
     // Escudriña › Hoy
     { sec: "escudrina", t: "Aprender leyendo a tu ritmo", d: "Al leer un capítulo en BiEx y tocar «Leído» cuando termines un verso, sumas experiencia, dracmas y avanzas tus misiones sin presión." },
     { sec: "escudrina", t: "Misiones diarias sencillas", d: "Cada día tienes metas breves (leer unos versos o responder una prueba). Si un día no puedes entrar, tu avance y tu cuenta permanecen intactos." },
@@ -9539,6 +9565,50 @@
               });
             }
           }
+          // PR #17 · Aviso 48 h antes del cierre automático de la sala por inactividad (o aviso tras cierre a los 7 días)
+          const sv = window.BiExJuego && window.BiExJuego.estadoSalaVence ? window.BiExJuego.estadoSalaVence() : null;
+          if (sv && sv.aviso) {
+            const av = sv.aviso, et = av.nom ? "«" + av.nom + "»" : "Sala " + av.cod;
+            out.unshift({
+              t: "Tu sala cerrará pronto por inactividad",
+              d: et + " cerrará automáticamente en " + av.faltaTxt + " si sigue sin actividad (límite de 7 días).",
+              accion: "Ver sala",
+              href: "#/escudrina/juntos",
+              foco: ".jg-sala-av",
+              col: "#f0b35a",
+            });
+          } else if (sv && sv.vencida && sv.vencida.c) {
+            const v = sv.vencida, et = v.nombre ? "«" + v.nombre + "» (" + v.c + ")" : "La sala " + v.c;
+            out.unshift({
+              t: "Tu sala anterior se cerró tras 7 días",
+              d: et + " venció por inactividad. Puedes crear una nueva cuando quieras volver a leer en compañía.",
+              accion: "Crear otra",
+              href: "#/escudrina/juntos",
+              foco: ".jg-sala-av",
+              col: "#e8cf94",
+            });
+          }
+        }
+      } catch (e) {}
+      // 3b) Repaso breve de raíces (solo si el lector ya comenzó sus cajas y tiene tarjetas vencidas hoy)
+      try {
+        const rep = (leerEstudio().repasoRaices) || {};
+        const ahora = Date.now();
+        let venc = 0;
+        for (const [k, v] of Object.entries(rep)) {
+          if (k === "_hoy" || !v || typeof v !== "object") continue;
+          if ((+v.prox || 0) <= ahora) venc++;
+        }
+        const hechoHoy = rep._hoy && rep._hoy.f === hoy && (rep._hoy.n | 0) >= 6;
+        if (venc > 0 && !hechoHoy) {
+          out.push({
+            t: venc === 1 ? "1 raíz griega lista para repasar" : venc + " raíces griegas listas para repasar",
+            d: "Ronda rápida de 1 minuto con repaso espaciado.",
+            accion: "Repasar",
+            href: "#/raices/repaso",
+            foco: ".rr-carta",
+            col: "#c8a962",
+          });
         }
       } catch (e) {}
       // 4) Si aún no hay pendientes de plan/Escudriña pero el lector tiene una lectura reciente sin abrir hoy
@@ -9616,6 +9686,8 @@
         : /^#\/escudrina/.test(hh) ? "escudrina"
         : /^#\/sinopsis/.test(hh) ? "sinopsis"
         : /^#\/constelacion/.test(hh) ? "constelacion"
+        : /^#\/mapa/.test(hh) ? "mapa"
+        : /^#\/raices\/repaso/.test(hh) ? "repaso"
         : /^#\/cronologia/.test(hh) ? "cronologia"
         : /^#\/fuente-q/.test(hh) ? "fuente-q"
         : /^#\/planes/.test(hh) ? "planes"
@@ -9705,6 +9777,587 @@
   document.addEventListener("biex:faro", () => FARO.actualizar());
   window.addEventListener("storage", () => FARO.actualizar());
 
+  // ================================================================== PR #17 · Atlas / Geografía Bíblica interactiva (#/mapa)
+  // 42 lugares clave de la Nueva Voluntad con las transliteraciones exactas de BiEx, proyección geográfica real del Mediterráneo
+  // oriental y el Levante (960 × 540), 4 capas históricas, zoom/paneo sin interferir con el tamaño de letra y progreso desde LEI.
+  const ATLAS_GEO = {
+    poligonos: [
+      "33.5,21.8 88.9,21.8 131.3,32.0 170.4,83.0 209.5,86.4 264.9,130.6 284.4,147.6 264.9,157.8 242.1,137.4 225.8,144.2 219.3,178.2 238.8,188.4 206.2,222.4 189.9,215.6 199.7,191.8 196.4,154.4 163.9,134.0 134.5,123.8 105.2,106.8 79.1,89.8 43.3,66.0 23.7,38.8",
+      "88.9,215.6 189.9,212.2 173.6,239.4 176.9,263.2 144.3,253.0 111.7,239.4 85.6,225.8",
+      "144.3,287.0 157.3,290.4 154.1,293.8 147.6,292.1",
+      "176.9,21.8 313.8,83.0 317.0,140.8 336.6,174.8 369.2,205.4 392.0,208.8 372.4,225.8 385.5,253.0 411.6,270.0 434.4,266.6 444.1,239.4 427.9,222.4 457.2,229.2 463.7,215.6 444.1,198.6 424.6,178.2 421.3,140.8 434.4,134.0 460.4,147.6 467.0,127.2 499.6,120.4 548.4,130.6 623.4,110.2 610.4,21.8",
+      "450.7,304.0 483.3,307.4 515.9,310.8 538.7,314.2 532.1,321.0 493.0,324.4 450.7,314.2",
+      "437.6,185.0 480.0,219.0 473.5,222.4 434.4,191.8",
+      "587.6,273.4 600.6,273.4 594.1,290.4 584.3,283.6",
+      "626.7,110.2 708.1,96.6 828.7,83.0 946.1,117.0 946.1,525.0 796.1,525.0 802.7,443.4 812.4,423.0 822.2,395.8 828.7,378.8 838.5,358.4 848.3,338.0 848.3,304.0 858.1,283.6 858.1,259.8 835.3,259.8 809.2,266.6 779.9,283.6 744.0,283.6 708.1,263.2 682.1,259.8 665.8,280.2 629.9,266.6 597.3,263.2 571.3,249.6 568.0,232.6 568.0,219.0 541.9,208.8 561.5,202.0 558.2,178.2 532.1,168.0 535.4,151.0 561.5,137.4 594.1,134.0 626.7,123.8",
+      "431.1,525.0 431.1,412.8 499.6,436.6 577.8,450.2 656.0,450.2 701.6,440.0 737.5,450.2 799.4,446.8 799.4,525.0",
+      "734.2,321.0 757.0,310.8 805.9,300.6 789.6,317.6 776.6,324.4 757.0,334.6 737.5,327.8",
+    ],
+    aguas: [
+      { t: "MAR MEDITERRÁNEO", x: 350, y: 360 },
+      { t: "MAR EGEO", x: 486, y: 256 },
+      { t: "MAR ADRIÁTICO", x: 250, y: 88 },
+    ],
+    regiones: [
+      { t: "ITALIA", x: 145, y: 108 },
+      { t: "MACEDONIA", x: 404, y: 112 },
+      { t: "ACAYA", x: 394, y: 244 },
+      { t: "ASIA MENOR", x: 676, y: 170 },
+      { t: "SIRIA", x: 888, y: 318 },
+      { t: "YEHUDĀ́H", x: 866, y: 444 },
+      { t: "EGIPTO", x: 650, y: 488 },
+    ],
+    galilea: "840.1,393.1 843.1,393.8 843.4,396.5 841.1,399.2 839.5,396.8",
+    muerto: "837.5,431.2 841.1,431.8 840.5,442.7 837.9,452.9 834.6,451.9 835.3,440.7",
+    jordan: "841.1,399.2 840.5,407.7 840.1,417.9 839.5,431.2",
+  };
+  const ATLAS_LUGARES = [
+    { id: "jerusalen", n: "Yᵉrūshāláyim", tr: "Jerusalén", reg: "Yehudā́h [Judea]", x: 830, y: 430, pri: 1, capas: ["yeshua", "paulos"], desc: "Centro del recinto sagrado y de la primera convocación fuera [asamblea] tras la resurrección [puesta en pie arriba]. Escenario del Pésaḥ [Paso por encima] final de YēshŪ́aʿ, de la fecha de la quincuagésima y del encuentro de Prάc̅ṣεις 15.", citas: [["LUK", 2, 41], ["MAT", 21, 1], ["ACT", 2, 1], ["ACT", 15, 2], ["GAL", 2, 1]] },
+    { id: "belen", n: "Bḗṯ-Leḥém", tr: "Belén", reg: "Yehudā́h [Judea]", x: 828, y: 437, pri: 0, capas: ["yeshua"], desc: "Ciudad de Dāvî́ḏ [David] en Yehudā́h, al sur de Yᵉrūshāláyim, donde nació YēshŪ́aʿ según lo escrito en Mîḵā́h.", citas: [["MAT", 2, 1], ["LUK", 2, 4], ["JHN", 7, 42]] },
+    { id: "betania", n: "Bēṯ-ʿAnyā́h", tr: "Betania", reg: "Yehudā́h [Judea]", x: 835, y: 433, pri: 0, capas: ["yeshua"], desc: "Aldea en la ladera oriental del monte de los Olivos, hogar de Martā́ʾ [Marta], Miryā́m [María] y Laʿzā́r [Lázaro], junto a Yᵉrūshāláyim.", citas: [["JHN", 11, 1], ["JHN", 12, 1], ["LUK", 24, 50]] },
+    { id: "jerico", n: "Yᵉrîḥṓ", tr: "Jericó", reg: "Valle del Yardḗn", x: 838, y: 427, pri: 0, capas: ["yeshua"], desc: "Ciudad oasis junto al descenso hacia el mar Muerto, paso habitual de quienes subían desde Gālī́l hacia Yᵉrūshāláyim.", citas: [["MRK", 10, 46], ["LUK", 19, 1], ["HEB", 11, 30]] },
+    { id: "jordan", n: "Yardḗn", tr: "Río Jordán", reg: "Valle del Yardḗn", x: 840, y: 416, pri: 0, capas: ["yeshua"], desc: "Río que une el mar de Gālī́l con el mar Muerto; allí sumergía YÔḥānā́n [Juan] y allí inició públicamente YēshŪ́aʿ.", citas: [["MAT", 3, 13], ["MRK", 1, 9], ["JHN", 1, 28]] },
+    { id: "samaria", n: "Shōmᵉrṓn", tr: "Samaria", reg: "Región central", x: 829, y: 413, pri: 0, capas: ["yeshua"], desc: "Región intermedia entre Yehudā́h y Gālī́l; allí conversó YēshŪ́aʿ junto a la fuente de Yaʿăqṓḇ y luego Fίlιppος proclamó al Mashíaḥ [Ungido].", citas: [["JHN", 4, 4], ["ACT", 8, 5], ["ACT", 1, 8]] },
+    { id: "jope", n: "Yāfṓ", tr: "Jope", reg: "Costa de Yehudā́h", x: 814, y: 421, pri: 0, capas: ["yeshua", "paulos"], desc: "Puerto mediterráneo donde Pέτrος [Pedro] levantó a Ταβιθά [Tabita] y recibió la visión antes de ir a casa de Κοrnḗlιος [Cornelio] en Καιsάrεια.", citas: [["ACT", 9, 36], ["ACT", 10, 9]] },
+    { id: "cesarea", n: "Καιsάrεια", tr: "Cesarea Marítima", reg: "Costa de Yehudā́h", x: 819, y: 406, pri: 1, capas: ["yeshua", "paulos"], desc: "Puerto edificado por ῾Hērṓͅidēs [Herodes] y sede del guía romano. Allí Κοrnḗlιος [Cornelio] recibió el espíritu [soplo] consagrado [santificado] y Pαῦlος permaneció custodiado dos años antes de partir a ῾Hrṓmē.", citas: [["ACT", 10, 1], ["ACT", 23, 23], ["ACT", 25, 1]] },
+    { id: "nazaret", n: "Naṫzḗret", tr: "Nazaret", reg: "Gālī́l [Galilea]", x: 832, y: 399, pri: 1, capas: ["yeshua"], desc: "Población de las colinas de Gālī́l donde se crió YēshŪ́aʿ y donde leyó el documento [rollo] de Yᵉshaʿyā́HŪ [Isaías] en la reunión del shabbā́ṯ.", citas: [["LUK", 1, 26], ["LUK", 4, 16], ["MAT", 2, 23], ["JHN", 1, 46]] },
+    { id: "cana", n: "Qānā́h", tr: "Caná de Gālī́l", reg: "Gālī́l [Galilea]", x: 833, y: 394, pri: 0, capas: ["yeshua"], desc: "Aldea de Gālī́l cercana a Naṫzḗret donde YēshŪ́aʿ constituyó la iniciación de las señales en una boda.", citas: [["JHN", 2, 1], ["JHN", 4, 46]] },
+    { id: "capernaum", n: "Kᵉfar-Naḥū́m", tr: "Capernaúm", reg: "Orilla del mar de Gālī́l", x: 842, y: 391, pri: 1, capas: ["yeshua"], desc: "Aldea pesquera en la ribera norte del mar de Gālī́l que sirvió de base a la enseñanza de YēshŪ́aʿ en Gālī́l.", citas: [["MAT", 4, 13], ["MRK", 1, 21], ["JHN", 6, 59]] },
+    { id: "tiberias", n: "Τιβεrιάς", tr: "Tiberias", reg: "Orilla del mar de Gālī́l", x: 838, y: 397, pri: 0, capas: ["yeshua"], desc: "Ciudad fundada por ῾Hērṓͅidēs Antipas en la costa occidental del lago, que también dio su nombre al mar de Gālī́l.", citas: [["JHN", 6, 23], ["JHN", 21, 1]] },
+    { id: "tiro", n: "Ṫzṓr", tr: "Tiro", reg: "Fenicia", x: 829, y: 379, pri: 0, capas: ["yeshua", "paulos"], desc: "Antiguo puerto fenicio cuya región visitó YēshŪ́aʿ y donde luego los aprendices [estudiantes] despidieron a Pαῦlος en la playa.", citas: [["MAT", 15, 21], ["MRK", 7, 24], ["ACT", 21, 3]] },
+    { id: "sidon", n: "Ṫzîdṓn", tr: "Sidón", reg: "Fenicia", x: 835, y: 369, pri: 0, capas: ["yeshua", "paulos"], desc: "Ciudad costera al norte de Ṫzṓr donde Pαῦlος hizo escala camino a ῾Hrṓmē y pudo visitar a los entrañables [afectuosos].", citas: [["MRK", 7, 31], ["ACT", 27, 3]] },
+    { id: "damasco", n: "Damméśeq", tr: "Damasco", reg: "Siria", x: 865, y: 372, pri: 1, capas: ["paulos"], desc: "Ciudad caravanera antigua de Siria; en su camino YēshŪ́aʿ se apareció a Shāʾū́l [Saulo / Pαῦlος] y allí comenzó a proclamarlo.", citas: [["ACT", 9, 2], ["2CO", 11, 32], ["GAL", 1, 17]] },
+    { id: "antioquia", n: "Ἀnτιόχεια", tr: "Antioquía de Siria", reg: "Siria", x: 861, y: 280, pri: 1, capas: ["paulos"], desc: "Metrópoli junto al Orontes donde los aprendices [estudiantes] fueron titulados por primera vez Mᵉshîḥiyyî́m [Del Ungido] y punto de partida de los viajes de Pαῦlος.", citas: [["ACT", 11, 26], ["ACT", 13, 1], ["GAL", 2, 11]] },
+    { id: "tarso", n: "Ταrsός", tr: "Tarso", reg: "Cilicia", x: 819, y: 256, pri: 1, capas: ["paulos"], desc: "Ciudad universitaria y comercial de Cilicia, lugar de nacimiento de Shāʾū́l — Pαῦlος [Pablo].", citas: [["ACT", 9, 11], ["ACT", 21, 39], ["ACT", 22, 3]] },
+    { id: "chipre", n: "Κύprος", tr: "Chipre · Pάfος y Sαlαmίς", reg: "Mediterráneo oriental", x: 763, y: 321, pri: 1, capas: ["paulos"], desc: "Isla natal de Bar-Nᵉḇā́ʾ [Bernabé] y primera etapa del primer viaje de Pαῦlος, atravesada de Sαlαmίς a Pάfος.", citas: [["ACT", 4, 36], ["ACT", 13, 4], ["ACT", 13, 6]] },
+    { id: "perge", n: "Pέrgē", tr: "Perge", reg: "Panfilia", x: 689, y: 256, pri: 0, capas: ["paulos"], desc: "Ciudad de Panfilia adonde llegaron Pαῦlος y Bar-Nᵉḇā́ʾ [Bernabé] desde Pάfος; desde allí regresó YÔḥānā́n Μᾶrκος a Yᵉrūshāláyim.", citas: [["ACT", 13, 13], ["ACT", 14, 25]] },
+    { id: "antioquia-pisidia", n: "Ἀnτιόχεια (Pisidia)", tr: "Antioquía de Pisidia", reg: "Galacia · Asia Menor", x: 698, y: 209, pri: 1, capas: ["paulos"], desc: "Colonia romana del interior de Asia Menor donde Pαῦlος habló extensamente en la reunión del shabbā́ṯ.", citas: [["ACT", 13, 14], ["2TI", 3, 11]] },
+    { id: "iconio", n: "Ἰκόnιοn", tr: "Iconio", reg: "Licaonia · Asia Menor", x: 741, y: 222, pri: 0, capas: ["paulos"], desc: "Ciudad en la ruta comercial de Anatolia donde en la reunión confiaron [creyeron] multitud de Yᵉhūdī́m [Judíos/Judeanos] y de Ἑllḗnōn [Griegos].", citas: [["ACT", 14, 1], ["ACT", 16, 2]] },
+    { id: "listra", n: "Lύsτrα", tr: "Listra", reg: "Licaonia · Asia Menor", x: 737, y: 234, pri: 0, capas: ["paulos"], desc: "Colonia licaonia donde Pαῦlος fue apedreado y de donde era originario Τιmόdsεος [Timoteo].", citas: [["ACT", 14, 8], ["ACT", 16, 1], ["2TI", 3, 11]] },
+    { id: "derbe", n: "Δέrβē", tr: "Derbe", reg: "Licaonia · Asia Menor", x: 770, y: 243, pri: 0, capas: ["paulos"], desc: "Límite oriental del primer viaje por Asia Menor; allí anunciaron el buen mensaje e hicieron aprendices [estudiantes] antes de volver fortaleciendo cada convocación fuera [asamblea].", citas: [["ACT", 14, 20], ["ACT", 16, 1]] },
+    { id: "colosas", n: "Κοlοssαί", tr: "Colosas", reg: "Valle del Lico · Asia", x: 643, y: 233, pri: 0, capas: ["paulos"], desc: "Ciudad del valle del Lico vecina de Lαοδίκεια; a su convocación fuera [asamblea] y a Fιlḗmōn dirigió Pαῦlος dos cartas.", citas: [["COL", 1, 2], ["PHM", 1, 1]] },
+    { id: "laodicea", n: "Lαοδίκεια", tr: "Laodicea", reg: "Las 7 convocaciones fuera · Asia", x: 630, y: 225, pri: 0, capas: ["paulos", "apokalypsis"], desc: "Próspera ciudad comercial y bancaria del valle del Lico; séptima convocación fuera [asamblea] de Ἀpοκάlυpsις, amonestada por su tibieza.", citas: [["REV", 3, 14], ["COL", 4, 16]] },
+    { id: "filadelfia", n: "Fιlαδέlfεια", tr: "Filadelfia", reg: "Las 7 convocaciones fuera · Asia", x: 610, y: 209, pri: 0, capas: ["apokalypsis"], desc: "Ciudad en una zona sísmica de Lidia; sexta convocación fuera [asamblea] de Ἀpοκάlυpsις, ante la cual se pone una entrada [abertura] abierta.", citas: [["REV", 3, 7], ["REV", 1, 11]] },
+    { id: "sardis", n: "Sάrδεις", tr: "Sardis", reg: "Las 7 convocaciones fuera · Asia", x: 594, y: 202, pri: 0, capas: ["apokalypsis"], desc: "Antigua capital lidia famosa por su acrópolis; quinta convocación fuera [asamblea] de Ἀpοκάlυpsις, llamada a velar y afianzar lo restante.", citas: [["REV", 3, 1], ["REV", 1, 11]] },
+    { id: "tiatira", n: "Dsυάτειrα", tr: "Tiatira", reg: "Las 7 convocaciones fuera · Asia", x: 587, y: 188, pri: 0, capas: ["paulos", "apokalypsis"], desc: "Ciudad artesanal célebre por sus gremios y su púrpura (de allí era Λυδία [Lidia]) y cuarta convocación fuera [asamblea] de Ἀpοκάlυpsις.", citas: [["REV", 2, 18], ["ACT", 16, 14]] },
+    { id: "pergamo", n: "Pέrgαmος", tr: "Pérgamo", reg: "Las 7 convocaciones fuera · Asia", x: 568, y: 182, pri: 1, capas: ["apokalypsis"], desc: "Capital administrativa de Asia, célebre por sus santuarios y su biblioteca en pergamino; tercera convocación fuera [asamblea] de Ἀpοκάlυpsις.", citas: [["REV", 2, 12], ["REV", 1, 11]] },
+    { id: "esmirna", n: "Smύrnα", tr: "Esmirna", reg: "Las 7 convocaciones fuera · Asia", x: 565, y: 205, pri: 0, capas: ["apokalypsis"], desc: "Puerto de la costa jonia; segunda convocación fuera [asamblea] de Ἀpοκάlυpsις, animada a ser confiable [fiel] en la tribulación [aflicción].", citas: [["REV", 2, 8], ["REV", 1, 11]] },
+    { id: "efeso", n: "Ἔfεsος", tr: "Éfeso", reg: "Las 7 convocaciones fuera · Asia", x: 571, y: 222, pri: 1, capas: ["paulos", "apokalypsis"], desc: "Gran puerto de Asia donde Pαῦlος enseñó más de dos años y primera de las siete convocaciones fuera [asambleas] de Ἀpοκάlυpsις.", citas: [["ACT", 19, 1], ["EPH", 1, 1], ["1TI", 1, 3], ["REV", 2, 1]] },
+    { id: "mileto", n: "Μίlēτος", tr: "Mileto", reg: "Costa de Asia", x: 571, y: 237, pri: 0, capas: ["paulos"], desc: "Puerto al sur de Ἔfεsος donde Pαῦlος mandó llamar a los más viejos [mayores] de la convocación fuera [asamblea] efesia camino a Yᵉrūshāláyim.", citas: [["ACT", 20, 17], ["2TI", 4, 20]] },
+    { id: "patmos", n: "Pάτmος", tr: "Patmos", reg: "Mar Egeo", x: 545, y: 243, pri: 1, capas: ["apokalypsis"], desc: "Pequeña isla rocosa del Egeo donde YÔḥānā́n [Juan] estuvo desterrado y recibió las visiones de Ἀpοκάlυpsις.", citas: [["REV", 1, 9]] },
+    { id: "troas", n: "Τrōͅάς", tr: "Troas", reg: "Misia · Egeo", x: 535, y: 158, pri: 0, capas: ["paulos"], desc: "Puerto del noroeste de Asia donde Pαῦlος tuvo la visión del varón de Macedonia y embarcó hacia Europa.", citas: [["ACT", 16, 8], ["ACT", 20, 6], ["2CO", 2, 12]] },
+    { id: "filipos", n: "Fίlιppοι", tr: "Filipos", reg: "Macedonia", x: 473, y: 117, pri: 1, capas: ["paulos"], desc: "Colonia romana en la Vía Egnatia y primera convocación fuera [asamblea] establecida por Pαῦlος en Europa; destinataria de Fιlιppḗsιοι.", citas: [["ACT", 16, 12], ["PHP", 1, 1], ["1TH", 2, 2]] },
+    { id: "tesalonica", n: "Dsεssαlοnίκē", tr: "Tesalónica", reg: "Macedonia", x: 428, y: 131, pri: 1, capas: ["paulos"], desc: "Capital portuaria de Macedonia; destinataria de las dos primeras cartas conservadas de Pαῦlος.", citas: [["ACT", 17, 1], ["1TH", 1, 1], ["2TH", 1, 1]] },
+    { id: "berea", n: "Βέrοια", tr: "Berea", reg: "Macedonia", x: 405, y: 136, pri: 0, capas: ["paulos"], desc: "Ciudad macedonia célebre porque sus oyentes examinaban cada día las Escrituras para comprobar si estas cosas eran así.", citas: [["ACT", 17, 10], ["ACT", 17, 11]] },
+    { id: "atenas", n: "Ἀdsē̂nαι", tr: "Atenas", reg: "Acaya", x: 454, y: 219, pri: 1, capas: ["paulos"], desc: "Cuna filosófica de Grecia donde Pαῦlος habló en el Ἀrείου pάgου [Areópago] ante estoicos y epicúreos acerca del altar «para un Dios desconocido».", citas: [["ACT", 17, 16], ["ACT", 17, 22], ["1TH", 3, 1]] },
+    { id: "corinto", n: "Κόrιndsος", tr: "Corinto", reg: "Acaya", x: 428, y: 222, pri: 1, capas: ["paulos"], desc: "Puerto estratégico entre dos mares donde Pαῦlος permaneció un año y medio junto a Ἀκύlας [Aquila] y Prίsκιllα [Priscila].", citas: [["ACT", 18, 1], ["1CO", 1, 2], ["2CO", 1, 1]] },
+    { id: "creta", n: "Κrḗτē", tr: "Creta", reg: "Mar Mediterráneo", x: 493, y: 314, pri: 1, capas: ["paulos"], desc: "Gran isla mediterránea donde quedó Τίτος [Tito] poniendo en orden las convocaciones fuera [asambleas] y que bordeó la nave de Pαῦlος antes de la tormenta.", citas: [["TIT", 1, 5], ["ACT", 27, 7]] },
+    { id: "malta", n: "Μεlίτē", tr: "Malta", reg: "Mediterráneo central", x: 154, y: 290, pri: 1, capas: ["paulos"], desc: "Isla donde encalló la nave que llevaba a Pαῦlος hacia ῾Hrṓmē y donde pasaron el invierno con hospitalidad.", citas: [["ACT", 28, 1], ["ACT", 28, 11]] },
+    { id: "roma", n: "῾Hrṓmē", tr: "Roma", reg: "Italia", x: 89, y: 86, pri: 1, capas: ["paulos"], desc: "Capital del Imperio; destinataria de la carta a ῾Hrōmαῖοι y lugar donde Pαῦlος enseñó con libertad durante su custodia.", citas: [["ACT", 28, 16], ["ACT", 28, 30], ["ROM", 1, 7], ["2TI", 1, 17]] },
+  ];
+  const ATLAS_RUTAS = [
+    { id: "r1", t: "1er viaje", ids: ["antioquia", "chipre", "perge", "antioquia-pisidia", "iconio", "listra", "derbe", "perge", "antioquia"] },
+    { id: "r2", t: "2do viaje", ids: ["antioquia", "tarso", "derbe", "listra", "iconio", "troas", "filipos", "tesalonica", "berea", "atenas", "corinto", "efeso", "cesarea", "jerusalen"] },
+    { id: "r3", t: "3er viaje", ids: ["antioquia", "tarso", "antioquia-pisidia", "efeso", "troas", "filipos", "corinto", "troas", "mileto", "tiro", "cesarea", "jerusalen"] },
+    { id: "r4", t: "Viaje a ῾Hrṓmē", ids: ["cesarea", "sidon", "creta", "malta", "roma"] },
+  ];
+  const ATLAS_LIBRO_DEF = {
+    ROM: ["roma"], "1CO": ["corinto"], "2CO": ["corinto"], EPH: ["efeso"], PHP: ["filipos"],
+    COL: ["colosas", "laodicea"], "1TH": ["tesalonica"], "2TH": ["tesalonica"], TIT: ["creta"], PHM: ["colosas"], "1TI": ["efeso"],
+  };
+  function lugaresDeVerso(c, cap, v) {
+    const exact = [], capM = [];
+    for (const lug of ATLAS_LUGARES) {
+      let okV = false, okC = false;
+      for (const [lc, lcap, lv] of lug.citas) {
+        if (lc === c && lcap === cap && lv === v) okV = true;
+        else if (lc === c && lcap === cap) okC = true;
+      }
+      if (okV) exact.push(lug);
+      else if (okC) capM.push(lug);
+    }
+    const res = exact.concat(capM);
+    if (!res.length && ATLAS_LIBRO_DEF[c]) {
+      for (const id of ATLAS_LIBRO_DEF[c]) {
+        const x = ATLAS_LUGARES.find((l) => l.id === id);
+        if (x) res.push(x);
+      }
+    }
+    const seen = new Set();
+    return res.filter((x) => !seen.has(x.id) && seen.add(x.id)).slice(0, 3);
+  }
+  function vistaMapa(lugarId) {
+    navActual("#/buscar");
+    document.title = "Atlas bíblico · BiEx";
+    const NS = "http://www.w3.org/2000/svg";
+    const sEl = (tag, attrs, ...kids) => {
+      const el = document.createElementNS(NS, tag);
+      if (attrs) for (const [k, v] of Object.entries(attrs)) if (v != null) el.setAttribute(k, String(v));
+      for (const k of kids) if (k != null) el.append(typeof k === "string" ? document.createTextNode(k) : k);
+      return el;
+    };
+    const porId = new Map(ATLAS_LUGARES.map((l) => [l.id, l]));
+    let sel = porId.get(String(lugarId || "").toLowerCase()) || porId.get("jerusalen") || ATLAS_LUGARES[0];
+    let capa = "todos";
+    if (lugarId && sel) {
+      if (sel.capas.length === 1) capa = sel.capas[0];
+      else if (sel.id === "patmos" || sel.reg.includes("7 convocaciones")) capa = "apokalypsis";
+    }
+    const PRESETS = {
+      todos: { x: 20, y: 15, w: 920, h: 520 },
+      yeshua: { x: 758, y: 344, w: 160, h: 112 },
+      paulos: { x: 40, y: 50, w: 880, h: 440 },
+      apokalypsis: { x: 512, y: 154, w: 176, h: 114 },
+    };
+    let vb = Object.assign({}, PRESETS[capa] || PRESETS.todos);
+    const lugarLeido = (l) => l.citas.some(([c, cap, v]) => LEI.es(c, cap, v));
+    const visibles = () => capa === "todos" ? ATLAS_LUGARES : ATLAS_LUGARES.filter((l) => l.capas.includes(capa));
+
+    const svgEl = sEl("svg", { class: "mp-svg", viewBox: `${vb.x} ${vb.y} ${vb.w} ${vb.h}`, role: "group", "aria-label": "Mapa interactivo del Mediterráneo y el Levante en la Nueva Voluntad" });
+    const gTierra = sEl("g", {});
+    for (const pts of ATLAS_GEO.poligonos) gTierra.append(sEl("polygon", { class: "mp-tierra", points: pts }));
+    gTierra.append(
+      sEl("polygon", { points: ATLAS_GEO.galilea, fill: "rgba(96, 152, 206, .58)", stroke: "rgba(130, 186, 238, .6)", "stroke-width": ".6" }),
+      sEl("polygon", { points: ATLAS_GEO.muerto, fill: "rgba(86, 134, 182, .52)", stroke: "rgba(130, 186, 238, .5)", "stroke-width": ".6" }),
+      sEl("polyline", { points: ATLAS_GEO.jordan, fill: "none", stroke: "rgba(116, 174, 228, .68)", "stroke-width": ".95", "stroke-linecap": "round" }));
+    const gLabels = sEl("g", {});
+    for (const a of ATLAS_GEO.aguas) gLabels.append(sEl("text", { class: "mp-agua-l", x: a.x, y: a.y, "text-anchor": "middle" }, a.t));
+    for (const r of ATLAS_GEO.regiones) gLabels.append(sEl("text", { class: "mp-reg-l", x: r.x, y: r.y, "text-anchor": "middle" }, r.t));
+    const gRutas = sEl("g", {});
+    const gPins = sEl("g", {});
+    svgEl.append(gTierra, gLabels, gRutas, gPins);
+
+    const clampVb = () => {
+      vb.w = Math.max(84, Math.min(960, vb.w));
+      vb.h = vb.w * (10 / 16);
+      vb.x = Math.max(-40, Math.min(980 - vb.w, vb.x));
+      vb.y = Math.max(-20, Math.min(550 - vb.h, vb.y));
+    };
+    const aplicarVb = () => {
+      clampVb();
+      svgEl.setAttribute("viewBox", `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`);
+      pintarEscala();
+    };
+    const zoomPor = (factor, cx, cy) => {
+      const nw = Math.max(84, Math.min(960, vb.w * factor));
+      const nh = nw * (10 / 16);
+      const rx = cx != null ? cx : vb.x + vb.w / 2;
+      const ry = cy != null ? cy : vb.y + vb.h / 2;
+      vb.x = rx - (rx - vb.x) * (nw / vb.w);
+      vb.y = ry - (ry - vb.y) * (nh / vb.h);
+      vb.w = nw; vb.h = nh;
+      aplicarVb();
+    };
+    const centrarEn = (l, ancho) => {
+      if (!l) return;
+      const w = ancho || Math.min(vb.w, 340);
+      vb.w = w; vb.h = w * (10 / 16);
+      vb.x = l.x - vb.w / 2; vb.y = l.y - vb.h / 2;
+      aplicarVb();
+    };
+
+    // Paneo y pellizco dentro del mapa (nunca afecta el tamaño de letra general)
+    const ptrs = new Map();
+    let arrastre = null, distIni = 0, vbIni = null;
+    svgEl.addEventListener("pointerdown", (e) => {
+      if (e.target.closest && e.target.closest(".mp-pin")) return;
+      svgEl.setPointerCapture(e.pointerId);
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 1) { arrastre = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; }
+      else if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        distIni = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        vbIni = Object.assign({}, vb); arrastre = null;
+      }
+    });
+    svgEl.addEventListener("pointermove", (e) => {
+      if (!ptrs.has(e.pointerId)) return;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const rect = svgEl.getBoundingClientRect();
+      if (ptrs.size === 1 && arrastre && rect.width > 10) {
+        vb.x = arrastre.vx - (e.clientX - arrastre.x) * (vb.w / rect.width);
+        vb.y = arrastre.vy - (e.clientY - arrastre.y) * (vb.h / rect.height);
+        aplicarVb();
+      } else if (ptrs.size === 2 && vbIni && distIni > 0) {
+        const [a, b] = [...ptrs.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y) || distIni;
+        const f = distIni / d;
+        const nw = Math.max(84, Math.min(960, vbIni.w * f));
+        const nh = nw * (10 / 16);
+        const mx = vbIni.x + vbIni.w / 2, my = vbIni.y + vbIni.h / 2;
+        vb.w = nw; vb.h = nh; vb.x = mx - nw / 2; vb.y = my - nh / 2;
+        aplicarVb();
+      }
+    });
+    const finPtr = (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) vbIni = null; if (ptrs.size === 0) arrastre = null; };
+    svgEl.addEventListener("pointerup", finPtr);
+    svgEl.addEventListener("pointercancel", finPtr);
+    svgEl.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const rect = svgEl.getBoundingClientRect();
+      const px = vb.x + ((e.clientX - rect.left) / Math.max(1, rect.width)) * vb.w;
+      const py = vb.y + ((e.clientY - rect.top) / Math.max(1, rect.height)) * vb.h;
+      zoomPor(e.deltaY > 0 ? 1.18 : 0.84, px, py);
+    }, { passive: false });
+
+    const ficha = h("aside", { class: "mp-ficha", "aria-live": "polite" });
+    const listaEl = h("div", { class: "mp-lista" });
+    const filtros = h("div", { class: "mp-filtros", role: "group", "aria-label": "Capas históricas del Atlas" });
+    const busq = h("input", { type: "search", class: "libs-lupa", placeholder: "Buscar un lugar (Yᵉrūshāláyim, Éfeso, Roma, Nazaret…)", "aria-label": "Buscar un lugar bíblico", autocomplete: "off", spellcheck: "false" });
+
+    // Desplazamientos cartográficos finos [dx, dy, anchor] para evitar solapamientos en zonas densas (Levante, 7 convocaciones, Acaya)
+    const ATLAS_OFF = {
+      corinto: [-8, 3, "end"], atenas: [8, 3, "start"],
+      pergamo: [-8, -6, "end"], tiatira: [8, -4, "start"], esmirna: [-8, 3, "end"],
+      sardis: [8, -4, "start"], filadelfia: [8, 6, "start"], efeso: [-8, 5, "end"],
+      mileto: [-8, 10, "end"], laodicea: [8, 4, "start"], colosas: [8, 12, "start"], patmos: [-8, 8, "end"],
+      sidon: [8, 1, "start"], tiro: [-8, 2, "end"], capernaum: [8, -5, "start"],
+      cana: [-8, -6, "end"], nazaret: [-8, 2, "end"], tiberias: [8, 5, "start"],
+      cesarea: [-8, 2, "end"], samaria: [-8, 3, "end"], jordan: [8, 3, "start"],
+      jope: [-8, 4, "end"], jerico: [8, 1, "start"], jerusalen: [-8, 2, "end"],
+      betania: [8, 6, "start"], belen: [-8, 10, "end"],
+    };
+
+    const pintarEscala = () => {
+      const sc = Math.max(0.16, Math.min(1, vb.w / 920));
+      const cerca = vb.w <= 480 || capa === "yeshua" || capa === "apokalypsis";
+      const fs = Math.max(2.6, 10.2 * sc);
+      const sw = Math.max(0.55, 2.4 * sc);
+      for (const g of gPins.children) {
+        const esSel = g.classList.contains("sel");
+        const pri = g.dataset.pri === "1";
+        const off = ATLAS_OFF[g.dataset.id] || [0, -8, "middle"];
+        const halo = g.querySelector("circle.halo");
+        const dot = g.querySelector("circle.dot");
+        const tx = g.querySelector("text");
+        if (halo) halo.setAttribute("r", ((esSel ? 12.5 : 8.0) * sc).toFixed(2));
+        if (dot) { dot.setAttribute("r", ((esSel ? 5.6 : 4.0) * sc).toFixed(2)); dot.setAttribute("stroke-width", (1.25 * sc).toFixed(2)); }
+        if (tx) {
+          tx.style.display = (esSel || pri || cerca) ? "" : "none";
+          tx.setAttribute("x", (off[0] * sc).toFixed(2));
+          tx.setAttribute("y", (off[1] * sc).toFixed(2));
+          tx.setAttribute("text-anchor", off[2]);
+          tx.style.fontSize = fs.toFixed(2) + "px";
+          tx.style.strokeWidth = sw.toFixed(2) + "px";
+        }
+      }
+      gLabels.style.opacity = vb.w < 320 ? "0.22" : "1";
+      for (const p of gRutas.children) p.setAttribute("stroke-width", Math.max(0.7, 1.8 * sc).toFixed(2));
+    };
+
+    const pintarMapa = () => {
+      gRutas.replaceChildren();
+      if (capa === "paulos" || capa === "todos") {
+        for (const rt of ATLAS_RUTAS) {
+          const pts = rt.ids.map((id) => porId.get(id)).filter(Boolean).map((l) => `${l.x},${l.y}`).join(" ");
+          gRutas.append(sEl("polyline", { class: "mp-ruta " + rt.id, points: pts, opacity: capa === "paulos" ? "0.88" : "0.42" }));
+        }
+      }
+      gPins.replaceChildren();
+      const vis = visibles();
+      // Colocar seleccionado al final para quedar siempre por encima
+      const ord = vis.slice().sort((a, b) => (a.id === sel.id ? 1 : b.id === sel.id ? -1 : 0));
+      for (const l of ord) {
+        const leido = lugarLeido(l);
+        const esSel = sel && l.id === sel.id;
+        const g = sEl("g", {
+          class: "mp-pin" + (leido ? " leido" : "") + (esSel ? " sel" : ""),
+          transform: `translate(${l.x},${l.y})`,
+          tabindex: "0",
+          role: "button",
+          "aria-label": `${l.n} (${l.tr}), ${l.reg}${leido ? ", ya leído" : ""}`,
+          "data-id": l.id,
+          "data-pri": l.pri ? "1" : "0",
+        },
+          sEl("circle", { class: "halo", r: "8" }),
+          sEl("circle", { class: "dot", r: "4.2" }),
+          sEl("text", { y: "-8", "text-anchor": "middle" }, l.n));
+        const elegir = () => {
+          sel = l;
+          try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
+          pintarMapa(); pintarFicha(); pintarLista();
+        };
+        g.addEventListener("click", (e) => { e.stopPropagation(); elegir(); });
+        g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); elegir(); } });
+        gPins.append(g);
+      }
+      pintarEscala();
+    };
+
+    const pintarFicha = () => {
+      if (!sel) return;
+      const leido = lugarLeido(sel);
+      const citas = sel.citas.map(([c, cap, v]) => {
+        const lb = libroDe(c);
+        const et = lb ? (lb.t || lb.n) + " " + cap + ":" + v : c + " " + cap + ":" + v;
+        return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v },
+          svg(ICO.libro), h("span", { text: et }));
+      });
+      ficha.replaceChildren(
+        h("div", { class: "mp-ficha-cab" },
+          h("small", { text: sel.reg + (leido ? " · Ya visitado en tu lectura ✓" : "") }),
+          h("h2", { text: sel.n }),
+          h("span", { class: "mp-trad", text: "Tradicional: " + sel.tr })),
+        h("p", { class: "mp-desc", text: sel.desc }),
+        h("div", { class: "mp-citas" },
+          h("h4", { text: "Pasajes clave en BiEx" }),
+          h("div", { class: "mp-cita-l" }, citas)),
+        h("div", { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:2px" },
+          h("button", { type: "button", class: "btn chico", onclick: () => centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 145 : 220) }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
+          h("a", { class: "btn chico", href: "#/cronologia" }, svg(ICO.tiempo), h("span", { text: "Línea del tiempo" }))));
+    };
+
+    const pintarLista = () => {
+      const q = sinMarcas(busq.value || "").toLowerCase().trim();
+      const vis = visibles().filter((l) => !q || sinMarcas(l.n + " " + l.tr + " " + l.reg).toLowerCase().includes(q));
+      listaEl.replaceChildren(...(vis.length ? vis.map((l) => h("button", {
+        type: "button", class: "mp-item", "aria-current": sel && l.id === sel.id ? "true" : "false",
+        onclick: () => {
+          sel = l;
+          try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
+          centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 160 : 280);
+          pintarMapa(); pintarFicha(); pintarLista();
+        },
+      }, h("b", { text: l.n }), h("small", { text: l.tr + (lugarLeido(l) ? " · ✓" : "") })))
+        : [h("p", { class: "nota-ui", text: "Ningún lugar coincide con esa búsqueda en esta capa." })]));
+    };
+
+    const CAPAS = [
+      ["todos", "Todo el mapa (" + ATLAS_LUGARES.length + ")"],
+      ["yeshua", "Vida de YēshŪ́aʿ"],
+      ["paulos", "Viajes de Pαῦlος [Pablo]"],
+      ["apokalypsis", "7 convocaciones · Ἀpοκάlυpsις"],
+    ];
+    for (const [id, et] of CAPAS) {
+      filtros.append(h("button", {
+        type: "button", class: "mp-fil", "data-c": id, "aria-pressed": capa === id ? "true" : "false", text: et,
+        onclick: () => {
+          capa = id;
+          for (const b of filtros.children) b.setAttribute("aria-pressed", b.dataset.c === id ? "true" : "false");
+          const vis = visibles();
+          if (!vis.some((l) => l.id === sel.id)) sel = vis[0] || ATLAS_LUGARES[0];
+          vb = Object.assign({}, PRESETS[id] || PRESETS.todos);
+          aplicarVb(); pintarMapa(); pintarFicha(); pintarLista();
+        },
+      }));
+    }
+    busq.addEventListener("input", pintarLista);
+
+    const ctrls = h("div", { class: "mp-ctrls" },
+      h("button", { type: "button", class: "mp-ctrl", title: "Acercar mapa", "aria-label": "Acercar mapa", onclick: () => zoomPor(0.76) }, "+"),
+      h("button", { type: "button", class: "mp-ctrl", title: "Alejar mapa", "aria-label": "Alejar mapa", onclick: () => zoomPor(1.32) }, "−"),
+      h("button", { type: "button", class: "mp-ctrl", title: "Centrar capa", "aria-label": "Centrar capa", onclick: () => { vb = Object.assign({}, PRESETS[capa] || PRESETS.todos); aplicarVb(); } }, "⌖"));
+    const leyenda = h("div", { class: "mp-ley", "aria-hidden": "true" },
+      h("span", {}, h("i", { style: "background:var(--oro-vivo)" }), "Lugar"),
+      h("span", {}, h("i", { style: "background:#6fc08f" }), "Ya leído"),
+      h("span", {}, h("i", { style: "background:#74a5ea" }), "Rutas"));
+    const marco = h("div", { class: "mp-marco" }, svgEl, ctrls, leyenda);
+
+    const leidosTot = ATLAS_LUGARES.filter(lugarLeido).length;
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel mp-pag" },
+      barraVolver(),
+      h("div", { class: "panel-cab" },
+        h("span", { class: "eyebrow", text: "Geografía de la Nueva Voluntad" }),
+        h("h1", { text: "Atlas bíblico interactivo" }),
+        h("p", { class: "nota-ui", text: `Recorre ${ATLAS_LUGARES.length} enclaves históricos del Levante y el Mediterráneo con las transliteraciones de BiEx. Has visitado en tu lectura ${leidosTot} de ${ATLAS_LUGARES.length} lugares.` })),
+      guiaSeccion("mapa"),
+      filtros,
+      h("div", { class: "mp-grid" }, marco, ficha),
+      h("div", { class: "tarjeta", style: "display:grid;gap:12px" },
+        h("h2", { style: "margin:0;font:500 1.05rem/1.2 var(--f-display)", text: "Directorio de lugares" }),
+        h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), busq),
+        listaEl))));
+    if (lugarId && porId.has(String(lugarId).toLowerCase())) centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") ? 160 : 260);
+    else aplicarVb();
+    pintarMapa(); pintarFicha(); pintarLista();
+    if (restaurando()) intentarRestaurar();
+  }
+
+  // ================================================================== PR #17 · Tarjetas de repaso breve de raíces griegas — 1 min/día (#/raices/repaso)
+  // Repaso espaciado Leitner en 5 cajas (1, 2, 4, 8 y 16 días), sincronizado vía estudio.repasoRaices a /nube.
+  async function vistaRepasoRaices() {
+    navActual("#/buscar");
+    document.title = "Repaso de raíces · 1 min · BiEx";
+    if (!LX) { vista().replaceChildren(cargando("Preparando tus tarjetas de raíces…")); alTope(); }
+    try { await lexico(); } catch (e) { vista().replaceChildren(fallo("No se pudo cargar el diccionario de raíces.")); return; }
+
+    const DIAS_CAJA = [0, 1, 2, 4, 8, 16];
+    const DIA_MS = 864e5;
+    const hoyKey = () => new Date().toISOString().slice(0, 10);
+
+    // Construye el catálogo ordenado de raíces sustantivas (verbos, sustantivos y adjetivos; excluye artículos/partículas)
+    // priorizando familias vivas con múltiples derivados y alta frecuencia en la Nueva Voluntad
+    const pool = [];
+    for (const [r, fam] of LX.fam.entries()) {
+      const gl = glosaBreve(r);
+      if (!gl || !T.L[r]) continue;
+      const cl = claseLema(r);
+      if (!["V", "N", "A"].includes(cl)) continue;
+      let total = 0;
+      for (const li of fam) total += (T.LN[li] | 0);
+      if (total < 5 && fam.length < 2) continue;
+      const peso = (fam.length >= 2 ? 1200 : 0) + fam.length * 45 + Math.min(total, 1800);
+      pool.push({ r, fam, total, peso });
+    }
+    pool.sort((a, b) => b.peso - a.peso || a.r - b.r);
+
+    const leerRep = () => {
+      const st = leerEstudio();
+      if (!st.repasoRaices || typeof st.repasoRaices !== "object") st.repasoRaices = {};
+      return st;
+    };
+
+    const armarRonda = (tam = 6) => {
+      const rep = leerRep().repasoRaices;
+      const ahora = Date.now();
+      const vencidas = [];
+      const nuevas = [];
+      for (const p of pool) {
+        const e = rep[String(p.r)];
+        if (e && typeof e === "object") {
+          if ((+e.prox || 0) <= ahora) vencidas.push({ p, caja: e.caja | 0 || 1, prox: +e.prox || 0 });
+        } else {
+          nuevas.push(p);
+        }
+      }
+      vencidas.sort((a, b) => a.caja - b.caja || a.prox - b.prox);
+      const sel = vencidas.slice(0, tam).map((x) => x.p);
+      for (const n of nuevas) {
+        if (sel.length >= tam) break;
+        sel.push(n);
+      }
+      // Si ya se dominaron todas y nada vence aún, ofrece un repaso libre de las más próximas a vencer
+      if (!sel.length) {
+        const todas = pool.slice().sort((a, b) => {
+          const ea = rep[String(a.r)], eb = rep[String(b.r)];
+          return ((ea && +ea.prox) || 0) - ((eb && +eb.prox) || 0);
+        });
+        return todas.slice(0, tam);
+      }
+      return sel;
+    };
+
+    let ronda = armarRonda(6);
+    let idx = 0, revelada = false, aciertosRonda = 0;
+
+    const statsBox = h("div", { class: "rr-stats" });
+    const barraPro = h("div", { class: "rr-progreso", role: "progressbar", "aria-label": "Avance de la ronda de repaso", "aria-valuemin": "0", "aria-valuemax": String(ronda.length), "aria-valuenow": "0" }, h("i", { style: "width:0%" }));
+    const escenario = h("div", {});
+
+    const pintarStats = () => {
+      const rep = leerRep().repasoRaices;
+      const ahora = Date.now(), hoy = hoyKey();
+      let venc = 0, dom = 0;
+      for (const [k, v] of Object.entries(rep)) {
+        if (k === "_hoy" || !v || typeof v !== "object") continue;
+        if ((+v.prox || 0) <= ahora) venc++;
+        if ((v.caja | 0) >= 4) dom++;
+      }
+      const hechasHoy = rep._hoy && rep._hoy.f === hoy ? (rep._hoy.n | 0) : 0;
+      statsBox.replaceChildren(
+        h("div", { class: "rr-stat" }, h("b", { text: String(Math.max(venc, Math.max(0, ronda.length - idx))) }), h("small", { text: "Por repasar" })),
+        h("div", { class: "rr-stat" }, h("b", { text: String(dom) }), h("small", { text: "Dominadas" })),
+        h("div", { class: "rr-stat" }, h("b", { text: String(hechasHoy) }), h("small", { text: "Hoy" })));
+    };
+
+    const evaluar = (nivel) => {
+      const item = ronda[idx];
+      if (!item) return;
+      const st = leerRep();
+      const k = String(item.r);
+      const prev = st.repasoRaices[k] && typeof st.repasoRaices[k] === "object" ? st.repasoRaices[k] : { caja: 0, reps: 0 };
+      const prevCaja = prev.caja | 0;
+      const nuevaCaja = nivel === 0 ? 1 : nivel === 1 ? Math.min(5, Math.max(2, prevCaja + 1)) : Math.min(5, Math.max(4, prevCaja + 2));
+      if (nivel >= 1) aciertosRonda++;
+      const ahora = Date.now();
+      st.repasoRaices[k] = {
+        caja: nuevaCaja,
+        prox: ahora + DIAS_CAJA[nuevaCaja] * DIA_MS,
+        reps: (prev.reps | 0) + 1,
+        t: ahora,
+      };
+      const hoy = hoyKey();
+      const prevHoy = st.repasoRaices._hoy && st.repasoRaices._hoy.f === hoy ? (st.repasoRaices._hoy.n | 0) : 0;
+      st.repasoRaices._hoy = { f: hoy, n: prevHoy + 1, t: ahora };
+      guardarEstudio(st);
+      document.dispatchEvent(new CustomEvent("biex:faro"));
+      idx++;
+      revelada = false;
+      pintarCarta();
+    };
+
+    const pintarCarta = () => {
+      pintarStats();
+      const pctP = ronda.length ? Math.round((Math.min(idx, ronda.length) / ronda.length) * 100) : 100;
+      barraPro.setAttribute("aria-valuenow", String(Math.min(idx, ronda.length)));
+      barraPro.firstChild.style.width = pctP + "%";
+
+      if (idx >= ronda.length) {
+        escenario.replaceChildren(h("div", { class: "rr-fin" },
+          h("h2", { text: "Ronda completada" }),
+          h("p", { text: `Repasaste ${ronda.length} raíces griegas (${aciertosRonda} recordadas con firmeza). Cada tarjeta volverá justo antes de olvidarse.` }),
+          h("div", { class: "rr-enlaces" },
+            h("button", { type: "button", class: "btn oro", onclick: () => { ronda = armarRonda(6); idx = 0; revelada = false; aciertosRonda = 0; pintarCarta(); } }, svg(ICO.tarjetas), h("span", { text: "Otra ronda (6 raíces)" })),
+            h("a", { class: "btn", href: "#/raices" }, svg(ICO.raiz), h("span", { text: "Diccionario de raíces" })),
+            h("a", { class: "btn", href: "#/" }, svg(ICO.libro), h("span", { text: "Volver al inicio" })))));
+        return;
+      }
+
+      const item = ronda[idx];
+      const rep = leerRep().repasoRaices[String(item.r)];
+      const caja = rep && rep.caja ? (rep.caja | 0) : 0;
+      const badge = (caja ? `Caja ${caja} de 5` : "Nueva raíz") + ` · ${idx + 1} de ${ronda.length}`;
+      const glBase = glosaBreve(item.r);
+      const glOtras = glosasLema(item.r, 4).map(([t]) => T.TR[t]).filter((x) => x && x !== glBase).slice(0, 3);
+      const glTexto = [glBase].concat(glOtras).filter(Boolean).join(" · ");
+      const derivados = item.fam.filter((li) => li !== item.r).sort((a, b) => (T.LN[b] | 0) - (T.LN[a] | 0)).slice(0, 5);
+
+      const sumaLib = new Map();
+      for (const li of item.fam) {
+        const lb = T.LB[li] || [];
+        for (let j = 0; j < lb.length; j += 2) sumaLib.set(lb[j], (sumaLib.get(lb[j]) || 0) + lb[j + 1]);
+      }
+      const topLibs = [...sumaLib.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+        .map(([bi, n]) => D && D.libros[bi] ? (D.libros[bi].t || D.libros[bi].n) + " (" + n + ")" : "").filter(Boolean);
+
+      const carta = h("article", { class: "rr-carta" },
+        h("span", { class: "rr-caja-chip", text: badge }),
+        h("p", { class: "rr-gr", lang: "grc", text: lemaCorto(item.r) }),
+        h("p", { class: "rr-tl", text: tlCorta(item.r) }),
+        h("p", { class: "rr-frec", text: `${fmt(item.total)} apariciones · ${item.fam.length === 1 ? "1 palabra" : "familia de " + fmt(item.fam.length) + " palabras"}` }),
+        !revelada
+          ? h("div", { style: "margin-top:6px" },
+              h("button", { type: "button", class: "btn oro", onclick: () => { revelada = true; pintarCarta(); } }, svg(ICO.contemplar), h("span", { text: "Ver significado y familia" })))
+          : h("div", { class: "rr-rev" },
+              h("p", { class: "rr-glosa", text: glTexto }),
+              derivados.length ? h("div", { class: "rr-der", "aria-label": "Palabras de la misma familia" }, derivados.map((li) =>
+                h("span", {}, h("b", { lang: "grc", text: lemaCorto(li) }), glosaBreve(li) || tlCorta(li)))) : null,
+              topLibs.length ? h("p", { class: "rr-frec", text: "Más frecuente en: " + topLibs.join(" · ") }) : null,
+              h("div", { class: "rr-eval" },
+                h("button", { type: "button", class: "btn chico", onclick: () => evaluar(0) }, "Repasar pronto (1 d)"),
+                h("button", { type: "button", class: "btn chico", onclick: () => evaluar(1) }, "Lo recordé"),
+                h("button", { type: "button", class: "btn chico oro", onclick: () => evaluar(2) }, "Dominada")),
+              h("div", { style: "margin-top:4px" },
+                h("a", { class: "nota-ui", style: "color:var(--oro-vivo);text-decoration:underline", href: "#/raiz/" + item.r, text: "Explorar toda la familia en el diccionario →" }))));
+      escenario.replaceChildren(carta);
+    };
+
+    vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel rr-pag" },
+      h("div", { class: "barra-volver" },
+        h("button", { class: "btn chico", type: "button", onclick: volverAtras }, svg(ICO.atras), "Volver"),
+        h("a", { class: "btn chico", href: "#/raices" }, svg(ICO.raiz), "Todas las raíces")),
+      h("div", { class: "panel-cab" },
+        h("span", { class: "eyebrow", text: "Repaso espaciado · 1 min al día" }),
+        h("h1", { text: "Tarjetas de raíces griegas" }),
+        h("p", { class: "nota-ui", text: "Rondas breves de 6 raíces reales de la Nueva Voluntad. Memoriza la raíz y reconoce de golpe toda su familia de palabras." })),
+      guiaSeccion("repaso"),
+      statsBox,
+      barraPro,
+      escenario)));
+    pintarCarta();
+    if (restaurando()) intentarRestaurar();
+  }
+
 
   function mostrarRuta(hh) {
     const partes = decodificar((hh || location.hash).replace(/^#\/?/, "")).slice(0, 400).split("/").filter((x) => x !== "");
@@ -9730,6 +10383,7 @@
       if (partes.length > 3) { const d = "#/" + partes.slice(3).join("/"); ponerHash(d); if (!store.get("jg:t", null)) setTimeout(() => cargarJuego().then((J) => J.franja(cod)).catch(() => {}), 1500); return mostrarRuta(d); }
     }
     const esLibroRuta = !!(D && libroDe(String(partes[0] || "").toUpperCase()));
+    document.documentElement.classList.toggle("en-cap", esLibroRuta);
     if (!(esLibroRuta && partes[2] !== "a") && document.documentElement.classList.contains("contemplar")) ponerContemplar(false, true);
     if (partes[0] !== "escudrina" && !esLibroRuta && window.BiExJuego) window.BiExJuego.salir();
     if (window.BiExJuego && window.BiExJuego.actividadRuta) window.BiExJuego.actividadRuta(ruta);
@@ -9741,8 +10395,10 @@
     if (volverBusqueda && ruta.split("/").slice(0, 3).join("/") !== volverBusqueda.ruta.split("/").slice(0, 3).join("/")) volverBusqueda = null;
     if (!partes.length) { esc.libro = null; return portada(false); }
     if (partes[0] === "libros") { esc.libro = null; return portada(true); }
+    if (partes[0] === "mapa") { esc.libro = null; return vistaMapa(partes[1] || ""); }
     if (partes[0] === "constelacion" || /^constelacion\?/.test(partes[0])) { esc.libro = null; return vistaConstelacion(partes[0].includes("?") ? partes[0].split("?")[1] : ""); }
     if (partes[0] === "sinopsis") { esc.libro = null; return vistaSinopsis(partes[1] || "", partes[2] || ""); }
+    if (partes[0] === "raices" && partes[1] === "repaso") { esc.libro = null; return vistaRepasoRaices(); }
     if (partes[0] === "raices" || /^raices\?/.test(partes[0])) { esc.libro = null; return vistaRaices(); }
     if (partes[0] === "raiz" && partes[1] != null) { esc.libro = null; return vistaRaiz(+partes[1]); }
     if (partes[0] === "analizar") { esc.libro = null; return vistaAnalizador(); }
@@ -9771,10 +10427,31 @@
   // con × o deslizando. Poco gasto: lo vivo se consulta como mucho cada 4 min (público y en caché) y el resto es texto fijo.
   // Nunca con una ventana abierta, la pestaña oculta, escribiendo o durante la presentación; en un capítulo, más espaciados.
   const API_JG = String(window.BIEX_JUEGO_API || (/(^|\.)bibliaexacta\.pages\.dev$/.test(location.hostname) ? "/api/juego" : "https://bibliaexacta.pages.dev/api/juego")).replace(/\/$/, "");
+  // PR #17 · Telemetría ligera de errores en producción hacia POST /error (Opus 28842cf · máx. 2 envíos por sesión, sin bloquear nada)
+  (() => {
+    let enviados = 0;
+    const mandar = (m, a, l) => {
+      if (enviados >= 2 || !navigator.onLine || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+      const msg = String(m || "").trim().slice(0, 260);
+      if (!msg || /ResizeObserver|Script error/i.test(msg)) return;
+      enviados++;
+      try {
+        fetch(API_JG + "/error", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ m: msg, a: String(a || "").slice(0, 120), l: +l || 0, v: "pr17" }),
+          credentials: "omit",
+          keepalive: true,
+        }).catch(() => {});
+      } catch (e) {}
+    };
+    window.addEventListener("error", (e) => mandar(e && (e.message || (e.error && e.error.message)), e && e.filename, e && e.lineno));
+    window.addEventListener("unhandledrejection", (e) => mandar(e && e.reason && (e.reason.message || String(e.reason)), location.hash, 0));
+  })();
   const DSL = { reloj: 0, el: null, lado: 0, vivo: null, vivoT: 0, cerr: 0, visDesde: performance.now() };
   const ANUNCIOS = [
-    ["inc", "Muy pronto: incursiones en equipo contra El Coloso de la Tradición, cuatro veces al día. Prepara a tu ser interior.", "Ir a Escudriña", "#/escudrina"],
-    ["geo", "Muy pronto: exploraciones de la geografía bíblica. Recorre los lugares de lo que lees y fortalece tu ser interior.", "Conocer Escudriña", "#/escudrina"],
+    ["inc", "El Coloso de la Tradición: únete en comunidad durante las incursiones y recibe tu parte de las recompensas.", "Ir a la arena", "#/escudrina/coloso"],
+    ["geo", "Atlas bíblico interactivo: recorre los lugares de la Nueva Voluntad, los viajes de Pαῦlος [Pablo] y las 7 asambleas.", "Abrir el Atlas", "#/mapa"],
     ["sala", "Lee en compañía: abre una sala, invita a quien quieras y escudriñen juntos el mismo capítulo.", "Abrir una sala", "#/escudrina/juntos"],
     ["mis", "Cada día hay misiones nuevas: cúmplelas leyendo y gana dracmas y experiencia.", "Ver las misiones", "#/escudrina"],
     ["mun", "La misión de todos avanza con cada verso que alguien marca como leído. Suma el tuyo.", "Ver la misión", "#/escudrina/mundo"]];
