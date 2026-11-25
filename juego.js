@@ -1884,9 +1884,10 @@ html[data-mov="no"] .ap-vitrina li .ap-mu::after{animation:none;opacity:0}
   font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);
   background:radial-gradient(120% 100% at 50% -30%,rgba(255,246,214,.3),transparent 62%),linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,var(--hoja)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));
   box-shadow:inset 0 1px 0 rgba(255,246,214,.45),inset 0 -10px 16px -12px rgba(255,224,140,.6),0 12px 28px -10px rgba(0,0,0,.78),0 0 0 1px rgba(0,0,0,.22);
-  transition:opacity .24s ease,transform .26s cubic-bezier(.3,1.3,.5,1)}
+  will-change:opacity,transform;transition:opacity .26s ease,transform .28s cubic-bezier(.25,.9,.35,1)}
 .jg-lb::after,.jg-lbp::after{content:"";position:absolute;inset:-.6rem -.3rem}
-.jg-lb.fuera,.jg-lbp.fuera{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
+.jg-lb.fuera,.jg-lbp.fuera,.jg-lb.en-pie,.jg-lbp.en-pie{opacity:0;transform:translate3d(-50%,14px,0);pointer-events:none}
+html.contemplar .jg-lb.en-pie,html.contemplar .jg-lbp.en-pie{transform:translate3d(0,12px,0)}
 .jg-lb:active,.jg-lbp:active{transform:translate3d(-50%,0,0) scale(.96)}
 /* X16: la perícopa entera, encima del botón del verso (vista continua) */
 .jg-lbp{bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--jg-lb-alza,0px) + 2.25rem);min-height:1.5rem;padding:.18rem .56rem .18rem .3rem;color:var(--tinta)}
@@ -2263,16 +2264,24 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-tit-wrap{position:absolute;left:16px;right:16px;bottom:8px;z-index:4;text-align:center;display:grid;gap:2px;pointer-events:none}
 .jg-col-tit-wrap h2{margin:0;font:500 clamp(1.26rem,4.4vw,1.76rem)/1.1 var(--f-display);color:#fbf5e9;letter-spacing:.03em;text-shadow:0 3px 22px rgba(0,0,0,.95)}
 .jg-col-fase{font:600 .62rem/1.2 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#dfb96e;text-shadow:0 2px 12px rgba(0,0,0,.95)}
-.jg-col-dano{position:absolute;top:36%;left:50%;transform:translate3d(-50%,0,0);display:grid;justify-items:center;gap:2px;font:700 clamp(1.7rem,6vw,2.4rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 24px rgba(245,188,78,.95),0 4px 16px rgba(0,0,0,.95);pointer-events:none;z-index:6;animation:col-dano 1.45s cubic-bezier(.18,.82,.24,1) forwards}
-.jg-col-dano small{font:700 .66rem/1 var(--f-ui);letter-spacing:.18em;text-transform:uppercase;color:#ffe69b;padding:3px 9px;border-radius:999px;background:rgba(12,10,8,.84);border:1px solid rgba(255,222,130,.65)}
-.jg-col-dano.crit{color:#ffffff;text-shadow:0 0 32px rgba(255,214,102,1),0 0 12px rgba(126,184,240,.8),0 4px 18px rgba(0,0,0,.95)}
+.jg-col-dano{position:absolute;top:38%;left:50%;transform:translate3d(-50%,0,0);display:grid;justify-items:center;gap:4px;font:700 clamp(1.85rem,6.2vw,2.55rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 26px rgba(245,188,78,.98),0 4px 18px rgba(0,0,0,.98);pointer-events:none;z-index:6;animation:col-dano 3.6s cubic-bezier(.18,.82,.24,1) forwards;will-change:transform,opacity}
+.jg-col-dano small{font:700 .68rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:#ffe69b;padding:4px 11px;border-radius:999px;background:rgba(12,10,8,.9);border:1px solid rgba(255,222,130,.72);box-shadow:0 6px 18px rgba(0,0,0,.72)}
+.jg-col-dano.crit{color:#ffffff;text-shadow:0 0 32px rgba(255,214,102,1),0 0 12px rgba(126,184,240,.85),0 4px 18px rgba(0,0,0,.98)}
 @keyframes col-respira{0%,100%{transform:scale(1.01) translate3d(0,0,0);opacity:.9}50%{transform:scale(1.055) translate3d(0,-4px,0);opacity:1}}
 @keyframes col-bruma-a{0%,100%{transform:translate3d(-3%,1%,0) scale(1);opacity:.82}50%{transform:translate3d(4%,-2%,0) scale(1.06);opacity:.54}}
 @keyframes col-bruma-b{0%,100%{transform:translate3d(4%,0,0) scale(1.04);opacity:.56}50%{transform:translate3d(-4%,2%,0) scale(.98);opacity:.84}}
 @keyframes col-sacude-1{0%{transform:translate3d(0,0,0)}22%{transform:translate3d(-7px,-3px,0) scale(1.015)}55%{transform:translate3d(6px,2px,0) scale(.995)}100%{transform:translate3d(0,0,0)}}
 @keyframes col-sacude-2{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(-11px,-5px,0) scale(1.028)}40%{transform:translate3d(10px,4px,0) scale(.985)}68%{transform:translate3d(-6px,-2px,0)}100%{transform:translate3d(0,0,0)}}
 @keyframes col-sacude-3{0%{transform:translate3d(0,0,0)}12%{transform:translate3d(-14px,-7px,0) scale(1.04)}28%{transform:translate3d(13px,6px,0) scale(.98)}48%{transform:translate3d(-10px,4px,0) scale(1.02)}70%{transform:translate3d(7px,-3px,0)}100%{transform:translate3d(0,0,0)}}
-@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,16px,0) scale(.72)}18%{opacity:1;transform:translate3d(-50%,-14px,0) scale(1.18)}100%{opacity:0;transform:translate3d(-50%,-70px,0) scale(.94)}}
+@keyframes col-dano{0%{opacity:0;transform:translate3d(-50%,14px,0) scale(.76)}10%{opacity:1;transform:translate3d(-50%,-8px,0) scale(1.12)}18%{opacity:1;transform:translate3d(-50%,-12px,0) scale(1)}78%{opacity:1;transform:translate3d(-50%,-22px,0) scale(1)}100%{opacity:0;transform:translate3d(-50%,-44px,0) scale(.95)}}
+.jg-col-post-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;padding:7px 11px;border-radius:11px;border:1px solid color-mix(in srgb,var(--pc,#f4cf73) 48%,rgba(255,244,214,.14));background:linear-gradient(90deg,color-mix(in srgb,var(--pc,#f4cf73) 14%,rgba(14,12,9,.92)),rgba(12,10,8,.92));font:500 .74rem/1.2 var(--f-ui);color:#eee5d4}
+.jg-col-post-izq{display:inline-flex;align-items:center;gap:7px}
+.jg-col-post-izq i{width:8px;height:8px;border-radius:50%;background:var(--pc,#f4cf73);box-shadow:0 0 9px var(--pc,#f4cf73);flex:none}
+.jg-col-post-izq b{color:#fff3d0;font-weight:600}
+.jg-col-post-br{padding:3px 9px;border-radius:999px;font:600 .66rem/1.1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:#fff6dc;background:color-mix(in srgb,var(--pc,#f4cf73) 24%,rgba(8,7,6,.85));border:1px solid color-mix(in srgb,var(--pc,#f4cf73) 62%,transparent)}
+.jg-col-ult{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;padding:8px 12px;border-radius:12px;border:1px solid rgba(244,207,115,.46);background:linear-gradient(90deg,rgba(244,207,115,.14),rgba(126,184,240,.08),rgba(244,207,115,.1));font:500 .76rem/1.25 var(--f-ui);color:#f3ead9}
+.jg-col-ult b{font:700 1.02rem/1 var(--f-display);color:#fff0bd;font-variant-numeric:lining-nums tabular-nums}
+.jg-col-ult small{font:600 .65rem/1.1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#fae3a7;padding:3px 8px;border-radius:999px;background:rgba(10,9,8,.72);border:1px solid rgba(244,207,115,.45)}
 .jg-col-hud{position:relative;z-index:4;display:grid;gap:10px;padding:11px 14px 12px;background:linear-gradient(180deg,#0b0a09 0%,#12100d 100%);border-top:1px solid rgba(212,175,105,.18)}
 .jg-col-hp{width:100%;display:grid;gap:6px}
 .jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .76rem/1.2 var(--f-ui);color:#d7cfbf}
@@ -2967,8 +2976,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         !m.hecha && !y.cambio && i > 0 ? h("button", { class: "jg-cambiar", type: "button", onclick: () => cambiarMision(i) }, "Cambiar") : null))));
     const cambio = h("p", { class: "jg-mini jg-cambio" }, "Nuevas misiones en ", h("b", { text: hastaCambio(y.tz) }));
     const reloj = setInterval(() => { if (!cambio.isConnected) return clearInterval(reloj); cambio.lastChild.textContent = hastaCambio(y.tz); }, 1000);
-    return tarjeta("Misiones de hoy", ico("marca"), cambio, lista,
+    const sec = tarjeta("Misiones de hoy", ico("marca"), cambio, lista,
       h("p", { class: "jg-mini", text: y.completo ? "¡Cumpliste todas las misiones de hoy! Mañana habrá otras." : "Todas a tu ritmo. Al cumplirlas todas ganas 500 de experiencia y 10 dracmas más." + (y.cambio ? "" : " Puedes cambiar una misión por día.") }));
+    sec.id = "jg-misiones";
+    return sec;
   }
   // tiempo que falta para la medianoche de la zona horaria de la cuenta (allí cambian las misiones)
   function hastaCambio(tz) {
@@ -3938,8 +3949,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   ];
   function perfilResonanciaNivel(nivel) {
     const n = Math.max(1, nivel | 0);
-    if (n >= 21) return { grado: "Gran Maestro", ancho: 10, crit: 4, vel: 2.0 };
-    if (n >= 12) return { grado: "Maestro", ancho: 14, crit: 5, vel: 1.65 };
+    if (n >= 21) return { grado: "Sobresaliente", ancho: 10, crit: 4, vel: 2.0 };
+    if (n >= 12) return { grado: "Versado", ancho: 14, crit: 5, vel: 1.65 };
     if (n >= 5) return { grado: "Diestro", ancho: 20, crit: 7, vel: 1.32 };
     return { grado: "Iniciado", ancho: 28, crit: 10, vel: 1.0 };
   }
@@ -3947,7 +3958,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     document.title = "El Coloso de la Tradición · Escudriña · BiEx";
     const zona = h("div", { class: "jg jg-col-arena" }, h("p", { class: "cargando", text: "Despertando la incursión…" }));
     marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), zona);
-    let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0;
+    let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0, ultGolpe = null;
     const pararRes = () => { if (resRaf) { cancelAnimationFrame(resRaf); resRaf = 0; } };
     const pintar = (c, infoGolpe) => {
       pararRes();
@@ -3960,6 +3971,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           cuentaAtras(ms, "Próxima apertura", "¡El Coloso de la Tradición ha despertado!"),
           h("div", { class: "jg-acciones" }, h("a", { class: "btn oro", href: "#/escudrina/arbol" }, ico("arbol"), h("span", { text: "Fortalecer mi Árbol" })))));
       }
+      if (infoGolpe && infoGolpe.dano) ultGolpe = infoGolpe;
       const derrotado = c.estado === "derrotado" || (c.vida | 0) <= 0;
       const vida = Math.max(0, c.vida | 0), vmax = Math.max(1, c.vidaMax | 0);
       const pct = Math.max(0, Math.min(100, (100 * vida) / vmax));
@@ -3976,7 +3988,6 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
         h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
         h("div", { class: "jg-col-velo b", "aria-hidden": "true" }));
-      const postBadge = !derrotado ? h("span", { class: "jg-col-badge post", style: "--pc:" + postAct.col }, h("i", { "aria-hidden": "true" }), h("span", { text: postAct.nom + " · " + postAct.et })) : null;
       const premioTxt = premioColosoTxt(c.premio);
       const stage = h("div", { class: "jg-col-stage" },
         artWrap,
@@ -3984,7 +3995,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("div", { class: "jg-col-vig", "aria-hidden": "true" }),
         h("div", { class: "jg-col-top" },
           h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "En vivo" })),
-          postBadge || (c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null)),
+          c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null),
         infoGolpe && infoGolpe.dano ? h("span", { class: "jg-col-dano" + (infoGolpe.crit || infoGolpe.brecha ? " crit" : "") },
           h("span", { text: "−" + fmt(infoGolpe.dano) }),
           infoGolpe.etiq ? h("small", { text: infoGolpe.etiq }) : null) : null,
@@ -4012,7 +4023,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       let fxCtrl = null;
       const resCaja = h("div", { class: "jg-col-res", hidden: true });
       let enviandoAcc = false;
-      const ejecutarGolpe = async (hab, precision, brecha) => {
+      const ejecutarGolpe = async (hab, nomHab, precision, brecha) => {
         if (enviandoAcc) return;
         enviandoAcc = true;
         pararRes();
@@ -4041,15 +4052,15 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         if (crit || precision === "resonancia" || brecha) rachaTac++;
         else rachaTac = 0;
         idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
-        const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "";
+        const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "Impacto firme";
         A.avisar((etiq ? etiq + " " : "") + (dano ? "Impacto de " + fmt(dano) + " contra El Coloso" : "Acción registrada contra El Coloso"));
-        pintar(nuevo, { dano: dano || 1, hab: habEs, crit, brecha, etiq });
+        pintar(nuevo, { dano: dano || 1, hab: habEs, nom: nomHab || habEs, crit, brecha, etiq });
         const escEl = zona.querySelector(".jg-col-escena");
         if (escEl && escEl.getBoundingClientRect().top < 40) escEl.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" });
       };
       const iniciarResonancia = (hab, nom, brecha) => {
         if (enviandoAcc) return;
-        if (sinAnim()) return ejecutarGolpe(hab, "resonancia", brecha);
+        if (sinAnim()) return ejecutarGolpe(hab, nom, "resonancia", brecha);
         pararRes();
         const centro = 32 + ((Date.now() * 13 + nivelYo * 19) % 36);
         const z0 = Math.max(8, centro - perf.ancho / 2), zW = perf.ancho;
@@ -4064,7 +4075,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           const enCrit = pos >= c0 && pos <= c0 + cW;
           const enZona = pos >= z0 && pos <= z0 + zW;
           const prec = enCrit ? "critico" : enZona ? "resonancia" : "firme";
-          ejecutarGolpe(hab, prec, brecha);
+          ejecutarGolpe(hab, nom, prec, brecha);
         };
         const pista = h("div", { class: "jg-col-res-pista", role: "button", tabindex: "0", "aria-label": "Toca cuando la luz cruce la zona dorada", onclick: cerrarYDisparar },
           h("span", { class: "jg-col-res-zona", style: "left:" + z0.toFixed(1) + "%;width:" + zW.toFixed(1) + "%" }),
@@ -4098,6 +4109,14 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
         : COLOSO_HABS;
       const habBtns = [];
+      const postNomEl = h("b", { text: postAct.nom });
+      const postBrEl = h("span", { class: "jg-col-post-br", text: postAct.et });
+      const postBar = !derrotado ? h("div", { class: "jg-col-post-bar", style: "--pc:" + postAct.col },
+        h("span", { class: "jg-col-post-izq" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Postura:" }), postNomEl),
+        postBrEl) : null;
+      const ultBar = ultGolpe ? h("div", { class: "jg-col-ult", role: "status", "aria-live": "polite" },
+        h("span", {}, "Último impacto: ", h("b", { text: "−" + fmt(ultGolpe.dano) }), ultGolpe.nom ? " · " + ultGolpe.nom : ""),
+        ultGolpe.etiq ? h("small", { text: ultGolpe.etiq }) : null) : null;
       const comb = !derrotado ? h("div", { class: "jg-col-comb" },
         h("div", { class: "jg-col-cg-cab" },
           h("div", { class: "jg-col-cg-tit" },
@@ -4108,6 +4127,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
             h("span", { class: "jg-col-mult", text: "Niv. " + nivelYo + " · " + perf.grado }),
             h("span", { text: cargas >= cmax ? "Al máximo" : c.cargaEn ? "+1 en " + restaTexto(c.cargaEn) : "+1 cada 3 h" }))),
         h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("span", { class: "jg-col-cg-c" + (i < cargas ? " on" : "") }, h("i", {})))),
+        ultBar,
+        postBar,
         resCaja,
         h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base], idx) => {
           const est = Math.round(base * mult);
@@ -4151,14 +4172,15 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       // Prelanzamiento siempre debajo de Mayores aportes para mantener el Coloso y los poderes arriba en pantalla
       zona.replaceChildren(...[escena, ens, topCard, avisoPre].filter(Boolean));
       fxCtrl = montarAtmosferaColoso(lienzoFx, { pct, derrotado, impacto: !!(infoGolpe && infoGolpe.dano), hab: infoGolpe && infoGolpe.hab, crit: infoGolpe && infoGolpe.crit, brecha: infoGolpe && infoGolpe.brecha });
-      if (!derrotado && postBadge) {
+      if (!derrotado && postBar) {
         tPost = setInterval(() => {
           if (!zona.isConnected) { clearInterval(tPost); tPost = 0; return; }
           if (!resCaja.hidden) return;
           idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
           const np = COLOSO_POSTURAS[idxPost];
-          postBadge.style.setProperty("--pc", np.col);
-          postBadge.lastChild.textContent = np.nom + " · " + np.et;
+          postBar.style.setProperty("--pc", np.col);
+          postNomEl.textContent = np.nom;
+          postBrEl.textContent = np.et;
           for (const hb of habBtns) { const on = hb.id === np.debil; hb.bt.classList.toggle("brecha", on); hb.tagBr.hidden = !on; }
         }, 14000);
       }
@@ -4184,15 +4206,15 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     { id: "david", n: 9, nom: "Dāvî́ḏ [David]", elo: 1720, estilo: "Táctico · Golpe de honda", reqNivel: 14, prof: 2, ruido: 22, q: true, peso: { ag: 1.35, ct: 1.2, df: 1.05 }, cita: "ACT 13:22", frase: "Sorprende con golpes tácticos precisos y sacrificios dirigidos contra piezas mayores.", cap: "No vence el ejército más voluminoso, sino la pieza exacta lanzada en el momento preciso." },
     { id: "salomon", n: 10, nom: "Shᵉlōmṓh [Salomón]", elo: 1850, estilo: "Estratégico · Dominio del espacio", reqNivel: 16, prof: 3, ruido: 38, q: false, peso: { ag: 1.05, ct: 1.35, df: 1.25 }, cita: "LUK 11:31", frase: "Sabiduría posicional: restringe sin prisa el espacio rival hasta que cada pieza pierde salida.", cap: "El discernimiento ve tres jugadas antes del conflicto y resuelve la partida sin ruido." },
     { id: "moises", n: 11, nom: "Mṓsheh [Moisés]", elo: 1980, estilo: "Guía · Abre camino en cierres", reqNivel: 18, prof: 3, ruido: 24, q: true, peso: { ag: 1.15, ct: 1.3, df: 1.28 }, cita: "HEB 11:24-27", frase: "Encuentra rupturas limpias en estructuras cerradas que parecían infranqueables.", cap: "Cuando todos ven muros cerrados, la mirada firme descubre la columna que abre paso hacia la victoria." },
-    { id: "esteban", n: 12, nom: "Sτέfαnος [Esteban]", elo: 2060, estilo: "Testigo luminoso · Defensa y contraataque", reqNivel: 20, prof: 3, ruido: 12, q: true, peso: { ag: 1.26, ct: 1.34, df: 1.32 }, cita: "ACT 7:55-56", frase: "Defensa inquebrantable frente al asedio y contraataque de largo alcance con visión despejada.", cap: "Incluso bajo máxima presión, quien mantiene la mirada en lo alto convierte el cerco en triunfo decisivo." },
-    { id: "pablo", n: 13, nom: "Shāʾū́l — Pαῦlος [Pablo]", elo: 2150, estilo: "Maestro de la Nueva Voluntad · Visión total", reqNivel: 22, prof: 3, ruido: 0, q: true, peso: { ag: 1.3, ct: 1.4, df: 1.32 }, cita: "2TI 4:7-8", frase: "Cúspide de la campaña: combina táctica incisiva, cálculo exacto y dominio de finales.", cap: "Has corrido la carrera completa de los 13 maestros: la disciplina del estudio afina también la templanza del pensamiento." },
+    { id: "esteban", n: 12, nom: "Sτέfαnος [Esteban]", elo: 2060, estilo: "Declarante luminoso · Defensa y contraataque", reqNivel: 20, prof: 3, ruido: 12, q: true, peso: { ag: 1.26, ct: 1.34, df: 1.32 }, cita: "ACT 7:55-56", frase: "Defensa inquebrantable frente al asedio y contraataque de largo alcance con visión despejada.", cap: "Incluso bajo máxima presión, quien mantiene la mirada en lo alto convierte el cerco en triunfo decisivo." },
+    { id: "pablo", n: 13, nom: "Shāʾū́l — Pαῦlος [Pablo]", elo: 2150, estilo: "Emisario a las naciones · Visión total", reqNivel: 22, prof: 3, ruido: 0, q: true, peso: { ag: 1.3, ct: 1.4, df: 1.32 }, cita: "2TI 4:7-8", frase: "Cúspide de la campaña: combina táctica incisiva, cálculo exacto y dominio de finales.", cap: "Has corrido la carrera completa de las 13 figuras: la disciplina del estudio afina también la templanza del pensamiento." },
   ];
   const AJ_ENIGMAS = [
     { id: "baluarte", tit: "La Puerta del Baluarte", tipo: "Mate en 1", cita: "ACT 12:12", pista: "La octava fila está indefensa: lleva tu Baluarte hasta el fondo.", fen: "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1", sol: ["d1d8"] },
     { id: "lampara", tit: "La Lámpara en la Esquina", tipo: "Mate en 1", cita: "MAT 5:15", pista: "La Sabiduría y el Mensajero convergen en el punto más débil junto al Soberano rival.", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", sol: ["h5f7"] },
     { id: "corcel", tit: "El Salto del Corcel", tipo: "Mate en 1", cita: "1CO 9:24", pista: "El Soberano rival está encerrado por sus propias piezas: un solo salto decide todo.", fen: "6rk/6pp/7N/8/8/8/5PPP/6K1 w - - 0 1", sol: ["h6f7"] },
     { id: "brecha", tit: "Brecha en el Muro", tipo: "Mate en 2", cita: "HEB 11:24", pista: "Entrega la Sabiduría en la última fila para desviar al Baluarte defensor.", fen: "2r3k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1", sol: ["e2e8", "c8e8", "e1e8"] },
-    { id: "testigo", tit: "Testigo en el Asedio", tipo: "Mate en 2", cita: "ACT 7:55", pista: "Sacrifica la Sabiduría en h7 para abrir la columna h al Baluarte, mientras el Corcel cierra la fuga.", fen: "5r1k/4N1pp/8/7Q/8/3R4/5PPP/6K1 w - - 0 1", sol: ["h5h7", "h8h7", "d3h3"] },
+    { id: "testigo", tit: "Declarante en el Asedio", tipo: "Mate en 2", cita: "ACT 7:55", pista: "Sacrifica la Sabiduría en h7 para abrir la columna h al Baluarte, mientras el Corcel cierra la fuga.", fen: "5r1k/4N1pp/8/7Q/8/3R4/5PPP/6K1 w - - 0 1", sol: ["h5h7", "h8h7", "d3h3"] },
     { id: "honda", tit: "La Honda de Dāvî́ḏ", tipo: "Mate en 2", cita: "ACT 13:22", pista: "Sacrifica la Sabiduría en g8 bajo el amparo del Corcel para encerrar al Soberano enemigo.", fen: "5r1k/6pp/7N/8/8/1Q6/5PPP/6K1 w - - 0 1", sol: ["b3g8", "f8g8", "h6f7"] },
     { id: "columnas", tit: "Las Dos Columnas", tipo: "Mate en 2", cita: "JAS 2:18", pista: "Dos Baluartes unidos en la misma columna rompen cualquier defensa solitaria.", fen: "2r3k1/5ppp/8/8/8/8/4RPPP/4R1K1 w - - 0 1", sol: ["e2e8", "c8e8", "e1e8"] },
     { id: "corona", tit: "Corona de la Carrera", tipo: "Mate en 2", cita: "2TI 4:7", pista: "Un sacrificio inmortal de la Sabiduría en b8 abre la columna d al Baluarte.", fen: "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1", sol: ["b3b8", "d7b8", "d1d8"] },
@@ -4719,7 +4741,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       h("p", { class: "aj-ent-p", text: enPausa
         ? "Tienes una partida guardada en caché frente a " + part.rivalNom + " (jugada " + Math.max(1, Math.ceil((part.hist ? part.hist.length : 0) / 2)) + "). Retómala justo donde quedaste."
         : compacta
-          ? "13 maestros de las Escrituras —hasta Sτέfαnος [Esteban] y Pαῦlος [Pablo]—, Enigmas del Códice y piezas talladas sin cruz."
+          ? "13 figuras de las Escrituras —hasta Sτέfαnος [Esteban] y Pαῦlος [Pablo]—, Enigmas del Códice y piezas propias."
           : "Enfrenta a 13 figuras bíblicas con estilos tácticos propios, resuelve Enigmas del Códice al leer tus 5 versos diarios y conserva cada jugada automáticamente en caché." }),
       h("div", { class: "aj-ent-pie" },
         h("span", { class: "aj-ent-meta" }, enPausa ? "Partida en curso · " : "Siguiente rival: ", h("b", { text: enPausa ? part.rivalNom : sig.nom })),
@@ -4798,7 +4820,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     function mostrarVictoriaFigura(fig, primeraVez) {
       const venc = new Set(prog.vencidos || []);
       const hito = venc.size === 13 ? "¡Desbloqueaste «Diadema de Consejo» y un lauro trenzado!"
-        : venc.size === 7 ? "¡Alcanzaste el sello «Estratega del Atrio» (7/13 maestros)!" : "";
+        : venc.size === 7 ? "¡Alcanzaste el sello «Estratega del Atrio» (7/13 figuras)!" : "";
       A.abrirModal(() => A.cajaModal(
         A.cabModal("Victoria en las Sendas", fig.nom + " · ELO " + fig.elo),
         h("div", { class: "aj-wrap" },
@@ -5096,11 +5118,11 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       };
       const panelCapsula = h("section", { class: "aj-panel" },
         h("div", { class: "aj-panel-h" }, h("h3", { text: modoEnigma ? "Pasaje del Enigma" : "Cápsula de " + fig.nom.split(" [")[0] }), h("small", { text: ajCitaBonita(modoEnigma ? modoEnigma.cita : fig.cita) })),
-        h("p", { class: "aj-ent-p", text: modoEnigma ? modoEnigma.pista : fig.frase }),
+        modoEnigma ? h("p", { class: "aj-ent-p", text: modoEnigma.pista }) : null,
         bloqueCitaColoso(modoEnigma ? modoEnigma.cita : fig.cita));
 
       const leyenda = h("details", { class: "aj-panel" },
-        h("summary", { style: "cursor:pointer;font:600 .72rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)", text: "Simbología de las piezas BiEx (sin cruces ni estrellas)" }),
+        h("summary", { style: "cursor:pointer;font:600 .72rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro-vivo)", text: "Simbología de las piezas" }),
         h("div", { class: "aj-leyenda", style: "margin-top:10px" }, [
           [6, "Soberano", "Diadema con cabujón"],
           [5, "Sabiduría", "Lámpara encendida"],
@@ -5134,10 +5156,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       const hitos = h("div", { class: "aj-hitos" },
         h("div", { class: "aj-hito" + (venc.size >= 7 ? " ok" : "") },
           h("b", { text: "Estratega del Atrio · " + Math.min(7, venc.size) + " / 7" }),
-          h("small", { text: venc.size >= 7 ? "¡Sello ganado! Superaste a los primeros 7 maestros." : "Supera a los primeros 7 maestros de las Sendas para ganar este sello." })),
+          h("small", { text: venc.size >= 7 ? "¡Sello ganado! Superaste a las primeras 7 figuras." : "Supera a las primeras 7 figuras de las Sendas para ganar este sello." })),
         h("div", { class: "aj-hito" + (venc.size >= 13 ? " ok" : "") },
           h("b", { text: "Diadema de Consejo · " + venc.size + " / 13" }),
-          h("small", { text: venc.size >= 13 ? "¡Vitrina completada! Venciste incluso a Sτέfαnος [Esteban] y Pαῦlος [Pablo]." : "Vence a los 13 maestros (incluyendo a Esteban y Pablo) para ganar la Diadema de Consejo." })));
+          h("small", { text: venc.size >= 13 ? "¡Vitrina completada! Venciste incluso a Sτέfαnος [Esteban] y Pαῦlος [Pablo]." : "Vence a las 13 figuras (incluyendo a Esteban y Pablo) para ganar la Diadema de Consejo." })));
 
       const grid = h("div", { class: "aj-fig-grid" }, AJ_FIGURAS.map((fig) => {
         const libre = ajDesbloqueado(fig, prog), gano = venc.has(fig.id), actual = !modoEnigma && part.rivalIdx === fig.n - 1;
@@ -5197,7 +5219,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
 
     raiz.append(tabsEl, cuerpo);
     document.title = "Ajedrez Bíblico · Escudriña · BiEx";
-    marco(cont, cabSub("Ajedrez Bíblico", "Sendas de los Antiguos · 13 maestros de las Escrituras · 100 % sin conexión.", "#/escudrina/mundo"), raiz);
+    marco(cont, cabSub("Ajedrez Bíblico", "Sendas de los Antiguos · 13 figuras de las Escrituras · 100 % sin conexión.", "#/escudrina/mundo"), raiz);
     pintarTodo();
     // Si la partida cargada desde caché se quedó en turno de negras, reanudar IA suavemente
     if (!modoEnigma && !part.fin && st.t < 0) {
@@ -5802,7 +5824,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const notaReasig = hayRep ? h("p", { class: "jg-mini ap-reasig-nota", text: gratis
       ? "Tienes un restablecimiento gratis disponible (escalera al usarlo: 1 semana, luego 2, y en adelante cada 3 semanas)."
       : (fmtProx ? "Próximo restablecimiento gratis el " + fmtProx + " (tramo de " + plural(semN, "semana", "semanas") + "). Ahora puedes reasignar por 60 dracmas." : "Tu próximo restablecimiento gratis se habilita al cumplirse el plazo (1 → 2 → 3 semanas); ahora cuesta 60 dracmas.") }) : null;
-    return tarjeta("Atributos", ico("arbol"),
+    const secAt = tarjeta("Atributos", ico("arbol"),
       h("div", { class: "ap-cab" }, h("div", { class: "ap-cab-l" }, quedan, saldoDr), h("div", { class: "ap-cab-r" }, chipPoder(av.poder, () => abrirVentanaPoder(y, P)))),
       lista, desc,
       h("div", { class: "jg-acciones ap-acc-b" }, btnRep,
@@ -5816,6 +5838,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           if (!(await confirmar("¿Reasignar tus atributos?", "Tus " + plural(rep, "punto ya repartido vuelve", "puntos ya repartidos vuelven") + " a quedar libres y tus atributos bajan a lo que da la armadura hasta que los repartas otra vez. " + det, gratis ? "Reasignar gratis" : "Reasignar · 60 dr."))) return;
           const r = await accionPoder("/poder/reasignar", {}, "Tus puntos volvieron: repártelos de nuevo"); if (r) rehacer(); } }, h("span", { text: gratis ? "Reasignar (gratis)" : "Reasignar · 60 dr." })) : null),
       notaReasig);
+    secAt.id = "jg-atributos";
+    return secAt;
   }
   // V22 · Granada de nueve cámaras (BiEx, 13-nov-2026; Gálatas 5:22-23, καρπός en singular): el corte de la fruta con sus
   // nueve cámaras de arilos; cada cámara se llena de luz rubí con el nivel de su aspecto. Vectorial y quieta (se pinta una
@@ -6124,24 +6148,32 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   // con su traducción completa (datos/juego/versos_lectura.json); la mitad de las veces, de los textos de BiEx. Se dibuja como
   // en el lector (A.versos respeta sus opciones del texto) y lleva a su capítulo.
   let VL = null;
-  async function versoDeLectura() {
+  async function versoDeLectura(refFija) {
+    if (refFija && refFija.c && refFija.cap && refFija.v) {
+      try { const r = await A.versos(refFija.c, refFija.cap, refFija.v, refFija.v); return r && r[0] ? { c: refFija.c, cap: refFija.cap, v: refFija.v, nodo: r[0][1] } : null; } catch (e) { return null; }
+    }
     if (!VL) VL = A.cargar("datos/juego/versos_lectura.json").catch(() => { VL = null; return null; });
     const d = await VL; if (!d) return null;
     const l = Math.random() < 0.5 && d.a && d.a.length ? d.a : d.b; if (!l || !l.length) return null;
     const [c, cap, v] = l[Math.floor(Math.random() * l.length)];
     try { const r = await A.versos(c, cap, v, v); return r && r[0] ? { c, cap, v, nodo: r[0][1] } : null; } catch (e) { return null; }
   }
-  function tarjetaVerso(titulo) {
+  function tarjetaVerso(titulo, opts) {
+    const o = opts || {};
     const cuerpo = h("p", { class: "jg-vl-t" }, h("span", { class: "cargando-mini", text: "Buscando un verso…" })), pie = h("div", { class: "jg-vl-pie" });
     const el = h("div", { class: "jg-vl", role: "group", "aria-label": titulo || "Un verso para ti" }, h("span", { class: "jg-vl-luz", "aria-hidden": "true" }), h("small", { class: "jg-vl-rot", text: titulo || "Un verso para ti" }), cuerpo, pie);
     let tVis = Date.now();
     el._visto = () => { tVis = Date.now(); };
-    versoDeLectura().then((x) => {
+    versoDeLectura(o.refFija).then((x) => {
       if (!x) { el.remove(); return; }
       cuerpo.replaceChildren(x.nodo);
       if (!el.classList.contains("espera")) tVis = Date.now();
       const lc = x.c + "." + x.cap, clave = lc + "." + x.v;
       const esRep = marcadoAntes(lc, x.v), ya = LB.ok.has(clave);
+      if (o.claveGuarda) {
+        A.store.set(o.claveGuarda, { c: x.c, cap: x.cap, v: x.v, ts: Date.now(), hecho: !!ya });
+        document.dispatchEvent(new Event("biex:faro"));
+      }
       const pal = Math.max(4, (x.nodo.textContent || "").trim().split(/\s+/).filter(Boolean).length);
       const reqMs = Math.max((S.cfg && S.cfg.msMin) || 2500, Math.min(18000, Math.round(pal * ((S.cfg && S.cfg.msPalabra) || 450))));
       const btnT = h("span", { text: ya ? (esRep ? "Repasado" : "Leído") : (esRep ? "Marcar repasado" : "Marcar leído") });
@@ -6151,9 +6183,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         esperando = false;
         const ms = Math.max(reqMs, Math.round(Date.now() - tVis));
         LB.ok.add(clave);
+        if (o.claveGuarda) {
+          A.store.set(o.claveGuarda, { c: x.c, cap: x.cap, v: x.v, ts: Date.now(), hecho: true });
+          document.dispatchEvent(new Event("biex:faro"));
+        }
         if (esRep) {
           const l = repasos(); if (!l.includes(clave)) { l.push(clave); A.store.set("jg:rep", { f: diaRep(), k: l.slice(-600) }); }
-          const o = A.store.get("jg:rp", null) || {}, s = o[lc] || ""; if (s[x.v - 1] !== "1") { o[lc] = pon(s, x.v - 1, "1"); A.store.set("jg:rp", o); }
+          const ob = A.store.get("jg:rp", null) || {}, s = ob[lc] || ""; if (s[x.v - 1] !== "1") { ob[lc] = pon(s, x.v - 1, "1"); A.store.set("jg:rp", ob); }
         }
         if (A.marcarLeido) A.marcarLeido(x.c, x.cap, [x.v]);
         const cf = cfDe(lc); guardarCf(lc, pon(cf, x.v - 1, B36[Math.min(35, vecesCar(cf[x.v - 1]) + 1)]), true);
@@ -6197,6 +6233,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const pintar = () => {
       const f = fr(), lleno = f >= 1;
       if (Math.abs(f - fUlt) >= 0.004 || lleno !== fUlt >= 1) { fUlt = f; cesta.replaceChildren(A.svg(cestaSVG(f), "0 0 200 160")); cesta.style.setProperty("--f", f.toFixed(3)); cesta.classList.toggle("llena", lleno); }
+      if (lleno && A.notificar) A.notificar("biex-cosecha-llena", "Tu cesta de la cosecha está llena", "Recógela en Tu Árbol para recibir tu experiencia y un verso para tu lectura.", "#/escudrina/arbol", "cosecha");
       const falta = co.lleno - Date.now();
       txt.replaceChildren(lleno ? "Tu cesta está llena: recógela. Mientras no la recojas, no se llena más." : "Se llena en " + horas(falta) + ". A las 18 h se detiene hasta que la recojas; puedes recogerla antes, cuantas veces quieras.");
       est.textContent = "Ahora daría entre " + fmt(Math.round(co.min1 * f)) + " y " + fmt(Math.round(co.max1 * f)) + " de experiencia · " + Math.round(f * 100) + " % llena";
@@ -6214,7 +6251,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       med.append(A.svg(medidorSVG(), "0 0 240 140")); ag.append(A.svg(medidorAguja(), "0 0 240 140")); med.append(ag, h("i", { class: "co-destello", "aria-hidden": "true" }));
       const cifra = h("b", { text: "+0" }), res = h("p", { class: "co-res", "aria-live": "polite" }, cifra, h("small", { text: "de experiencia · " + pctTxt(r.p) + " de lo sembrado" + (r.f < 0.999 ? " · cesta al " + Math.round(r.f * 100) + " %" : "") }));
       res.style.opacity = "0";
-      const vers = tarjetaVerso("Un verso para tu cosecha"); vers.classList.add("espera");
+      const vers = tarjetaVerso("Un verso para tu cosecha", { claveGuarda: "jg:cestaUlt" }); vers.classList.add("espera");
       zona.replaceChildren(med, res, h("p", { class: "co-est", text: (r.plena ? "¡Cosecha plena! " : "") + "Tu fruto del espíritu (" + plural(r.F || 0, "nivel", "niveles") + ") sube la probabilidad de lo alto." }),
         vers, h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => rehacer() }, h("span", { text: "Ver mi cesta" }))));
       sonar("cosecha");
@@ -6225,8 +6262,17 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         { duration: 1900, easing: "cubic-bezier(.25,.8,.25,1)", fill: "forwards" }).finished.then(fin, fin);
     }
     pintar();
+    const ultCesta = A.store.get("jg:cestaUlt", null);
+    const hayPendVerso = !!(ultCesta && ultCesta.c && ultCesta.cap && ultCesta.v && !ultCesta.hecho && !LB.ok.has(ultCesta.c + "." + ultCesta.cap + "." + ultCesta.v));
+    const btnUltVerso = hayPendVerso ? h("button", {
+      class: "btn chico", type: "button",
+      onclick: () => {
+        const vers = tarjetaVerso("Tu último verso de la cosecha", { claveGuarda: "jg:cestaUlt", refFija: ultCesta });
+        zona.replaceChildren(vers, h("div", { class: "jg-acciones" }, h("button", { class: "btn chico", type: "button", onclick: () => rehacer() }, h("span", { text: "Volver a mi cesta" }))));
+      },
+    }, ico("marca"), h("span", { text: "Leer último verso (" + nombreLibro(ultCesta.c).split(" [")[0] + " " + ultCesta.cap + ":" + ultCesta.v + ")" })) : null;
     const citaC = A.nombreLibro("JHN") + " 4:36-38";
-    zona.append(cesta, txt, est, h("div", { class: "jg-acciones" }, btn),
+    zona.append(cesta, txt, est, h("div", { class: "jg-acciones" }, btn, btnUltVerso),
       h("p", { class: "co-est" }, "Uno siembra y otro siega: la medida de tu cesta crece con lo que siembran todos los estudiantes · ", h("button", { class: "ap-cita", type: "button", title: "Ver lo que dice", "aria-label": "Ver " + citaC, onclick: () => verCita("JHN", 4, 36, 38) }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), citaC)));
     const sec = tarjeta("La cosecha", ico("arbol"), zona); sec.id = "jg-cosecha";
     enVivo(sec, 30e3, async () => { if (zona.contains(cesta)) pintar(); });
@@ -8081,6 +8127,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function soltar() {
     if (R.io) { R.io.disconnect(); R.io = null; }
     if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; }
+    if (LB.pieIO) { LB.pieIO.disconnect(); LB.pieIO = null; }
+    LB.enPie = false;
+    if (LB.el) LB.el.classList.remove("en-pie");
+    if (LB.pb) LB.pb.classList.remove("en-pie");
     ponerLB(0);
     Object.assign(R, { els: [], vis: new Map() });
     const p = document.querySelector(".jg-pres"); if (p) p.remove();
@@ -8253,6 +8303,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function sellos() {
     for (const s of document.querySelectorAll(".jg-sello, .jg-ld")) s.remove();
     if (LB.io) { LB.io.disconnect(); LB.io = null; } if (LB.ioB) { LB.ioB.disconnect(); LB.ioB = null; } if (LB.ro) { LB.ro.disconnect(); LB.ro = null; }
+    if (LB.pieIO) { LB.pieIO.disconnect(); LB.pieIO = null; }
+    LB.enPie = false;
     LB.vis = new Set();
     if (!S.token || !R.lib || !R.pal.length || !R.els.length || !("IntersectionObserver" in window)) { ponerLB(0); return; }
     const hoja = document.querySelector(".hoja"); if (!hoja) return;
@@ -8264,6 +8316,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Leído" }), h("small", { text: "" })));
       document.body.append(LB.el);
     }
+    LB.el.classList.remove("en-pie");
     if (!LB.ah || LB.ah.parentElement !== hoja) { if (LB.ah) LB.ah.remove(); LB.ah = h("div", { class: "jg-ah", hidden: true, "aria-hidden": "true" }, h("i", { class: "f" }, h("i", { class: "fo" }), h("i", { class: "fa" })), h("i", { class: "n" }, h("i", { class: "no" }), h("i", { class: "na" }))); hoja.append(LB.ah); }
     // X15 y X16 (BiEx, 13-nov-2026): en la vista por versos, «Leído» va discreto al pie del verso; al terminar una perícopa
     // cuyos versos ya tienen su tiempo, se ofrece también marcarla entera. En la vista continua, el botón fijo de abajo y,
@@ -8281,11 +8334,24 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Perícopa leída" }), h("small", { text: "" })));
       document.body.append(LB.pb);
     }
+    LB.pb.classList.remove("en-pie");
     LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
     pintarMarcados();
     // los versos a la vista (la franja fija de lectura los recorre: ver zonaLectura y versoFranja)
     LB.io = new IntersectionObserver((ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) LB.vis.add(v); else LB.vis.delete(v); } pedirLB(); }, { threshold: 0 });
     for (const e of R.els) LB.io.observe(e);
+    // PR #14 (fluidez al pie): ocultar «Leído» en el pie usando solo IntersectionObserver pasivo y .en-pie por GPU (0 reflujos, 0 cambios en <html>)
+    const piePag = document.querySelector("footer.pie-a");
+    if (piePag) {
+      LB.pieIO = new IntersectionObserver((ents) => {
+        const en = ents.some((x) => x.isIntersecting);
+        if (!!LB.enPie === en) return;
+        LB.enPie = en;
+        if (LB.el) { LB.el.classList.toggle("en-pie", en); LB.el.tabIndex = en || LB.el.classList.contains("fuera") ? -1 : 0; }
+        if (LB.pb) { LB.pb.classList.toggle("en-pie", en); LB.pb.tabIndex = en || LB.pb.classList.contains("fuera") ? -1 : 0; }
+      }, { rootMargin: "0px 0px -8px 0px", threshold: 0.01 });
+      LB.pieIO.observe(piePag);
+    }
     // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
     // si la hoja cambia de alto (letra, imágenes, ventana), el resplandor y el pie se vuelven a colocar eligiendo de nuevo
     // (antes se llamaba a ponerLB sin su verso de «Leído»: el pie se ocultaba y volvía a aparecer, un titileo)
@@ -8435,12 +8501,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const mm = dos && dos.length > 1 ? dos : m ? [m] : [], elm = (m && document.getElementById("v" + (dos ? dos[dos.length - 1] : m))) || el;
     const clave = mm.join(","), listo = mm.length > 0 && mm.every((x) => R.pend.has(x));
     const cambioV = LB.v !== v, nuevo = cambioV || LB.clave !== clave;
-    const se = document.scrollingElement || document.documentElement;
-    const pegadoPie = se.scrollHeight > innerHeight + 48 && (se.scrollHeight - (scrollY + innerHeight)) <= 24;
-    const cambioPie = !!LB.enPie !== pegadoPie;
-    LB.enPie = pegadoPie;
     if (LB.ah) LB.ah.classList.toggle("marcado", !marcable(v));
-    if (!nuevo && !forzar && !cambioPie && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
+    if (!nuevo && !forzar && (!mm.length || !LB.el.classList.contains("fuera") || (LB.pie && !LB.pie.hidden))) { LB.el.classList.toggle("espera", !listo); if (LB.pie) LB.pie.classList.toggle("espera", !listo); halo(el); return; }
     const lc = R.lib + "." + R.cap, rep = m ? marcadoAntes(lc, m) : false;
     const fila = el.classList.contains("vl"), pe = periDe(v);
     if (fila && mm.length) { ponerPie(elm, m, pe, rep, dos); }
@@ -8449,8 +8511,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (LB.pb) {
       // vista continua: la perícopa entera, cuando su final se ve y todos sus versos por marcar ya tienen su tiempo
       let ver = false;
-      if (!pegadoPie && !fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
-      LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver ? 0 : -1;
+      if (!fila && pe && pe.ok) { const rf = pe.fin.getBoundingClientRect(), T = topeFijo(); ver = rf.bottom > T + 20 && rf.bottom < innerHeight - 70; }
+      LB.pb.classList.toggle("fuera", !ver); LB.pb.tabIndex = ver && !LB.enPie ? 0 : -1;
       if (ver) { LB.pb.querySelector("small").textContent = "versos " + pe.a + "–" + pe.b; LB.pb.setAttribute("aria-label", "Marcar como leída la perícopa, versos " + pe.a + " a " + pe.b); LB.pb.style.setProperty("--jg-lb-alza", alza); }
     }
     if (nuevo) {
@@ -8482,9 +8544,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       }
     }
     if (LB.el.style.getPropertyValue("--jg-lb-alza") !== alza) LB.el.style.setProperty("--jg-lb-alza", alza);
-    if (pegadoPie || fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
-    else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = 0; }
-    document.documentElement.classList.toggle("jg-con-lb", !LB.el.classList.contains("fuera") || !!(LB.pb && !LB.pb.classList.contains("fuera")));
+    if (fila || !mm.length) { LB.el.classList.add("fuera"); LB.el.tabIndex = -1; }
+    else if (LB.el.classList.contains("fuera")) { LB.el.classList.remove("fuera"); LB.el.tabIndex = LB.enPie ? -1 : 0; }
+    const conLb = !LB.el.classList.contains("fuera") || !!(LB.pb && !LB.pb.classList.contains("fuera"));
+    if (document.documentElement.classList.contains("jg-con-lb") !== conLb) document.documentElement.classList.toggle("jg-con-lb", conLb);
     if (!hoja) return;
     const f = LB.ah.firstChild, antes = LB.ah.hidden, ty = y0 - rh.top;
     const salto = antes || LB.y0 == null || Math.abs(ty - LB.y0) > innerHeight * 0.9;
@@ -8850,7 +8913,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   const MED = { el: null, nv: null, mas: null, hito: null, t: 0 };
   function medidor(ver) {
     const raiz = document.documentElement;
-    if (!ver || !S.token || !S.yo) { if (MED.el) { MED.el.remove(); MED.el = null; clearTimeout(MED.tz); } raiz.classList.remove("jg-con-med"); return; }
+    if (!ver || !S.token || !S.yo) { if (MED.el) { MED.el.remove(); MED.el = null; clearTimeout(MED.tz); } raiz.classList.remove("jg-con-med"); if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro); return; }
     if (!MED.el) {
       // Escudo de nivel (BiEx, 10-nov-2026: «vuélvelo épico»): vectorial, con el metal del rango (bronce, plata, oro,
       // esmeralda y oro radiante), anillo de avance con su punta de luz, laureles, barrido de luz y rayos al subir de nivel
@@ -8864,6 +8927,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     }
     raiz.classList.add("jg-con-med");
     pintarMedidor();
+    if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro);
   }
   // Chispas del escudo (BiEx, 10-nov-2026: «se ven borrosas y muy gruesas; afínalas y ponles otros efectos aleatorios»):
   // partículas finas y nítidas (núcleo sólido de 1,5 a 3 px, sin desenfoque ni sombras borrosas), con seis efectos que se
@@ -8975,6 +9039,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (MED.firma !== firma) {
       MED.firma = firma;
       MED.bonos.replaceChildren(...bonos.map(([t, d, k]) => h("span", { class: "jg-bono b-" + k, title: d }, t)));
+      if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro);
     }
     MED.el.setAttribute("aria-label", "Escudriña: nivel " + y.nivel + ", " + Math.round(p * 100) + " % hacia el siguiente. Abrir el panel");
     MED.el.title = "Nivel " + y.nivel + " · " + Math.round(p * 100) + " % hacia el siguiente";
