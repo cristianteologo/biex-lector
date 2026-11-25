@@ -166,6 +166,11 @@
       if (nuevos.length) setTimeout(() => { for (const a of nuevos.reverse()) { if (a.k === "liga" && a.nvNuevo > a.nv) celebracion(Object.assign({ tipo: "liga" }, a)); else A.avisar(NOVEDAD[a.k](a)); } }, 1300);
     }
     if (yo.inv) A.store.set("jg:mio", yo.inv);
+    if (yo.miSala && yo.miSala.c && !SL.cod && !SL.salioManual && S.token) {
+      if (yo.miSala.nombre) guardarNomSala(yo.miSala.c, yo.miSala.nombre, false);
+      if (yo.miSala.abierta !== undefined) SL.pub = !!yo.miSala.abierta;
+      entrarSala(yo.miSala.c);
+    }
     registrarPoder(yo, yo.av);
     A.store.set("jg:inv", null);
     if (yo.rpMig === false) migrarRepasos();
@@ -9939,7 +9944,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
 
   // ================================================================== lectura en compañía (salas en tiempo real)
-  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "", nombre: "", nomEn: 0 };
+  const SL = { cod: null, ws: null, miembros: [], anf: "", yo6: "", seguir: false, guia: false, ultPos: 0, pos: "", intentos: 0, cerrada: true, t: null, marcas: new Map(), pub: true, lcAct: "", lcCreada: "", nombre: "", nomEn: 0, salioManual: false };
   const limpiarNomSala = (s) => String(s || "").replace(/\s+/g, " ").trim().slice(0, 36);
   const nombresSalaLoc = () => { const m = A.store.get("jg:salaNom", null); return m && typeof m === "object" ? m : {}; };
   const nombreSalaDe = (cod, srvNom) => {
@@ -9968,8 +9973,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     cod = String(cod || "").toUpperCase(); if (!/^[2-9A-HJKMNP-Z]{6}$/.test(cod) || !S.token) return false;
     if (SL.cod === cod && SL.ws && SL.ws.readyState <= 1) return true;
     salirSala(true);
-    Object.assign(SL, { cod, cerrada: false, intentos: 0, miembros: [], seguir: false, guia: false, nombre: nombreSalaDe(cod, ""), nomEn: Number((nombresSalaLoc()[cod] || {}).t) || 0 });
+    Object.assign(SL, { cod, cerrada: false, salioManual: false, intentos: 0, miembros: [], seguir: false, guia: false, nombre: nombreSalaDe(cod, ""), nomEn: Number((nombresSalaLoc()[cod] || {}).t) || 0 });
     A.store.set("jg:sala", { c: cod, t: Date.now() });
+    pintarSalaPildora();
     conectarSala(); latirPresencia(true); return true;
   }
   // BiEx (10-nov-2026): la sala quedó en «conectando…» hasta recargar. Ahora: tope de 10 s para abrir, latido que detecta
@@ -10011,7 +10017,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   window.addEventListener("online", reanimarSala); window.addEventListener("focus", reanimarSala); window.addEventListener("pageshow", reanimarSala);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) reanimarSala(); });
   function salirSala(silencio) {
-    SL.cerrada = true; clearInterval(SL.t);
+    SL.cerrada = true; if (!silencio) SL.salioManual = true; clearInterval(SL.t);
     if (SL.ws) { try { SL.ws.close(1000, "salir"); } catch (e) { /* ignorar */ } }
     SL.ws = null; SL.cod = null; SL.miembros = []; SL.lcCreada = ""; SL.nombre = ""; SL.nomEn = 0; A.store.set("jg:sala", null); quitarMarcas(); pintarSalaPildora();
     VIVO.salas = null;
@@ -10029,6 +10035,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (m.abierta !== undefined) SL.pub = !!m.abierta;
       if (m.nombre !== undefined) SL.nombre = limpiarNomSala(m.nombre);
       if (m.nomEn) SL.nomEn = Number(m.nomEn) || SL.nomEn;
+      if (SL.cod) A.store.set("jg:sala", { c: SL.cod, t: Date.now() });
       SL.miembros = m.miembros || []; SL.anf = m.anf || ""; if (m.yo) SL.yo6 = m.yo;
       const yo = SL.miembros.find((x) => x.j === SL.yo6); SL.guia = !!(yo && yo.guia);
       pintarSalaPildora(); pintarMarcas(); if (S.yo) pintarMedidor();
@@ -10093,8 +10100,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (anclaP ? p.nextElementSibling !== anclaP : !p.isConnected) anclaP ? anclaP.before(p) : document.body.append(p);
     const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1, nom = nombreSalaDe(SL.cod, SL.nombre);
     const et = nom ? nom : "Sala " + SL.cod;
-    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: et }), h("b", { text: conectada ? plural(n, "persona", "personas") : "conectando…" }));
-    p.setAttribute("aria-label", et + " (" + SL.cod + "): " + (conectada ? plural(n, "persona", "personas") : "conectando"));
+    const estTxt = conectada && n > 0 ? plural(n, "persona", "personas") : "conectando…";
+    p.replaceChildren(h("i", { class: conectada ? "on" : "", "aria-hidden": "true" }), h("span", { text: et }), h("b", { text: estTxt }));
+    p.setAttribute("aria-label", et + " (" + SL.cod + "): " + estTxt);
   }
   function abrirSala() {
     const vistaS = () => {
@@ -10136,7 +10144,15 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("div", { class: "jg-acciones" },
           R.lib ? h("button", { class: "btn", type: "button", onclick: () => { const v = versoVisible(); if (v && SL.ws && SL.ws.readyState === 1) { SL.ws.send(JSON.stringify({ t: "luz", lc: R.lib + "." + R.cap, v })); sonar("chispa"); A.avisar("Quienes están en la sala ven ahora una luz en el verso " + v); } }, title: "Enciende por unos segundos una luz en el verso que tienes en pantalla, para que los demás lo vean en su texto" }, ico("idea"), h("span", { text: "Señalar este verso a la sala" })) : null,
           h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · leamos juntos", "Leamos juntos la Nueva Voluntad en Escudriña: entra a mi sala" + (nomAct ? " «" + nomAct + "»" : "") + ".", PUBLICO + "/#/escudrina/sala/" + SL.cod) }, ico("compartir"), h("span", { text: "Invitar" })),
-          h("button", { class: "btn", type: "button", onclick: () => { salirSala(false); SL.abierta = false; A.cerrarModal(); } }, h("span", { text: "Salir de la sala" })))));
+          h("button", { class: "btn", type: "button", onclick: () => { salirSala(false); SL.abierta = false; A.cerrarModal(); } }, h("span", { text: soyAnf ? "Salir un momento" : "Salir de la sala" })),
+          soyAnf ? h("button", { class: "btn chico", type: "button", onclick: async (ev) => {
+            const bt = ev.currentTarget; bt.disabled = true; const cod = SL.cod;
+            try { await pedir("/sala/cerrar", { metodo: "POST", cuerpo: { c: cod } }); } catch (e) { /* si el servidor aún no expone /sala/cerrar, igual se sale localmente */ }
+            SL.salioManual = true;
+            if (S.yo && S.yo.miSala && S.yo.miSala.c === cod) S.yo.miSala = null;
+            salirSala(true); SL.abierta = false; A.cerrarModal();
+            A.avisar("Sala cerrada"); syncSalasTrasEvento(); latirPresencia(true);
+          } }, h("span", { text: "Cerrar sala" })) : null)));
     };
     SL.vista = vistaS; SL.abierta = true;
     A.abrirModal(vistaS, () => { SL.abierta = false; });
@@ -10190,7 +10206,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const p = await presentes(lc.split(".")[0]), ya = p && p.salas && p.salas[lc] && p.salas[lc].sort((a, b) => b.n - a.n)[0];
       if (SL.cod && (!ya || ya.c === SL.cod)) { abrirSala(); return; }
       if (ya) { entrarSala(ya.c); A.avisar("Entraste a la sala " + ya.c + " · " + nombreLC(lc)); }
-      else { const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: true, lc } }); if (r.error) return A.avisar(mensaje(r)); SL.pub = true; SL.lcCreada = lc; entrarSala(r.cod); A.avisar("Abriste una sala en " + nombreLC(lc) + ": quien lea aquí puede acompañarte"); }
+      else { const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: { abierta: true, persistente: true, lc } }); if (r.error) return A.avisar(mensaje(r)); SL.pub = true; SL.lcCreada = lc; entrarSala(r.cod); A.avisar("Abriste una sala en " + nombreLC(lc) + ": quien lea aquí puede acompañarte"); }
       VIVO.salas = null; VIVO.pres.clear(); syncSalasTrasEvento();
       const [lib, cap] = lc.split("."); if (R.lib !== lib || R.cap !== +cap) A.irA("#/" + lib + "/" + cap);
     } finally { if (boton) boton.disabled = false; }
@@ -10239,10 +10255,11 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       zona.replaceChildren(
         h("div", { class: "jg-salas-cab" }, h("p", { class: "jg-mini jg-salas-n", text: totTxt }), btnRef),
         h("ul", { class: "jg-salas-l" }, L.map((x) => { const [l, c] = embDe(x.emb); const esMia = x.c === SL.cod; const nomS = nombreSalaDe(x.c, x.nombre);
+          const nPers = (x.n | 0) > 0 ? plural(x.n, "persona", "personas") : "en espera · abierta";
           return h("li", { class: esMia ? "yo" : "" }, emblema(l, c, x.marco || 0, x.foto),
             h("span", { class: "n" },
               h("b", {}, nomS ? nomS + " · " + nombreLC(x.lc) : nombreLC(x.lc), esMia ? h("span", { class: "jg-sala-est", text: x._loc ? "Activa · sincronizando" : "Tu sala activa" }) : null),
-              h("small", {}, "Sala " + x.c + " · de ", x.anf ? nombreClicable(x.anf) : "un lector", (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + plural(x.n, "persona", "personas"))),
+              h("small", {}, "Sala " + x.c + " · de ", x.anf ? nombreClicable(x.anf) : "un lector", (x.poder != null ? " · poder " + fmt(x.poder) : "") + " · " + nPers)),
             esMia ? h("button", { class: "btn chico", type: "button", onclick: abrirSala }, h("span", { text: "Abrir" }))
               : h("button", { class: "btn chico oro", type: "button", onclick: (e) => { e.currentTarget.disabled = true; const cambiaba = !!SL.cod; entrarSala(x.c); A.avisar((cambiaba ? "Cambiaste a la sala " : "Entraste a la sala ") + (nomS || x.c)); syncSalasTrasEvento(); if (x.lc) A.irA("#/" + x.lc.replace(".", "/")); else repintar(); } }, h("span", { text: SL.cod ? "Cambiarme" : "Entrar" }))); })));
     };
@@ -10287,7 +10304,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const bt = e.currentTarget; bt.disabled = true;
       const lc = R.lib ? R.lib + "." + R.cap : (SL.lcAct || ultimoLC());
       const nom = limpiarNomSala(nomIn.value);
-      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, lc }, nom ? { nombre: nom } : {}) });
+      const r = await pedir("/sala/crear", { metodo: "POST", cuerpo: Object.assign({ abierta: ab.checked, persistente: ab.checked, lc }, nom ? { nombre: nom } : {}) });
       bt.disabled = false;
       if (r.error) { pista.textContent = mensaje(r); pista.className = "jg-pista mal"; return; }
       SL.pub = r.abierta !== false; SL.lcCreada = lc || ""; VIVO.salas = null;
@@ -10357,8 +10374,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("button", { class: "btn", type: "button", onclick: abrirSala }, ico("sala"), h("span", { text: "Ver la sala" })))));
     animarCifras(zona);
   }
-  // al volver al lector con una sala abierta (en las últimas 12 h), se reconecta sola
-  function retomarSala() { const s = A.store.get("jg:sala", null); if (s && s.c && Date.now() - (s.t || 0) < 12 * 3600e3 && !SL.cod && S.token) entrarSala(s.c); }
+  // PR #16 · al volver al lector con una sala abierta (durante sus 7 días de vida), se reconecta sola
+  function retomarSala() { const s = A.store.get("jg:sala", null); if (s && s.c && Date.now() - (s.t || 0) < 7 * 864e5 && !SL.cod && !SL.salioManual && S.token) entrarSala(s.c); }
 
   // ================================================================== presencia en vivo (POST /presencia) y ficha pública (GET /jugador)
   const PRES = { act: "", lc: "", t: 0, iv: 0, visEsc: false };
