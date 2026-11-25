@@ -413,6 +413,31 @@ async function revisarNotifSegundoPlano() {
   });
   await (await caches.open(CACHE)).put(claveDe(NOTIF_DATOS), new Response(JSON.stringify(Object.assign({}, cfg, { ultDia: hoy })), { headers: { "content-type": "application/json" } }));
 }
+// PR #16 · Web Push real en segundo plano (muestra avisos de El Coloso o salas incluso con la app cerrada)
+self.addEventListener("push", (e) => {
+  if (!self.registration || !self.registration.showNotification) return;
+  let d = {};
+  try {
+    d = e.data ? e.data.json() : {};
+  } catch (err) {
+    try { d = { body: e.data ? e.data.text() : "" }; } catch (er2) { d = {}; }
+  }
+  const titulo = typeof d.title === "string" && d.title.trim() ? d.title.trim().slice(0, 90) : "Biblia Exacta";
+  const cuerpo = typeof d.body === "string" && d.body.trim() ? d.body.trim().slice(0, 220) : "Tienes una novedad en Biblia Exacta.";
+  const rutaRaw = typeof d.ruta === "string" ? d.ruta : (typeof d.url === "string" ? d.url : "#/");
+  const rutaOk = /^#\/[A-Za-z0-9/_?.=&-]{0,120}$/.test(rutaRaw) ? rutaRaw : "#/escudrina";
+  const icono = new URL("iconos/icon-192.png", ALCANCE).href;
+  const tag = typeof d.tag === "string" && d.tag.trim() ? d.tag.trim().slice(0, 64) : "biex-push";
+  e.waitUntil(self.registration.showNotification(titulo, {
+    body: cuerpo,
+    icon: icono,
+    badge: icono,
+    tag,
+    renotify: !!d.renotify,
+    data: { ruta: rutaOk },
+  }).catch(() => {}));
+});
+
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
   const data = (e.notification && e.notification.data && typeof e.notification.data === "object") ? e.notification.data : {};

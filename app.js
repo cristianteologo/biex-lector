@@ -68,6 +68,7 @@
     atras: '<path d="M10 6l-6 6 6 6M4.5 12H20" ' + L1 + '/>',
     adelante: '<path d="M14 6l6 6-6 6M19.5 12H4" ' + L1 + '/>',
     historial: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.2 4.5v3.4h3.4" ' + L1 + '/><path d="M12 8.2V12l2.6 1.7" ' + L1 + '/>',
+    actualizar: '<path d="M19.5 11a7.5 7.5 0 0 0-13.6-4.2M4.5 4.5v3.6h3.6M4.5 13a7.5 7.5 0 0 0 13.6 4.2M19.5 19.5v-3.6h-3.6" ' + L1 + '/>',
     leido: '<path d="M6 12.5l4 4 8-9" ' + L1 + '/>',
     externo: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" ' + L1 + '/>',
     rejilla: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" ' + L1 + '/>',
@@ -4290,6 +4291,48 @@
                 h("div", { class: "fv-rap-et" }, h("span", { text: "Marcar verso" }), etAct),
                 h("div", { class: "fv-rap-col", role: "group", "aria-label": "Marcar con color" }, dots)));
           })() : null,
+          L ? (() => {
+            const cmpBody = h("div", { class: "fv-cmp-cuerpo" }, h("p", { class: "nota-ui", text: "Cargando comparación…" }));
+            let cargado = false;
+            const det = h("details", { class: "fv-cmp" },
+              h("summary", {},
+                h("span", {}, svg(ICO.sinopsis), "Comparar vistas de este verso"),
+                h("small", { text: "Griego · Textual · Lectura · Jünemann" })),
+              cmpBody);
+            det.addEventListener("toggle", async () => {
+              if (!det.open || cargado) return;
+              cargado = true;
+              try {
+                const [toks, jnm] = await Promise.all([
+                  ctx.toks ? (T ? Promise.resolve(ctx.toks) : tablas().then(() => ctx.toks)) : versoTokens(b.c, cap, ctx.v).catch(() => null),
+                  cargarJNM(b.c).catch(() => null),
+                ]);
+                if (!det.isConnected) return;
+                const grTxt = toks && toks.length && T ? toks.map((t) => T.F[t[0]] + punt(t[4])).join(" ") : "";
+                const jnmV = jnm && jnm.c && jnm.c[cap] ? jnm.c[cap][ctx.v - 1] : "";
+                const col = (tit, nodo, cls) => h("div", { class: "fv-cmp-col" }, h("h5", { text: tit }), h("p", cls ? { class: cls, lang: cls === "gr" ? "grc" : "es" } : {}, nodo));
+                const prevCor = corForzado;
+                let nodoTex, nodoLec;
+                try {
+                  corForzado = "todo";
+                  nodoTex = textoLectura(L.t, !!L.g, Object.assign({}, L, { rl: false }));
+                  corForzado = "base";
+                  nodoLec = L.o ? txtVersoL(L) : textoLectura(L.t, !!L.g, Object.assign({}, L, { rl: true }));
+                } finally {
+                  corForzado = prevCor;
+                }
+                cmpBody.replaceChildren(h("div", { class: "fv-cmp-grid" },
+                  grTxt ? col("Griego original", grTxt, "gr") : null,
+                  col("Textual · completa con matices", nodoTex),
+                  col(L.o ? "Lectura · limpia y orden natural" : "Lectura · limpia", nodoLec),
+                  col("Jünemann (traducción clásica)", jnmV || "Este verso no figura en la edición de Jünemann.")));
+              } catch (e) {
+                cargado = false;
+                cmpBody.replaceChildren(h("p", { class: "nota-ui", text: "No se pudo cargar la comparación en este momento." }));
+              }
+            });
+            return det;
+          })() : null,
           h("div", { class: "bloque" }, h("h4", { text: "Palabra por palabra · toca una para ver su análisis" }), zona,
             (() => {
               // AF2: la perícopa del verso (los mismos inicios que la lectura) y el capítulo entero
@@ -4326,7 +4369,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "5fe6e753d5", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "5b08c92a1f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -6589,12 +6632,13 @@
     esIOS() { return /iP(hone|ad|od)/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); },
     leer() {
       const d = store.get("notif", null);
-      return Object.assign({ on: false, coloso: true, lectura: true, cosecha: true }, d && typeof d === "object" ? d : {});
+      return Object.assign({ on: false, coloso: true, sala: true, lectura: true, cosecha: true }, d && typeof d === "object" ? d : {});
     },
     guardar(cambios) {
       const n = Object.assign(this.leer(), cambios || {});
       store.set("notif", n);
       this.sincronizarSW(n);
+      if (this.activa()) this.suscribirPush(false).catch(() => {});
       return n;
     },
     estadoSoporte() {
@@ -6619,10 +6663,66 @@
         return await navigator.serviceWorker.ready.catch(() => reg);
       } catch (e) { return swReg || null; }
     },
+    urlBase64ToUint8Array(b64) {
+      const s = String(b64 || "").trim();
+      const pad = "=".repeat((4 - (s.length % 4)) % 4);
+      const raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+      const out = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    },
+    async suscribirPush(forzar) {
+      if (!this.activa() || !navigator.onLine) return false;
+      try {
+        const reg = await this.asegurarSW();
+        if (!reg || !reg.pushManager) return false;
+        const rClave = await fetchConTope(API_JG + "/push/clave", { credentials: "omit" }, 6000);
+        if (!rClave.ok) return false;
+        const dClave = await rClave.json().catch(() => null);
+        const pub = dClave && (dClave.clave || dClave.publicKey || dClave.vapid);
+        if (!pub || typeof pub !== "string") return false;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: this.urlBase64ToUint8Array(pub) });
+        }
+        if (!sub) return false;
+        const cfg = this.leer();
+        const tok = NUBE.tok();
+        const hdr = Object.assign({ "content-type": "application/json" }, tok ? { authorization: "Bearer " + tok } : {});
+        const rSub = await fetchConTope(API_JG + "/push/suscribir", {
+          method: "POST",
+          headers: hdr,
+          credentials: "omit",
+          body: JSON.stringify({
+            sub: sub.toJSON ? sub.toJSON() : sub,
+            temas: { coloso: cfg.coloso !== false, sala: cfg.sala !== false, lectura: cfg.lectura !== false, cosecha: cfg.cosecha !== false },
+            forzar: !!forzar,
+          }),
+        }, 8000);
+        if (rSub.ok) { store.set("pushOk", Date.now()); return true; }
+      } catch (e) { /* servidor aún sin VAPID o navegador sin PushManager: avisos locales siguen activos */ }
+      return false;
+    },
+    async desuscribirPush() {
+      try {
+        const reg = await this.asegurarSW();
+        if (!reg || !reg.pushManager) return;
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+        const ep = sub.endpoint;
+        await sub.unsubscribe().catch(() => {});
+        store.set("pushOk", 0);
+        if (ep && navigator.onLine) {
+          const tok = NUBE.tok();
+          const hdr = Object.assign({ "content-type": "application/json" }, tok ? { authorization: "Bearer " + tok } : {});
+          await fetchConTope(API_JG + "/push/suscribir", { method: "DELETE", headers: hdr, credentials: "omit", body: JSON.stringify({ endpoint: ep }) }, 6000).catch(() => {});
+        }
+      } catch (e) {}
+    },
     async sincronizarSW(cfg) {
       if (!puedeSW()) return;
       const n = cfg || this.leer();
-      try { await alSW({ tipo: "notifConfig", on: n.on && this.permiso() === "granted", coloso: n.coloso, lectura: n.lectura, cosecha: n.cosecha }, 2500); } catch (e) {}
+      try { await alSW({ tipo: "notifConfig", on: n.on && this.permiso() === "granted", coloso: n.coloso, sala: n.sala, lectura: n.lectura, cosecha: n.cosecha }, 2500); } catch (e) {}
     },
     async pedirPermiso() {
       if (typeof Notification === "undefined") return "unsupported";
@@ -6652,11 +6752,13 @@
       this.guardar({ on: true });
       await this.asegurarSW();
       programarPeriodico();
-      await this.enviar("biex-bienvenida", "Avisos de Biblia Exacta activos", "Recibirás recordatorios respetuosos de El Coloso, tu cosecha y tu lectura.", "#/escudrina", "sistema", true);
+      await this.suscribirPush(true);
+      await this.enviar("biex-bienvenida", "Avisos de Biblia Exacta activos", "Recibirás recordatorios respetuosos de El Coloso, tu sala, tu cosecha y tu lectura.", "#/escudrina", "sistema", true);
       return true;
     },
     desactivar() {
       this.guardar({ on: false });
+      this.desuscribirPush().catch(() => {});
       avisar("Avisos del dispositivo pausados.");
     },
     async enviar(tag, titulo, cuerpo, ruta, categoria, forzar) {
@@ -6698,7 +6800,7 @@
     document.title = "Instalar y leer sin conexión · BiEx";
     navActual("");
     const estado = h("div", { class: "app-estado" });
-    const barra = h("div", { class: "app-barra", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "0" }, h("i"));
+    const barra = h("div", { class: "app-barra", role: "progressbar", "aria-label": "Progreso de la copia sin conexión", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "0" }, h("i"));
     const txt = h("p", { class: "app-tx", role: "status" });
     let fijo = false; // un mensaje final (listo, borrado, error) no lo pisa el recuento
     const pintarAvance = (hecho, total) => { const p = total ? Math.min(100, (100 * hecho) / total) : 0; barra.firstChild.style.width = p.toFixed(1) + "%"; barra.setAttribute("aria-valuenow", String(Math.round(p))); if (!fijo) txt.textContent = mb(hecho) + " de " + mb(total) + " · " + Math.round(p) + " %"; };
@@ -6780,6 +6882,7 @@
           h("li", { text: "Abre BiEx desde el nuevo ícono en tu pantalla de inicio y vuelve a esta tarjeta para activar los avisos." })) : null,
         est === "ok" && act ? h("div", { class: "app-notif-ops" },
           chk("coloso", "El Coloso de la Tradición (apertura e incursión en vivo)"),
+          chk("sala", "Alguien entra en tu sala de lectura abierta"),
           chk("cosecha", "Cesta de la cosecha lista para recoger"),
           chk("lectura", "Recordatorio suave diario de lectura")) : null,
         est === "ok" ? h("div", { class: "app-botones" },
@@ -6793,8 +6896,40 @@
       ].filter(Boolean));
     };
     pintarNotif();
-    const notifTarj = tarjeta(ICO.campana, "Avisos y notificaciones", "Recibe avisos reales en tu navegador o aplicación instalada cuando despierte El Coloso de la Tradición, tu cesta esté llena o quieras un recordatorio sereno de lectura. Sin exceso ni ruido.", notifZona);
+    const notifTarj = tarjeta(ICO.campana, "Avisos y notificaciones", "Recibe avisos reales en tu navegador o aplicación instalada cuando despierte El Coloso de la Tradición, alguien entre en tu sala, tu cesta esté llena o quieras un recordatorio sereno de lectura. Sin exceso ni ruido.", notifZona);
     notifTarj.id = "app-avisos";
+    // PR #16 · Comprobar actualización y reparar caché sin perder notas, marcadores ni sesión
+    const diagEst = h("p", { class: "app-diag-est", role: "status", text: "Si notas que tu navegador conserva una versión anterior, puedes refrescar los archivos de la app en un toque sin perder tus notas, marcadores, planes ni tu cuenta de Escudriña." });
+    const btnComp = h("button", { class: "btn chico", type: "button", onclick: async (ev) => {
+      const bt = ev.currentTarget; bt.disabled = true; diagEst.textContent = "Comprobando si hay una versión más reciente…";
+      try {
+        const v = await vigente();
+        if (v && v.firma && v.firma !== firmaActual()) {
+          diagEst.textContent = "Hay una versión más reciente disponible. Toca «Reparar caché y recargar» para abrirla de inmediato.";
+          avisoVersion();
+        } else {
+          diagEst.textContent = "Ya tienes la publicación más reciente de Biblia Exacta.";
+        }
+      } catch (e) { diagEst.textContent = "No se pudo consultar el servidor ahora; revisa tu conexión."; }
+      bt.disabled = false;
+    } }, h("span", { text: "Comprobar actualización" }));
+    const btnRep = h("button", { class: "btn chico oro", type: "button", onclick: async (ev) => {
+      const bt = ev.currentTarget; bt.disabled = true; diagEst.textContent = "Limpiando caché antigua y actualizando la aplicación…";
+      try {
+        if (window.caches && caches.keys) {
+          const ks = await caches.keys();
+          await Promise.all(ks.filter((k) => k.startsWith("biex-")).map((k) => caches.delete(k).catch(() => {})));
+        }
+        if (puedeSW()) {
+          const regs = await navigator.serviceWorker.getRegistrations().catch(() => []);
+          await Promise.all(regs.map((r) => r.update().catch(() => {})));
+        }
+      } catch (e) {}
+      avisar("Caché renovada · recargando versión reciente");
+      setTimeout(() => location.reload(), 380);
+    } }, h("span", { text: "Reparar caché y recargar" }));
+    const diagTarj = tarjeta(ICO.actualizar, "Actualizar versión y reparar caché", "Renueva únicamente los archivos del programa guardados por el navegador. Tus notas, marcadores, planes, partidas y cuenta permanecen intactos.",
+      h("div", { class: "app-diag" }, diagEst, h("div", { class: "app-botones" }, btnComp, btnRep)));
     // AA12 (BiEx, 23-nov-2026): guía de widget de escritorio (nativo en Windows 11 con Edge) y accesos rápidos por plataforma
     const guiaWd = (tit, et, pasos, abierto) => h("details", { open: abierto ? "" : null },
       h("summary", {}, h("span", { text: tit }), h("small", { text: et })),
@@ -6824,7 +6959,7 @@
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "BiEx en tu dispositivo" }), h("h1", { class: "texto", text: "Instalar y leer sin conexión" }),
         h("p", { class: "q-lead", text: "Biblia Exacta ©™ puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
-      instalar, sinConexion, notifTarj, widgetTarj,
+      instalar, sinConexion, notifTarj, diagTarj, widgetTarj,
       h("div", { class: "nota-guarda", role: "note", "data-sec": "Marcadores y notas" }, svg(ICO.marcador), h("p", {}, h("b", { text: "Tus marcadores y notas. " }), ...avisoGuarda())),
       h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
     if (sinConexion) pintarEstado();
@@ -6910,8 +7045,8 @@
     } catch (e) { /* no disponible en este navegador */ }
   }
 
-  // AA19 + PR #9: las notas y datos de nube (/nube: planes, estudio, ajedrez) se sincronizan en calma y al volver a la pestaña
-  setTimeout(() => { const ir = () => { NUBE.bajar(); NUBE_DAT.bajar(); }; if (window.requestIdleCallback) requestIdleCallback(ir, { timeout: 6000 }); else ir(); }, 4000);
+  // AA19 + PR #9 + PR #16: las notas, datos de nube (/nube) y suscripción Web Push se sincronizan en calma y al volver a la pestaña
+  setTimeout(() => { const ir = () => { NUBE.bajar(); NUBE_DAT.bajar(); if (BIEX_NOTIF.activa()) BIEX_NOTIF.suscribirPush(false).catch(() => {}); }; if (window.requestIdleCallback) requestIdleCallback(ir, { timeout: 6000 }); else ir(); }, 4000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") { NUBE.bajado = false; NUBE_DAT.bajado = false; setTimeout(() => { NUBE.bajar(); NUBE_DAT.bajar(); }, 1500); }
     else { if (store.get("marcasSucio", 0)) NUBE.subir(); if (store.get("nubeSucio", 0)) NUBE_DAT.subir(); }

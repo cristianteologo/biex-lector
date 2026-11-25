@@ -891,3 +891,40 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - Auditoría integral `auditor_biex_completo.py` (18 vistas × 4 viewports `360 / 390 / 768 / 1280 px`): **0 errores de consola**, **0 flasheos** en todas las transiciones SPA (`cap → hoy → mundo → arbol → cap`).
 - Suite dedicada `verificar_pr15.py` + capturas 3× HD: Faro `opacity: 0.85` con `58 px` libres sobre `.jg-med`, 29 consejos rotativos + guías contextuales por sección, Ajedrez debajo de Misiones en móvil y PC, Coloso 2 columnas en PC (`380 px` + `648 px`), pellizco aislado en `.jg-arbol-vivo` y `.cn-lienzo` (`tam` sin cambios), pan extremo de Constelación acotado, Atrás desde Biblioteca verificado en 4 rutas directas (con scroll exacto `520 === 520`) y en `<iframe>` Wix real, notificaciones verificadas en modo directo y modo incrustado (`?incrustado=1`), pausa de batería en `document.hidden` verificada (`oculto: true`, `paused`). Todas las capturas 3× HD revisadas visualmente a **10/10**.
 - `python3 wix/sellar.py`: **al día**.
+
+---
+
+## Entrada #16 · PR #16 · Pinceladas orgánicas de portada, salas persistentes (7 días), comparador multi-vista, reparación de caché y preparación Web Push (2026-11-25)
+
+### 1. Cambios entregados
+1. **Los 5 botones de portada en pinceladas difuminadas (`.hero .acciones > .btn`, `app.css`):**
+   - Eliminadas todas las cajas, bordes rectos y sombras de caja en los 5 botones principales de inicio (*Seguir leyendo*, *Leer*, *Analizar palabra por palabra*, *Los 27 libros*, *Escudriña · el juego*).
+   - Reemplazados por **3 siluetas SVG caligráficas orgánicas (`--pin-w`, `--pin-a`, `--pin-b`)** combinadas con un difuminado vertical continuo mediante `mask-composite: intersect` / `-webkit-mask-composite: source-in` (sin `<filter>` SVG interno ni `blur` costoso en CPU/GPU), fundiendo los 4 bordes de cada botón en el fondo *Obsidiana* (pan de oro bruñido + tinta ahumada con corazón dorado) y *Pergamino* (tinta dorada oscura + aguada sepia) con contraste WCAG AAA.
+   - `z-index: -1` en `::before`/`::after` dentro de `isolation: isolate` para que tanto los íconos `<svg>` como los nodos de texto sin envoltura queden al 100 % de nitidez sobre la pincelada, y `overflow-x: clip` en `.hero` para garantizar `0 px` de desborde horizontal desde `280 px` hasta `1280 px`.
+2. **Salas de lectura persistentes durante 7 días (`juego.js`):**
+   - Extendido `retomarSala()` de `12 h` (`12 * 3600e3`) a **7 días completos** (`7 * 864e5`), coincidiendo con la vida real de las salas en el servidor, y refrescando `jg:sala` en cada mensaje WS `estado`.
+   - Recuperación automática multidispositivo vía `yo.miSala` en `actualizarYo()` (si el usuario no salió manualmente en la sesión actual, recupera su sala activa y pinta inmediatamente la píldora inferior `.jg-sala-p`).
+   - Enviado `persistente: ab.checked` (y `persistente: true` en `acompanar`) al crear salas en `POST /sala/crear`.
+   - En el modal de sala (`abrirSala`), el anfitrión distingue claramente **«Salir un momento»** (sale localmente sin cerrar la sala) frente a **«Cerrar sala»** (`POST /sala/cerrar { c }`, limpiando la sala en servidor y cliente).
+   - En `tarjetaSalasAbiertas`, las salas abiertas con `0` personas conectadas en ese instante muestran **«en espera · abierta»** en lugar de «0 personas»; y `pintarSalaPildora` muestra «conectando…» en lugar de «0 personas» mientras llega el primer estado WS.
+3. **Comparador rápido de 4 vistas dentro de cada verso (`vistaVerso` en `app.js` + `.fv-cmp` en `app.css`):**
+   - Panel plegable «Comparar vistas de este verso» con carga perezosa (0 coste al abrir el verso) que muestra en paralelo: **Griego original** (con puntuación formateada por `punt()`), **Textual · completa con matices** (`corForzado = "todo"`), **Lectura · limpia y orden natural** (`corForzado = "base"` + `txtVersoL`), y **Jünemann (traducción clásica)**.
+4. **Reparación limpia de caché y comprobación de versión en `#/app` (`vistaApp` en `app.js` + `.app-diag` en `app.css`):**
+   - Nueva tarjeta «Actualizar versión y reparar caché» con ícono `ICO.actualizar`, botón «Comprobar actualización» (consulta la publicación vigente) y botón «Reparar caché y recargar» que elimina únicamente las cachés `biex-*` del Service Worker y ejecuta `reg.update()` sin tocar jamás `localStorage` ni `sessionStorage` (notas, marcadores, planes, partidas y sesión intactos).
+   - Añadido `aria-label="Progreso de la copia sin conexión"` a `.app-barra` para alcanzar **0 violaciones `axe-core`** en `#/app` (Oscuro y Pergamino).
+5. **Web Push real en segundo plano listo en cliente y Service Worker (`sw.js` + `app.js`):**
+   - Listener `push` en `sw.js` que recibe `{ title, body, ruta/url, tag, renotify }`, sanitiza la ruta interna y dispara `self.registration.showNotification(...)` incluso con el navegador cerrado.
+   - Flujo VAPID completo en `BIEX_NOTIF` (`urlBase64ToUint8Array`, `suscribirPush`, `desuscribirPush` conectados a `/push/clave` y `/push/suscribir`), nueva preferencia **«Alguien entra en tu sala de lectura abierta»** (`sala: true`) en `#/app` y auto-suscripción silenciosa en calma al arrancar si ya hay permiso concedido (degrada sin errores mientras el Worker aún no exponga VAPID).
+
+### 2. Aprendizajes clave (Entrada #16)
+1. **Nunca colocar `<filter>` (`feTurbulence` / `feGaussianBlur`) dentro de un `data:image/svg+xml` usado en CSS `mask-image`:** en Chromium/Skia headless puede disparar cierres de pestaña al rasterizar varios botones a 3× DPR. En su lugar, una silueta orgánica Bézier pura combinada con un degradado vertical mediante `mask-composite: intersect` (`-webkit-mask-composite: source-in`) logra bordes acuarelados sedosos en los 4 lados con **0 `<filter>` y 0 coste de rasterizado**.
+2. **En CSS `isolation: isolate`, un `::before` con `z-index: 0` cubre nodos de texto sin etiqueta envolvente:** fijar `z-index: -1` en `::before` y `::after` asegura que tanto `<svg>` como nodos de texto directos pinten siempre por encima del fondo.
+3. **`corForzado` en `app.js` permite mostrar la máxima riqueza textual y la lectura más limpia lado a lado** en el comparador multi-vista incluso en versos cuyo orden griego y español coinciden (como YÔḥānā́n 1:1).
+
+### 3. Comprobaciones pasadas (Entrada #16)
+- `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3086` bloques), auditoría editorial limpia (`0` «maestro», `0` «testigo bíblico», `0` «sorteo», `0` «versículo»): **CLEAN**.
+- Portada 5 pinceladas y 4 pinceladas en `280 / 360 / 390 / 1280 px` (Oscuro y Pergamino): **`0 px` de desborde**, **0 violaciones `axe-core` WCAG AA**, inspección visual 3× HD **10/10**.
+- Comparador multi-vista en YÔḥānā́n 1:1 (Oscuro y Pergamino, móvil 3× HD y PC 2× HD): 4 paneles distintos y legibles, **0 violaciones `axe-core`**.
+- `#/app` (Oscuro y Pergamino, 3× HD): tarjeta «Actualizar versión y reparar caché», casilla «Alguien entra en tu sala de lectura abierta», **0 violaciones `axe-core`**, `0 px` de desborde.
+- Salas persistentes (`juego.js`, móvil 3× HD): reconexión automática tras **3 días** (`retomarSala`), refresco del timestamp en WS `estado`, recuperación multidispositivo con `yo.miSala`, texto «en espera · abierta» cuando `n = 0`, botones «Salir un momento» y «Cerrar sala» (`POST /sala/cerrar`), **0 violaciones `axe-core`**, **0 errores de consola / página**.
+- `python3 wix/sellar.py`: **al día**.
