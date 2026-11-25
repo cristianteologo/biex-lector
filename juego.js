@@ -523,6 +523,8 @@
 .jg-mision .jg-mt{font:400 .95rem/1.35 var(--f-ui);color:var(--tinta)}
 .jg-mision .jg-barra{height:5px;margin-top:6px}
 .jg-mision .jg-pr{font:500 .76rem/1.2 var(--f-ui);color:var(--oro);text-align:right;white-space:nowrap}
+.jg-mision .jg-pr.jg-pr-dr{color:#d4b572}
+:root[data-theme="light"] .jg-mision .jg-pr.jg-pr-dr{color:#73551a}
 .jg-mision .jg-cambiar{display:block;margin:6px 0 0 auto;background:none;border:0;color:var(--tenue);font:400 .74rem var(--f-ui);cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
 .jg-piedras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px}
 @media (min-width:560px){.jg-piedras{grid-template-columns:repeat(6,minmax(0,1fr))}}
@@ -1801,8 +1803,8 @@ html.jg-con-med.jg-con-lb .adelante{bottom:calc(134px + env(safe-area-inset-bott
 html[data-mov="no"] .g-versos i::after{transform:none}html[data-mov="no"] .g-mis b::after,html[data-mov="no"] .g-dias i::after{transform:scale(1)}
 /* Cifras con números de caja alta en la letra de los títulos (su «0» de estilo antiguo se confundía con una «o») */
 .jg-cifras b,.jg-fila .p,.jg-total b,.jg-med b,.jg-med .hito,.ap-ap b,.jg-cel h3{font-variant-numeric:lining-nums tabular-nums}
-/* K (10-nov-2026, noche): velo breve mientras una sección vuelve a donde se dejó; X de la guía */
-html.jg-volviendo #vista .panel.jg{opacity:0}
+/* K + PR #15: jamás oscurecer el panel completo a negro al restaurar posición (evita pantallas negras en carga lenta) */
+html.jg-volviendo #vista .panel.jg{opacity:1}
 .jg-nombre .jg-pais{font:400 .82rem/1.2 var(--f-ui);color:var(--tenue)}
 .jg-relevo{justify-self:start;margin:0 0 6px}
 /* (BiEx, 21-nov-2026, AF12) las dracmas y los fragmentos van sobre la experiencia, sin tocarla */
@@ -2165,9 +2167,9 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .ap-vp-etprox b{color:var(--oro-vivo)}
 @media (max-width:350px){.ap-vp-3t{grid-template-columns:1fr}}
 /* Salas abiertas: barra superior con contador, refresco y controles accesibles estando ya en una sala */
-.jg-salas-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
-.jg-salas-cab .jg-salas-n{margin:0}
-.jg-salas-ref{font-size:.72rem;padding:4px 9px;min-height:28px}
+.jg-salas-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap;margin:2px 0 6px}
+.jg-salas-cab .jg-salas-n{margin:0;flex:1 1 0;min-width:0}
+.jg-salas-ref{font-size:.72rem;padding:4px 10px;min-height:28px;flex:none;white-space:nowrap}
 .jg-sala-est{display:inline-block;margin-left:6px;padding:1.5px 6px;border-radius:999px;font:600 .62rem/1.2 var(--f-ui);letter-spacing:.04em;color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 16%,transparent);border:1px solid color-mix(in srgb,var(--oro) 34%,transparent);vertical-align:1px}
 .jg-sala-extra{margin-top:10px;border-top:1px solid var(--linea-2);padding-top:9px}
 .jg-sala-extra summary{cursor:pointer;font:500 .8rem/1.3 var(--f-ui);color:var(--oro);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -2234,7 +2236,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-sala-nom-cab small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--tenue)}
 /* B4 + B5 · El Coloso de la Tradición — Santuario Chiaroscuro Volumétrico y Controles Tácticos de Reliquia (Neon, 23-nov-2026) */
 .jg-col-arena{display:grid;gap:16px}
-.jg-col-prev{position:relative;overflow:hidden;border-radius:14px;aspect-ratio:16/7.6;max-height:190px;background:#050506;border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);box-shadow:inset 0 0 0 1px rgba(255,235,176,.08),0 14px 30px -18px rgba(0,0,0,.85)}
+.jg-col-prev{position:relative;overflow:hidden;width:100%;border-radius:14px;aspect-ratio:16/8.2;max-height:208px;background:#050506;border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);box-shadow:inset 0 0 0 1px rgba(255,235,176,.08),0 14px 30px -18px rgba(0,0,0,.85)}
 .jg-col-prev img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;display:block;opacity:.92;animation:col-respira 10s ease-in-out infinite;will-change:transform,opacity}
 .jg-col-prev::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 75% at 50% 36%,transparent 35%,rgba(5,5,6,.72) 100%),linear-gradient(180deg,rgba(5,5,6,.18) 0%,transparent 36%,rgba(5,5,6,.86) 100%)}
 .jg-col-prev-cap{position:absolute;left:12px;right:12px;bottom:10px;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
@@ -2349,12 +2351,19 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-cita{display:grid;gap:5px;padding:10px 12px;border-radius:12px;border-left:2px solid var(--oro);background:color-mix(in srgb,var(--hoja) 84%,transparent);font:400 .88rem/1.55 var(--f-texto);color:var(--tinta)}
 .jg-col-cita a{font:600 .72rem/1.2 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--oro-vivo);text-decoration:none}
 .jg-col-cita a:hover{text-decoration:underline}
-.jg-col-live{display:grid;gap:10px;margin-top:8px}
+.jg-col-live{display:grid;gap:12px;margin-top:8px}
+.jg-col-info{display:grid;gap:10px;align-content:center;min-width:0}
+@media (min-width:780px){
+  .jg-col-live{grid-template-columns:minmax(280px,380px) minmax(0,1fr);align-items:center;gap:14px 18px}
+  .jg-col-live .jg-col-prev{aspect-ratio:16/9.6;max-height:224px}
+  .jg-col-live > .jg-col-pre{grid-column:1 / -1}
+}
 .jg-col-cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin-top:4px}
 .jg-jp-ult{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);font:400 .8rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .jg-jp-ult i{width:8px;height:8px;border-radius:50%;background:var(--oro);opacity:.72;flex:none}
 .jg-jp-ult b{color:var(--tinta);font-weight:500}
-html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after{animation-play-state:paused}
+html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after,
+html.oculto .jg-jp-hero::before,html.oculto .jg-jp-hero::after,html.oculto .jg-jp-aro,html.oculto .jg-col-art,html.oculto .jg-col-velo,html.oculto .jg-col-prev img,html.oculto .jg-col-hp-bar>i::after,html.oculto .jg-col-hab.t3.listo::after,html.oculto .jg-med .barrido{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-art,.jg-col-velo,.jg-col-prev img,.jg-col-hp-bar>i::after,.jg-col-hab.t3.listo::after{animation:none}}
 html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-art,html[data-mov="no"] .jg-col-velo,html[data-mov="no"] .jg-col-prev img,html[data-mov="no"] .jg-col-hp-bar>i::after,html[data-mov="no"] .jg-col-hab.t3.listo::after{animation:none}
 
@@ -2972,10 +2981,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         setTimeout(() => A.avisar(hayP ? "Tienes una prueba lista al final de este capítulo: desplázate abajo para abrirla." : "Completa un capítulo leyendo a tu ritmo: la prueba de 3 preguntas aparece al final del capítulo."), 350);
       } : null }, h("div", { class: "jg-mt", text: textoMision(m) }), h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (100 * m.prog) / m.meta).toFixed(0) + "%" })),
         h("span", { class: "jg-mini", text: fmt(m.prog) + " de " + fmt(m.meta) + (m.hecha ? " · cumplida" : m.tipo === "preguntas" ? " · las pruebas salen al final de cada capítulo" : " · tócala para ir a cumplirla") })),
-      h("div", {}, h("div", { class: "jg-pr", text: "+" + m.xp }), h("div", { class: "jg-pr", style: "opacity:.75", text: "+" + m.dr + " dr." }),
+      h("div", {}, h("div", { class: "jg-pr", text: "+" + m.xp }), h("div", { class: "jg-pr jg-pr-dr", text: "+" + m.dr + " dr." }),
         !m.hecha && !y.cambio && i > 0 ? h("button", { class: "jg-cambiar", type: "button", onclick: () => cambiarMision(i) }, "Cambiar") : null))));
     const cambio = h("p", { class: "jg-mini jg-cambio" }, "Nuevas misiones en ", h("b", { text: hastaCambio(y.tz) }));
-    const reloj = setInterval(() => { if (!cambio.isConnected) return clearInterval(reloj); cambio.lastChild.textContent = hastaCambio(y.tz); }, 1000);
+    const reloj = setInterval(() => { if (!cambio.isConnected) return clearInterval(reloj); if (document.hidden) return; cambio.lastChild.textContent = hastaCambio(y.tz); }, 1000);
     const sec = tarjeta("Misiones de hoy", ico("marca"), cambio, lista,
       h("p", { class: "jg-mini", text: y.completo ? "¡Cumpliste todas las misiones de hoy! Mañana habrá otras." : "Todas a tu ritmo. Al cumplirlas todas ganas 500 de experiencia y 10 dracmas más." + (y.cambio ? "" : " Puedes cambiar una misión por día.") }));
     sec.id = "jg-misiones";
@@ -3240,7 +3249,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       return h("li", { class: esComp ? "comp" : esSub ? "subio" : "" }, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }), acc);
     }));
     if (horas.some(([, t]) => Date.now() - t < 3600e3)) {
-      const reloj = setInterval(() => { if (!ul.isConnected) return clearInterval(reloj); for (const [el, t] of horas) el.textContent = cuandoFue(t); }, 60000);
+      const reloj = setInterval(() => { if (!ul.isConnected) return clearInterval(reloj); if (document.hidden) return; for (const [el, t] of horas) el.textContent = cuandoFue(t); }, 60000);
     }
     return tarjeta("Novedades", null, ul);
   }
@@ -3401,14 +3410,14 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     let partes;
     if (sec === "tesoro") partes = [tarjetaPapiros(y), tarjetaHallazgos(y), tarjetaLecturas(y), tarjetaPotencias(y)].filter(Boolean);
     else if (sec === "mundo") partes = [tarjetaColoso(false), tarjetaAjedrez(false), tarjetaQuienLee(), h("div", { class: "jg-dos" }, tarjetaLiga(y), tarjetaMision(y)), tarjetaClasificacion(y)];
-    else if (sec === "juntos") partes = [salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
+    else if (sec === "juntos") partes = [A.guiaSeccion ? A.guiaSeccion("juntos") : null, salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
-    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), tarjetaColoso(true), tarjetaAjedrez(true), avisoMisionMundial(y), pend,
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), A.guiaSeccion ? A.guiaSeccion("escudrina") : null, tarjetaColoso(true), avisoMisionMundial(y), pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
-      h("div", { class: "jg-dos" }, tarjetaMisiones(y), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
+      h("div", { class: "jg-dos" }, h("div", { class: "jg" }, tarjetaMisiones(y), tarjetaAjedrez(true)), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       salaInv,
       y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
         "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null];
@@ -3575,7 +3584,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     };
     pintar();
     // con segundos, como en la portada (BiEx, 10-nov-2026); se detiene con la pestaña oculta y actualiza en sitio sin reconstruir nodos
-    const t = setInterval(() => { if (!el.isConnected || !pintar()) clearInterval(t); }, 1000);
+    const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); if (document.hidden) return; if (!pintar()) clearInterval(t); }, 1000);
     return el;
   }
   // B4 + B5 · El Coloso de la Tradición (Neon, 23-nov-2026): incursión cooperativa semanal en vivo (GET /coloso + POST /coloso/accion)
@@ -3907,11 +3916,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const pintarCuenta = () => {
       zona.replaceChildren(
         prevArte("Presencia entre la bruma", "Incursión cooperativa"),
-        h("p", { class: "jg-coloso-p", text: compacta
-          ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
-          : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
-        cuentaAtras(ms, "Apertura", "¡El Coloso de la Tradición ha despertado!"),
-        S.token ? h("div", { class: "jg-col-cta-row" }, h("a", { class: "btn chico oro", href: "#/escudrina/coloso" }, h("span", { text: "Ver la incursión" }), A.svg(A.ICO.der))) : null);
+        h("div", { class: "jg-col-info" },
+          h("p", { class: "jg-coloso-p", text: compacta
+            ? "Primer desafío comunitario de Escudriña. Fortalece tu ser interior antes de la apertura."
+            : "Toda la comunidad frente al primer gran desafío conjunto de Escudriña. Fortalece tu ser interior, tu armadura y el fruto del espíritu antes de la apertura." }),
+          cuentaAtras(ms, "Apertura", "¡El Coloso de la Tradición ha despertado!"),
+          S.token ? h("div", { class: "jg-col-cta-row" }, h("a", { class: "btn chico oro", href: "#/escudrina/coloso" }, h("span", { text: "Ver la incursión" }), A.svg(A.ICO.der))) : null));
     };
     const pintarVivo = (c) => {
       if (!zona.isConnected) return;
@@ -3925,20 +3935,22 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (ch) ch.textContent = c.cargas != null ? (c.cargas | 0) + " / " + (c.cargasMax || 6) + " cargas" : (c.semana || "Semana actual");
       zona.replaceChildren(
         prevArte(jefe.nombre || "El Coloso de la Tradición", derrotado ? "Derribado" : pct.toFixed(0) + " %"),
-        jefe.ensenanza && !compacta ? h("p", { class: "jg-coloso-p", text: jefe.ensenanza }) : null,
-        h("div", { class: "jg-col-hp" },
-          h("div", { class: "jg-col-hp-cab" }, h("span", { text: derrotado ? "Coloso derribado" : "Resistencia del Coloso" }), h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
-          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida restante de El Coloso" },
-            h("i", { style: "width:" + pct.toFixed(1) + "%" }),
-            h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
-            h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
-            h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }))),
-        avisoPrelanzamientoColoso(true),
-        h("div", { class: "jg-col-cta-row" },
-          h("span", { class: "jg-mini", text: plural(c.participantes | 0, "lector combate", "lectores combaten") + (c.miAporte ? " · tu aporte: " + fmt(c.miAporte) : "") + (c.fin && !derrotado ? " · cierra en " + restaTexto(c.fin) : "") }),
-          h("a", { class: "btn oro chico", href: "#/escudrina/coloso" }, h("span", { text: derrotado ? "Ver victoria y enseñanza" : "Entrar a la batalla" }), A.svg(A.ICO.der))));
+        h("div", { class: "jg-col-info" },
+          jefe.ensenanza && !compacta ? h("p", { class: "jg-coloso-p", text: jefe.ensenanza }) : null,
+          h("div", { class: "jg-col-hp" },
+            h("div", { class: "jg-col-hp-cab" }, h("span", { text: derrotado ? "Coloso derribado" : "Resistencia del Coloso" }), h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
+            h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida restante de El Coloso" },
+              h("i", { style: "width:" + pct.toFixed(1) + "%" }),
+              h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
+              h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
+              h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }))),
+          h("div", { class: "jg-col-cta-row" },
+            h("span", { class: "jg-mini", text: plural(c.participantes | 0, "lector combate", "lectores combaten") + (c.miAporte ? " · tu aporte: " + fmt(c.miAporte) : "") + (c.fin && !derrotado ? " · cierra en " + restaTexto(c.fin) : "") }),
+            h("a", { class: "btn oro chico", href: "#/escudrina/coloso" }, h("span", { text: derrotado ? "Ver victoria y enseñanza" : "Entrar a la batalla" }), A.svg(A.ICO.der)))),
+        avisoPrelanzamientoColoso(true));
     };
-    pintarCuenta();
+    if (S.token && COLOSO_CACHE.d && (COLOSO_CACHE.d.estado === "activo" || COLOSO_CACHE.d.estado === "derrotado")) pintarVivo(COLOSO_CACHE.d);
+    else pintarCuenta();
     if (S.token) cargarColoso(false).then(pintarVivo);
     return card;
   }
@@ -3956,8 +3968,9 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   }
   async function pintarColoso(cont) {
     document.title = "El Coloso de la Tradición · Escudriña · BiEx";
-    const zona = h("div", { class: "jg jg-col-arena" }, h("p", { class: "cargando", text: "Despertando la incursión…" }));
-    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), zona);
+    const yaC = COLOSO_CACHE.d;
+    const zona = h("div", { class: "jg jg-col-arena" }, yaC ? null : h("p", { class: "cargando", text: "Despertando la incursión…" }));
+    marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), A.guiaSeccion ? A.guiaSeccion("coloso") : null, zona);
     let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0, ultGolpe = null;
     const pararRes = () => { if (resRaf) { cancelAnimationFrame(resRaf); resRaf = 0; } };
     const pintar = (c, infoGolpe) => {
@@ -4175,7 +4188,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (!derrotado && postBar) {
         tPost = setInterval(() => {
           if (!zona.isConnected) { clearInterval(tPost); tPost = 0; return; }
-          if (!resCaja.hidden) return;
+          if (document.hidden || !resCaja.hidden) return;
           idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
           const np = COLOSO_POSTURAS[idxPost];
           postBar.style.setProperty("--pc", np.col);
@@ -4185,8 +4198,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         }, 14000);
       }
     };
+    const firmaCol = (x) => (x ? [x.estado, x.vida, x.cargas, x.miAporte, x.participantes].join("|") : "");
+    if (yaC) pintar(yaC, null);
     const d = await cargarColoso(true);
-    pintar(d, null);
+    if (!yaC || firmaCol(d) !== firmaCol(yaC)) pintar(d, null);
   }
 
   // ================================================================== B6 + B5 · Ajedrez Bíblico («Escudriña · Estrategia»)
@@ -5219,7 +5234,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
 
     raiz.append(tabsEl, cuerpo);
     document.title = "Ajedrez Bíblico · Escudriña · BiEx";
-    marco(cont, cabSub("Ajedrez Bíblico", "Sendas de los Antiguos · 13 figuras de las Escrituras · 100 % sin conexión.", "#/escudrina/mundo"), raiz);
+    marco(cont, cabSub("Ajedrez Bíblico", "Sendas de los Antiguos · 13 figuras de las Escrituras · 100 % sin conexión.", "#/escudrina/mundo"), A.guiaSeccion ? A.guiaSeccion("ajedrez") : null, raiz);
     pintarTodo();
     // Si la partida cargada desde caché se quedó en turno de negras, reanudar IA suavemente
     if (!modoEnigma && !part.fin && st.t < 0) {
@@ -7365,8 +7380,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     document.title = "Árbol de la siembra · Escudriña · BiEx";
     const zona = h("div", { class: "jg" }, h("p", { class: "cargando", text: "Cargando tu árbol…" }));
     const poder = raiz ? null : h("div", { class: "jg ap" }, h("p", { class: "cargando", text: "Despertando tu árbol…" }));
-    if (raiz) marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje.", "#/escudrina/juntos"), zona);
-    else { marco(cont, cabeceraJuego("arbol"), poder, zona); (S.yo ? Promise.resolve(S.yo) : pedir("/yo").then((r) => { if (!r.error) actualizarYo(r.yo); return S.yo; })).then((y) => { if (y) pintarPoder(poder, y); else poder.replaceChildren(); }); }
+    if (raiz) marco(cont, cabSub("Árbol de la siembra", "Cada persona que llegó con tu enlace y las que llegaron por ellas, generación tras generación: hasta dónde llegó lo que sembraste al compartir el Mensaje.", "#/escudrina/juntos"), A.guiaSeccion ? A.guiaSeccion("arbol") : null, zona);
+    else { marco(cont, cabeceraJuego("arbol"), A.guiaSeccion ? A.guiaSeccion("arbol") : null, poder, zona); (S.yo ? Promise.resolve(S.yo) : pedir("/yo").then((r) => { if (!r.error) actualizarYo(r.yo); return S.yo; })).then((y) => { if (y) pintarPoder(poder, y); else poder.replaceChildren(); }); }
     const r = await pedir("/arbol?" + new URLSearchParams(raiz ? { raiz, prof: "3" } : { prof: "3" }), { guardable: true });
     if (cont !== S.cont || !zona.isConnected) return;
     limpiarArbol(r);
@@ -7438,7 +7453,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   // mover. Todo por el compositor (transformaciones y opacidad); con «Sin animaciones» queda quieto.
   function arbolVivo(svg, r) {
     const quieto = sinAnim() || !svg.animate;
-    const caja = h("div", { class: "jg-arbol-caja jg-arbol-vivo" });
+    const caja = h("div", { class: "jg-arbol-caja jg-arbol-vivo", "data-sin-pellizco": "1" });
     const capa = h("div", { class: "jg-arbol-mov" }, svg);
     const luz = h("div", { class: "jg-arbol-luz", "aria-hidden": "true" }), pulso = h("div", { class: "jg-arbol-pulso", "aria-hidden": "true" });
     const orbita = h("div", { class: "jg-arbol-orbita", "aria-hidden": "true" }, Array.from({ length: 7 }, (_, i) => h("i", { style: "transform:rotate(" + (i * 51.4 + (i % 2) * 9) + "deg)" })));
@@ -7474,8 +7489,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     });
     const soltar = (e) => { if (!ptrs.delete(e.pointerId)) return; if (!ptrs.size) aplicar(true); };
     caja.addEventListener("pointerup", soltar); caja.addEventListener("pointercancel", soltar);
+    // Aislamiento de pellizco (PR #15): 2 dedos o touchpad pinch en las ramas NUNCA cambian la letra general de la página
+    caja.addEventListener("touchstart", (e) => { if (e.touches && e.touches.length >= 2) e.stopPropagation(); }, { passive: true });
+    caja.addEventListener("touchmove", (e) => { if (e.touches && e.touches.length >= 2) { e.preventDefault(); e.stopPropagation(); } }, { passive: false });
+    caja.addEventListener("gesturestart", (e) => { e.preventDefault(); e.stopPropagation(); });
+    caja.addEventListener("gesturechange", (e) => { e.preventDefault(); e.stopPropagation(); });
     caja.addEventListener("click", (e) => { if (movido) { e.stopPropagation(); e.preventDefault(); movido = false; } }, true);
-    caja.addEventListener("wheel", (e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); acercar(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
+    caja.addEventListener("wheel", (e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); e.stopPropagation(); acercar(e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
     caja.addEventListener("dblclick", (e) => { if (e.target.closest && e.target.closest(".jg-nodo, .jg-arbol-ctl")) return; verTodo(); });
     const ctl = h("div", { class: "jg-arbol-ctl" },
       h("button", { type: "button", "aria-label": "Acercar", onclick: () => acercar(1.4) }, "+"), h("button", { type: "button", "aria-label": "Alejar", onclick: () => acercar(1 / 1.4) }, "−"),
@@ -7490,8 +7510,26 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         svg.querySelectorAll(".jg-nodo.g" + k).forEach((el, i) => el.animate([{ opacity: 0, transform: "scale(.2)" }, { opacity: 1, transform: "scale(1.15)", offset: 0.7 }, { opacity: 1, transform: "none" }], { duration: 620, delay: t + 200 + Math.min(i, 30) * 14, fill: "backwards", easing: "cubic-bezier(.2,.8,.2,1)" }));
       }
       pulso.animate([{ opacity: 0.9, transform: "scale(.05)" }, { opacity: 0, transform: "scale(1)" }], { duration: 1800, delay: 200, iterations: 2, easing: "cubic-bezier(.2,.6,.3,1)", fill: "backwards" });
-      orbita.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: 60000, iterations: Infinity, easing: "linear" });
-      luz.animate([{ opacity: 0.55 }, { opacity: 1 }, { opacity: 0.55 }], { duration: 4200, iterations: Infinity, easing: "ease-in-out" });
+      const animOrb = orbita.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: 60000, iterations: Infinity, easing: "linear" });
+      const animLuz = luz.animate([{ opacity: 0.55 }, { opacity: 1 }, { opacity: 0.55 }], { duration: 4200, iterations: Infinity, easing: "ease-in-out" });
+      // Ahorro de batería: pausar órbita y luz cuando el árbol sale de pantalla o la pestaña se oculta
+      let enVista = true;
+      const syncAnims = () => {
+        if (!caja.isConnected) {
+          animOrb.cancel(); animLuz.cancel();
+          if (io) io.disconnect();
+          document.removeEventListener("visibilitychange", syncAnims);
+          return;
+        }
+        const activo = enVista && !document.hidden;
+        if (activo) { animOrb.play(); animLuz.play(); } else { animOrb.pause(); animLuz.pause(); }
+      };
+      const io = window.IntersectionObserver ? new IntersectionObserver((ents) => {
+        for (const en of ents) enVista = en.isIntersecting;
+        syncAnims();
+      }, { rootMargin: "40px" }) : null;
+      if (io) io.observe(caja);
+      document.addEventListener("visibilitychange", syncAnims);
     }
     return caja;
   }
@@ -7674,7 +7712,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const pintar = () => {
       const y = S.yo || {}, l = y.lugar || {}, tz = y.tz || "America/Bogota", ahora = Date.now(), espera = (y.lugHasta || 0) > ahora;
       const reloj = h("b", { class: "lg-hora", text: horaZona(tz) + " · " + zonaCorta(tz) });
-      const t = setInterval(() => { if (!reloj.isConnected) return clearInterval(t); reloj.textContent = horaZona(tz) + " · " + zonaCorta(tz); }, 30000);
+      const t = setInterval(() => { if (!reloj.isConnected) return clearInterval(t); if (document.hidden) return; reloj.textContent = horaZona(tz) + " · " + zonaCorta(tz); }, 30000);
       const panel = h("div", { class: "lg-panel", hidden: true });
       const boton = h("button", { class: "btn" + (l.manual ? "" : " oro"), type: "button", disabled: espera, onclick: () => { panel.hidden = !panel.hidden; boton.setAttribute("aria-expanded", String(!panel.hidden)); if (!panel.hidden) abrirBuscador(panel); } },
         A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'),
@@ -8087,9 +8125,19 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     let pm = 0; window.addEventListener("pointermove", () => { const t = performance.now(); if (t - pm > 2000) { pm = t; actividad(); } }, { passive: true });
     // la ventana perdió el foco (otra ventana, otra aplicación, la barra del sistema): la lectura espera al próximo gesto
     window.addEventListener("blur", () => { R.ultAct = 0; });
-    // al salir de la app o de la pestaña, lo pendiente sale de una vez (cuenta en el día en que se leyó)
-    document.addEventListener("visibilitychange", () => { if (document.hidden) { guardarCola(true); if (Date.now() - R.ultEnvio > 30000) enviar(true); } else { R.ultTick = performance.now(); actividad(); } });
-    window.addEventListener("pagehide", () => { guardarCola(true); enviar(true); });
+    // al salir de la app o de la pestaña, lo pendiente sale de una vez y el reloj de 250 ms se apaga (0 CPU en segundo plano)
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
+        guardarCola(true);
+        if (Date.now() - R.ultEnvio > 30000) enviar(true);
+      } else {
+        R.ultTick = performance.now();
+        actividad();
+        if (R.lib && !R.reloj) R.reloj = setInterval(tick, 250);
+      }
+    });
+    window.addEventListener("pagehide", () => { if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; } guardarCola(true); enviar(true); });
   }
   function capitulo(lib, cap, modo) {
     if (!S.token) S.token = A.store.get("jg:t", null);
@@ -8109,7 +8157,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     observar();
     retomarSala(); if (SL.cod) setTimeout(() => { pintarMarcas(); posSala(true); }, 400);
     actividad(); R.ultTick = performance.now();
-    if (!R.reloj) R.reloj = setInterval(tick, 250);
+    if (!R.reloj && !document.hidden) R.reloj = setInterval(tick, 250);
   }
   async function prepararCapitulo(lib, cap) {
     if (!S.cfg) await config();
@@ -8927,7 +8975,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     }
     raiz.classList.add("jg-con-med");
     pintarMedidor();
-    if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro);
+    if (A.ubicarFaro) { A.ubicarFaro(); requestAnimationFrame(A.ubicarFaro); }
   }
   // Chispas del escudo (BiEx, 10-nov-2026: «se ven borrosas y muy gruesas; afínalas y ponles otros efectos aleatorios»):
   // partículas finas y nítidas (núcleo sólido de 1,5 a 3 px, sin desenfoque ni sombras borrosas), con seis efectos que se
@@ -9817,6 +9865,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     pinta();
     const t = setInterval(() => {
       if (!el.isConnected) { clearInterval(t); return; }
+      if (document.hidden) return;
       if (sinAnim() || !el.animate) { pinta(); return; }
       el.animate([{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], { duration: 700, easing: "ease-in-out" }); setTimeout(pinta, 350);
     }, 3800);
@@ -9875,7 +9924,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         m.e ? h("p", { class: "jg-chip jg-relevo", text: "Relevo " + (m.e + 1) + " de " + ((m.relevos || 3) + 1) }) : null,
         h("p", { class: "jg-tit jg-mis-t", text: textoMisionMundial(m) }),
         h("p", { class: "jg-total" }, cifra(m.total), " de " + fmt(m.meta) + (m.ok ? " · ¡lograda!" : "")),
-        m.ok && m.relevo ? h("p", { class: "jg-aviso" }, h("b", { text: "¡Lograda antes de tiempo! " }), "El relevo " + (m.e + 2) + " abre en ", (() => { const el = h("b", { class: "jg-rel-t", text: restaTexto(m.relevo) }); const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); el.textContent = m.relevo > Date.now() ? restaTexto(m.relevo) : "un momento"; }, 15000); return el; })(), ": una misión nueva hasta el final de esta franja.") : null,
+        m.ok && m.relevo ? h("p", { class: "jg-aviso" }, h("b", { text: "¡Lograda antes de tiempo! " }), "El relevo " + (m.e + 2) + " abre en ", (() => { const el = h("b", { class: "jg-rel-t", text: restaTexto(m.relevo) }); const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); if (document.hidden) return; el.textContent = m.relevo > Date.now() ? restaTexto(m.relevo) : "un momento"; }, 15000); return el; })(), ": una misión nueva hasta el final de esta franja.") : null,
         h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         cta,
         h("p", { class: "jg-mini" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
@@ -10332,10 +10381,17 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     pedir("/presencia", { metodo: "POST", cuerpo: lc ? { act, lc } : { act } }).catch(() => {});
   }
   function iniciarPresencia() {
-    if (!PRES.iv) PRES.iv = setInterval(() => latirPresencia(false), 90e3);
+    if (!PRES.iv && !document.hidden) PRES.iv = setInterval(() => latirPresencia(false), 90e3);
     if (!PRES.visEsc) {
       PRES.visEsc = true;
-      document.addEventListener("visibilitychange", () => { if (!document.hidden) latirPresencia(false); });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (PRES.iv) { clearInterval(PRES.iv); PRES.iv = 0; }
+        } else {
+          latirPresencia(false);
+          if (!PRES.iv) PRES.iv = setInterval(() => latirPresencia(false), 90e3);
+        }
+      });
     }
   }
   const CACHE_JUG = new Map();
