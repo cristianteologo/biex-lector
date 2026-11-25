@@ -789,3 +789,56 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check juego.js app.js`, validación editorial y pureza iconográfica (0 cruces/estrellas/rayos, transliteraciones verificadas contra `datos/libros/`): **CLEAN**.
 - Suite Playwright (`verificar_pr13.py`, `280 / 390 / 1280 px`, temas oscuro y *Pergamino*): pruebas matemáticas FIDE (20 jugadas iniciales, en passant, enroques abiertos y bloqueados bajo ataque, 4 coronaciones, mate y ahogado), verificación matemática de los **8 Enigmas**, 13 figuras con `Esteban` #12 y `Pablo` #13, geometría exacta `64` casillas `1:1` (`maxDiff: 0.02 px`), **recarga completa en mitad de partida con restauración exacta desde caché**, `Lumbre de Consejo` (`2` candidatas), alternancia de piezas, **0 errores de consola y 0 px de desborde lateral, 12/12 capturas inspeccionadas a 10/10**.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #14 — 25 de noviembre de 2026 (PR #14 · Faro líquido compacto, El Coloso limpio y legible, Ajedrez sin «Maestro» ni «testigo», Cesta recuperable, Constelación viva más compacta, barra a letra máxima, zoom Vivaldi, botón «Leído» sin tirones, navegación Atrás blindada y notificaciones reales)
+
+**Rama:** `neon/pr14-faro-liquido-coloso-vivaldi-nav-notif` (desde `main` en `1f83e62`, que incluye PR #13 fusionado)
+**Archivos modificados:** `app.js`, `app.css`, `juego.js`, `sw.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados (14 puntos solicitados por BiEx)
+
+1. **Zoom táctil de precisión en PC / Vivaldi (`app.js`):**
+   - El oyente de `wheel` con `ctrlKey` distingue ahora gestos finos de panel táctil (`deltaMode === 0 && Math.abs(deltaY) < 15`, umbral acumulado `10`, reinicio `480 ms`, pausa `200 ms`) frente a rueda de ratón (umbral `28`), habilitando el gesto de pellizco en Vivaldi y navegadores Chromium de escritorio.
+2. **Barra de título `.barra` íntegra en los 2 tamaños máximos de letra (`tam = 8` y `tam = 9`, `app.css` + `app.js`):**
+   - Fijados en `px` los tamaños tipográficos del cromo superior (`.nav a`, `.btn-buscar`, `.bb-pista`, `.acc { flex: none }`), recalculado `ajustarBarra()` dentro de `aplicarAp()` y añadida comprobación explícita contra recorte por el borde derecho de `.acc`. Verificado con `0` íconos recortados y `0 px` de desborde en `1280 px`, `1024 px` y `360 px`.
+3. **Desaparición del botón inferior «Leído» al pie de página con 0 tirones (`juego.js`):**
+   - Sustituida la lectura síncrona de `se.scrollHeight` durante el desplazamiento y el cambio de clase en `<html>` (`jg-con-lb`) por un `IntersectionObserver` pasivo (`LB.pieIO`) sobre `footer.pie-a` que alterna `.en-pie` (`opacity`/`transform` puros por GPU) directamente en `.jg-lb` y `.jg-lbp`, con desconexión limpia en `soltar()`.
+4. **Tarjetas laterales de eventos (`.dsl`, `app.js`):**
+   - Reducida su duración en `0,8 s` (`11050 ms → 10250 ms`) para agilizar su salida sin restar lectura.
+5. **Faro pulsante (`#btn-faro` y `.modal.flot.faro-flot`, `app.css` + `app.js`):**
+   - Orbe de cristal líquido reducido un `20 %` (`29 × 29 px`), translúcido con reflejo especular y posicionamiento dinámico libre de colisiones (`FARO.ubicar()`) sobre `.jg-med`, todos los bonos `.jg-bono` (`×2`, `+25 %`, `+50 %`), `.adelante.vis`, `.jg-muelle` y `.jg-sala-p`.
+   - Modal flotante compacto a la medida de su contenido (`height: fit-content`, `max-height: min(76dvh, 560px)` — en 1 pendiente ocupa ~47 % de la pantalla sin vacío negro), con sección rotativa **«Descubre BiEx»** (`FARO_TIPS`, 12 consejos contextuales + *«Otro consejo ↻»*), elemento dedicado de verso pendiente o cesta llena en *La cosecha*, salto y enfoque directo (`FARO.enfocar()` + `.faro-resaltar`) a la sección exacta (`#jg-misiones`, `#jg-atributos`, `#jg-cosecha`, etc.) y pie discreto para activar notificaciones.
+6. **Ajedrez Bíblico · Leyenda limpia (`juego.js`):**
+   - Título acortado a **«Simbología de las piezas»** (eliminado `BiEx (sin cruces ni estrellas)`).
+7. **Ajedrez Bíblico · Cápsula sin frase sobrante (`juego.js`):**
+   - Retirada la línea de texto descriptivo `fig.frase` dentro de `panelCapsula`, dejando protagonismo puro a la cita bíblica oficial en Lectura BiEx.
+8. **Terminología exacta «declarante» en lugar de «testigo» (`juego.js` + `app.js`):**
+   - `Sτέfαnος [Esteban]` actualizado a **«Declarante luminoso»**, Enigma #5 a **«Declarante en el Asedio»** (conservando `id: "testigo"` para no romper progreso ya guardado) y hitos de `relatos-40` actualizados a **«declarante»** / **«Cuatro declarantes completos»**.
+9. **Retiro absoluto de «Maestro» / «Gran Maestro» (`Mattáy 23:8–10`, `juego.js`):**
+   - Escalones de resonancia en El Coloso renombrados a **«Versado»** y **«Sobresaliente»**; en Ajedrez Bíblico `13 maestros → 13 figuras` y `Shāʾū́l — Pαῦlος [Pablo]` actualizado a **«Emisario a las naciones · Visión total»**. Auditoría global: `0` ocurrencias de `maestro` en toda la aplicación.
+10. **Cesta de La cosecha · Verso pendiente recuperable (`juego.js`):**
+    - `tarjetaVerso` guarda en `jg:cestaUlt` el verso entregado hasta marcarlo como «Leído» (`hecho: true`), y `tarjetaCosecha` ofrece el botón **«Leer último verso (Libro cap:v)»** para retomarlo en cualquier momento aunque se salga de *Tu Árbol*.
+11. **Constelación del léxico (`motorConstelacion`, `app.js`):**
+    - Encuadre ~35 % más aprovechado (menos margen vacío exterior en `limites()`, `lBase` más compacto y `kFit <= 1.85`), respiración orgánica imperceptible e impredecible con frecuencias coprimas (~18 fps, pausada automáticamente fuera de pantalla, en pestaña oculta, con modales o en «Sin animaciones»), y `ev.stopPropagation()` en `wheel` del lienzo.
+12. **Biblioteca alineada a la derecha + navegación Atrás blindada (`app.css` + `app.js`):**
+    - `.libs-acc { justify-content: flex-end; }` alinea *Mesa sinóptica* y *Constelación* bajo el botón `×`.
+    - `irDesdeModal` guarda posición exacta (`anotarPos()`), marca `M.sinRuta.cualquiera = true`, difiere `ejecutar()` un turno tras `popstate` (evitando colisión con `hashchange` residual de `vistaVerso`) y amplia el respaldo a `420 ms`. Verificada restauración exacta al píxel (`1863 px === 1863 px`) en *Biblioteca → Sinopsis → Atrás*, *Biblioteca → Constelación → Atrás* y *Verso → Sinopsis → Atrás*.
+13. **Notificaciones reales nativas en navegador y app instalada (`sw.js` + `app.js` + `juego.js`):**
+    - Nuevo gestor `BIEX_NOTIF` + tarjeta **«Avisos y notificaciones»** en `#/app` (permiso, preferencias por categoría: *El Coloso*, *Cesta de la cosecha* y *Recordatorio diario*, prueba en vivo y guía de desbloqueo si están denegadas).
+    - `sw.js` atiende `notifConfig`, `notificationclick` (enfoca o abre la ruta exacta de BiEx) y chequeo respetuoso en segundo plano dentro de `periodicsync`. Enlazado a *El Coloso*, avisos en vivo `.dsl` y cesta llena.
+14. **El Coloso de la Tradición (`juego.js`):**
+    - Despejada la cabecera sobre el arte (solo `En vivo` y `Semana ...`, sin cubrir la figura); postura y brecha movidas a la franja táctica `.jg-col-post-bar` dentro del panel de combate `.jg-col-comb`.
+    - Retención del daño flotante `.jg-col-dano` ampliada de `1,45 s` a **`3,6 s`** (`opacity: 1` sostenida entre `18 %–78 %`), y nueva barra persistente **«Último impacto»** (`.jg-col-ult`) visible en la consola táctica hasta el siguiente ataque.
+
+### 2. Aprendizajes clave (Entrada #14)
+1. **Un `IntersectionObserver` pasivo elimina tirones de pie de página mejor que cualquier umbral de `scrollY`:** leer `scrollHeight` y mutar clases en `<html>` al llegar al final de capítulos largos disparaba recálculo global justo en la transición; pasar a `.en-pie` directo sobre los dos botones fijos deja `0` reflujos.
+2. **Aislar el tamaño del cromo superior del multiplicador `--k` de lectura:** fijar en `px` los botones y texto de `.barra` garantiza accesibilidad real en los 9 tamaños de lectura sin sacrificar jamás herramientas de navegación.
+3. **Respeto integral del léxico y el esquema real en pruebas:** validar la respuesta real de `/api/juego/poder` y `/api/juego/arbol` permitió verificar de punta a punta *La cosecha* y su relectura del último verso en móvil `3× HD`.
+
+### 3. Comprobaciones pasadas (Entrada #14)
+- `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3021` bloques), JSON válidos y auditoría editorial (`0` «maestro», `0` «testigo» bíblico, `0` «sorteo», `0` «versículo»): **CLEAN**.
+- Suite Playwright (`verificar_pr14.py`, `360 / 390 / 1024 / 1280 px`, temas oscuro y *Pergamino*): zoom táctil Vivaldi (`"" → "1.25"`), barra `.barra` sin recortes en `tam = 8` y `tam = 9` en escritorio y `360 px`, restauración Atrás al píxel exacto (`1863 === 1863`) en las 3 rutas, Faro `29 × 29 px` con `12 px` libres sobre `×2` y `+50 %`, modal compacto (`0,47` de alto en 1 pendiente), salto y enfoque exacto, `Leído` oculto al pie vía `IntersectionObserver`, Coloso con `.jg-col-dano` visible a `2,2 s` (`3,6 s` total) y `.jg-col-ult` persistente a `3,9 s`, Ajedrez limpio (`Simbología de las piezas`, `Declarante luminoso`, `Declarante en el Asedio`, `Emisario a las naciones`, `0` frases sobrantes), *La cosecha* con botón *Leer último verso* funcional, `#/app` notificaciones verificadas en estado bloqueado y activado, **0 errores de consola y 0 px de desborde, 18/18 capturas 3× HD inspeccionadas a 10/10**.
+- `python3 wix/sellar.py`: **al día**.

@@ -94,6 +94,7 @@
     pausa: '<path d="M9 6v12M15 6v12" ' + L1 + '/>',
     play: '<path d="M8 5.5l11 6.5-11 6.5z" ' + L1 + '/>',
     marcador: '<path d="M7 4h10a.5.5 0 0 1 .5.5V20l-5.5-4-5.5 4V4.5A.5.5 0 0 1 7 4z" ' + L1 + '/>',
+    campana: '<path d="M18 15.5V10a6 6 0 1 0-12 0v5.5L4.5 17.5h15z" ' + L1 + '/><path d="M10 19.5a2.2 2.2 0 0 0 4 0" ' + L1 + '/>',
     nota: '<path d="M5 4.5h14v10.5l-4.5 4.5H5z M14.5 19.5V15H19" ' + L1 + '/><path d="M8 8.5h8M8 11.5h5" ' + L1 + '/>',
     subir: '<path d="M6 5h12M7 13.5l5-5 5 5M12 8.5V20" ' + L1 + '/>',
     bajar: '<path d="M6 19h12M7 10.5l5 5 5-5M12 15.5V4" ' + L1 + '/>',
@@ -380,6 +381,7 @@
     // visión del color (BiEx, 13-nov-2026): rv = protanopía y deuteranopía, az = tritanopía, mono = acromatopsia
     if (ap.dal) r.setAttribute("data-dal", ap.dal); else r.removeAttribute("data-dal");
     if (typeof MET !== "undefined" && MET) MET.despertar();
+    if (typeof ajustarBarra === "function") requestAnimationFrame(ajustarBarra);
   }
   aplicarAp();
   const temaActual = () => document.documentElement.getAttribute("data-theme") || "dark";
@@ -1142,13 +1144,19 @@
     if (pend && !porRuta && pend !== rutaVista) mostrarRuta(pend);
     repintarAdelante();
   });
-  // Neon (23-nov-2026): al elegir un libro/capítulo/verso desde la ventana de Biblioteca o del navegador de capítulos,
-  // primero desenrolla los pasos temporales de la ventana sin redibujar la vista anterior y luego navega al lugar elegido; así el
-  // gesto de «Atrás» regresa exactamente a la vista inmediatamente anterior
+  // Neon (23 y 24-nov-2026): al salir de una ventana (Biblioteca, Verso, Tu faro) hacia otra ruta, primero guarda la posición
+  // exacta actual, desenrolla los pasos temporales de la ventana sin redibujar ni disparar hashchange residual y luego navega;
+  // así el gesto «Atrás» regresa exactamente a la vista y posición inmediatamente anteriores.
   function irDesdeModal(accion) {
-    const ejecutar = () => { if (typeof accion === "function") accion(); else location.hash = accion; };
+    anotarPos();
+    const ejecutar = () => {
+      if (typeof accion === "function") { accion(); return; }
+      const dest = String(accion || "");
+      if (dest && location.hash === dest) { prepararPos(); enrutar(); }
+      else location.hash = dest;
+    };
     if (!modal.open || M.estados <= 0) {
-      if (modal.open) { M.porRuta = true; M.noGuardar = true; cerrarModal(); }
+      if (modal.open) { M.porRuta = true; M.noGuardar = true; M.alCerrar = null; cerrarModal(); }
       ejecutar();
       return;
     }
@@ -1158,15 +1166,17 @@
     cerrarModal();
     setTimeout(() => modal.classList.remove("sin-entrada"), 80);
     M.saltando = true; M.cortar = true; M.destino = null;
-    M.sinRuta = { url: location.href, hasta: performance.now() + 1200 };
+    M.sinRuta = { cualquiera: true, url: location.href, hasta: performance.now() + 950 };
     let hecho = false;
     const irAhora = () => {
       if (hecho) return; hecho = true;
-      M.saltando = false; M.sinRuta = null; M.irTrasSalto = null;
-      ejecutar();
+      M.saltando = false; M.irTrasSalto = null;
+      // Esperar un turno para que cualquier hashchange residual del history.go(-n) (p. ej. vistaVerso #/JHN/1/l/14 → #/JHN/1)
+      // sea absorbido limpiamente por M.sinRuta antes de escribir el nuevo destino
+      setTimeout(() => { M.sinRuta = null; ejecutar(); }, 0);
     };
     M.irTrasSalto = irAhora;
-    try { history.go(-n); setTimeout(irAhora, 140); } catch (e) { irAhora(); }
+    try { history.go(-n); setTimeout(irAhora, 420); } catch (e) { irAhora(); }
   }
   // Neon › Argon (23-nov-2026): sincroniza la ventana abierta con el teclado virtual en teléfonos (visualViewport) sin sobresaltos:
   // ancla la posición visual de .mk-nota cuando cargan bloques asíncronos arriba y alinea una sola vez al asentarse el teclado.
@@ -1319,8 +1329,10 @@
     M.nav = null; M.navV = null;
     if (modal.open) guardarScrollM();
     modal.replaceChildren(fn());
-    // AH (BiEx, 22-nov-2026): las ventanas breves del juego (celebraciones, piezas, hallazgos) flotan centradas, no a pantalla completa
-    modal.classList.toggle("flot", !!modal.querySelector(":scope > .m-caja > .m-cuerpo > :is(.jg-cel, .flot-cel)"));
+    // AH + PR #14: las ventanas breves del juego y Tu faro flotan centradas a la medida de su contenido
+    const esFaro = !!modal.querySelector(":scope > .m-caja > .m-cuerpo > .faro-mod");
+    modal.classList.toggle("flot", esFaro || !!modal.querySelector(":scope > .m-caja > .m-cuerpo > :is(.jg-cel, .flot-cel)"));
+    modal.classList.toggle("faro-flot", esFaro);
     // «Adelante» dentro de la ventana: el mismo botón de abajo a la izquierda de las páginas, encima del pie de la ventana si lo hay
     if (M.fwd.length) {
       const ad = h("button", { class: "adelante vis m-adelante", type: "button", "aria-label": "Adelante: volver a la vista de la que se regresó", title: "Adelante", onclick: () => history.forward() }, h("span", { text: "Adelante" }), svg(ICO.der));
@@ -1631,12 +1643,18 @@
   // la pista del buscador y después los enlaces de secciones (siguen en Herramientas y en la portada)
   function ajustarBarra() {
     const m = $(".barra .marca"), bi = $(".barra .in"), r = document.documentElement; if (!m || !bi) return;
-    // (BiEx, 14-nov-2026) compartir se va antes que el historial: sigue a la mano sobre la flecha de subir de la derecha
+    // (BiEx, 14-nov-2026 + PR #14) compartir se va antes que el historial; ningún ícono visible de .acc se recorta jamás
     const PASOS = ["barra-sin-pista", "barra-sin-nav", "barra-sin-guia", "barra-sin-comp", "barra-sin-hist", "barra-estrecha"];
     r.classList.remove(...PASOS);
     const sello = $(".barra .sello"), acc = $(".barra .acc");
-    // también cuenta como recorte que el primer botón visible se acerque al sello (los botones se encogen sin desbordar)
-    const choca = () => { if (!sello || !acc) return false; const v = Array.from(acc.children).find((x) => x.getClientRects().length); return !!v && v.getBoundingClientRect().left < sello.getBoundingClientRect().right + 6; };
+    const choca = () => {
+      if (!acc) return false;
+      const vis = Array.from(acc.children).filter((x) => x.getClientRects().length);
+      if (!vis.length) return false;
+      if (sello && vis[0].getBoundingClientRect().left < sello.getBoundingClientRect().right + 6) return true;
+      const der = Math.min(window.innerWidth, bi.getBoundingClientRect().right) + 1;
+      return vis[vis.length - 1].getBoundingClientRect().right > der;
+    };
     const recorta = () => m.scrollWidth > m.clientWidth + 1 || bi.scrollWidth > bi.clientWidth + 1 || choca();
     for (const c of PASOS) { if (!recorta()) break; r.classList.add(c); }
   }
@@ -4275,7 +4293,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "9de71ab1eb", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "63b5724f4f", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4336,6 +4354,8 @@
       const J = window.BiExJuego; if (!J) throw new Error("juego");
       J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn), nube: NUBE_DAT,
         fechaHoraJerusalen,
+        notificar: (tag, tit, cue, ruta, cat) => BIEX_NOTIF.enviar(tag, tit, cue, ruta, cat),
+        ubicarFaro: () => FARO.ubicar(),
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
         irA: (hh) => { location.hash = hh; },
@@ -6356,13 +6376,17 @@
   window.addEventListener("wheel", (e) => {
     if (!e.ctrlKey) return;
     e.preventDefault(); // sin la ampliación del navegador (sin tope)
-    if (gestoSafari) return;
+    if (gestoSafari || !e.deltaY) return;
     const ahora = performance.now();
-    if (ahora - tLupaEv > 320) { acLupa = 0; gestoN++; } // un gesto nuevo
+    // PR #14 (Vivaldi / paneles táctiles de precisión en PC): los gestos de pellizco envían deltaY muy finos (±0,5 a ±4 px);
+    // con umbral alto de 40 px el gesto se reiniciaba sin responder. Separamos panel táctil fino de rueda gruesa con Ctrl.
+    const esFino = e.deltaMode === 0 && Math.abs(e.deltaY) < 15;
+    if (ahora - tLupaEv > (esFino ? 480 : 340)) { acLupa = 0; gestoN++; } // un gesto nuevo
     tLupaEv = ahora;
     acLupa += e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
-    // un paso cada 260 ms como mucho, por amplio o rápido que sea el gesto: nunca se dispara
-    if (ahora - tLupaPaso < 260 || Math.abs(acLupa) < 40) return;
+    const umbral = esFino ? 10 : 28;
+    const pausa = esFino ? 200 : 240;
+    if (ahora - tLupaPaso < pausa || Math.abs(acLupa) < umbral) return;
     const dir = acLupa < 0 ? 1 : -1; acLupa = 0; tLupaPaso = ahora;
     pasoGesto(dir, e.clientX, e.clientY);
   }, { passive: false });
@@ -6517,6 +6541,82 @@
     })().finally(() => { descarga = null; descargaCompleta = false; });
     return descarga;
   }
+  // PR #14 · Gestor de notificaciones nativas (navegador y app instalada PWA, opt-in respetuoso sin spam)
+  const BIEX_NOTIF = {
+    leer() {
+      const d = store.get("notif", null);
+      return Object.assign({ on: false, coloso: true, lectura: true, cosecha: true }, d && typeof d === "object" ? d : {});
+    },
+    guardar(cambios) {
+      const n = Object.assign(this.leer(), cambios || {});
+      store.set("notif", n);
+      this.sincronizarSW(n);
+      return n;
+    },
+    soportada() { return !EMBED && typeof Notification !== "undefined"; },
+    permiso() { return this.soportada() ? Notification.permission : "unsupported"; },
+    activa() { return this.soportada() && Notification.permission === "granted" && !!this.leer().on; },
+    async sincronizarSW(cfg) {
+      if (!puedeSW()) return;
+      const n = cfg || this.leer();
+      try { await alSW({ tipo: "notifConfig", on: n.on && this.permiso() === "granted", coloso: n.coloso, lectura: n.lectura, cosecha: n.cosecha }, 2500); } catch (e) {}
+    },
+    async activar() {
+      if (!this.soportada()) { avisar("Este navegador no permite avisos del dispositivo."); return false; }
+      let perm = Notification.permission;
+      if (perm === "default") {
+        try { perm = await Notification.requestPermission(); } catch (e) { perm = "denied"; }
+      }
+      if (perm !== "granted") {
+        this.guardar({ on: false });
+        avisar(perm === "denied" ? "Los avisos están bloqueados en los ajustes de tu navegador." : "No se activaron los avisos.");
+        return false;
+      }
+      this.guardar({ on: true });
+      programarPeriodico();
+      await this.enviar("biex-bienvenida", "Avisos de Biblia Exacta activos", "Recibirás recordatorios respetuosos de El Coloso, tu cosecha y tu lectura.", "#/escudrina", "sistema", true);
+      return true;
+    },
+    desactivar() {
+      this.guardar({ on: false });
+      avisar("Avisos del dispositivo pausados.");
+    },
+    async enviar(tag, titulo, cuerpo, ruta, categoria, forzar) {
+      if (!this.soportada() || Notification.permission !== "granted") return false;
+      const cfg = this.leer();
+      if (!forzar) {
+        if (!cfg.on) return false;
+        if (categoria && categoria !== "sistema" && cfg[categoria] === false) return false;
+      }
+      const hoy = new Date().toISOString().slice(0, 10);
+      const log = store.get("notifLog", null) || {};
+      const clave = String(tag || titulo);
+      if (!forzar && log[clave] === hoy) return false;
+      const icoUrl = new URL("iconos/icon-192.png", location.href).href;
+      const opts = { body: String(cuerpo || ""), icon: icoUrl, badge: icoUrl, tag: clave, renotify: !!forzar, data: { ruta: ruta || "#/" } };
+      let ok = false;
+      try {
+        if (puedeSW()) {
+          const r = swReg || (await navigator.serviceWorker.ready.catch(() => null));
+          if (r && r.showNotification) { await r.showNotification(titulo, opts); ok = true; }
+        }
+      } catch (e) {}
+      if (!ok) {
+        try {
+          const n = new Notification(titulo, opts);
+          n.onclick = () => { try { window.focus(); } catch (e) {} if (ruta && /^#\//.test(ruta)) location.hash = ruta; n.close(); };
+          ok = true;
+        } catch (e) {}
+      }
+      if (ok && !forzar) {
+        const ks = Object.keys(log);
+        if (ks.length > 40) for (const k of ks.slice(0, ks.length - 30)) delete log[k];
+        log[clave] = hoy;
+        store.set("notifLog", log);
+      }
+      return ok;
+    },
+  };
   function vistaApp() {
     document.title = "Instalar y leer sin conexión · BiEx";
     navActual("");
@@ -6576,6 +6676,36 @@
     }
     const sinConexion = puedeSW() ? tarjeta(ICO.nube, "Leer sin conexión", "Descarga una sola vez todo el lector: los 27 libros, el análisis de cada palabra, los manuscritos, el buscador, la fuente Q y la guía con su voz. Después se puede navegar sin internet; con conexión, todo se sigue actualizando solo.",
       h("div", { class: "app-desc" }, barra, txt, h("div", { class: "app-botones" }, bDesc, bBorrar)), estado) : null;
+    // PR #14 · Tarjeta de notificaciones reales del navegador / app instalada
+    const notifZona = h("div", {});
+    const pintarNotif = () => {
+      const sop = BIEX_NOTIF.soportada(), perm = BIEX_NOTIF.permiso(), cfg = BIEX_NOTIF.leer(), act = BIEX_NOTIF.activa();
+      const estCls = act ? " ok" : perm === "denied" ? " bloq" : "";
+      const estTxt = !sop ? (ios && !enApp() ? "En iPhone/iPad: primero agrégala a inicio" : "No disponible en este navegador")
+        : act ? "Activadas en este dispositivo"
+        : perm === "denied" ? "Bloqueadas en el navegador"
+        : "Sin activar";
+      const chk = (k, lbl) => {
+        const inp = h("input", { type: "checkbox", checked: cfg[k] !== false ? true : null, onchange: () => { BIEX_NOTIF.guardar({ [k]: inp.checked }); avisar("Preferencia de avisos guardada"); } });
+        return h("label", {}, inp, h("span", { text: lbl }));
+      };
+      notifZona.replaceChildren(
+        h("span", { class: "app-notif-est" + estCls }, h("i", { "aria-hidden": "true" }), h("span", { text: estTxt })),
+        act ? h("div", { class: "app-notif-ops" },
+          chk("coloso", "El Coloso de la Tradición (apertura e incursión en vivo)"),
+          chk("cosecha", "Cesta de la cosecha lista para recoger"),
+          chk("lectura", "Recordatorio suave diario de lectura")) : null,
+        sop ? h("div", { class: "app-botones" },
+          act
+            ? [
+              h("button", { class: "btn oro", type: "button", onclick: () => BIEX_NOTIF.enviar("biex-prueba", "Prueba de aviso · Biblia Exacta", "Las notificaciones de tu aplicación instalada funcionan correctamente.", "#/escudrina", "sistema", true) }, svg(ICO.campana), h("span", { text: "Probar notificación" })),
+              h("button", { class: "btn chico", type: "button", onclick: () => { BIEX_NOTIF.desactivar(); pintarNotif(); } }, h("span", { text: "Pausar avisos" })),
+            ]
+            : h("button", { class: "btn oro", type: "button", disabled: perm === "denied", onclick: async () => { await BIEX_NOTIF.activar(); pintarNotif(); } }, svg(ICO.campana), h("span", { text: perm === "denied" ? "Bloqueadas en ajustes" : "Activar notificaciones" }))) : null,
+        perm === "denied" ? h("p", { class: "nota-ui", text: "Para habilitarlas de nuevo, toca el candado junto a la dirección web (o Ajustes de la app › Notificaciones en tu teléfono) y permite los avisos para bibliaexacta.pages.dev." }) : null);
+    };
+    pintarNotif();
+    const notifTarj = tarjeta(ICO.campana, "Avisos y notificaciones", "Recibe avisos reales en tu navegador o aplicación instalada cuando despierte El Coloso de la Tradición, tu cesta esté llena o quieras un recordatorio sereno de lectura. Sin exceso ni ruido.", notifZona);
     // AA12 (BiEx, 23-nov-2026): guía de widget de escritorio (nativo en Windows 11 con Edge) y accesos rápidos por plataforma
     const guiaWd = (tit, et, pasos, abierto) => h("details", { open: abierto ? "" : null },
       h("summary", {}, h("span", { text: tit }), h("small", { text: et })),
@@ -6605,7 +6735,7 @@
       barraVolver(),
       h("div", { class: "panel-cab" }, h("span", { class: "eyebrow", text: "BiEx en tu dispositivo" }), h("h1", { class: "texto", text: "Instalar y leer sin conexión" }),
         h("p", { class: "q-lead", text: "Biblia Exacta ©™ puede quedar instalada como aplicación y guardar todo su contenido para leer, analizar y buscar aunque no haya internet." })),
-      instalar, sinConexion, widgetTarj,
+      instalar, sinConexion, notifTarj, widgetTarj,
       h("div", { class: "nota-guarda", role: "note", "data-sec": "Marcadores y notas" }, svg(ICO.marcador), h("p", {}, h("b", { text: "Tus marcadores y notas. " }), ...avisoGuarda())),
       h("p", { class: "nota-ui", text: "La copia se guarda en este navegador. Ninguna página puede obligar al navegador a conservarla para siempre: si se borran los datos del sitio, o el dispositivo se queda sin espacio y no hay permiso persistente, habría que descargarla otra vez." }))));
     if (sinConexion) pintarEstado();
@@ -7026,7 +7156,7 @@
       h("span", { text: "Adelante" }), svg(ICO.der));
     document.body.append(btn);
     const puede = () => !modal.open && P.i >= 0 && P.i < P.k.length - 1 && (!nav || nav.canGoForward);
-    const pintar = () => btn.classList.toggle("vis", !!puede());
+    const pintar = () => { btn.classList.toggle("vis", !!puede()); if (typeof FARO !== "undefined" && FARO.ubicar) FARO.ubicar(); };
     repintarAdelante = () => requestAnimationFrame(pintar);
     pasoAdelante = (nuevo) => {
       const k = clave(); if (!k) return;
@@ -7104,7 +7234,7 @@
   const HITOS_PLAN = {
     "crono-90": [[25, "Primer cuarto · Relatos en escena", "Recorriste el arranque de la vida del Ungido y sus primeras enseñanzas."], [50, "Mitad del camino · Nacimiento de las comunidades", "Llegaste a la expansión del testimonio y las primeras cartas históricas."], [75, "Tres cuartos · Cartas de madurez", "Atas los hilos entre doctrina, ética cotidiana y discernimiento comunitario."], [100, "Travesía completa · Toda la Nueva Voluntad", "Completaste los 27 libros en orden χrοnοlόgικο."]],
     anual: [[25, "Primer trimestre · Raíz firme", "Constancia diaria sin prisas: un capítulo a la vez construye memoria duradera."], [50, "Medio año · Ritmo consolidado", "La mitad de los 260 capítulos ya forma parte de tu lectura habitual."], [75, "Tercer trimestre · Visión de conjunto", "Empiezas a notar cómo cada carta conversa con los relatos previos."], [100, "Año cumplido · 260 capítulos", "Has recorrido íntegra la Nueva Voluntad capítulo por capítulo."]],
-    "relatos-40": [[25, "Primer relato · Contexto y nacimiento", "Afianzas el marco histórico y los primeros discursos."], [50, "Mitad · Señales y parábolas", "Comparas el tono y el enfoque propio de cada testigo."], [75, "Recta final · Camino a Yᵉrūshāláyim [Jerusalén]", "Se intensifican los diálogos clave y la confrontación con la tradición."], [100, "Cuatro testigos completos", "Recorriste los cuatro relatos de la vida de YēshŪ́aʿ en orden χrοnοlόgικο."]],
+    "relatos-40": [[25, "Primer relato · Contexto y nacimiento", "Afianzas el marco histórico y los primeros discursos."], [50, "Mitad · Señales y parábolas", "Comparas el tono y el enfoque propio de cada declarante."], [75, "Recta final · Camino a Yᵉrūshāláyim [Jerusalén]", "Se intensifican los diálogos clave y la confrontación con la tradición."], [100, "Cuatro declarantes completos", "Recorriste los cuatro relatos de la vida de YēshŪ́aʿ en orden χrοnοlόgικο."]],
     "cartas-60": [[25, "Cartas tempranas · Primeras respuestas", "Viste nacer la correspondencia práctica antes de los grandes tratados."], [50, "Núcleo epistolar · Comunidad y gracia", "Recorriste las grandes cartas sobre unidad, libertad y justicia."], [75, "Cartas desde prisión y cuidado pastoral", "Profundizas en firmeza, armadura interior y liderazgo íntegro."], [100, "Todas las cartas completadas", "Leíste las 21 cartas en el orden histórico en que fueron escritas."]],
     "escritura-90": [[25, "Primeros manuscritos en circulación", "Leíste los textos más tempranos tal como los recibieron las primeras comunidades."], [50, "Mitad · Consolidación del testimonio", "Observas cómo maduran los relatos escritos junto a las cartas."], [75, "Tercer tramo · Defensa y perseverancia", "Atraviesas escritos de firmeza ante crisis y falsas enseñanzas."], [100, "Secuencia de escritura completa", "Completaste los 27 libros del primero al último en redactarse."]],
     "nv-30": [[25, "Semana 1 · Impulso panorámico", "Captas el arco narrativo completo sin perder el hilo entre capítulos."], [50, "Mitad · Lectura de inmersión", "Superaste el ecuador de la lectura intensiva en 30 días."], [75, "Semana 3 · Conexiones vivas", "Las ideas recurrentes entre cartas y relatos resaltan con nitidez."], [100, "30 días · Visión panorámica total", "Completaste toda la Nueva Voluntad en un mes."]],
@@ -7943,9 +8073,16 @@
     const N = grafo.nodos.map((n, i) => {
       const ang = i * 2.3999632;
       const baseR = n.pivote && i === 0 && n.anillo !== 0 ? 0
-        : (n.anillo === 1 ? (mini ? 125 : 220) + ((i * 19) % 55) : (mini ? 28 : 42) + Math.sqrt(i + 1) * (mini ? 24 : 38));
-      const ex = mini ? 1.15 : 1.38;
-      return Object.assign({}, n, { x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.92, vx: 0, vy: 0, deg: 0 });
+        : (n.anillo === 1 ? (mini ? 104 : 184) + ((i * 19) % 44) : (mini ? 24 : 36) + Math.sqrt(i + 1) * (mini ? 20 : 32));
+      const ex = mini ? 1.08 : 1.24;
+      // Frecuencias inconmensurables por nodo para respiración sutil e impredecible sin sincronía robótica
+      return Object.assign({}, n, {
+        x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.88, vx: 0, vy: 0, deg: 0,
+        phX: i * 1.6180339, phY: i * 2.2360679 + 0.7, phH: i * 3.1415926,
+        spX: 0.42 + ((i * 7) % 11) * 0.031, spX2: 0.27 + ((i * 13) % 9) * 0.029,
+        spY: 0.39 + ((i * 5) % 13) * 0.027, spY2: 0.23 + ((i * 11) % 7) * 0.033,
+        spH: 0.55 + ((i * 3) % 7) * 0.06,
+      });
     });
     const byId = new Map(N.map((n) => [n.id, n]));
     const E = [];
@@ -7965,7 +8102,7 @@
       a: 0.08 + ((i * 13) % 10) * 0.022,
     }));
 
-    let W = 0, H = 0, dpr = 1, raf = 0, pasos = 0, dormido = false, camManual = false;
+    let W = 0, H = 0, dpr = 1, raf = 0, respRaf = 0, respUlt = 0, pasos = 0, dormido = false, camManual = false, enVista = true, tVivo = 0;
     const cam = { x: 0, y: 0, k: 1 };
     let hov = null, sel = null;
     let arrNodo = null, panOn = false, p0 = null, movido = false;
@@ -7998,12 +8135,21 @@
     };
     const aMundo = (sx, sy) => ({ x: (sx - W / 2) / cam.k + cam.x, y: (sy - H / 2) / cam.k + cam.y });
     const aPant = (wx, wy) => ({ x: (wx - cam.x) * cam.k + W / 2, y: (wy - cam.y) * cam.k + H / 2 });
+    const posViva = (n) => {
+      if (!tVivo || n === arrNodo) return { x: n.x, y: n.y };
+      const amp = n.pivote ? 0.65 : 1;
+      return {
+        x: n.x + (Math.sin(tVivo * n.spX + n.phX) * 1.45 + Math.cos(tVivo * n.spX2 + n.phY) * 0.85) * amp,
+        y: n.y + (Math.cos(tVivo * n.spY + n.phY) * 1.45 + Math.sin(tVivo * n.spY2 + n.phX) * 0.85) * amp,
+      };
+    };
     const limites = () => {
       if (!N.length || !W || !H) return { x0: -120, x1: 120, y0: -120, y1: 120, cx: 0, cy: 0, kFit: 1 };
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      for (const n of N) { x0 = Math.min(x0, n.x - 46); x1 = Math.max(x1, n.x + 46); y0 = Math.min(y0, n.y - 42); y1 = Math.max(y1, n.y + 48); }
-      const bw = Math.max(150, x1 - x0), bh = Math.max(150, y1 - y0);
-      const kFit = Math.max(0.42, Math.min(1.5, Math.min((W - 64) / bw, (H - 92) / bh)));
+      // PR #14: ~35 % menos espacio vacío exterior para llenar el lienzo con armonía
+      for (const n of N) { x0 = Math.min(x0, n.x - 26); x1 = Math.max(x1, n.x + 26); y0 = Math.min(y0, n.y - 22); y1 = Math.max(y1, n.y + 30); }
+      const bw = Math.max(120, x1 - x0), bh = Math.max(120, y1 - y0);
+      const kFit = Math.max(0.46, Math.min(1.85, Math.min((W - 36) / bw, (H - 52) / bh)));
       return { x0, x1, y0, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, kFit };
     };
     const encuadrar = () => {
@@ -8070,11 +8216,11 @@
     };
     const irA = (x, y, k) => { metaCam = { x, y, k: k != null ? k : cam.k }; vel.x = 0; vel.y = 0; correrCam(); };
     const pasoFisica = (cool) => {
-      const rep = mini ? 3900 : 8600;
-      const lBase = mini ? 80 : 126;
-      const sepMin = mini ? 24 : 38;
-      const gx = mini ? 0.0042 : (W > H ? 0.0021 : 0.0044);
-      const gy = mini ? 0.0042 : (W > H ? 0.0045 : 0.0024);
+      const rep = mini ? 3300 : 7200;
+      const lBase = mini ? 68 : 106;
+      const sepMin = mini ? 22 : 34;
+      const gx = mini ? 0.0046 : (W > H ? 0.0024 : 0.0048);
+      const gy = mini ? 0.0046 : (W > H ? 0.0048 : 0.0026);
       for (let i = 0; i < N.length; i++) {
         const a = N[i];
         for (let j = i + 1; j < N.length; j++) {
@@ -8118,8 +8264,10 @@
       ctx.clearRect(0, 0, W, H);
       // 1) Polvo estelar y anillos tenues de astrolabio
       ctx.save();
-      for (const st of estrellas) {
-        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.7).toFixed(3) + ")" : "rgba(244,226,184," + st.a.toFixed(3) + ")";
+      for (let si = 0; si < estrellas.length; si++) {
+        const st = estrellas[si];
+        const pul = tVivo ? (0.86 + 0.14 * Math.sin(tVivo * (0.45 + (si % 5) * 0.11) + si * 1.7)) : 1;
+        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.7 * pul).toFixed(3) + ")" : "rgba(244,226,184," + (st.a * pul).toFixed(3) + ")";
         ctx.beginPath();
         ctx.arc(st.rx * W, st.ry * H, st.r, 0, Math.PI * 2);
         ctx.fill();
@@ -8127,7 +8275,7 @@
       const c0 = aPant(0, 0);
       ctx.strokeStyle = claro ? "rgba(117,87,29,.085)" : "rgba(218,184,114,.065)";
       ctx.lineWidth = 1;
-      [130, 255, 380].forEach((rr, idx) => {
+      [120, 235, 350].forEach((rr, idx) => {
         ctx.save();
         if (idx === 2) ctx.setLineDash([2, 7]);
         ctx.beginPath();
@@ -8138,10 +8286,15 @@
       ctx.restore();
       const foco = hov || sel;
       const vecFoco = foco ? adj.get(foco.id) : null;
+      const ptMap = new Map();
+      for (const n of N) {
+        const pv = posViva(n);
+        ptMap.set(n.id, aPant(pv.x, pv.y));
+      }
       // 2) Filamentos curvos de Bézier (resplandor en foco)
       for (let i = 0; i < E.length; i++) {
         const e = E[i];
-        const p1 = aPant(e.a.x, e.a.y), p2 = aPant(e.b.x, e.b.y);
+        const p1 = ptMap.get(e.a.id) || aPant(e.a.x, e.a.y), p2 = ptMap.get(e.b.id) || aPant(e.b.x, e.b.y);
         const viva = !foco || e.a === foco || e.b === foco;
         const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
@@ -8168,19 +8321,18 @@
         }
       }
       // 3) Orbes luminosos de los nodos
-      const ptMap = new Map();
       for (const n of N) {
-        const p = aPant(n.x, n.y);
-        ptMap.set(n.id, p);
-        if (p.x < -70 || p.x > W + 70 || p.y < -50 || p.y > H + 50) continue;
+        const p = ptMap.get(n.id);
+        if (!p || p.x < -70 || p.x > W + 70 || p.y < -50 || p.y > H + 50) continue;
         const col = colNodo(n);
         const esFoco = foco === n;
         const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
         const rad = Math.max(3.6, n.r * Math.pow(cam.k, 0.52));
         ctx.save();
         ctx.globalAlpha = esVec ? 1 : 0.14;
-        // Halo atmosférico radial
-        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.7 : 2.2));
+        // Halo atmosférico radial con respiración luminosa sutil
+        const respH = tVivo ? (1 + 0.06 * Math.sin(tVivo * n.spH + n.phH)) : 1;
+        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.7 : 2.2)) * respH;
         const rg = ctx.createRadialGradient(p.x, p.y, rad * 0.3, p.x, p.y, haloR);
         rg.addColorStop(0, col);
         rg.addColorStop(0.4, claro ? "rgba(143,101,20,.16)" : "rgba(244,222,168,.20)");
@@ -8256,9 +8408,28 @@
         ctx.restore();
       }
     };
+    const sinAnimCn = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const pararRespirar = () => { if (respRaf) { cancelAnimationFrame(respRaf); respRaf = 0; } };
+    const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !sinAnimCn();
+    const iniciarRespirar = () => {
+      if (respRaf || !puedeRespirar()) return;
+      const pasoResp = (ahora) => {
+        respRaf = 0;
+        if (!puedeRespirar()) return;
+        // ~18 fps (cada 55 ms): respiración viva muy suave con gasto mínimo
+        if (ahora - respUlt >= 55) {
+          respUlt = ahora;
+          tVivo = ahora * 0.001;
+          if (!arrNodo && !panOn && !camRaf) dibujar();
+        }
+        respRaf = requestAnimationFrame(pasoResp);
+      };
+      respRaf = requestAnimationFrame(pasoResp);
+    };
     const actualizarBadge = () => {
       estBadge.classList.toggle("reposo", dormido);
-      estBadge.lastChild.textContent = fmt(N.length) + " nodos · " + fmt(E.length) + " conexiones" + (dormido ? " · reposo" : "");
+      const suf = dormido ? (sinAnimCn() ? " · reposo" : " · viva") : "";
+      estBadge.lastChild.textContent = fmt(N.length) + " nodos · " + fmt(E.length) + " conexiones" + suf;
     };
     const pintarInspector = (n) => {
       if (!n) { insp.hidden = true; return; }
@@ -8280,6 +8451,7 @@
           h("button", { class: "btn chico", type: "button", onclick: () => { sel = null; pintarInspector(null); dibujar(); } }, h("span", { text: "Soltar foco" }))));
     };
     const despertar = (pasosExtra) => {
+      pararRespirar();
       dormido = false;
       pasos = Math.min(pasos, 165 - (pasosExtra || 45));
       actualizarBadge();
@@ -8298,7 +8470,8 @@
         if (!camManual) encuadrar();
         dibujar();
         actualizarBadge();
-        return; // 0 % CPU en reposo
+        iniciarRespirar();
+        return;
       }
       raf = requestAnimationFrame(bucle);
     };
@@ -8306,7 +8479,8 @@
       const m = aMundo(sx, sy);
       let mejor = null, dMin = 1e9;
       for (const n of N) {
-        const d = Math.hypot(n.x - m.x, n.y - m.y);
+        const pv = posViva(n);
+        const d = Math.hypot(pv.x - m.x, pv.y - m.y);
         const tol = Math.max(n.r + 12 / cam.k, 18 / cam.k);
         if (d < tol && d < dMin) { dMin = d; mejor = n; }
       }
@@ -8407,6 +8581,7 @@
     });
     canvas.addEventListener("wheel", (ev) => {
       ev.preventDefault();
+      ev.stopPropagation();
       pararCam(); metaCam = null;
       const pt = ptRel(ev);
       const antes = aMundo(pt.x, pt.y);
@@ -8425,18 +8600,31 @@
 
     const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
     if (ro) ro.observe(canvas);
-    const moTema = new MutationObserver(() => dibujar());
-    moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const ioVis = "IntersectionObserver" in window ? new IntersectionObserver((es) => {
+      enVista = es.some((x) => x.isIntersecting);
+      if (enVista) iniciarRespirar(); else pararRespirar();
+    }, { threshold: 0.02 }) : null;
+    if (ioVis) ioVis.observe(canvas);
+    const onVisCn = () => { if (document.hidden) pararRespirar(); else iniciarRespirar(); };
+    document.addEventListener("visibilitychange", onVisCn);
+    const moTema = new MutationObserver(() => {
+      dibujar();
+      if (puedeRespirar()) iniciarRespirar(); else pararRespirar();
+    });
+    moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mov", "class"] });
     const limpiar = () => {
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      pararRespirar();
       pararCam();
       if (ro) ro.disconnect();
+      if (ioVis) ioVis.disconnect();
+      document.removeEventListener("visibilitychange", onVisCn);
       moTema.disconnect();
     };
 
     requestAnimationFrame(() => {
       if (!medir()) return;
-      const sinA = ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      const sinA = sinAnimCn();
       const initPasos = sinA ? 175 : 95;
       for (let i = 0; i < initPasos; i++) pasoFisica(Math.max(0.06, 1 - i / 170));
       pasos = initPasos;
@@ -8931,10 +9119,27 @@
     };
   }
 
-  // --- Faro pulsante discreto de pendientes (accesibilidad TDAH · 0 peticiones de red, 100 % desde caché local)
+  // --- Faro pulsante discreto de pendientes (PR #14: 29 px cristal líquido, ventana flotante compacta, foco exacto y consejos variables)
+  const FARO_TIPS = [
+    { sec: "lectura", t: "Griego al toque", d: "Toca cualquier verso mientras lees para abrir cada palabra griega, su morfología, pronunciación, código Strong y manuscritos." },
+    { sec: "lectura", t: "Modo Contemplar", d: "Activa el ícono del ojo en la barra del capítulo para leer a pantalla limpia, sin distracciones ni barras." },
+    { sec: "lectura", t: "Tarjetas HD 3×", d: "Dentro de cualquier verso, pulsa «Tarjeta HD» para crear y compartir una imagen nítida con la traducción de BiEx y su griego." },
+    { sec: "lectura", t: "Marcadores en 12 colores", d: "Clasifica versos en 12 temas de color y anota reflexiones: todo se reúne en tu Diario cronológico sincronizado en la nube." },
+    { sec: "sinopsis", t: "Mesa sinóptica libre", d: "Desde Biblioteca o desde cualquier verso puedes comparar dos pasajes lado a lado e iluminar sus lemas y raíces griegas compartidas." },
+    { sec: "constelacion", t: "Constelación del léxico", d: "Arrastra cualquier estrella o acerca la vista en la Constelación para explorar familias de raíces, referencias cruzadas y tus notas." },
+    { sec: "escudrina", t: "Tu Árbol y tu poder", d: "Reparte tus puntos de atributo, mejora tu armadura y recoge tu cesta de la cosecha cada día para fortalecer a tu ser interior." },
+    { sec: "escudrina", t: "El Coloso de la Tradición", d: "En la arena del Coloso observa su postura actual: atacar la brecha señalada y acertar la zona dorada del Pulso multiplica el impacto." },
+    { sec: "ajedrez", t: "Ajedrez Bíblico y Enigmas", d: "Al leer 5 versos hoy desbloqueas los Enigmas del Códice; además cada jugada frente a las 13 figuras queda guardada en caché." },
+    { sec: "planes", t: "Planes cronológicos", d: "Sigue la Nueva Voluntad en orden cronológico (30, 90 días o un año) y marca cada día completado a tu propio ritmo." },
+    { sec: "juntos", t: "Leer en compañía", d: "Abre una sala en Escudriña › Juntos para leer el mismo capítulo en tiempo real con amigos y sumar experiencia adicional." },
+    { sec: "app", t: "Sin conexión y avisos", d: "En Herramientas › Instalar y leer sin conexión puedes guardar todo BiEx en tu dispositivo y activar avisos del navegador o app." },
+  ];
   const FARO = {
     btn: null,
     cnt: null,
+    tipIdx: -1,
+    focoTimer: 0,
+    ubicarTimer: 0,
     pendientes() {
       const out = [];
       const hoy = new Date().toISOString().slice(0, 10);
@@ -8954,6 +9159,7 @@
                 d: pl.t + " · día " + (sig + 1) + " de " + ds.length,
                 accion: "Abrir plan",
                 href: pri ? "#/" + pri.c + "/" + pri.cap : "#/planes/" + pl.id,
+                foco: pri ? ".hoja" : ".plan-hoy",
                 col: "#e8cf94",
               });
             }
@@ -8969,11 +9175,12 @@
             d: "Frente a " + part.rivalNom + " · jugada " + Math.max(1, Math.ceil((part.hist ? part.hist.length : 0) / 2)) + " guardada en caché.",
             accion: "Retomar",
             href: "#/escudrina/ajedrez",
+            foco: ".aj-arena",
             col: "#c598f2",
           });
         }
       } catch (e) {}
-      // 3) Datos locales cacheados de Escudriña (Coloso con cargas, misiones pendientes, puntos de Árbol)
+      // 3) Datos locales cacheados de Escudriña (Coloso con cargas, cesta/verso sin leer, misiones pendientes, puntos de Árbol)
       try {
         const tk = store.get("jg:t", null);
         if (tk) {
@@ -8984,10 +9191,31 @@
               d: (col.cargas | 0) + (col.cargas === 1 ? " carga lista" : " cargas listas") + " para apoyar a la comunidad.",
               accion: "Ir a la arena",
               href: "#/escudrina/coloso",
+              foco: ".jg-col-escena",
               col: "#e69a52",
             });
           }
           const yo = store.get("jg:yo", null);
+          const ultC = store.get("jg:cestaUlt", null);
+          if (ultC && ultC.c && ultC.cap && ultC.v && !ultC.hecho && D && libroDe(ultC.c)) {
+            out.push({
+              t: "Verso de tu cesta por leer",
+              d: nombreLibro(libroDe(ultC.c)) + " " + ultC.cap + ":" + ultC.v + " te espera en La cosecha para marcarlo leído.",
+              accion: "Ir a La cosecha",
+              href: "#/escudrina/arbol",
+              foco: "#jg-cosecha",
+              col: "#e8cf94",
+            });
+          } else if (yo && yo.co && yo.co.lleno && Date.now() >= yo.co.lleno) {
+            out.push({
+              t: "Tu cesta de la cosecha está llena",
+              d: "Recógela en Tu Árbol para recibir tu experiencia y un verso.",
+              accion: "Recoger",
+              href: "#/escudrina/arbol",
+              foco: "#jg-cosecha",
+              col: "#e8cf94",
+            });
+          }
           if (yo) {
             const rawMs = Array.isArray(yo.mis) ? yo.mis : (Array.isArray(yo.misiones) ? yo.misiones : []);
             const ms = rawMs.filter((m) => m && !m.hecha && !m.fin);
@@ -8997,8 +9225,9 @@
               out.push({
                 t: ms.length === 1 ? "1 misión del día pendiente" : ms.length + " misiones del día pendientes",
                 d: dMis,
-                accion: "Ver en Hoy",
+                accion: "Ir a Misiones",
                 href: "#/escudrina",
+                foco: "#jg-misiones",
                 col: "#7eb8f0",
               });
             }
@@ -9007,8 +9236,9 @@
               out.push({
                 t: libres === 1 ? "Tienes 1 punto de atributo libre" : "Tienes " + libres + " puntos de atributo libres",
                 d: "Fortalece tu Ser interior y sube tu poder en Tu Árbol.",
-                accion: "Ir a Tu Árbol",
+                accion: "Ir a Atributos",
                 href: "#/escudrina/arbol",
+                foco: "#jg-atributos",
                 col: "#6fd4a4",
               });
             }
@@ -9027,12 +9257,75 @@
               d: nombreLibro(libroDe(ult.c)) + " " + ult.cap + (ult.v ? ":" + ult.v : "") + " · un par de versos ya suman hoy.",
               accion: "Seguir leyendo",
               href: "#/" + ult.c + "/" + ult.cap + (ult.v ? "/l/" + ult.v : ""),
+              foco: ".hoja",
               col: "#e8cf94",
             });
           }
         } catch (e) {}
       }
       return out.slice(0, 5);
+    },
+    ubicar() {
+      if (!this.btn || this.btn.hidden || !this.btn.isConnected) return;
+      const vh = window.innerHeight || 800;
+      let minTop = vh - 16;
+      const sels = [".jg-med", ".jg-bonos", ".jg-bonos > *", ".adelante.vis", ".jg-muelle", ".jg-sala-p"];
+      for (const q of sels) {
+        for (const el of document.querySelectorAll(q)) {
+          if (!el.isConnected) continue;
+          const r = el.getBoundingClientRect();
+          if (r.width < 2 || r.height < 2 || r.bottom < vh * 0.45) continue;
+          const cs = getComputedStyle(el);
+          if (cs.visibility === "hidden" || parseFloat(cs.opacity) < 0.05) continue;
+          if (r.left < 96) minTop = Math.min(minTop, r.top);
+        }
+      }
+      const bPx = Math.max(16, Math.min(vh - 96, Math.round(vh - minTop + 12)));
+      this.btn.style.setProperty("--faro-b", "calc(" + bPx + "px + env(safe-area-inset-bottom, 0px))");
+    },
+    enfocar(selector) {
+      if (!selector) return;
+      clearTimeout(this.focoTimer);
+      let intentos = 0;
+      const buscar = () => {
+        const el = document.querySelector(selector);
+        if (el && el.isConnected && el.getBoundingClientRect().height > 10) {
+          const sinA = ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+          const y = Math.max(0, window.scrollY + el.getBoundingClientRect().top - Math.max(76, window.innerHeight * 0.14));
+          try { window.scrollTo({ top: y, behavior: sinA ? "instant" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
+          el.classList.remove("faro-resaltar");
+          void el.offsetWidth;
+          el.classList.add("faro-resaltar");
+          setTimeout(() => el.classList.remove("faro-resaltar"), 2300);
+          return;
+        }
+        if (++intentos < 18) this.focoTimer = setTimeout(buscar, 140);
+      };
+      this.focoTimer = setTimeout(buscar, 120);
+    },
+    irA(it) {
+      if (!it) return;
+      irDesdeModal(it.href);
+      if (it.foco) this.enfocar(it.foco);
+    },
+    elegirTip(siguiente) {
+      const hh = location.hash || "#/";
+      const sec = /^#\/escudrina\/ajedrez/.test(hh) ? "ajedrez"
+        : /^#\/escudrina\/(juntos|sala)/.test(hh) ? "juntos"
+        : /^#\/escudrina/.test(hh) ? "escudrina"
+        : /^#\/sinopsis/.test(hh) ? "sinopsis"
+        : /^#\/constelacion/.test(hh) ? "constelacion"
+        : /^#\/planes/.test(hh) ? "planes"
+        : /^#\/app/.test(hh) ? "app" : "lectura";
+      if (siguiente || this.tipIdx >= 0) {
+        this.tipIdx = (this.tipIdx + 1) % FARO_TIPS.length;
+        return FARO_TIPS[this.tipIdx];
+      }
+      const ctxIdx = FARO_TIPS.findIndex((x) => x.sec === sec);
+      const base = ctxIdx >= 0 ? ctxIdx : 0;
+      const rot = (Math.floor(Date.now() / 60000) + base) % FARO_TIPS.length;
+      this.tipIdx = rot;
+      return FARO_TIPS[this.tipIdx];
     },
     montar() {
       if (this.btn && this.btn.isConnected) return this.actualizar();
@@ -9044,6 +9337,7 @@
       }, h("span", { class: "faro-nucleo", "aria-hidden": "true" }, h("i", { class: "faro-onda" })), cnt);
       this.btn = btn; this.cnt = cnt;
       document.body.append(btn);
+      window.addEventListener("resize", () => this.ubicar(), { passive: true });
       this.actualizar();
     },
     actualizar() {
@@ -9053,11 +9347,30 @@
       if (lista.length) {
         this.cnt.textContent = String(lista.length);
         this.btn.setAttribute("aria-label", "Tu faro de hoy: " + (lista.length === 1 ? "1 paso pendiente" : lista.length + " pasos pendientes"));
+        requestAnimationFrame(() => this.ubicar());
+        clearTimeout(this.ubicarTimer);
+        this.ubicarTimer = setTimeout(() => this.ubicar(), 260);
       }
     },
     abrir() {
       const lista = this.pendientes();
       if (!lista.length) { this.actualizar(); return; }
+      const tipP = h("p", {});
+      const pintarTip = (sig) => {
+        const tp = this.elegirTip(sig);
+        tipP.replaceChildren(h("b", { text: tp.t + ": " }), tp.d);
+      };
+      pintarTip(false);
+      const tipCaja = h("div", { class: "faro-tip" },
+        h("div", { class: "faro-tip-cab" },
+          h("span", { class: "faro-tip-et", text: "Descubre BiEx" }),
+          h("button", { type: "button", class: "faro-tip-mas", onclick: () => pintarTip(true), text: "Otro consejo ↻" })),
+        tipP);
+      const notifPie = BIEX_NOTIF.soportada() ? h("div", { class: "faro-notif-pie" },
+        h("span", { text: BIEX_NOTIF.activa() ? "Avisos del dispositivo activos" : "¿Recibir avisos en tu dispositivo?" }),
+        BIEX_NOTIF.activa()
+          ? h("button", { type: "button", class: "faro-notif-btn", onclick: () => irDesdeModal("#/app") }, "Ajustar avisos")
+          : h("button", { type: "button", class: "faro-notif-btn", onclick: async (ev) => { const ok = await BIEX_NOTIF.activar(); if (ok && ev.currentTarget.isConnected) ev.currentTarget.textContent = "Activos ✓"; } }, "Activar avisos")) : null;
       abrirModal(() => cajaModal(
         cabModal("Tu faro de hoy", lista.length === 1 ? "1 paso sencillo disponible ahora" : lista.length + " pasos disponibles ahora"),
         h("div", { class: "faro-mod" },
@@ -9065,7 +9378,9 @@
           h("ul", { class: "faro-list" }, lista.map((it) => h("li", { class: "faro-it", style: "--fc:" + (it.col || "#e8cf94") },
             h("i", { "aria-hidden": "true" }),
             h("div", { class: "faro-it-t" }, h("b", { text: it.t }), h("small", { text: it.d })),
-            h("button", { type: "button", class: "btn chico oro faro-go", onclick: () => irDesdeModal(it.href) }, h("span", { text: it.accion }), svg(ICO.der))))))));
+            h("button", { type: "button", class: "btn chico oro faro-go", onclick: () => this.irA(it) }, h("span", { text: it.accion }), svg(ICO.der))))),
+          tipCaja,
+          notifPie)));
     },
   };
   document.addEventListener("biex:faro", () => FARO.actualizar());
@@ -9237,8 +9552,8 @@
     el.addEventListener("pointermove", (e) => { if (x0 == null) return; dx = e.clientX - x0; el.style.transform = "translate3d(" + dx + "px,0,0)"; el.style.opacity = String(Math.max(0.2, 1 - Math.abs(dx) / 260)); });
     const soltar = () => { if (x0 == null) return; x0 = null; if (Math.abs(dx) > 70) cerrar(dx > 0 ? 1 : -1, true); else { el.style.transform = ""; el.style.opacity = ""; } };
     el.addEventListener("pointerup", soltar); el.addEventListener("pointercancel", soltar);
-    // a la vista 11 s (BiEx, 13-nov-2026: un 15 % menos que los 13 s anteriores); se detiene mientras el puntero está encima
-    let t = 0, resto = 11050, desde = 0;
+    // a la vista 10,25 s (PR #14: −0,8 s respecto a los 11,05 s anteriores); se detiene mientras el puntero está encima
+    let t = 0, resto = 10250, desde = 0;
     const seguir = () => { desde = performance.now(); t = setTimeout(() => cerrar(), resto); };
     el.addEventListener("pointerenter", () => { clearTimeout(t); resto = Math.max(2500, resto - (performance.now() - desde)); });
     el.addEventListener("pointerleave", () => { if (!el.dataset.sale) seguir(); });
@@ -9254,7 +9569,12 @@
       const calma = dslLibre() && performance.now() - DSL.visDesde >= DSL_CALMA;
       // un evento que empieza: su aviso no espera la escalera (pero sí la calma)
       const ev = dslEvento();
-      if (ev && calma && dslMostrar(ev)) { const x = dslEst(); x.ev = x.ev.concat(ev[0]).slice(-30); store.set("dsl2", x); return dslCiclo(60e3); }
+      if (ev && calma && dslMostrar(ev)) {
+        const x = dslEst(); x.ev = x.ev.concat(ev[0]).slice(-30); store.set("dsl2", x);
+        const txtEv = Array.isArray(ev[1]) ? ev[1].map((p) => (typeof p === "string" ? p : (p && p.textContent) || "")).join("") : String(ev[1] || "");
+        BIEX_NOTIF.enviar("ev-" + ev[0], "Evento en vivo · Biblia Exacta", txtEv || "Hay un evento comunitario activo en Escudriña.", ev[3] || "#/escudrina", "coloso");
+        return dslCiclo(60e3);
+      }
       const hayEv = !!(DSL.vivo && Array.isArray(DSL.vivo.eventos) && DSL.vivo.eventos.length);
       if (hayEv) await dslVivo(60e3);
       const falta = (() => { const x = dslEst(); return x.t + dslEspera(x) - Date.now(); })();
@@ -9289,9 +9609,10 @@
     cargar("datos/archivos.json").then((ar) => { const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0; if (f > msAct) { msAct = f; ponerFechaAct(msAct); } }).catch(() => {});
     botonAdelante();
     window.addEventListener("hashchange", () => {
-      // la vuelta de los pasos de una ventana cerrada con ×, Esc o tocando fuera: la vista no cambia (ver arriba, M.sinRuta)
+      // la vuelta de los pasos de una ventana cerrada o desenrollada (irDesdeModal): la vista no cambia aún
+      if (M.saltando) return;
       const sr = M.sinRuta; M.sinRuta = null;
-      if (sr && performance.now() < sr.hasta && location.href === sr.url) return;
+      if (sr && performance.now() < sr.hasta && (sr.cualquiera || location.href === sr.url)) return;
       pasosApp++; resolverSeguir(); prepararPos(); enrutar();
     });
     if (enApp() && !EMBED && !(location.hash || "").replace(/^#\/?/, "")) { const u = store.get("ultimo", null), V = store.get("vista", null); if ((u && u.c && (!u.t || Date.now() - u.t < 60 * 864e5)) || (V && V.h && Date.now() - (+V.t || 0) < 60 * 864e5)) ponerHash("#/seguir"); }
@@ -9315,6 +9636,7 @@
       const horaLoc = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }).format(new Date(COLOSO_MS));
       if (dslMostrar(["coloso:" + hoy + ":" + (n + 1), [h("b", { text: "El Coloso de la Tradición" }), " llega en ", h("b", { text: tTxt }), " (" + horaLoc + "). Prepara tu ser interior en Escudriña."], "Ver cuenta atrás", "#/escudrina/mundo", ICO.juego])) {
         store.set("colosoAv", { d: hoy, n: n + 1, t: Date.now() });
+        BIEX_NOTIF.enviar("coloso-" + hoy, "El Coloso de la Tradición · " + tTxt, "Llega el " + horaLoc + ". Prepara tu ser interior en Escudriña.", "#/escudrina/mundo", "coloso");
       }
     }
     if (!navigator.webdriver && !/[?&]sin-avisos/.test(location.search)) {

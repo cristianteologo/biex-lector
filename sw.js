@@ -238,6 +238,9 @@ self.addEventListener("message", (e) => {
       await guardarWidgetDatos(d);
       await actualizarWidget("biex-diario");
       responder({ ok: true });
+    } else if (d.tipo === "notifConfig") {
+      await guardarNotifConfig(d);
+      responder({ ok: true });
     }
   })().catch(() => responder(null)));
 });
@@ -345,7 +348,78 @@ self.addEventListener("widgetclick", (e) => {
   })());
 });
 
+// ------------------------------------------------------------------ PR #14 · Notificaciones nativas (app instalada / navegador)
+const NOTIF_DATOS = "__notif__.json";
+async function leerNotifConfig() {
+  try {
+    const r = await (await caches.open(CACHE)).match(claveDe(NOTIF_DATOS));
+    return r ? await r.json() : null;
+  } catch (e) { return null; }
+}
+async function guardarNotifConfig(d) {
+  const cur = (await leerNotifConfig()) || {};
+  const limpio = {
+    on: !!d.on,
+    coloso: d.coloso !== false,
+    lectura: d.lectura !== false,
+    cosecha: d.cosecha !== false,
+    ultDia: cur.ultDia || "",
+    t: Date.now(),
+  };
+  await (await caches.open(CACHE)).put(claveDe(NOTIF_DATOS), new Response(JSON.stringify(limpio), { headers: { "content-type": "application/json" } }));
+  return limpio;
+}
+async function abrirRutaCliente(rutaDestino) {
+  const rutaOk = typeof rutaDestino === "string" && /^#\/[A-Za-z0-9/_?.=&-]{0,120}$/.test(rutaDestino) ? rutaDestino : "#/";
+  const url = new URL("./" + rutaOk, ALCANCE).href;
+  const cls = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  for (const cl of cls) {
+    if (cl.url.startsWith(ALCANCE.href) && "focus" in cl) {
+      try { await cl.navigate(url); } catch (er) { /* mantener pestaña */ }
+      await cl.focus();
+      return;
+    }
+  }
+  if (self.clients.openWindow) await self.clients.openWindow(url);
+}
+async function revisarNotifSegundoPlano() {
+  if (!self.registration || !self.registration.showNotification) return;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  const cfg = await leerNotifConfig();
+  if (!cfg || !cfg.on) return;
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (cfg.ultDia === hoy) return;
+  const v = await versoDelDia();
+  const icono = new URL("iconos/icon-192.png", ALCANCE).href;
+  let titulo = "BiEx · Tu lectura de hoy";
+  let cuerpo = v && v.texto ? "«" + v.texto.slice(0, 110) + "» — " + v.ref : "Continúa tu lectura diaria en Biblia Exacta.";
+  let rutaIr = (v && v.ruta) || "#/seguir";
+  const colosoMs = Date.UTC(2026, 10, 28, 18, 0, 0);
+  const faltaCol = colosoMs - Date.now();
+  if (cfg.coloso && faltaCol > 0 && faltaCol <= 36 * 36e5) {
+    titulo = "El Coloso de la Tradición se acerca";
+    cuerpo = "Prepárate en Escudriña: la incursión comunitaria abre muy pronto.";
+    rutaIr = "#/escudrina/mundo";
+  } else if (!cfg.lectura) {
+    return;
+  }
+  await self.registration.showNotification(titulo, {
+    body: cuerpo,
+    icon: icono,
+    badge: icono,
+    tag: "biex-dia-" + hoy,
+    renotify: false,
+    data: { ruta: rutaIr },
+  });
+  await (await caches.open(CACHE)).put(claveDe(NOTIF_DATOS), new Response(JSON.stringify(Object.assign({}, cfg, { ultDia: hoy })), { headers: { "content-type": "application/json" } }));
+}
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const data = (e.notification && e.notification.data && typeof e.notification.data === "object") ? e.notification.data : {};
+  e.waitUntil(abrirRutaCliente(data.ruta || "#/"));
+});
+
 // Actualización en segundo plano (Chrome/Edge la concede a la app instalada; como mucho, una vez al día)
 self.addEventListener("periodicsync", (e) => {
-  if (e.tag === "biex-actualizar") e.waitUntil(Promise.all([refrescar().catch(() => {}), actualizarWidget(WIDGET_TAG)]));
+  if (e.tag === "biex-actualizar") e.waitUntil(Promise.all([refrescar().catch(() => {}), actualizarWidget(WIDGET_TAG), revisarNotifSegundoPlano().catch(() => {})]));
 });
