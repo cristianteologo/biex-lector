@@ -753,7 +753,14 @@
   let pasoAdelante = () => {};
   let repintarAdelante = () => {};
   var MET = null; // var: la apariencia se aplica antes de esta línea (sin zona muerta)
-  const RP = { inm: null, clave: null, objetivo: null, guardar: true, t: 0, ts: 0, tg: 0, forzar: null, previa: null, actual: null, ancla: null, anclaSig: null, enSitio: false, anclaEnSitio: null };
+  const RP = { inm: null, clave: null, objetivo: null, guardar: true, t: 0, ts: 0, tg: 0, forzar: null, previa: null, actual: null, ancla: null, anclaSig: null, enSitio: false, anclaEnSitio: null, ultLinea: null, inicioCap: null, irInicio: null };
+  function irCapituloInicio(ruta) {
+    if (!ruta) return;
+    RP.inicioCap = "tope";
+    RP.ultLinea = null; RP.ultNum = null;
+    if (fijarInmersivo) fijarInmersivo(false);
+    location.hash = ruta;
+  }
   const nuevaClave = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   function claveActual() {
     const st = history.state;
@@ -824,6 +831,7 @@
     return true;
   }
   window.addEventListener("scroll", () => {
+    if (!RP.objetivo && performance.now() - (RP.fin || 0) > 350) { RP.ultLinea = null; RP.ultNum = null; }
     if (!RP.guardar || RP.tg) return;
     RP.tg = setTimeout(() => { RP.tg = 0; anotarPos(); }, 140);
   }, { passive: true });
@@ -838,9 +846,15 @@
   }, { passive: true });
   // salto inmediato (sin el desplazamiento suave de la página)
   const saltarA = (y) => { try { window.scrollTo({ top: y, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, y); } };
-  // Ancla de lectura: el verso que está arriba en pantalla (y qué parte de él); al cambiar de modo, de disposición,
-  // de filtro, de tamaño o de letra, la vista vuelve a ese mismo verso en lugar de saltar al encabezado
-  const bordeSup = () => { let y = 0; for (const el of document.querySelectorAll(".barra, .barra-hoja")) { const r = el.getBoundingClientRect(); if (r.height && getComputedStyle(el).position === "sticky") y = Math.max(y, r.bottom); } return y; };
+  // PR #18 · Borde inferior real de barras pegadas arriba (solo cuenta .barra-hoja cuando realmente está pegada, nunca cuando va en flujo bajo bandaLibro)
+  const bordeSup = () => {
+    let y = 0;
+    const hb = document.querySelector("header.barra");
+    if (hb) { const r = hb.getBoundingClientRect(); if (r.height && r.bottom > 0 && r.top <= 4) y = Math.max(y, r.bottom); }
+    const bh = document.querySelector(".barra-hoja");
+    if (bh && bh.classList.contains("bh-pegada")) { const r = bh.getBoundingClientRect(); if (r.height && r.bottom > y) y = r.bottom; }
+    return y;
+  };
   // misma anchura, tamaño, letra, interlineado y disposición: la posición exacta sirve; si algo cambió, se vuelve al verso
   const firmaVista = () => [window.innerWidth, ap.tam, ap.letra, ap.inter, prefs.disp, prefs.nivel || ""].join("|");
   // abs: medida desde el borde de la ventana (para volver atrás: con la lectura inmersiva restituida, la vista es idéntica
@@ -859,34 +873,91 @@
     }
     return null;
   }
-  // (BiEx, 14-nov-2026) Al cambiar entre «por versos» y «continuo», el número del verso de referencia queda EXACTAMENTE a la
-  // misma altura de la pantalla (al píxel), sobre una línea horizontal invisible: se toma el número más cercano a esa línea
-  // (40 % del área de lectura) y, en la otra vista, se desplaza la página hasta que sus cifras queden en la misma altura.
   const cifrasNum = (el) => {
     const n = el && (el.querySelector(":scope > .vn") || el.querySelector(":scope > sup")); if (!n) return null;
     const tn = [...n.childNodes].reverse().find((x) => x.nodeType === 3 && /\d/.test(x.nodeValue));
     if (!tn) return n.getBoundingClientRect();
     const rg = document.createRange(); rg.selectNodeContents(tn); const r = rg.getBoundingClientRect(); return r.height ? r : n.getBoundingClientRect();
   };
-  function capturarAnclaNum() {
-    if (window.scrollY < 40) return { tope: true };
-    const top = bordeSup() + 6, ref = top + (window.innerHeight - top) * 0.4;
+  // PR #18 · Renglones reales renderizados de un verso (agrupa fragmentos inline en su línea visual y toma el tope tipográfico principal)
+  function lineasVerso(el) {
+    if (!el) return [];
+    const nodo = el.querySelector(".vtx") || el.querySelector(".vt") || el;
+    const rg = document.createRange();
+    rg.selectNodeContents(nodo);
+    const rs = rg.getClientRects();
+    const out = [];
+    for (let i = 0; i < rs.length; i++) {
+      const r = rs[i];
+      if (r.width < 1.5 || r.height < 6) continue;
+      const mid = (r.top + r.bottom) * 0.5;
+      let g = null;
+      for (let j = out.length - 1; j >= 0; j--) {
+        if (Math.abs(out[j].mid - mid) < 9) { g = out[j]; break; }
+      }
+      if (!g) out.push({ top: r.top, bottom: r.bottom, maxH: r.height, mid });
+      else if (r.height > g.maxH) { g.top = r.top; g.bottom = r.bottom; g.maxH = r.height; g.mid = mid; }
+    }
+    out.sort((a, b) => a.top - b.top);
+    return out;
+  }
+  // PR #18 · Coincidencia exacta línea por línea entre Lectura ↔ Textual y Por versos ↔ Continuo (0 px de deriva en ida y vuelta)
+  function capturarAnclaLinea() {
+    if (window.scrollY <= 2) return { tope: true };
+    const top = bordeSup() + 4, ref = top + (window.innerHeight - top) * 0.38;
+    const fija = (a) => { RP.ultLinea = { v: a.v, k: a.k, total: a.total, lineTop: a.lineTop }; if (navigator.webdriver) window.__biexAnclaNum = a; return a; };
+    // Cuando el encabezado del capítulo sigue a la vista arriba, se clava el renglón inicial del primer verso visible (0 px de sobresalto arriba)
+    const enc = document.querySelector("#vista .encab");
+    if (enc && enc.getBoundingClientRect().bottom > top + 4) {
+      const p1 = document.querySelector("#vista [id^='v']");
+      const ls1 = p1 && /^v\d+$/.test(p1.id) ? lineasVerso(p1) : [];
+      if (ls1.length) return fija({ v: +p1.id.slice(1), k: 0, total: ls1.length, lineTop: ls1[0].top, abs: 1, frac: 0, off: 0 });
+    }
+    if (RP.ultLinea) {
+      const eu = document.getElementById("v" + RP.ultLinea.v), ls = eu ? lineasVerso(eu) : [];
+      if (ls.length) {
+        let bk = 0, bd = Infinity;
+        for (let i = 0; i < ls.length; i++) { const d = Math.abs(ls[i].top - RP.ultLinea.lineTop); if (d < bd) { bd = d; bk = i; } }
+        if (bd < 2) return fija({ v: RP.ultLinea.v, k: bk, total: ls.length, lineTop: RP.ultLinea.lineTop, abs: 1, frac: 0, off: 0 });
+      }
+    }
+    try {
+      const va = window.BiExJuego && BiExJuego.versoActivo && BiExJuego.versoActivo();
+      const ea = va && document.getElementById("v" + va), lsa = ea ? lineasVerso(ea) : [];
+      const visA = lsa.map((l, idx) => ({ l, idx })).filter((x) => x.l.bottom > top && x.l.top < window.innerHeight - 16);
+      if (visA.length) {
+        visA.sort((a, b) => Math.abs(a.l.top - ref) - Math.abs(b.l.top - ref));
+        return fija({ v: va, k: visA[0].idx, total: lsa.length, lineTop: visA[0].l.top, abs: 1, frac: 0, off: 0 });
+      }
+    } catch (e) { /* sin juego */ }
     let mejor = null, dm = Infinity;
-    const fija = (a) => { RP.ultNum = { v: a.v, num: a.num }; if (navigator.webdriver) window.__biexAnclaNum = a; return a; };
-    // ida y vuelta sin desplazarse: se conserva el MISMO verso de referencia (su número sigue donde quedó)
-    if (RP.ultNum) { const eu = document.getElementById("v" + RP.ultNum.v), ru = eu && cifrasNum(eu); if (ru && Math.abs(ru.top - RP.ultNum.num) < 1.5) return fija({ v: RP.ultNum.v, num: RP.ultNum.num, abs: 1, frac: 0, off: 0 }); }
-    // si se está leyendo con Escudriña, la referencia es el verso del hilo de luz (el que tiene la línea de lectura)
-    try { const va = window.BiExJuego && BiExJuego.versoActivo && BiExJuego.versoActivo(), ea = va && document.getElementById("v" + va), ra = ea && cifrasNum(ea);
-      if (ra && ra.top >= top && ra.bottom <= window.innerHeight) return fija({ v: va, num: ra.top, abs: 1, frac: 0, off: 0 }); } catch (e) { /* sin juego */ }
     for (const el of document.querySelectorAll("#vista [id^='v']")) {
       if (!/^v\d+$/.test(el.id)) continue;
-      const r0 = el.getBoundingClientRect(); if (r0.bottom < top || r0.top > window.innerHeight) continue;
-      const r = cifrasNum(el); if (!r || r.bottom < top || r.top > window.innerHeight) continue;
-      const d = Math.abs(r.top - ref); if (d < dm) { dm = d; mejor = { v: +el.id.slice(1), num: r.top, abs: 1, frac: 0, off: 0 }; }
+      const r0 = el.getBoundingClientRect();
+      if (r0.bottom <= top || r0.top >= window.innerHeight - 12) continue;
+      const ls = lineasVerso(el);
+      for (let i = 0; i < ls.length; i++) {
+        if (ls[i].bottom <= top || ls[i].top >= window.innerHeight - 12) continue;
+        const d = Math.abs(ls[i].top - ref);
+        if (d < dm) { dm = d; mejor = { v: +el.id.slice(1), k: i, total: ls.length, lineTop: ls[i].top, abs: 1, frac: 0, off: 0 }; }
+      }
     }
-    return mejor ? fija(mejor) : capturarAncla();
+    return mejor ? fija(mejor) : capturarAncla(true);
   }
+  function capturarAnclaNum() { return capturarAnclaLinea(); }
   function yDeAncla(a) {
+    if (a && a.lineTop != null) {
+      const el = document.getElementById("v" + a.v);
+      if (el) {
+        for (let n = el, acc = 0; n && acc < window.innerHeight * 1.6; n = n.previousElementSibling) { n.classList.add("cv-vis"); acc += n.getBoundingClientRect().height; }
+        if (el.nextElementSibling) el.nextElementSibling.classList.add("cv-vis");
+        const ls = lineasVerso(el);
+        if (ls.length) {
+          const k2 = a.total > 1 ? Math.min(ls.length - 1, Math.round((a.k / Math.max(1, a.total - 1)) * (ls.length - 1))) : 0;
+          return Math.max(0, window.scrollY + ls[k2].top - a.lineTop);
+        }
+      }
+    }
     if (a && a.num != null) {
       const el = document.getElementById("v" + a.v);
       if (el) {
@@ -974,10 +1045,14 @@
     RP.previa = RP.actual; RP.actual = location.hash || "#/";
     const conocida = claveActual();
     pasoAdelante(!conocida);
+    const ic = RP.inicioCap; RP.inicioCap = null;
+    if (ic) { RP.irInicio = ic; RP.anclaSig = null; RP.ancla = null; RP.enSitio = false; RP.objetivo = null; RP.inm = null; RP.guardar = true; clearTimeout(RP.t); return; }
     let y = null;
     const ancla = RP.anclaSig; RP.anclaSig = null; RP.ancla = null;
     const enSitio = RP.enSitio; RP.enSitio = false;
+    const citaDirecta = !conocida && /^#\/[1-3A-Z]{3}\/\d+\/[loa]\/\d+/.test(RP.actual);
     if (enSitio && ancla) { RP.anclaEnSitio = ancla; RP.objetivo = null; RP.inm = null; RP.guardar = true; clearTimeout(RP.t); return; }
+    if (citaDirecta) { RP.objetivo = null; RP.inm = null; RP.guardar = true; clearTimeout(RP.t); return; }
     if (ancla && !ancla.tope) { RP.ancla = ancla; y = 1; }
     else if (RP.forzar != null) { y = RP.forzar; RP.forzar = null; }
     else if (conocida && POS[RP.clave] != null) { const g = POS[RP.clave]; if (g && typeof g === "object") { y = g.y || 1; if (g.a) RP.ancla = g.a; RP.inm = !!g.i; } else { y = g; RP.inm = false; } }
@@ -2013,9 +2088,15 @@
     const yaEnRam = !!cache["datos/libros/" + c + ".json"] && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"]));
     const sinVeloCarga = enSitio || yaEnRam || (mismoCap && (modo !== "a" || (!!T && !!cache["datos/analisis/" + c + ".json"])));
     const anclaS = RP.anclaEnSitio; RP.anclaEnSitio = null;
+    const irIni = RP.irInicio; RP.irInicio = null;
+    if (v == null) esc.vFoco = null;
     esc.libro = c; esc.cap = cap; esc.modo = modo; esc.lorg = !!prefs.lorg;
-    if (mismo) { if (v == null) { if (!intentarRestaurar()) velar(false); } else enfocar(v, i); juegoCapitulo(c, cap, modo); return; }
-    if (!sinVeloCarga) { ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()])); hojaHecha = ""; if (v == null) alTope(); }
+    if (mismo) {
+      if (v == null) { if (irIni) { saltarA(0); velar(false); } else if (!intentarRestaurar()) { saltarA(0); velar(false); } }
+      else enfocar(v, i);
+      juegoCapitulo(c, cap, modo); return;
+    }
+    if (!sinVeloCarga) { ponerLibro(estructuraLibro(b, cap, modo, null, [cargando()])); hojaHecha = ""; if (v == null) { if (irIni) saltarA(0); else alTope(); } }
     let Lc, A = null;
     try {
       const pA = modo === "a" ? Promise.all([analisis(c), tablas()]) : null; // en paralelo con la lectura
@@ -2032,7 +2113,12 @@
     if (enSitio) { aplicarAnclaEnSitio(anclaS); fundirTexto(); }
     store.set("ultimo", { c, cap, m: modo, v: v || null });
     historial(c, cap, v || null, modo);
-    if (v == null) { if (!enSitio) { if (!intentarRestaurar()) velar(false); } else velar(false); } else enfocar(v, i);
+    if (v == null) {
+      if (!enSitio) {
+        if (irIni) { saltarA(0); velar(false); }
+        else if (!intentarRestaurar()) { saltarA(0); velar(false); }
+      } else velar(false);
+    } else enfocar(v, i);
     juegoCapitulo(c, cap, modo);
     // Mientras se lee (solo con buena conexión), precarga análisis, referencias, léxico y manuscritos del capítulo para abrir palabras y notas al instante sin saltos
     if (!redLenta()) {
@@ -2125,6 +2211,7 @@
     const viejo = $(".libro", vista());
     if (viejo && viejo.dataset.c === nuevo.dataset.c && viejo.children.length === 2 && nuevo.children.length === 2) viejo.replaceChild(nuevo.children[1], viejo.children[1]);
     else vista().replaceChildren(nuevo);
+    if (typeof observarPegada === "function") observarPegada();
     pausarFuera(vista());
   }
   function estructuraLibro(b, cap, modo, versos, cuerpo) {
@@ -2300,14 +2387,14 @@
     const activo = (m) => (m === "a" ? modo === "a" : modo !== "a" && (m === "o") === !!prefs.lorg);
     const btnModo = (m, t) => h("button", { type: "button", class: "m-" + m, "aria-label": t, "aria-pressed": activo(m) ? "true" : "false", title: MODO_T[m], onclick: () => {
       if (activo(m)) return;
-      if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { RP.anclaEnSitio = capturarAncla(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); } return; } }
+      if (m !== "a") { const cambia = !!prefs.lorg !== (m === "o"); prefs.lorg = m === "o"; guardarPrefs(); if (modo !== "a") { if (cambia) { RP.anclaEnSitio = capturarAnclaLinea(); esc.libro = null; vistaLibro(b.c, cap, "l", null, null); } return; } }
       RP.anclaSig = anclaInicioVerso(); RP.enSitio = true; location.hash = ir(m);
     } }, svg(m === "a" ? ICO.lupa : m === "o" ? ICO.libro : ICO.literal), h("span", { class: "lbl", text: t }));
     const prev = cap > 1 ? "#/" + b.c + "/" + (cap - 1) + (modo === "a" ? "/a" : "") : null;
     const next = cap < b.caps.length ? "#/" + b.c + "/" + (cap + 1) + (modo === "a" ? "/a" : "") : null;
     const disp = modo !== "a" ? h("div", { class: "seg seg-ico", role: "group", "aria-label": "Disposición del texto" },
       [["versos", "Por versos", ICO.lista], ["continuo", "Continuo", ICO.parrafo]].map(([k, t, ico]) => h("button", { type: "button", "aria-pressed": prefs.disp === k ? "true" : "false", "aria-label": t, title: t, onclick: () => {
-        if (prefs.disp === k) return; RP.anclaEnSitio = capturarAnclaNum(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
+        if (prefs.disp === k) return; RP.anclaEnSitio = capturarAnclaLinea(); prefs.disp = k; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null);
       } }, svg(ico), h("span", { class: "txt", text: t })))) : null;
     const filtro = modo !== "a" && versos ? h("label", { class: "filtro-niv" + (prefs.nivel ? " activo" : ""), title: "Mostrar los versos según su nivel de avance" }, svg(ICO.filtro),
       h("select", { "aria-label": "Mostrar los versos según su nivel de avance", onchange: (e) => { const a = capturarAncla(); if (a) a.barra = true; RP.anclaEnSitio = a || { barra: true, v: null }; prefs.nivel = e.target.value; guardarPrefs(); esc.libro = null; vistaLibro(b.c, cap, modo, null, null); } },
@@ -2324,16 +2411,16 @@
     return h("div", { class: "barra-hoja" },
       h("div", { class: "seg seg-modo", role: "group", "aria-label": "Modo" }, btnModo("a", "Análisis"), btnModo("o", "Lectura"), btnModo("l", "Textual")),
       h("div", { class: "cap-grupo movil" },
-        h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
+        h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && irCapituloInicio(prev) }, svg(ICO.izq)),
         h("button", { class: "btn-cap", type: "button", "aria-label": "Capítulo " + cap + " de " + b.caps.length + ". Elegir capítulo y verso", onclick: () => abrirModal(vistaNavegador(b, cap, versos)) }, svg(ICO.rejilla), h("span", { class: "cap-n" }, "Cap. " + cap, h("span", { class: "cap-de", text: "/" + b.caps.length }))), // (BiEx, 14-nov-2026) cuántos capítulos tiene el libro
-        h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der))),
+        h("button", { class: "btn-icono", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && irCapituloInicio(next) }, svg(ICO.der))),
       h("span", { class: "bh-salto", "aria-hidden": "true" }),
       disp, filtro, contemplar, opciones,
       // franja fina al pie de la barra: el libro y el capítulo en el centro (en escritorio, con las flechas del capítulo a los lados)
       h("div", { class: "bh-franja" },
-        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && (location.hash = prev) }, svg(ICO.izq)),
+        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo anterior", title: "Capítulo anterior", disabled: !prev, onclick: () => prev && irCapituloInicio(prev) }, svg(ICO.izq)),
         titulo,
-        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && (location.hash = next) }, svg(ICO.der)),
+        h("button", { class: "btn-icono bh-fl", type: "button", "aria-label": "Capítulo siguiente", title: "Capítulo siguiente", disabled: !next, onclick: () => next && irCapituloInicio(next) }, svg(ICO.der)),
         // (BiEx, 22-nov-2026, 15:59) la perícopa del verso que se lee, en la traducción de Jünemann (Lectura y Textual)
         modo !== "a" ? h("button", { class: "btn-icono bh-jnm", type: "button", "aria-label": "Ver esta perícopa en la traducción de Jünemann", title: "La perícopa en Jünemann", onclick: (e) => { e.stopPropagation(); verPericopaJnm(b, cap, versos); } }, svg(ICO.rollo)) : null));
   }
@@ -2423,15 +2510,21 @@
   function cifrasCap(C, x) {
     if (C.pal == null) return h("div", { class: "s", text: pct(C.pct) + " de avance" });
     const info = x && x.info ? botonInfo(x.info) : null;
-    return h("div", { class: "encab-cifras" },
+    return h("div", { class: "encab-cifras" + (x && x.ro != null ? " dos" : "") },
       medidor("cc-rev", "Revisión", C.pct, "Avance de la revisión de la traducción de este capítulo", false, info),
       x && x.ro != null ? medidor("cc-ro", "Reordenamiento", x.ro, "Avance estimado del reordenamiento de la Lectura en este capítulo", true) : null,
       info ? info._pop : null);
   }
+  const clickCapInicio = (r) => r ? (e) => { if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.button === 0) { e.preventDefault(); irCapituloInicio(r); } } : null;
   function encabezado(b, cap, modo, x) {
     const C = b.caps[cap - 1];
     const partes = String(C.h || "").split(" [");
-    const flecha = (c, ico, et) => h("a", { class: "btn-icono", href: c ? rutaCap(b, c, modo) : null, "aria-label": et, title: et, "aria-disabled": c ? null : "true" }, svg(ico));
+    const flecha = (c, ico, et) => {
+      const r = c ? rutaCap(b, c, modo) : null;
+      return r
+        ? h("a", { class: "btn-icono", href: r, onclick: clickCapInicio(r), "aria-label": et, title: et }, svg(ico))
+        : h("button", { class: "btn-icono", type: "button", disabled: true, "aria-label": et, title: et }, svg(ico));
+    };
     return h("div", { class: "encab" + (modo !== "a" && prefs.lorg ? " encab-org" : "") },
       flecha(cap > 1 ? cap - 1 : 0, ICO.izq, "Capítulo anterior"),
       h("div", { class: "encab-c" },
@@ -2442,15 +2535,17 @@
         h("div", { class: "s", text: "Capítulo " + cap + " de " + b.caps.length }), cifrasCap(C, x)),
       flecha(cap < b.caps.length ? cap + 1 : 0, ICO.der, "Capítulo siguiente"));
   }
-  // Al terminar el capítulo: anterior y siguiente (o el libro siguiente)
+  // Al terminar el capítulo: anterior y siguiente (o el libro siguiente) — siempre aterrizan al comienzo del capítulo elegido
   function finCap(b, cap, modo) {
     const LO = librosEnOrden(), i = LO.indexOf(b);
     const sigLibro = cap >= b.caps.length && i < LO.length - 1 ? LO[i + 1] : null;
     const antLibro = cap <= 1 && i > 0 ? LO[i - 1] : null;
-    const ant = cap > 1 ? h("a", { class: "btn", href: rutaCap(b, cap - 1, modo) }, svg(ICO.izq), h("span", { text: "Capítulo " + (cap - 1) }))
-      : antLibro ? h("a", { class: "btn", href: rutaCap(antLibro, antLibro.caps.length, modo) }, svg(ICO.izq), h("span", {}, etLibro(antLibro))) : null;
-    const sig = cap < b.caps.length ? h("a", { class: "btn oro sig", href: rutaCap(b, cap + 1, modo) }, h("span", { text: "Capítulo " + (cap + 1) }), svg(ICO.der))
-      : sigLibro ? h("a", { class: "btn oro sig", href: rutaCap(sigLibro, 1, modo) }, h("span", {}, etLibro(sigLibro)), svg(ICO.der)) : null;
+    const rAnt = cap > 1 ? rutaCap(b, cap - 1, modo) : antLibro ? rutaCap(antLibro, antLibro.caps.length, modo) : null;
+    const rSig = cap < b.caps.length ? rutaCap(b, cap + 1, modo) : sigLibro ? rutaCap(sigLibro, 1, modo) : null;
+    const ant = cap > 1 ? h("a", { class: "btn", href: rAnt, onclick: clickCapInicio(rAnt) }, svg(ICO.izq), h("span", { text: "Capítulo " + (cap - 1) }))
+      : antLibro ? h("a", { class: "btn", href: rAnt, onclick: clickCapInicio(rAnt) }, svg(ICO.izq), h("span", {}, etLibro(antLibro))) : null;
+    const sig = cap < b.caps.length ? h("a", { class: "btn oro sig", href: rSig, onclick: clickCapInicio(rSig) }, h("span", { text: "Capítulo " + (cap + 1) }), svg(ICO.der))
+      : sigLibro ? h("a", { class: "btn oro sig", href: rSig, onclick: clickCapInicio(rSig) }, h("span", {}, etLibro(sigLibro)), svg(ICO.der)) : null;
     return [finPlan(b, cap), finLeido(b, cap), bloquePulsoCapitulo(b, cap), h("nav", { class: "fin-cap", "aria-label": "Seguir leyendo" }, ant, sig)];
   }
   // Versos leídos en la página: se marcan o desmarcan sin volver a dibujarla
@@ -2625,12 +2720,37 @@
     ponerHash("#/" + b.c + "/" + cap + "/l/" + v);
     if (conManuscritos) empujar(vistaManuscritos(ctx));
   }
-  function marcarVerso(v) {
+  let limpiarVnFoco = null;
+  function marcarVerso(v, focoCita) {
+    if (limpiarVnFoco) { limpiarVnFoco(); limpiarVnFoco = null; }
     for (const x of $$(".marcado")) x.classList.remove("marcado");
+    for (const x of $$(".vn-foco")) x.classList.remove("vn-foco");
     for (const x of $$(".tesela[aria-current]")) x.removeAttribute("aria-current");
-    const el = document.getElementById("v" + v); if (el) el.classList.add("marcado");
+    const el = document.getElementById("v" + v);
+    if (el) {
+      el.classList.add("marcado");
+      if (focoCita) el.classList.add("vn-foco");
+    }
     for (const t of $$('.tesela[data-v="' + v + '"]')) t.setAttribute("aria-current", "true");
     esc.vMarcado = v;
+    if (focoCita) {
+      esc.vFoco = { c: esc.libro, cap: esc.cap, v: +v, t: Date.now() };
+      try { if (window.BiExJuego && BiExJuego.fijarVersoFoco) BiExJuego.fijarVersoFoco(esc.libro, esc.cap, +v); } catch (e) { /* sin juego */ }
+      let yRef = window.scrollY;
+      const t0 = performance.now();
+      const alDesp = () => {
+        if (performance.now() - t0 < 520) { yRef = window.scrollY; return; }
+        if (Math.abs(window.scrollY - yRef) > 32) soltar();
+      };
+      const soltar = () => {
+        window.removeEventListener("scroll", alDesp);
+        limpiarVnFoco = null;
+        if (esc.vFoco && esc.vFoco.v === +v) esc.vFoco = null;
+        for (const x of $$(".vn-foco")) x.classList.remove("vn-foco");
+      };
+      limpiarVnFoco = soltar;
+      window.addEventListener("scroll", alDesp, { passive: true });
+    }
     const u = store.get("ultimo", null);
     if (u && u.c === esc.libro && u.cap === esc.cap) { u.v = v; store.set("ultimo", u); }
   }
@@ -2642,16 +2762,29 @@
     ["libre1", "Personal 1"], ["libre2", "Personal 2"], ["libre3", "Personal 3"], ["libre4", "Personal 4"]];
   const HEX_OK = (s) => typeof s === "string" && /^#[0-9a-f]{6}$/i.test(s.trim());
   const MK = {
-    todo() { const m = store.get("marcas", {}); return m && typeof m === "object" && !Array.isArray(m) ? m : {}; },
+    _raw: null, _mem: null,
+    todo() {
+      let raw = "";
+      try { raw = localStorage.getItem("biex:marcas") || ""; } catch (e) { raw = ""; }
+      if (MK._raw !== raw || !MK._mem) {
+        MK._raw = raw;
+        let m = null;
+        try { m = raw ? JSON.parse(raw) : {}; } catch (e) { m = {}; }
+        MK._mem = m && typeof m === "object" && !Array.isArray(m) ? m : {};
+      }
+      return MK._mem;
+    },
     clave: (c, cap, v) => c + "-" + cap + "-" + v,
     get: (c, cap, v) => MK.todo()[MK.clave(c, cap, v)] || null,
     poner(c, cap, v, cambios) {
-      const m = MK.todo(), k = MK.clave(c, cap, v);
+      const m = Object.assign({}, MK.todo()), k = MK.clave(c, cap, v);
       const x = Object.assign({ c, cap, v }, m[k] || {}, cambios, { f: Date.now() });
       if (!x.col) delete x.col;
       if (!String(x.nota || "").trim()) delete x.nota;
       if (!x.col && !x.nota) delete m[k]; else m[k] = x;
+      MK._mem = m;
       store.set("marcas", m);
+      try { MK._raw = localStorage.getItem("biex:marcas") || ""; } catch (e) { MK._raw = null; }
       MK.pintar(c, cap, v); NUBE.cambio();
     },
     temas() { const t = store.get("marcasTemas", null) || {}; return TEMAS_BASE.map(([k, n]) => [k, typeof t[k] === "string" && t[k].trim() ? t[k].trim().slice(0, 40) : n]); },
@@ -3329,14 +3462,16 @@
     const dSig = esc.modo === "a" && i != null && i !== "m" ? destelloSig : null;
     const iraDestello = !!(dSig && dSig.c === esc.libro && dSig.cap === esc.cap && dSig.v === v && String(dSig.i) === String(i));
     if (el) {
-      marcarVerso(v);
+      marcarVerso(v, true);
       if (iraDestello) {
         altoBarraHoja(); el.classList.add("cv-vis");
       } else if (!intentarRestaurar()) {
         // al comienzo de un pasaje añadido, se lleva a la vista también su aviso
         const An = anadido(esc.libro, esc.cap, v), prev = An && An.ini ? (el.classList.contains("vs") ? el.closest(".peri") || el : el).previousElementSibling : null;
         const obj = prev && prev.classList.contains("aviso-anadido") ? prev : el;
-        altoBarraHoja(); el.classList.add("cv-vis"); obj.scrollIntoView({ block: "start", behavior: "auto" }); asentar(obj);
+        altoBarraHoja(); el.classList.add("cv-vis");
+        for (let x = el.previousElementSibling, k = 0; x && k < 6; x = x.previousElementSibling, k++) x.classList.add("cv-vis");
+        asentar(obj, el);
       }
     }
     if (esc.modo === "a" && i != null && i !== "m") {
@@ -3347,17 +3482,37 @@
     }
     if (esc.modo !== "a" && i === "m") { const b = libroDe(esc.libro); if (b) abrirVerso(b, esc.cap, v, true); }
   }
-  // Con content-visibility, la altura de lo que está antes del verso cambia al dibujarse: se corrige el salto cuadro a cuadro
-  // hasta que el verso queda quieto en su sitio (se detiene si la persona toca o desplaza)
-  function asentar(el) {
+  // PR #18 · Asienta el verso citado justo en la franja activa de lectura (~39,5 % de pantalla) para que su número quede iluminado con precisión
+  function asentar(obj, elVerso) {
+    const refEl = elVerso || obj;
     let n = 0, quieto = 0, parar = false;
     const alto = () => { parar = true; };
     window.addEventListener("wheel", alto, { once: true, passive: true });
     window.addEventListener("touchstart", alto, { once: true, passive: true });
+    const medirDelta = () => {
+      const sup = Math.max(bordeSup() + 18, parseFloat(getComputedStyle(obj).scrollMarginTop) || 110);
+      const enAnalisis = esc.modo === "a";
+      if (obj !== refEl || enAnalisis) {
+        const meta = Math.max(sup, Math.round(window.innerHeight * 0.26));
+        return obj.getBoundingClientRect().top - meta;
+      }
+      const rn = cifrasNum(refEl) || refEl.getBoundingClientRect();
+      const meta = Math.max(sup, Math.round(window.innerHeight * 0.395));
+      return rn.top - meta;
+    };
+    const aplicarPaso = () => {
+      if (!obj.isConnected) return false;
+      const d = medirDelta();
+      const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const dest = Math.max(0, Math.min(max, Math.round(window.scrollY + d)));
+      const mov = Math.abs(dest - window.scrollY);
+      if (mov > 1) { RP.fin = performance.now(); saltarA(dest); return true; }
+      return false;
+    };
+    aplicarPaso();
     const paso = () => {
-      if (parar || !el.isConnected || ++n > 40 || quieto > 3) { window.removeEventListener("wheel", alto); window.removeEventListener("touchstart", alto); return; }
-      const d = el.getBoundingClientRect().top - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
-      if (Math.abs(d) > 1.5) { saltarA(window.scrollY + d); quieto = 0; } else quieto++;
+      if (parar || !obj.isConnected || ++n > 40 || quieto > 4) { window.removeEventListener("wheel", alto); window.removeEventListener("touchstart", alto); return; }
+      if (aplicarPaso()) quieto = 0; else quieto++;
       requestAnimationFrame(paso);
     };
     requestAnimationFrame(paso);
@@ -4386,7 +4541,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "1577467a95", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "080cf89abc", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4449,6 +4604,8 @@
         fechaHoraJerusalen,
         notificar: (tag, tit, cue, ruta, cat) => BIEX_NOTIF.enviar(tag, tit, cue, ruta, cat),
         ubicarFaro: () => FARO.ubicar(),
+        versoFoco: () => esc.vFoco || null,
+        enPieActual: () => !!enPieGlobal,
         guiaSeccion: (sec) => guiaSeccion(sec),
         nombreLibro: (c) => { const b = D && libroDe(c); return b ? nombreLibro(b) : c; },
         ultimo: () => { const u = store.get("ultimo", null), b = u && D && libroDe(u.c); return b ? { h: "#/" + b.c + "/" + u.cap + (u.v ? "/l/" + u.v : ""), t: nombreLibro(b) + " " + u.cap + (u.v ? ":" + u.v : "") } : null; },
@@ -6395,7 +6552,7 @@
     const destino = capCercano(dx < 0 ? 1 : -1);
     if (!destino) return;
     document.documentElement.setAttribute("data-paso", dx < 0 ? "sig" : "ant");
-    location.hash = destino;
+    irCapituloInicio(destino);
     setTimeout(() => document.documentElement.removeAttribute("data-paso"), 700);
   }, { passive: true });
   document.addEventListener("touchcancel", soltarGestos, { passive: true });
@@ -7239,14 +7396,19 @@
     const largo = () => { const t = performance.now(); if (largoV === null || t - largoT > 400) { largoV = document.documentElement.scrollHeight > window.innerHeight * 2.6; largoT = t; } return largoV; };
     const ocultarQuieto = () => { if (!mkPan.hidden) return; if (!caja.matches(":hover") && !caja.contains(document.activeElement)) { caja.classList.remove("vis"); alternarSecs(false); } };
     function mostrar() {
-      if ((!largo() && !leyendoCap()) || modal.open) { caja.classList.remove("vis"); alternarSecs(false); alternarMk(false); return; }
-      const hay = secciones().length >= 2; secBtn.hidden = !hay; if (!hay) alternarSecs(false);
-      actualizarBtnMk();
-      caja.classList.add("vis");
+      if ((!largo() && !leyendoCap()) || modal.open) {
+        if (caja.classList.contains("vis")) { caja.classList.remove("vis"); alternarSecs(false); alternarMk(false); }
+        return;
+      }
+      if (!caja.classList.contains("vis")) {
+        const hay = secciones().length >= 2; secBtn.hidden = !hay; if (!hay) alternarSecs(false);
+        actualizarBtnMk();
+        caja.classList.add("vis");
+      }
       clearTimeout(reloj);
       if (!mkPan.hidden) return;
-      // AL5 (BiEx, 22-nov-2026, 18:53): al final de la página (donde están los créditos) se apartan antes: 1,2 s en vez de 2,6 s
-      reloj = setTimeout(ocultarQuieto, !secLista.hidden ? 6000 : caja.classList.contains("en-fin") ? 1200 : 2600);
+      // AL5 (BiEx, 22-nov-2026, 18:53): al final de la página (donde están los créditos) se apartan antes
+      reloj = setTimeout(ocultarQuieto, !secLista.hidden ? 6000 : caja.classList.contains("en-fin") ? 800 : 2600);
     }
     const avance = () => { const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); return Math.min(1, Math.max(0, window.scrollY / max)); };
     function girar() { pendiente = false; const g = avance() * 360; m1.style.transform = "rotate(" + Math.min(180, g).toFixed(1) + "deg)"; m2.style.transform = "rotate(" + Math.max(0, g - 180).toFixed(1) + "deg)"; }
@@ -7255,9 +7417,9 @@
     const contar = () => { if (rutaPal !== location.hash || !palabras) { rutaPal = location.hash; const v = vista(); palabras = v ? (v.textContent.match(/[\p{L}\p{N}]+/gu) || []).length : 0; } return palabras; };
     function medir() {
       const p = avance(); caja.classList.toggle("en-ini", p < 0.02); caja.classList.toggle("en-fin", p > 0.98); if (!ATADO) girar();
+      const hay = secciones().length >= 2; secBtn.hidden = !hay; if (!hay) alternarSecs(false);
       actualizarBtnMk();
-      // AL5: si el desplazamiento terminó al final de la página, el plazo corto vale desde ya (el aviso de este cálculo llega 0,18 s tarde)
-      if (p > 0.94 && caja.classList.contains("vis") && secLista.hidden && mkPan.hidden) { clearTimeout(reloj); reloj = setTimeout(ocultarQuieto, 900); }
+      if (p > 0.94 && caja.classList.contains("vis") && secLista.hidden && mkPan.hidden) { clearTimeout(reloj); reloj = setTimeout(ocultarQuieto, 700); }
       const n = p > 0.88 ? 0 : Math.round((contar() * (1 - p)) / 180), txt = n >= 1 ? "≈ " + n + " min" : "";
       if (mins.textContent !== txt) mins.textContent = txt;
       caja.classList.toggle("con-min", !!txt);
@@ -7275,7 +7437,7 @@
       if (e && e.relatedTarget && caja.contains(e.relatedTarget)) return;
       if (!caja.classList.contains("vis") || !mkPan.hidden) return;
       clearTimeout(reloj);
-      reloj = setTimeout(ocultarQuieto, !secLista.hidden ? 6000 : caja.classList.contains("en-fin") ? 1200 : 2600);
+      reloj = setTimeout(ocultarQuieto, !secLista.hidden ? 6000 : caja.classList.contains("en-fin") ? 800 : 2600);
     };
     caja.addEventListener("mouseleave", alSalirCaja);
     caja.addEventListener("focusout", alSalirCaja);
@@ -7327,11 +7489,6 @@
     const el = document.documentElement;
     try { if (document.fullscreenEnabled && !document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {}); } catch (e) { /* sin pantalla completa */ }
   }
-  // AC18 y AC13 (BiEx, 15-nov-2026): ya no se pide pantalla completa al primer toque. En la app instalada no tiene sentido
-  // (ya ocupa toda la pantalla), el navegador mostraba su cuadro gris «Para salir de la pantalla completa…» y, al volver
-  // tras un rato, ese primer toque cambiaba el tamaño de la vista en pleno gesto: parpadeo y un toque que no obedecía.
-  // La lectura inmersiva (barras que se retiran al bajar) da el mismo espacio sin nada de eso. pedirPantalla queda por si
-  // algún día se ofrece como opción explícita en «Aa».
   void pedirPantalla;
   let yInm = window.scrollY, tInm = 0, tDesp = 0;
   // (con la lupa puesta las barras no se retiran: la del capítulo va en el flujo y su cambio de altura movería la página)
@@ -7359,12 +7516,76 @@
       e.preventDefault(); ponerContemplar(!document.documentElement.classList.contains("contemplar"));
     }
   });
-  // ¿la barra del capítulo está pegada arriba? (el centinela, justo antes de ella, ya pasó por debajo de su tope)
+  // PR #18 · Observador pasivo para .bh-pegada (cero getBoundingClientRect / getComputedStyle por evento de scroll)
+  let pegadaIO = null;
   function marcarPegada() {
     const bh = $(".barra-hoja"), c = $(".bh-centinela"); if (!bh || !c) return;
     const peg = c.getBoundingClientRect().top <= (parseFloat(getComputedStyle(bh).top) || 0) + 0.5;
     if (peg !== bh.classList.contains("bh-pegada")) bh.classList.toggle("bh-pegada", peg);
   }
+  function observarPegada() {
+    if (pegadaIO) { pegadaIO.disconnect(); pegadaIO = null; }
+    const bh = $(".barra-hoja"), c = $(".bh-centinela");
+    if (!bh || !c) return;
+    if (!("IntersectionObserver" in window)) { marcarPegada(); return; }
+    const tope = Math.max(0, Math.round(parseFloat(getComputedStyle(bh).top) || 56));
+    pegadaIO = new IntersectionObserver((es) => {
+      const e = es[es.length - 1];
+      if (!e || !bh.isConnected) return;
+      const peg = !e.isIntersecting && e.boundingClientRect.top <= tope + 2;
+      if (peg !== bh.classList.contains("bh-pegada")) bh.classList.toggle("bh-pegada", peg);
+    }, { rootMargin: (-tope - 1) + "px 0px 0px 0px", threshold: 0 });
+    pegadaIO.observe(c);
+    marcarPegada();
+  }
+  window.addEventListener("resize", () => { if ($(".barra-hoja")) observarPegada(); }, { passive: true });
+  // PR #18 · Ocultación inmediata de iconos flotantes inferiores al llegar al final de cualquier página (footer.pie-a)
+  var enPieGlobal = false;
+  let pieGlobalIO = null, finCapIO = null, hitPieGlobal = false, hitFinCap = false;
+  function actualizarEnPie() {
+    const maxS = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const on = (hitPieGlobal && (window.scrollY > 24 || maxS < 140)) || (hitFinCap && window.scrollY > 40);
+    if (enPieGlobal === on) {
+      for (const s of [".faro-btn", ".adelante", ".saltos-rap"]) { const e = $(s); if (e) e.classList.toggle("en-pie", on); }
+      return;
+    }
+    enPieGlobal = on;
+    for (const s of [".faro-btn", ".adelante", ".saltos-rap"]) { const e = $(s); if (e) e.classList.toggle("en-pie", on); }
+    try { if (window.BiExJuego && BiExJuego.enPie) BiExJuego.enPie(on); } catch (e) { /* sin juego */ }
+  }
+  function observarFinVista() {
+    if (!("IntersectionObserver" in window)) return;
+    if (!pieGlobalIO) {
+      const pie = document.querySelector("footer.pie-a");
+      if (pie) {
+        pieGlobalIO = new IntersectionObserver((es) => {
+          for (const x of es) hitPieGlobal = x.isIntersecting;
+          actualizarEnPie();
+        }, { rootMargin: "0px 0px 180px 0px", threshold: 0 });
+        pieGlobalIO.observe(pie);
+      }
+    }
+    if (finCapIO) { finCapIO.disconnect(); finCapIO = null; }
+    hitFinCap = false;
+    const objetivos = [...document.querySelectorAll("#vista .fin-leido, #vista nav.fin-cap")];
+    if (objetivos.length) {
+      const visSet = new Set();
+      finCapIO = new IntersectionObserver((es) => {
+        for (const x of es) { if (x.isIntersecting) visSet.add(x.target); else visSet.delete(x.target); }
+        hitFinCap = visSet.size > 0;
+        actualizarEnPie();
+      }, { rootMargin: "0px 0px -56px 0px", threshold: 0 });
+      for (const el of objetivos) finCapIO.observe(el);
+    }
+    actualizarEnPie();
+  }
+  setTimeout(observarFinVista, 0);
+  if (window.MutationObserver) {
+    const vEl = document.getElementById("vista");
+    if (vEl) new MutationObserver(() => requestAnimationFrame(observarFinVista)).observe(vEl, { childList: true });
+  }
+  window.addEventListener("hashchange", () => requestAnimationFrame(observarFinVista));
+
   fijarInmersivo = inmersivo;
   // al leer, la barra del capítulo deja a la vista solo la fila del capítulo y sus flechas (sube lo demás bajo el borde)
   function medirBarraHoja() {
@@ -7375,7 +7596,6 @@
   }
   window.addEventListener("scroll", () => {
     const y = window.scrollY, dy = y - yInm; yInm = y;
-    marcarPegada();
     // los saltos del propio lector (restaurar una posición, abrir un verso) no cuentan como lectura
     if (RP.objetivo != null || modal.open || document.documentElement.classList.contains("contemplar") || performance.now() - (RP.fin || 0) < 900) { clearTimeout(tInm); return; }
     if (y < 160 || menuAbierto) { clearTimeout(tInm); inmersivo(false); return; }
@@ -8298,10 +8518,85 @@
     return { nodos, aristas };
   }
 
+  // PR #18 · Motor de inmersión 2.5D / 3D sensible al giroscopio y puntero con 0 % de gasto en reposo o desplazamiento
+  const INMERSION_25D = (() => {
+    let ax = 0, ay = 0, mx = 0, my = 0, g0 = null, b0 = null, raf25 = 0, tieneGiro = false, ultPtr = 0, permisoPedido = false;
+    const subs = new Set();
+    const sinMov25 = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const escenaCss = () => {
+      const hh = location.hash || "#/";
+      return hh === "#/" || hh === "" || /^#\/(mapa|escudrina\/coloso)(\/|\?|$)/.test(hh);
+    };
+    const bloqueado = () => document.hidden || sinMov25() || document.documentElement.classList.contains("desplazando") || document.documentElement.classList.contains("con-modal");
+    const escribirCss = (x, y) => {
+      const st = document.documentElement.style;
+      st.setProperty("--px25", x.toFixed(3));
+      st.setProperty("--py25", y.toFixed(3));
+    };
+    const paso = () => {
+      raf25 = 0;
+      if (bloqueado()) return;
+      ax += (mx - ax) * 0.14;
+      ay += (my - ay) * 0.14;
+      if (escenaCss()) escribirCss(ax, ay);
+      subs.forEach((fn) => { try { fn(ax, ay); } catch (e) {} });
+      if (Math.hypot(mx - ax, my - ay) > 0.0035 && (subs.size > 0 || escenaCss())) {
+        raf25 = requestAnimationFrame(paso);
+      }
+    };
+    const despertar25 = () => {
+      if (!raf25 && !bloqueado() && (subs.size > 0 || escenaCss())) raf25 = requestAnimationFrame(paso);
+    };
+    if ("DeviceOrientationEvent" in window) {
+      window.addEventListener("deviceorientation", (e) => {
+        if (e.gamma == null || e.beta == null || bloqueado()) return;
+        tieneGiro = true;
+        const g = Math.max(-65, Math.min(65, +e.gamma || 0));
+        const b = Math.max(-45, Math.min(115, +e.beta || 0));
+        if (g0 === null) { g0 = g; b0 = b; }
+        else { g0 += (g - g0) * 0.016; b0 += (b - b0) * 0.016; }
+        mx = Math.max(-1, Math.min(1, (g - g0) / 16));
+        my = Math.max(-1, Math.min(1, (b - b0) / 16));
+        despertar25();
+      }, { passive: true });
+    }
+    window.addEventListener("pointermove", (e) => {
+      if (tieneGiro || e.pointerType === "touch" || bloqueado()) return;
+      const ahora = performance.now();
+      if (ahora - ultPtr < 44) return;
+      ultPtr = ahora;
+      if (!subs.size && !escenaCss()) return;
+      mx = Math.max(-0.75, Math.min(0.75, ((e.clientX / Math.max(1, window.innerWidth)) - 0.5) * 1.4));
+      my = Math.max(-0.75, Math.min(0.75, ((e.clientY / Math.max(1, window.innerHeight)) - 0.5) * 1.4));
+      despertar25();
+    }, { passive: true });
+    window.addEventListener("hashchange", () => {
+      if (!escenaCss()) escribirCss(0, 0);
+      else escribirCss(ax, ay);
+    });
+    const api = {
+      leer: () => ({ x: ax, y: ay, giro: tieneGiro }),
+      fijar: (nx, ny) => { mx = Math.max(-1, Math.min(1, +nx || 0)); my = Math.max(-1, Math.min(1, +ny || 0)); ax = mx; ay = my; if (escenaCss()) escribirCss(ax, ay); subs.forEach((fn) => { try { fn(ax, ay); } catch (e) {} }); },
+      refrescar: () => { if (!escenaCss()) escribirCss(0, 0); else escribirCss(ax, ay); },
+      pedirPermiso: () => {
+        if (permisoPedido) return;
+        permisoPedido = true;
+        try {
+          if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+            DeviceOrientationEvent.requestPermission().catch(() => {});
+          }
+        } catch (e) {}
+      },
+      suscribir: (fn) => { subs.add(fn); return () => subs.delete(fn); },
+    };
+    window.BiEx25D = api;
+    return api;
+  })();
+
   function motorConstelacion(cont, grafo, opts) {
     const o = opts || {};
     const mini = !!o.mini;
-    const canvas = h("canvas", { class: "cn-lienzo", "data-sin-pellizco": "1", "aria-label": "Mapa interactivo de conexiones" });
+    const canvas = h("canvas", { class: "cn-lienzo", "data-sin-pellizco": "1", "aria-label": "Mapa interactivo tridimensional de conexiones" });
     const estBadge = h("span", { class: "cn-est" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Calculando constelación…" }));
     const bMas = h("button", { class: "cn-zbtn", type: "button", title: "Acercar", "aria-label": "Acercar", text: "+" });
     const bMen = h("button", { class: "cn-zbtn", type: "button", title: "Alejar", "aria-label": "Alejar", text: "−" });
@@ -8322,9 +8617,12 @@
       const baseR = n.pivote && i === 0 && n.anillo !== 0 ? 0
         : (n.anillo === 1 ? (mini ? 104 : 184) + ((i * 19) % 44) : (mini ? 24 : 36) + Math.sqrt(i + 1) * (mini ? 20 : 32));
       const ex = mini ? 1.08 : 1.24;
-      // Frecuencias inconmensurables por nodo para respiración sutil e impredecible sin sincronía robótica
+      // Coordenada de profundidad 3D determinista: pivotes al frente (+z), capa interior media y anillo exterior en cosmos profundo (-z)
+      const z0 = n.pivote
+        ? 0.56 + ((i * 5) % 7) * 0.052
+        : (n.anillo === 1 ? -0.36 + Math.cos(i * 2.37) * 0.42 : 0.08 + Math.sin(i * 1.91) * 0.36);
       return Object.assign({}, n, {
-        x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.88, vx: 0, vy: 0, deg: 0,
+        x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.88, z: z0, vx: 0, vy: 0, deg: 0,
         phX: i * 1.6180339, phY: i * 2.2360679 + 0.7, phH: i * 3.1415926,
         spX: 0.42 + ((i * 7) % 11) * 0.031, spX2: 0.27 + ((i * 13) % 9) * 0.029,
         spY: 0.39 + ((i * 5) % 13) * 0.027, spY2: 0.23 + ((i * 11) % 7) * 0.033,
@@ -8341,20 +8639,22 @@
       a.deg++; b.deg++;
       adj.get(a.id).add(b.id); adj.get(b.id).add(a.id);
     }
-    // Polvo estelar estático determinista (0 % CPU adicional)
-    const estrellas = Array.from({ length: mini ? 18 : 42 }, (_, i) => ({
+    // Polvo estelar estratificado en 3 planos de profundidad z (-1.15 .. +0.30) para paralaje cósmico real
+    const estrellas = Array.from({ length: mini ? 22 : 48 }, (_, i) => ({
       rx: ((Math.sin(i * 12.9898 + N.length) * 43758.5453) % 1 + 1) % 1,
       ry: ((Math.sin(i * 78.233 + E.length) * 23421.631) % 1 + 1) % 1,
-      r: 0.6 + ((i * 7) % 10) * 0.11,
+      rz: -1.15 + ((i * 11) % 15) * 0.1,
+      r: 0.55 + ((i * 7) % 10) * 0.11,
       a: 0.08 + ((i * 13) % 10) * 0.022,
     }));
 
-    let W = 0, H = 0, dpr = 1, raf = 0, respRaf = 0, respUlt = 0, pasos = 0, dormido = false, camManual = false, enVista = true, tVivo = 0;
+    let W = 0, H = 0, dpr = 1, raf = 0, respRaf = 0, pasos = 0, dormido = false, camManual = false, enVista = true, tVivo = 0;
     const cam = { x: 0, y: 0, k: 1 };
     let hov = null, sel = null;
     let arrNodo = null, panOn = false, p0 = null, movido = false;
     const ptrs = new Map();
     let pinchD0 = 0, pinchK0 = 1;
+    const ptUlt = new Map();
 
     const esClaro = () => document.documentElement.getAttribute("data-theme") === "light";
     const colNodo = (n) => n.color || (esClaro() ? CN_PAL_CLARO : CN_PAL_OSCURO)[n.tipo] || "#d0af6b";
@@ -8381,26 +8681,42 @@
       return true;
     };
     const aMundo = (sx, sy) => ({ x: (sx - W / 2) / cam.k + cam.x, y: (sy - H / 2) / cam.k + cam.y });
-    const aPant = (wx, wy) => ({ x: (wx - cam.x) * cam.k + W / 2, y: (wy - cam.y) * cam.k + H / 2 });
+    // Proyección en perspectiva 3D sensible al giroscopio, puntero e inercia de cámara
+    const angulos3D = () => {
+      const g = INMERSION_25D.leer();
+      const yaw = Math.max(-0.34, Math.min(0.34, g.x * 0.28 - vel.x * 0.0055));
+      const pitch = Math.max(-0.30, Math.min(0.30, g.y * 0.24 + vel.y * 0.0055));
+      return { cy: Math.cos(yaw), sy: Math.sin(yaw), cx: Math.cos(pitch), sx: Math.sin(pitch), gx: g.x, gy: g.y };
+    };
+    const aPant3D = (wx, wy, wz, A3) => {
+      const FOCAL = 620;
+      const prof = (mini ? 64 : 118) * Math.pow(cam.k, 0.45);
+      const dx = (wx - cam.x) * cam.k, dy = (wy - cam.y) * cam.k, dz = (wz || 0) * prof;
+      const rx = dx * A3.cy + dz * A3.sy;
+      const rz1 = -dx * A3.sy + dz * A3.cy;
+      const ry = dy * A3.cx - rz1 * A3.sx;
+      const rz = dy * A3.sx + rz1 * A3.cx;
+      const sc = FOCAL / Math.max(220, FOCAL - rz);
+      const zn = Math.max(0, Math.min(1, (rz / Math.max(40, prof) + 1) * 0.5));
+      return { x: W / 2 + rx * sc, y: H / 2 + ry * sc, sc, rz, zn };
+    };
     const posViva = (n) => {
-      if (!tVivo || n === arrNodo) return { x: n.x, y: n.y };
+      if (!tVivo || n === arrNodo) return { x: n.x, y: n.y, z: n.z };
       const amp = n.pivote ? 0.65 : 1;
       return {
         x: n.x + (Math.sin(tVivo * n.spX + n.phX) * 1.45 + Math.cos(tVivo * n.spX2 + n.phY) * 0.85) * amp,
         y: n.y + (Math.cos(tVivo * n.spY + n.phY) * 1.45 + Math.sin(tVivo * n.spY2 + n.phX) * 0.85) * amp,
+        z: n.z + Math.sin(tVivo * 0.34 + n.phH) * 0.06,
       };
     };
     const limites = () => {
       if (!N.length || !W || !H) return { x0: -120, x1: 120, y0: -120, y1: 120, cx: 0, cy: 0, kFit: 1 };
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      // PR #15 (BiEx): reducción de margen exterior en ~25 % (equilibrio entre aire y presencia)
       for (const n of N) { x0 = Math.min(x0, n.x - 31); x1 = Math.max(x1, n.x + 31); y0 = Math.min(y0, n.y - 26); y1 = Math.max(y1, n.y + 34); }
       const bw = Math.max(120, x1 - x0), bh = Math.max(120, y1 - y0);
       const kFit = Math.max(0.46, Math.min(1.72, Math.min((W - 44) / bw, (H - 60) / bh)));
       return { x0, x1, y0, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, kFit };
     };
-    // Límites exactos de paneo en función del lienzo y zoom actual: incluso al llevar el gráfico al extremo
-    // nunca queda un vacío negro dominante (máximo ~12 % de respiración limpia en los bordes).
     const limitesCam = (L, k) => {
       const kk = Math.max(0.35, k || cam.k || 1);
       const bw = Math.max(80, L.x1 - L.x0), bh = Math.max(80, L.y1 - L.y0);
@@ -8445,13 +8761,11 @@
           }
         } else {
           const L = limites();
-          // Inercia suave amortiguada (nunca dispara al vacío)
           if (Math.hypot(vel.x, vel.y) > 0.18) {
             cam.x += vel.x; cam.y += vel.y;
             vel.x *= 0.84; vel.y *= 0.84;
             mov = true;
           } else { vel.x = 0; vel.y = 0; }
-          // Efecto cauchera/resorte: regresa suavemente dentro de los límites ajustados del lienzo
           const kMin = Math.min(0.48, L.kFit * 0.85), kMax = 3.2;
           const tk = cam.k < kMin ? kMin : cam.k > kMax ? kMax : cam.k;
           const B = limitesCam(L, tk);
@@ -8518,45 +8832,69 @@
     const dibujar = () => {
       if (!W || !H) return;
       const claro = esClaro();
+      const A3 = angulos3D();
       ctx.clearRect(0, 0, W, H);
-      // 1) Polvo estelar y anillos tenues de astrolabio
+      // 1) Polvo estelar en 3 planos de profundidad + 3 órbitas armilares 3D inclinadas
       ctx.save();
       for (let si = 0; si < estrellas.length; si++) {
         const st = estrellas[si];
+        const par = (st.rz + 1.2) * 14;
+        const sx = ((st.rx * W + A3.gx * par - cam.x * 0.04 * (st.rz + 1.4)) % W + W) % W;
+        const sy = ((st.ry * H + A3.gy * par - cam.y * 0.04 * (st.rz + 1.4)) % H + H) % H;
         const pul = tVivo ? (0.86 + 0.14 * Math.sin(tVivo * (0.45 + (si % 5) * 0.11) + si * 1.7)) : 1;
-        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.7 * pul).toFixed(3) + ")" : "rgba(244,226,184," + (st.a * pul).toFixed(3) + ")";
+        const escZ = 0.72 + (st.rz + 1.15) * 0.32;
+        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.72 * pul * escZ).toFixed(3) + ")" : "rgba(244,226,184," + (st.a * pul * escZ).toFixed(3) + ")";
         ctx.beginPath();
-        ctx.arc(st.rx * W, st.ry * H, st.r, 0, Math.PI * 2);
+        ctx.arc(sx, sy, st.r * escZ, 0, Math.PI * 2);
         ctx.fill();
       }
-      const c0 = aPant(0, 0);
-      ctx.strokeStyle = claro ? "rgba(117,87,29,.085)" : "rgba(218,184,114,.065)";
-      ctx.lineWidth = 1;
-      [120, 235, 350].forEach((rr, idx) => {
+      // Tres órbitas de esfera armilar proyectadas en 3D a distintas alturas z e inclinaciones
+      [[124, -0.45, 0.22, -0.15, false], [236, 0.0, -0.18, 0.24, false], [348, 0.36, 0.28, 0.12, true]].forEach(([rr, zz, ix, iy, punteada]) => {
         ctx.save();
-        if (idx === 2) ctx.setLineDash([2, 7]);
+        ctx.strokeStyle = claro ? "rgba(117,87,29,.095)" : "rgba(218,184,114,.078)";
+        ctx.lineWidth = 1;
+        if (punteada) ctx.setLineDash([2.5, 7]);
         ctx.beginPath();
-        ctx.arc(c0.x, c0.y, rr * cam.k, 0, Math.PI * 2);
+        const SEG = 40;
+        for (let s = 0; s <= SEG; s++) {
+          const th = (s / SEG) * Math.PI * 2;
+          const ox = Math.cos(th) * rr, oy = Math.sin(th) * rr;
+          const oz = zz + (ox * iy + oy * ix) / 360;
+          const p = aPant3D(ox, oy, oz, A3);
+          if (s === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        }
         ctx.stroke();
         ctx.restore();
       });
       ctx.restore();
+
       const foco = hov || sel;
       const vecFoco = foco ? adj.get(foco.id) : null;
-      const ptMap = new Map();
+      ptUlt.clear();
       for (const n of N) {
         const pv = posViva(n);
-        ptMap.set(n.id, aPant(pv.x, pv.y));
+        const zN = foco === n ? Math.max(pv.z, 0.72) : pv.z;
+        const p = aPant3D(pv.x, pv.y, zN, A3);
+        p.rad = Math.max(3.2, n.r * Math.pow(cam.k, 0.52) * p.sc);
+        ptUlt.set(n.id, p);
       }
-      // 2) Filamentos curvos de Bézier (resplandor en foco)
-      for (let i = 0; i < E.length; i++) {
-        const e = E[i];
-        const p1 = ptMap.get(e.a.id) || aPant(e.a.x, e.a.y), p2 = ptMap.get(e.b.id) || aPant(e.b.x, e.b.y);
+
+      // 2) Filamentos curvos de Bézier ordenados por profundidad media (del fondo al frente)
+      const EOrd = E.slice().sort((e1, e2) => {
+        const z1 = ((ptUlt.get(e1.a.id)?.rz || 0) + (ptUlt.get(e1.b.id)?.rz || 0)) * 0.5;
+        const z2 = ((ptUlt.get(e2.a.id)?.rz || 0) + (ptUlt.get(e2.b.id)?.rz || 0)) * 0.5;
+        return z1 - z2;
+      });
+      for (let i = 0; i < EOrd.length; i++) {
+        const e = EOrd[i];
+        const p1 = ptUlt.get(e.a.id), p2 = ptUlt.get(e.b.id);
+        if (!p1 || !p2) continue;
         const viva = !foco || e.a === foco || e.b === foco;
         const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
         const curv = (i % 2 === 0 ? 1 : -1) * 0.085;
         const cx = mx - dy * curv, cy = my + dx * curv;
+        const profMed = (p1.zn + p2.zn) * 0.5;
         ctx.beginPath();
         ctx.moveTo(p1.x, p1.y);
         ctx.quadraticCurveTo(cx, cy, p2.x, p2.y);
@@ -8566,31 +8904,32 @@
           ctx.lineWidth = 5.2;
           ctx.stroke();
           ctx.strokeStyle = claro ? "rgba(138,96,14,.9)" : "rgba(255,236,184,.92)";
-          ctx.lineWidth = Math.max(1.35, Math.min(2.4, 1.3 + e.peso * 0.55));
+          ctx.lineWidth = Math.max(1.35, Math.min(2.5, (1.3 + e.peso * 0.55) * (0.88 + profMed * 0.24)));
           ctx.stroke();
           ctx.restore();
         } else {
-          ctx.strokeStyle = foco
-            ? (claro ? "rgba(80,66,42,.06)" : "rgba(212,175,105,.055)")
-            : (claro ? "rgba(126,90,26,.26)" : "rgba(220,186,116,.28)");
-          ctx.lineWidth = Math.max(0.85, Math.min(1.65, 0.8 + e.peso * 0.35));
+          const al = foco ? (claro ? 0.055 : 0.05) : (claro ? 0.14 + profMed * 0.20 : 0.15 + profMed * 0.22);
+          ctx.strokeStyle = claro ? "rgba(126,90,26," + al.toFixed(3) + ")" : "rgba(220,186,116," + al.toFixed(3) + ")";
+          ctx.lineWidth = Math.max(0.75, Math.min(1.75, (0.75 + e.peso * 0.35) * (0.82 + profMed * 0.32)));
           ctx.stroke();
         }
       }
-      // 3) Orbes luminosos de los nodos
-      for (const n of N) {
-        const p = ptMap.get(n.id);
+
+      // 3) Orbes luminosos ordenados por pintor (rz creciente: lejanos atrás con perspectiva atmosférica, cercanos delante nítidos)
+      const NOrd = N.slice().sort((a, b) => (ptUlt.get(a.id)?.rz || 0) - (ptUlt.get(b.id)?.rz || 0));
+      for (const n of NOrd) {
+        const p = ptUlt.get(n.id);
         if (!p || p.x < -70 || p.x > W + 70 || p.y < -50 || p.y > H + 50) continue;
         const col = colNodo(n);
         const esFoco = foco === n;
         const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
-        const rad = Math.max(3.6, n.r * Math.pow(cam.k, 0.52));
+        const rad = p.rad;
+        const atm = esFoco ? 1 : (0.64 + 0.36 * p.zn);
         ctx.save();
-        ctx.globalAlpha = esVec ? 1 : 0.14;
-        // Halo atmosférico radial con respiración luminosa sutil
+        ctx.globalAlpha = esVec ? atm : 0.13;
         const respH = tVivo ? (1 + 0.06 * Math.sin(tVivo * n.spH + n.phH)) : 1;
-        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.7 : 2.2)) * respH;
-        const rg = ctx.createRadialGradient(p.x, p.y, rad * 0.3, p.x, p.y, haloR);
+        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.75 : 2.15)) * respH;
+        const rg = ctx.createRadialGradient(p.x, p.y, rad * 0.28, p.x, p.y, haloR);
         rg.addColorStop(0, col);
         rg.addColorStop(0.4, claro ? "rgba(143,101,20,.16)" : "rgba(244,222,168,.20)");
         rg.addColorStop(1, "rgba(0,0,0,0)");
@@ -8598,7 +8937,6 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, haloR, 0, Math.PI * 2);
         ctx.fill();
-        // Núcleo con brillo especular
         const cg = ctx.createRadialGradient(p.x - rad * 0.28, p.y - rad * 0.28, rad * 0.1, p.x, p.y, rad);
         cg.addColorStop(0, claro ? "#fff8e8" : "#fffcf0");
         cg.addColorStop(0.42, col);
@@ -8607,7 +8945,6 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
         ctx.fill();
-        // Aro orbital fino en pivotes y nodo enfocado
         if (n.pivote || esFoco) {
           ctx.strokeStyle = esFoco ? (claro ? "#100d0a" : "#fff7dc") : (claro ? "rgba(16,13,10,.36)" : "rgba(255,244,212,.48)");
           ctx.lineWidth = esFoco ? 1.7 : 1;
@@ -8617,23 +8954,26 @@
         }
         ctx.restore();
       }
-      // 4) Capa de etiquetas sin colisiones (ordenadas por prioridad)
+
+      // 4) Capa de etiquetas sin colisiones (ordenadas por prioridad y cercanía 3D)
       const ordenEt = [...N].sort((a, b) => {
-        const pa = (foco === a ? 1000 : 0) + (foco && vecFoco && vecFoco.has(a.id) ? 300 : 0) + (a.pivote ? 100 : 0) + a.deg * 4 + a.r;
-        const pb = (foco === b ? 1000 : 0) + (foco && vecFoco && vecFoco.has(b.id) ? 300 : 0) + (b.pivote ? 100 : 0) + b.deg * 4 + b.r;
+        const za = ptUlt.get(a.id)?.zn || 0.5, zb = ptUlt.get(b.id)?.zn || 0.5;
+        const pa = (foco === a ? 1000 : 0) + (foco && vecFoco && vecFoco.has(a.id) ? 300 : 0) + (a.pivote ? 100 : 0) + a.deg * 4 + a.r + za * 18;
+        const pb = (foco === b ? 1000 : 0) + (foco && vecFoco && vecFoco.has(b.id) ? 300 : 0) + (b.pivote ? 100 : 0) + b.deg * 4 + b.r + zb * 18;
         return pb - pa;
       });
       const cajas = [];
       const choca = (bx) => cajas.some((c) => !(bx.x1 < c.x0 || bx.x0 > c.x1 || bx.y1 < c.y0 || bx.y0 > c.y1));
       for (const n of ordenEt) {
-        const p = ptMap.get(n.id);
+        const p = ptUlt.get(n.id);
         if (!p || p.x < 16 || p.x > W - 16 || p.y < 16 || p.y > H - 22) continue;
         const esFoco = foco === n;
         const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
         if (foco && !esVec) continue;
-        const rad = Math.max(3.6, n.r * Math.pow(cam.k, 0.52));
-        const fs = Math.round(Math.max(10, Math.min(14, (esFoco ? 13 : n.pivote ? 11.8 : 10.6) * Math.pow(cam.k, 0.28))));
+        const rad = p.rad;
+        const fs = Math.round(Math.max(9.5, Math.min(14, (esFoco ? 13 : n.pivote ? 11.6 : 10.3) * Math.pow(cam.k, 0.26) * (0.9 + p.zn * 0.16))));
         ctx.save();
+        ctx.globalAlpha = esFoco ? 1 : (0.76 + 0.24 * p.zn);
         ctx.font = (esFoco || n.pivote ? "700 " : "400 ") + fs + "px 'BiEx Texto', 'Gentium Plus', Georgia, serif";
         const mw = ctx.measureText(n.et).width;
         const mostrarSub = (esFoco || cam.k >= 1.55) && n.sub;
@@ -8670,7 +9010,6 @@
     const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !document.documentElement.classList.contains("desplazando") && !sinAnimCn();
     const iniciarRespirar = () => {
       if (respRaf || !puedeRespirar()) return;
-      // ~14 fps vía temporizador (0 despertares a 60 Hz): respiración orgánica imperceptible con consumo mínimo de batería
       const pasoResp = () => {
         respRaf = 0;
         if (!puedeRespirar()) return;
@@ -8682,7 +9021,7 @@
     };
     const actualizarBadge = () => {
       estBadge.classList.toggle("reposo", dormido);
-      const suf = dormido ? (sinAnimCn() ? " · reposo" : " · viva") : "";
+      const suf = dormido ? (sinAnimCn() ? " · 3D reposo" : " · 3D viva") : "";
       estBadge.lastChild.textContent = fmt(N.length) + " nodos · " + fmt(E.length) + " conexiones" + suf;
     };
     const pintarInspector = (n) => {
@@ -8730,13 +9069,13 @@
       raf = requestAnimationFrame(bucle);
     };
     const hitTest = (sx, sy) => {
-      const m = aMundo(sx, sy);
       let mejor = null, dMin = 1e9;
       for (const n of N) {
-        const pv = posViva(n);
-        const d = Math.hypot(pv.x - m.x, pv.y - m.y);
-        const tol = Math.max(n.r + 12 / cam.k, 18 / cam.k);
-        if (d < tol && d < dMin) { dMin = d; mejor = n; }
+        const p = ptUlt.get(n.id);
+        if (!p) continue;
+        const d = Math.hypot(p.x - sx, p.y - sy);
+        const tol = Math.max(p.rad + 12, 18);
+        if (d < tol && (d - p.zn * 2.5) < dMin) { dMin = d - p.zn * 2.5; mejor = n; }
       }
       return mejor;
     };
@@ -8744,7 +9083,8 @@
     let pinchMidW = null;
     canvas.addEventListener("pointerdown", (ev) => {
       ev.preventDefault();
-      try { const sel = window.getSelection && window.getSelection(); if (sel && !sel.isCollapsed) sel.removeAllRanges(); } catch (e) {}
+      INMERSION_25D.pedirPermiso();
+      try { const selW = window.getSelection && window.getSelection(); if (selW && !selW.isCollapsed) selW.removeAllRanges(); } catch (e) {}
       const pt = ptRel(ev);
       pararCam(); metaCam = null; vel.x = 0; vel.y = 0;
       ptrs.set(ev.pointerId, pt);
@@ -8857,6 +9197,9 @@
     bMen.onclick = () => { const L = limites(); camManual = true; irA(cam.x, cam.y, Math.max(Math.min(0.48, L.kFit * 0.85), cam.k * 0.8)); };
     bCen.onclick = () => { camManual = false; const L = limites(); irA(L.cx, L.cy, L.kFit); };
 
+    const off25d = INMERSION_25D.suscribir(() => {
+      if (canvas.isConnected && enVista && !arrNodo && !panOn && !camRaf) dibujar();
+    });
     const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
     if (ro) ro.observe(canvas);
     const ioVis = "IntersectionObserver" in window ? new IntersectionObserver((es) => {
@@ -8874,6 +9217,7 @@
     });
     moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mov", "class"] });
     const limpiar = () => {
+      off25d();
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
       pararRespirar();
       pararCam();
@@ -9418,7 +9762,7 @@
     { sec: "escudrina", t: "Aprender leyendo a tu ritmo", d: "Al leer un capítulo en BiEx y tocar «Leído» cuando termines un verso, sumas experiencia, dracmas y avanzas tus misiones sin presión." },
     { sec: "escudrina", t: "Misiones diarias sencillas", d: "Cada día tienes metas breves (leer unos versos o responder una prueba). Si un día no puedes entrar, tu avance y tu cuenta permanecen intactos." },
     // Escudriña › Tu Árbol
-    { sec: "arbol", t: "Tu ser interior y la cosecha", d: "Reparte tus puntos de atributo libres para subir tu poder y recoge tu cesta de la cosecha cuando se llene: trae experiencia y un verso especial." },
+    { sec: "arbol", t: "Tu ser interior y la cosecha", d: "Reparte tus puntos de atributo libres para subir poder y recoge tu cesta de la cosecha cuando se llene: trae experiencia y un verso especial." },
     { sec: "arbol", t: "Las ramas de tu árbol", d: "En «Las ramas» puedes pellizcar con dos dedos o usar + y − para acercarte a quienes llegaron gracias a tu enlace, sin cambiar el tamaño de la página." },
     // Escudriña › El Coloso
     { sec: "coloso", t: "Lee la postura del Coloso", d: "Antes de atacar, mira la brecha que anuncia arriba: usar una habilidad alineada y acertar la zona dorada del Pulso multiplica tu aporte." },
@@ -9557,7 +9901,7 @@
             if (libres > 0) {
               out.push({
                 t: libres === 1 ? "Tienes 1 punto de atributo libre" : "Tienes " + libres + " puntos de atributo libres",
-                d: "Fortalece tu Ser interior y sube tu poder en Tu Árbol.",
+                d: "Fortalece tu Ser interior y sube poder en Tu Árbol.",
                 accion: "Ir a Atributos",
                 href: "#/escudrina/arbol",
                 foco: "#jg-atributos",
@@ -9777,89 +10121,182 @@
   document.addEventListener("biex:faro", () => FARO.actualizar());
   window.addEventListener("storage", () => FARO.actualizar());
 
-  // ================================================================== PR #17 · Atlas / Geografía Bíblica interactiva (#/mapa)
-  // 42 lugares clave de la Nueva Voluntad con las transliteraciones exactas de BiEx, proyección geográfica real del Mediterráneo
-  // oriental y el Levante (960 × 540), 4 capas históricas, zoom/paneo sin interferir con el tamaño de letra y progreso desde LEI.
+  // ================================================================== PR #17 + PR #18 · Atlas / Geografía Bíblica de museo interactiva (#/mapa)
+  // 42 enclaves clave de la Nueva Voluntad con las transliteraciones exactas de BiEx, proyección cartográfica completa sin recortes
+  // (1080 × 580 · costas, batimetría, ríos, relieves, gratícula, rosa de astrolabio de 8 puntas, escala dinámica, recorrido paso a paso
+  // y directorio en códice con paso de hoja libroPaginas).
   const ATLAS_GEO = {
-    poligonos: [
-      "33.5,21.8 88.9,21.8 131.3,32.0 170.4,83.0 209.5,86.4 264.9,130.6 284.4,147.6 264.9,157.8 242.1,137.4 225.8,144.2 219.3,178.2 238.8,188.4 206.2,222.4 189.9,215.6 199.7,191.8 196.4,154.4 163.9,134.0 134.5,123.8 105.2,106.8 79.1,89.8 43.3,66.0 23.7,38.8",
-      "88.9,215.6 189.9,212.2 173.6,239.4 176.9,263.2 144.3,253.0 111.7,239.4 85.6,225.8",
-      "144.3,287.0 157.3,290.4 154.1,293.8 147.6,292.1",
-      "176.9,21.8 313.8,83.0 317.0,140.8 336.6,174.8 369.2,205.4 392.0,208.8 372.4,225.8 385.5,253.0 411.6,270.0 434.4,266.6 444.1,239.4 427.9,222.4 457.2,229.2 463.7,215.6 444.1,198.6 424.6,178.2 421.3,140.8 434.4,134.0 460.4,147.6 467.0,127.2 499.6,120.4 548.4,130.6 623.4,110.2 610.4,21.8",
-      "450.7,304.0 483.3,307.4 515.9,310.8 538.7,314.2 532.1,321.0 493.0,324.4 450.7,314.2",
-      "437.6,185.0 480.0,219.0 473.5,222.4 434.4,191.8",
-      "587.6,273.4 600.6,273.4 594.1,290.4 584.3,283.6",
-      "626.7,110.2 708.1,96.6 828.7,83.0 946.1,117.0 946.1,525.0 796.1,525.0 802.7,443.4 812.4,423.0 822.2,395.8 828.7,378.8 838.5,358.4 848.3,338.0 848.3,304.0 858.1,283.6 858.1,259.8 835.3,259.8 809.2,266.6 779.9,283.6 744.0,283.6 708.1,263.2 682.1,259.8 665.8,280.2 629.9,266.6 597.3,263.2 571.3,249.6 568.0,232.6 568.0,219.0 541.9,208.8 561.5,202.0 558.2,178.2 532.1,168.0 535.4,151.0 561.5,137.4 594.1,134.0 626.7,123.8",
-      "431.1,525.0 431.1,412.8 499.6,436.6 577.8,450.2 656.0,450.2 701.6,440.0 737.5,450.2 799.4,446.8 799.4,525.0",
-      "734.2,321.0 757.0,310.8 805.9,300.6 789.6,317.6 776.6,324.4 757.0,334.6 737.5,327.8",
+    "poligonos": [
+        "-211.1,-219.6 -65.8,1.0 -16.3,-25.6 29.9,4.8 38.2,31.4 58.0,50.4 93.3,73.2 137.2,95.3 167.9,117.0 194.3,141.7 222.1,179.7 206.5,209.4 220.1,219.6 238.6,186.6 235.3,153.1 258.4,124.2 296.0,149.3 300.6,125.7 245.2,96.1 223.4,70.2 216.4,68.7 158.0,46.6 136.2,4.8 95.9,-27.5 97.6,-65.6 143.8,-73.2 138.9,-52.3 147.1,-42.7 170.2,-59.9 193.3,-14.2 231.3,8.6 287.4,40.9 335.3,73.2 327.7,124.6 350.8,156.1 373.9,179.7 397.0,202.5 420.2,204.1 446.6,215.5 449.2,219.6 454.5,238.7 447.9,255.8 431.4,277.8 414.5,265.3 404.6,247.4 396.4,212.4 436.7,208.2 469.7,219.6 483.9,230.7 482.2,213.2 452.5,183.5 447.6,167.5 436.0,140.9 447.6,120.4 462.4,141.7 479.6,136.0 492.8,128.0 496.1,109.0 542.3,106.7 572.0,120.4 560.8,138.6 588.5,125.7 646.0,102.9 649.3,93.8 612.6,61.8 611.6,20.0 635.7,-18.0 670.4,-56.1 705.1,-103.6 762.9,-92.2 762.9,-61.8 805.8,-25.6 858.6,-44.6 894.9,-59.9 937.8,-37.0 1003.9,8.6 1066.6,61.8 1225.1,-219.6 -211.1,-219.6",
+        "1068.3,65.6 1001.2,101.8 941.1,99.9 889.0,91.5 850.3,63.4 792.6,72.5 727.2,91.5 652.3,97.6 657.9,112.8 641.4,125.7 601.7,128.0 554.2,141.7 550.9,160.7 571.4,168.3 575.3,194.2 586.2,201.8 558.8,206.3 589.9,219.6 589.5,236.8 595.1,255.0 621.5,267.2 667.8,286.2 698.5,270.2 704.1,260.0 746.3,272.9 774.4,292.3 809.7,282.4 833.8,263.4 875.8,264.9 883.4,272.9 876.8,290.8 871.1,312.1 872.5,352.7 861.2,374.4 857.6,386.6 852.0,397.6 844.7,414.7 841.8,426.9 837.1,444.0 820.6,471.8 764.5,480.9 717.3,464.2 677.0,476.3 644.0,487.0 587.9,476.3 519.2,461.1 478.9,441.4 419.5,413.2 353.5,426.1 317.1,503.0 237.9,476.3 188.4,430.7 125.7,411.7 56.3,377.5 41.5,301.4 53.7,253.9 15.0,243.6 -52.6,259.6 -211.1,263.4 -211.1,769.2 819.0,769.2 799.2,605.6 764.5,523.9 820.6,607.5 844.1,540.2 835.5,598.0 927.9,769.2 1225.1,769.2 1225.1,65.6",
+        "205.5,208.2 130.6,210.9 100.9,224.6 138.9,248.2 189.0,267.9 188.4,236.0",
+        "-4.8,94.5 9.4,105.6 10.1,141.7 5.1,174.0 -24.6,184.3 -31.2,149.3 -38.8,109.4",
+        "0.9,27.6 5.1,59.9 -5.8,89.2 -22.3,75.1 -21.3,43.6",
+        "467.4,310.5 495.4,312.1 520.2,318.1 558.2,324.2 541.7,334.1 505.3,333.7 469.0,323.5",
+        "756.3,325.7 789.9,318.1 831.5,305.6 810.7,326.1 779.4,345.5 759.6,342.5",
+        "621.5,276.7 617.6,290.0 606.0,297.6 609.3,286.2",
+        "452.5,179.7 478.9,194.9 500.4,217.7 488.8,213.9 469.0,196.8",
+        "554.9,165.3 566.4,177.8 545.0,179.7 543.3,170.2",
+        "549.9,195.7 548.9,210.9 543.3,208.2",
+        "582.9,225.4 579.6,229.9 568.1,228.4",
+        "567.4,241.3 567.4,245.5 564.1,244.4",
+        "162.6,293.0 170.6,300.6 163.6,299.9"
     ],
-    aguas: [
-      { t: "MAR MEDITERRÁNEO", x: 350, y: 360 },
-      { t: "MAR EGEO", x: 486, y: 256 },
-      { t: "MAR ADRIÁTICO", x: 250, y: 88 },
+    "galilea": "864.2,411.7 866.9,413.2 866.2,418.5 863.6,418.9 862.6,414.7",
+    "muerto": "863.9,454.3 863.6,465.7 859.6,479.4 857.0,478.6 857.9,464.2 860.6,455.0",
+    "rios": [
+        "865.9,398.4 864.5,411.7 864.2,418.9 863.9,436.4 862.6,454.3",
+        "720.6,560.0 721.9,533.4 718.3,515.1",
+        "718.3,515.1 706.7,491.5 694.2,468.0",
+        "718.3,515.1 728.2,493.5 740.4,465.7",
+        "891.6,362.3 901.5,328.0 884.4,285.4 877.1,290.8",
+        "974.2,210.1 944.4,255.8 977.5,297.6 1030.3,339.4 1060.0,366.1",
+        "657.2,215.8 630.8,221.5 597.8,231.1 590.5,235.6",
+        "99.2,23.8 102.5,54.2 94.3,75.1"
     ],
-    regiones: [
-      { t: "ITALIA", x: 145, y: 108 },
-      { t: "MACEDONIA", x: 404, y: 112 },
-      { t: "ACAYA", x: 394, y: 244 },
-      { t: "ASIA MENOR", x: 676, y: 170 },
-      { t: "SIRIA", x: 888, y: 318 },
-      { t: "YEHUDĀ́H", x: 866, y: 444 },
-      { t: "EGIPTO", x: 650, y: 488 },
+    "montes": [
+        "878.4,358.5 873.5,377.5 872.5,394.6",
+        "852.7,442.1 851.3,455.4 848.0,470.6",
+        "756.3,259.6 805.8,246.3 848.7,234.9 898.2,223.5",
+        "393.1,111.3 409.6,137.9 406.3,168.3",
+        "115.7,27.6 135.6,61.8 162.0,96.1"
     ],
-    galilea: "840.1,393.1 843.1,393.8 843.4,396.5 841.1,399.2 839.5,396.8",
-    muerto: "837.5,431.2 841.1,431.8 840.5,442.7 837.9,452.9 834.6,451.9 835.3,440.7",
-    jordan: "841.1,399.2 840.5,407.7 840.1,417.9 839.5,431.2",
-  };
+    "aguas": [
+        {
+            "t": "MAR MEDITERRÁNEO",
+            "x": 388,
+            "y": 392
+        },
+        {
+            "t": "MAR EGEO",
+            "x": 512,
+            "y": 262
+        },
+        {
+            "t": "MAR ADRIÁTICO",
+            "x": 264,
+            "y": 98
+        },
+        {
+            "t": "MAR NEGRO",
+            "x": 742,
+            "y": 64
+        }
+    ],
+    "regiones": [
+        {
+            "t": "ITALIA",
+            "x": 162,
+            "y": 110
+        },
+        {
+            "t": "MACEDONIA",
+            "x": 430,
+            "y": 94
+        },
+        {
+            "t": "ACAYA",
+            "x": 420,
+            "y": 248
+        },
+        {
+            "t": "ASIA",
+            "x": 626,
+            "y": 196
+        },
+        {
+            "t": "GALACIA",
+            "x": 738,
+            "y": 172
+        },
+        {
+            "t": "CILICIA",
+            "x": 826,
+            "y": 240
+        },
+        {
+            "t": "SIRIA",
+            "x": 926,
+            "y": 326
+        },
+        {
+            "t": "GĀLĪ́L",
+            "x": 818,
+            "y": 412
+        },
+        {
+            "t": "YEHUDĀ́H",
+            "x": 810,
+            "y": 466
+        },
+        {
+            "t": "EGIPTO",
+            "x": 676,
+            "y": 528
+        },
+        {
+            "t": "CHIPRE",
+            "x": 792,
+            "y": 354
+        },
+        {
+            "t": "CRETA",
+            "x": 512,
+            "y": 346
+        }
+    ]
+};
   const ATLAS_LUGARES = [
-    { id: "jerusalen", n: "Yᵉrūshāláyim", tr: "Jerusalén", reg: "Yehudā́h [Judea]", x: 830, y: 430, pri: 1, capas: ["yeshua", "paulos"], desc: "Centro del recinto sagrado y de la primera convocación fuera [asamblea] tras la resurrección [puesta en pie arriba]. Escenario del Pésaḥ [Paso por encima] final de YēshŪ́aʿ, de la fecha de la quincuagésima y del encuentro de Prάc̅ṣεις 15.", citas: [["LUK", 2, 41], ["MAT", 21, 1], ["ACT", 2, 1], ["ACT", 15, 2], ["GAL", 2, 1]] },
-    { id: "belen", n: "Bḗṯ-Leḥém", tr: "Belén", reg: "Yehudā́h [Judea]", x: 828, y: 437, pri: 0, capas: ["yeshua"], desc: "Ciudad de Dāvî́ḏ [David] en Yehudā́h, al sur de Yᵉrūshāláyim, donde nació YēshŪ́aʿ según lo escrito en Mîḵā́h.", citas: [["MAT", 2, 1], ["LUK", 2, 4], ["JHN", 7, 42]] },
-    { id: "betania", n: "Bēṯ-ʿAnyā́h", tr: "Betania", reg: "Yehudā́h [Judea]", x: 835, y: 433, pri: 0, capas: ["yeshua"], desc: "Aldea en la ladera oriental del monte de los Olivos, hogar de Martā́ʾ [Marta], Miryā́m [María] y Laʿzā́r [Lázaro], junto a Yᵉrūshāláyim.", citas: [["JHN", 11, 1], ["JHN", 12, 1], ["LUK", 24, 50]] },
-    { id: "jerico", n: "Yᵉrîḥṓ", tr: "Jericó", reg: "Valle del Yardḗn", x: 838, y: 427, pri: 0, capas: ["yeshua"], desc: "Ciudad oasis junto al descenso hacia el mar Muerto, paso habitual de quienes subían desde Gālī́l hacia Yᵉrūshāláyim.", citas: [["MRK", 10, 46], ["LUK", 19, 1], ["HEB", 11, 30]] },
-    { id: "jordan", n: "Yardḗn", tr: "Río Jordán", reg: "Valle del Yardḗn", x: 840, y: 416, pri: 0, capas: ["yeshua"], desc: "Río que une el mar de Gālī́l con el mar Muerto; allí sumergía YÔḥānā́n [Juan] y allí inició públicamente YēshŪ́aʿ.", citas: [["MAT", 3, 13], ["MRK", 1, 9], ["JHN", 1, 28]] },
-    { id: "samaria", n: "Shōmᵉrṓn", tr: "Samaria", reg: "Región central", x: 829, y: 413, pri: 0, capas: ["yeshua"], desc: "Región intermedia entre Yehudā́h y Gālī́l; allí conversó YēshŪ́aʿ junto a la fuente de Yaʿăqṓḇ y luego Fίlιppος proclamó al Mashíaḥ [Ungido].", citas: [["JHN", 4, 4], ["ACT", 8, 5], ["ACT", 1, 8]] },
-    { id: "jope", n: "Yāfṓ", tr: "Jope", reg: "Costa de Yehudā́h", x: 814, y: 421, pri: 0, capas: ["yeshua", "paulos"], desc: "Puerto mediterráneo donde Pέτrος [Pedro] levantó a Ταβιθά [Tabita] y recibió la visión antes de ir a casa de Κοrnḗlιος [Cornelio] en Καιsάrεια.", citas: [["ACT", 9, 36], ["ACT", 10, 9]] },
-    { id: "cesarea", n: "Καιsάrεια", tr: "Cesarea Marítima", reg: "Costa de Yehudā́h", x: 819, y: 406, pri: 1, capas: ["yeshua", "paulos"], desc: "Puerto edificado por ῾Hērṓͅidēs [Herodes] y sede del guía romano. Allí Κοrnḗlιος [Cornelio] recibió el espíritu [soplo] consagrado [santificado] y Pαῦlος permaneció custodiado dos años antes de partir a ῾Hrṓmē.", citas: [["ACT", 10, 1], ["ACT", 23, 23], ["ACT", 25, 1]] },
-    { id: "nazaret", n: "Naṫzḗret", tr: "Nazaret", reg: "Gālī́l [Galilea]", x: 832, y: 399, pri: 1, capas: ["yeshua"], desc: "Población de las colinas de Gālī́l donde se crió YēshŪ́aʿ y donde leyó el documento [rollo] de Yᵉshaʿyā́HŪ [Isaías] en la reunión del shabbā́ṯ.", citas: [["LUK", 1, 26], ["LUK", 4, 16], ["MAT", 2, 23], ["JHN", 1, 46]] },
-    { id: "cana", n: "Qānā́h", tr: "Caná de Gālī́l", reg: "Gālī́l [Galilea]", x: 833, y: 394, pri: 0, capas: ["yeshua"], desc: "Aldea de Gālī́l cercana a Naṫzḗret donde YēshŪ́aʿ constituyó la iniciación de las señales en una boda.", citas: [["JHN", 2, 1], ["JHN", 4, 46]] },
-    { id: "capernaum", n: "Kᵉfar-Naḥū́m", tr: "Capernaúm", reg: "Orilla del mar de Gālī́l", x: 842, y: 391, pri: 1, capas: ["yeshua"], desc: "Aldea pesquera en la ribera norte del mar de Gālī́l que sirvió de base a la enseñanza de YēshŪ́aʿ en Gālī́l.", citas: [["MAT", 4, 13], ["MRK", 1, 21], ["JHN", 6, 59]] },
-    { id: "tiberias", n: "Τιβεrιάς", tr: "Tiberias", reg: "Orilla del mar de Gālī́l", x: 838, y: 397, pri: 0, capas: ["yeshua"], desc: "Ciudad fundada por ῾Hērṓͅidēs Antipas en la costa occidental del lago, que también dio su nombre al mar de Gālī́l.", citas: [["JHN", 6, 23], ["JHN", 21, 1]] },
-    { id: "tiro", n: "Ṫzṓr", tr: "Tiro", reg: "Fenicia", x: 829, y: 379, pri: 0, capas: ["yeshua", "paulos"], desc: "Antiguo puerto fenicio cuya región visitó YēshŪ́aʿ y donde luego los aprendices [estudiantes] despidieron a Pαῦlος en la playa.", citas: [["MAT", 15, 21], ["MRK", 7, 24], ["ACT", 21, 3]] },
-    { id: "sidon", n: "Ṫzîdṓn", tr: "Sidón", reg: "Fenicia", x: 835, y: 369, pri: 0, capas: ["yeshua", "paulos"], desc: "Ciudad costera al norte de Ṫzṓr donde Pαῦlος hizo escala camino a ῾Hrṓmē y pudo visitar a los entrañables [afectuosos].", citas: [["MRK", 7, 31], ["ACT", 27, 3]] },
-    { id: "damasco", n: "Damméśeq", tr: "Damasco", reg: "Siria", x: 865, y: 372, pri: 1, capas: ["paulos"], desc: "Ciudad caravanera antigua de Siria; en su camino YēshŪ́aʿ se apareció a Shāʾū́l [Saulo / Pαῦlος] y allí comenzó a proclamarlo.", citas: [["ACT", 9, 2], ["2CO", 11, 32], ["GAL", 1, 17]] },
-    { id: "antioquia", n: "Ἀnτιόχεια", tr: "Antioquía de Siria", reg: "Siria", x: 861, y: 280, pri: 1, capas: ["paulos"], desc: "Metrópoli junto al Orontes donde los aprendices [estudiantes] fueron titulados por primera vez Mᵉshîḥiyyî́m [Del Ungido] y punto de partida de los viajes de Pαῦlος.", citas: [["ACT", 11, 26], ["ACT", 13, 1], ["GAL", 2, 11]] },
-    { id: "tarso", n: "Ταrsός", tr: "Tarso", reg: "Cilicia", x: 819, y: 256, pri: 1, capas: ["paulos"], desc: "Ciudad universitaria y comercial de Cilicia, lugar de nacimiento de Shāʾū́l — Pαῦlος [Pablo].", citas: [["ACT", 9, 11], ["ACT", 21, 39], ["ACT", 22, 3]] },
-    { id: "chipre", n: "Κύprος", tr: "Chipre · Pάfος y Sαlαmίς", reg: "Mediterráneo oriental", x: 763, y: 321, pri: 1, capas: ["paulos"], desc: "Isla natal de Bar-Nᵉḇā́ʾ [Bernabé] y primera etapa del primer viaje de Pαῦlος, atravesada de Sαlαmίς a Pάfος.", citas: [["ACT", 4, 36], ["ACT", 13, 4], ["ACT", 13, 6]] },
-    { id: "perge", n: "Pέrgē", tr: "Perge", reg: "Panfilia", x: 689, y: 256, pri: 0, capas: ["paulos"], desc: "Ciudad de Panfilia adonde llegaron Pαῦlος y Bar-Nᵉḇā́ʾ [Bernabé] desde Pάfος; desde allí regresó YÔḥānā́n Μᾶrκος a Yᵉrūshāláyim.", citas: [["ACT", 13, 13], ["ACT", 14, 25]] },
-    { id: "antioquia-pisidia", n: "Ἀnτιόχεια (Pisidia)", tr: "Antioquía de Pisidia", reg: "Galacia · Asia Menor", x: 698, y: 209, pri: 1, capas: ["paulos"], desc: "Colonia romana del interior de Asia Menor donde Pαῦlος habló extensamente en la reunión del shabbā́ṯ.", citas: [["ACT", 13, 14], ["2TI", 3, 11]] },
-    { id: "iconio", n: "Ἰκόnιοn", tr: "Iconio", reg: "Licaonia · Asia Menor", x: 741, y: 222, pri: 0, capas: ["paulos"], desc: "Ciudad en la ruta comercial de Anatolia donde en la reunión confiaron [creyeron] multitud de Yᵉhūdī́m [Judíos/Judeanos] y de Ἑllḗnōn [Griegos].", citas: [["ACT", 14, 1], ["ACT", 16, 2]] },
-    { id: "listra", n: "Lύsτrα", tr: "Listra", reg: "Licaonia · Asia Menor", x: 737, y: 234, pri: 0, capas: ["paulos"], desc: "Colonia licaonia donde Pαῦlος fue apedreado y de donde era originario Τιmόdsεος [Timoteo].", citas: [["ACT", 14, 8], ["ACT", 16, 1], ["2TI", 3, 11]] },
-    { id: "derbe", n: "Δέrβē", tr: "Derbe", reg: "Licaonia · Asia Menor", x: 770, y: 243, pri: 0, capas: ["paulos"], desc: "Límite oriental del primer viaje por Asia Menor; allí anunciaron el buen mensaje e hicieron aprendices [estudiantes] antes de volver fortaleciendo cada convocación fuera [asamblea].", citas: [["ACT", 14, 20], ["ACT", 16, 1]] },
-    { id: "colosas", n: "Κοlοssαί", tr: "Colosas", reg: "Valle del Lico · Asia", x: 643, y: 233, pri: 0, capas: ["paulos"], desc: "Ciudad del valle del Lico vecina de Lαοδίκεια; a su convocación fuera [asamblea] y a Fιlḗmōn dirigió Pαῦlος dos cartas.", citas: [["COL", 1, 2], ["PHM", 1, 1]] },
-    { id: "laodicea", n: "Lαοδίκεια", tr: "Laodicea", reg: "Las 7 convocaciones fuera · Asia", x: 630, y: 225, pri: 0, capas: ["paulos", "apokalypsis"], desc: "Próspera ciudad comercial y bancaria del valle del Lico; séptima convocación fuera [asamblea] de Ἀpοκάlυpsις, amonestada por su tibieza.", citas: [["REV", 3, 14], ["COL", 4, 16]] },
-    { id: "filadelfia", n: "Fιlαδέlfεια", tr: "Filadelfia", reg: "Las 7 convocaciones fuera · Asia", x: 610, y: 209, pri: 0, capas: ["apokalypsis"], desc: "Ciudad en una zona sísmica de Lidia; sexta convocación fuera [asamblea] de Ἀpοκάlυpsις, ante la cual se pone una entrada [abertura] abierta.", citas: [["REV", 3, 7], ["REV", 1, 11]] },
-    { id: "sardis", n: "Sάrδεις", tr: "Sardis", reg: "Las 7 convocaciones fuera · Asia", x: 594, y: 202, pri: 0, capas: ["apokalypsis"], desc: "Antigua capital lidia famosa por su acrópolis; quinta convocación fuera [asamblea] de Ἀpοκάlυpsις, llamada a velar y afianzar lo restante.", citas: [["REV", 3, 1], ["REV", 1, 11]] },
-    { id: "tiatira", n: "Dsυάτειrα", tr: "Tiatira", reg: "Las 7 convocaciones fuera · Asia", x: 587, y: 188, pri: 0, capas: ["paulos", "apokalypsis"], desc: "Ciudad artesanal célebre por sus gremios y su púrpura (de allí era Λυδία [Lidia]) y cuarta convocación fuera [asamblea] de Ἀpοκάlυpsις.", citas: [["REV", 2, 18], ["ACT", 16, 14]] },
-    { id: "pergamo", n: "Pέrgαmος", tr: "Pérgamo", reg: "Las 7 convocaciones fuera · Asia", x: 568, y: 182, pri: 1, capas: ["apokalypsis"], desc: "Capital administrativa de Asia, célebre por sus santuarios y su biblioteca en pergamino; tercera convocación fuera [asamblea] de Ἀpοκάlυpsις.", citas: [["REV", 2, 12], ["REV", 1, 11]] },
-    { id: "esmirna", n: "Smύrnα", tr: "Esmirna", reg: "Las 7 convocaciones fuera · Asia", x: 565, y: 205, pri: 0, capas: ["apokalypsis"], desc: "Puerto de la costa jonia; segunda convocación fuera [asamblea] de Ἀpοκάlυpsις, animada a ser confiable [fiel] en la tribulación [aflicción].", citas: [["REV", 2, 8], ["REV", 1, 11]] },
-    { id: "efeso", n: "Ἔfεsος", tr: "Éfeso", reg: "Las 7 convocaciones fuera · Asia", x: 571, y: 222, pri: 1, capas: ["paulos", "apokalypsis"], desc: "Gran puerto de Asia donde Pαῦlος enseñó más de dos años y primera de las siete convocaciones fuera [asambleas] de Ἀpοκάlυpsις.", citas: [["ACT", 19, 1], ["EPH", 1, 1], ["1TI", 1, 3], ["REV", 2, 1]] },
-    { id: "mileto", n: "Μίlēτος", tr: "Mileto", reg: "Costa de Asia", x: 571, y: 237, pri: 0, capas: ["paulos"], desc: "Puerto al sur de Ἔfεsος donde Pαῦlος mandó llamar a los más viejos [mayores] de la convocación fuera [asamblea] efesia camino a Yᵉrūshāláyim.", citas: [["ACT", 20, 17], ["2TI", 4, 20]] },
-    { id: "patmos", n: "Pάτmος", tr: "Patmos", reg: "Mar Egeo", x: 545, y: 243, pri: 1, capas: ["apokalypsis"], desc: "Pequeña isla rocosa del Egeo donde YÔḥānā́n [Juan] estuvo desterrado y recibió las visiones de Ἀpοκάlυpsις.", citas: [["REV", 1, 9]] },
-    { id: "troas", n: "Τrōͅάς", tr: "Troas", reg: "Misia · Egeo", x: 535, y: 158, pri: 0, capas: ["paulos"], desc: "Puerto del noroeste de Asia donde Pαῦlος tuvo la visión del varón de Macedonia y embarcó hacia Europa.", citas: [["ACT", 16, 8], ["ACT", 20, 6], ["2CO", 2, 12]] },
-    { id: "filipos", n: "Fίlιppοι", tr: "Filipos", reg: "Macedonia", x: 473, y: 117, pri: 1, capas: ["paulos"], desc: "Colonia romana en la Vía Egnatia y primera convocación fuera [asamblea] establecida por Pαῦlος en Europa; destinataria de Fιlιppḗsιοι.", citas: [["ACT", 16, 12], ["PHP", 1, 1], ["1TH", 2, 2]] },
-    { id: "tesalonica", n: "Dsεssαlοnίκē", tr: "Tesalónica", reg: "Macedonia", x: 428, y: 131, pri: 1, capas: ["paulos"], desc: "Capital portuaria de Macedonia; destinataria de las dos primeras cartas conservadas de Pαῦlος.", citas: [["ACT", 17, 1], ["1TH", 1, 1], ["2TH", 1, 1]] },
-    { id: "berea", n: "Βέrοια", tr: "Berea", reg: "Macedonia", x: 405, y: 136, pri: 0, capas: ["paulos"], desc: "Ciudad macedonia célebre porque sus oyentes examinaban cada día las Escrituras para comprobar si estas cosas eran así.", citas: [["ACT", 17, 10], ["ACT", 17, 11]] },
-    { id: "atenas", n: "Ἀdsē̂nαι", tr: "Atenas", reg: "Acaya", x: 454, y: 219, pri: 1, capas: ["paulos"], desc: "Cuna filosófica de Grecia donde Pαῦlος habló en el Ἀrείου pάgου [Areópago] ante estoicos y epicúreos acerca del altar «para un Dios desconocido».", citas: [["ACT", 17, 16], ["ACT", 17, 22], ["1TH", 3, 1]] },
-    { id: "corinto", n: "Κόrιndsος", tr: "Corinto", reg: "Acaya", x: 428, y: 222, pri: 1, capas: ["paulos"], desc: "Puerto estratégico entre dos mares donde Pαῦlος permaneció un año y medio junto a Ἀκύlας [Aquila] y Prίsκιllα [Priscila].", citas: [["ACT", 18, 1], ["1CO", 1, 2], ["2CO", 1, 1]] },
-    { id: "creta", n: "Κrḗτē", tr: "Creta", reg: "Mar Mediterráneo", x: 493, y: 314, pri: 1, capas: ["paulos"], desc: "Gran isla mediterránea donde quedó Τίτος [Tito] poniendo en orden las convocaciones fuera [asambleas] y que bordeó la nave de Pαῦlος antes de la tormenta.", citas: [["TIT", 1, 5], ["ACT", 27, 7]] },
-    { id: "malta", n: "Μεlίτē", tr: "Malta", reg: "Mediterráneo central", x: 154, y: 290, pri: 1, capas: ["paulos"], desc: "Isla donde encalló la nave que llevaba a Pαῦlος hacia ῾Hrṓmē y donde pasaron el invierno con hospitalidad.", citas: [["ACT", 28, 1], ["ACT", 28, 11]] },
-    { id: "roma", n: "῾Hrṓmē", tr: "Roma", reg: "Italia", x: 89, y: 86, pri: 1, capas: ["paulos"], desc: "Capital del Imperio; destinataria de la carta a ῾Hrōmαῖοι y lugar donde Pαῦlος enseñó con libertad durante su custodia.", citas: [["ACT", 28, 16], ["ACT", 28, 30], ["ROM", 1, 7], ["2TI", 1, 17]] },
+    {"id": "jerusalen", "n": "Yᵉrūshāláyim", "tr": "Jerusalén", "reg": "Yehudā́h [Judea]", "x": 852.0, "y": 454.0, "lat": 31.78, "lon": 35.24, "pri": 1, "capas": ["yeshua", "paulos"], "desc": "Centro del recinto sagrado y de la primera convocación fuera [asamblea] tras la resurrección [puesta en pie arriba]. Escenario del Pésaḥ [Paso por encima] final de YēshŪ́aʿ, de la fecha de la quincuagésima y del encuentro de Prάc̅ṣεις 15.", "citas": [["LUK", 2, 41], ["MAT", 21, 1], ["ACT", 2, 1], ["ACT", 15, 2], ["GAL", 2, 1]]},
+    {"id": "belen", "n": "Bḗṯ-Leḥém", "tr": "Belén", "reg": "Yehudā́h [Judea]", "x": 849.0, "y": 462.5, "lat": 31.7, "lon": 35.21, "pri": 0, "capas": ["yeshua"], "desc": "Ciudad de Dāvî́ḏ [David] en Yehudā́h, al sur de Yᵉrūshāláyim, donde nació YēshŪ́aʿ según lo escrito en Mîḵā́h.", "citas": [["MAT", 2, 1], ["LUK", 2, 4], ["JHN", 7, 42]]},
+    {"id": "betania", "n": "Bēṯ-ʿAnyā́h", "tr": "Betania", "reg": "Yehudā́h [Judea]", "x": 860.5, "y": 455.5, "lat": 31.77, "lon": 35.26, "pri": 0, "capas": ["yeshua"], "desc": "Aldea en la ladera oriental del monte de los Olivos, hogar de Martā́ʾ [Marta], Miryā́m [María] y Laʿzā́r [Lázaro], junto a Yᵉrūshāláyim.", "citas": [["JHN", 11, 1], ["JHN", 12, 1], ["LUK", 24, 50]]},
+    {"id": "jerico", "n": "Yᵉrîḥṓ", "tr": "Jericó", "reg": "Valle del Yardḗn", "x": 863.0, "y": 446.5, "lat": 31.87, "lon": 35.44, "pri": 0, "capas": ["yeshua"], "desc": "Ciudad oasis junto al descenso hacia el mar Muerto, paso habitual de quienes subían desde Gālī́l hacia Yᵉrūshāláyim.", "citas": [["MRK", 10, 46], ["LUK", 19, 1], ["HEB", 11, 30]]},
+    {"id": "jordan", "n": "Yardḗn", "tr": "Río Jordán", "reg": "Valle del Yardḗn", "x": 866.0, "y": 435.5, "lat": 32.12, "lon": 35.55, "pri": 0, "capas": ["yeshua"], "desc": "Río que une el mar de Gālī́l con el mar Muerto; allí sumergía YÔḥānā́n [Juan] y allí inició públicamente YēshŪ́aʿ.", "citas": [["MAT", 3, 13], ["MRK", 1, 9], ["JHN", 1, 28]]},
+    {"id": "samaria", "n": "Shōmᵉrṓn", "tr": "Samaria", "reg": "Región central", "x": 851.5, "y": 432.5, "lat": 32.28, "lon": 35.2, "pri": 0, "capas": ["yeshua"], "desc": "Región intermedia entre Yehudā́h y Gālī́l; allí conversó YēshŪ́aʿ junto a la fuente de Yaʿăqṓḇ y luego Fίlιppος proclamó al Mashíaḥ [Ungido].", "citas": [["JHN", 4, 4], ["ACT", 8, 5], ["ACT", 1, 8]]},
+    {"id": "jope", "n": "Yāfṓ", "tr": "Jope", "reg": "Costa de Yehudā́h", "x": 836.5, "y": 443.5, "lat": 32.05, "lon": 34.75, "pri": 0, "capas": ["yeshua", "paulos"], "desc": "Puerto mediterráneo donde Pέτrος [Pedro] levantó a Ταβιθά [Tabita] y recibió la visión antes de ir a casa de Κοrnḗlιος [Cornelio] en Καιsάrεια.", "citas": [["ACT", 9, 36], ["ACT", 10, 9]]},
+    {"id": "cesarea", "n": "Καιsάrεια", "tr": "Cesarea Marítima", "reg": "Costa de Yehudā́h", "x": 841.5, "y": 426.5, "lat": 32.5, "lon": 34.89, "pri": 1, "capas": ["yeshua", "paulos"], "desc": "Puerto edificado por ῾Hērṓͅidēs [Herodes] y sede del guía romano. Allí Κοrnḗlιος [Cornelio] recibió el espíritu [soplo] consagrado [santificado] y Pαῦlος permaneció custodiado dos años antes de partir a ῾Hrṓmē.", "citas": [["ACT", 10, 1], ["ACT", 23, 23], ["ACT", 25, 1]]},
+    {"id": "nazaret", "n": "Naṫzḗret", "tr": "Nazaret", "reg": "Gālī́l [Galilea]", "x": 853.0, "y": 418.5, "lat": 32.7, "lon": 35.3, "pri": 1, "capas": ["yeshua"], "desc": "Población de las colinas de Gālī́l donde se crió YēshŪ́aʿ y donde leyó el documento [rollo] de Yᵉshaʿyā́HŪ [Isaías] en la reunión del shabbā́ṯ.", "citas": [["LUK", 1, 26], ["LUK", 4, 16], ["MAT", 2, 23], ["JHN", 1, 46]]},
+    {"id": "cana", "n": "Qānā́h", "tr": "Caná de Gālī́l", "reg": "Gālī́l [Galilea]", "x": 855.0, "y": 411.5, "lat": 32.8, "lon": 35.34, "pri": 0, "capas": ["yeshua"], "desc": "Aldea de Gālī́l cercana a Naṫzḗret donde YēshŪ́aʿ constituyó la iniciación de las señales en una boda.", "citas": [["JHN", 2, 1], ["JHN", 4, 46]]},
+    {"id": "capernaum", "n": "Kᵉfar-Naḥū́m", "tr": "Capernaúm", "reg": "Orilla del mar de Gālī́l", "x": 865.5, "y": 408.5, "lat": 32.88, "lon": 35.58, "pri": 1, "capas": ["yeshua"], "desc": "Aldea pesquera en la ribera norte del mar de Gālī́l que sirvió de base a la enseñanza de YēshŪ́aʿ en Gālī́l.", "citas": [["MAT", 4, 13], ["MRK", 1, 21], ["JHN", 6, 59]]},
+    {"id": "tiberias", "n": "Τιβεrιάς", "tr": "Tiberias", "reg": "Orilla del mar de Gālī́l", "x": 864.0, "y": 417.0, "lat": 32.79, "lon": 35.54, "pri": 0, "capas": ["yeshua"], "desc": "Ciudad fundada por ῾Hērṓͅidēs Antipas en la costa occidental del lago, que también dio su nombre al mar de Gālī́l.", "citas": [["JHN", 6, 23], ["JHN", 21, 1]]},
+    {"id": "tiro", "n": "Ṫzṓr", "tr": "Tiro", "reg": "Fenicia", "x": 851.9, "y": 397.6, "lat": 33.27, "lon": 35.2, "pri": 0, "capas": ["yeshua", "paulos"], "desc": "Antiguo puerto fenicio cuya región visitó YēshŪ́aʿ y donde luego los aprendices [estudiantes] despidieron a Pαῦlος en la playa.", "citas": [["MAT", 15, 21], ["MRK", 7, 24], ["ACT", 21, 3]]},
+    {"id": "sidon", "n": "Ṫzîdṓn", "tr": "Sidón", "reg": "Fenicia", "x": 857.6, "y": 386.6, "lat": 33.56, "lon": 35.37, "pri": 0, "capas": ["yeshua", "paulos"], "desc": "Ciudad costera al norte de Ṫzṓr donde Pαῦlος hizo escala camino a ῾Hrṓmē y pudo visitar a los entrañables [afectuosos].", "citas": [["MRK", 7, 31], ["ACT", 27, 3]]},
+    {"id": "damasco", "n": "Damméśeq", "tr": "Damasco", "reg": "Siria", "x": 888.5, "y": 388.5, "lat": 33.51, "lon": 36.31, "pri": 1, "capas": ["paulos"], "desc": "Ciudad caravanera antigua de Siria; en su camino YēshŪ́aʿ se apareció a Shāʾū́l [Saulo / Pαῦlος] y allí comenzó a proclamarlo.", "citas": [["ACT", 9, 2], ["2CO", 11, 32], ["GAL", 1, 17]]},
+    {"id": "antioquia", "n": "Ἀnτιόχεια", "tr": "Antioquía de Siria", "reg": "Siria", "x": 883.7, "y": 286.1, "lat": 36.2, "lon": 36.16, "pri": 1, "capas": ["paulos"], "desc": "Metrópoli junto al Orontes donde los aprendices [estudiantes] fueron titulados por primera vez Mᵉshîḥiyyî́m [Del Ungido] y punto de partida de los viajes de Pαῦlος.", "citas": [["ACT", 11, 26], ["ACT", 13, 1], ["GAL", 2, 11]]},
+    {"id": "tarso", "n": "Ταrsός", "tr": "Tarso", "reg": "Cilicia", "x": 841.9, "y": 258.9, "lat": 36.92, "lon": 34.9, "pri": 1, "capas": ["paulos"], "desc": "Ciudad universitaria y comercial de Cilicia, lugar de nacimiento de Shāʾū́l — Pαῦlος [Pablo].", "citas": [["ACT", 9, 11], ["ACT", 21, 39], ["ACT", 22, 3]]},
+    {"id": "chipre", "n": "Κύprος", "tr": "Chipre · Pάfος y Sαlαmίς", "reg": "Mediterráneo oriental", "x": 784.3, "y": 334.9, "lat": 34.92, "lon": 33.15, "pri": 1, "capas": ["paulos"], "desc": "Isla natal de Bar-Nᵉḇā́ʾ [Bernabé] y primera etapa del primer viaje de Pαῦlος, atravesada de Sαlαmίς a Pάfος.", "citas": [["ACT", 4, 36], ["ACT", 13, 4], ["ACT", 13, 6]]},
+    {"id": "perge", "n": "Pέrgē", "tr": "Perge", "reg": "Panfilia", "x": 708.5, "y": 257.3, "lat": 36.96, "lon": 30.85, "pri": 0, "capas": ["paulos"], "desc": "Ciudad de Panfilia adonde llegaron Pαῦlος y Bar-Nᵉḇā́ʾ [Bernabé] desde Pάfος; desde allí regresó YÔḥānā́n Μᾶrκος a Yᵉrūshāláyim.", "citas": [["ACT", 13, 13], ["ACT", 14, 25]]},
+    {"id": "antioquia-pisidia", "n": "Ἀnτιόχεια (Pisidia)", "tr": "Antioquía de Pisidia", "reg": "Galacia · Asia Menor", "x": 719.6, "y": 206.1, "lat": 38.31, "lon": 31.19, "pri": 1, "capas": ["paulos"], "desc": "Colonia romana del interior de Asia Menor donde Pαῦlος habló extensamente en la reunión del shabbā́ṯ.", "citas": [["ACT", 13, 14], ["2TI", 3, 11]]},
+    {"id": "iconio", "n": "Ἰκόnιοn", "tr": "Iconio", "reg": "Licaonia · Asia Menor", "x": 762.4, "y": 222.7, "lat": 37.87, "lon": 32.49, "pri": 0, "capas": ["paulos"], "desc": "Ciudad en la ruta comercial de Anatolia donde en la reunión confiaron [creyeron] multitud de Yᵉhūdī́m [Judíos/Judeanos] y de Ἑllḗnōn [Griegos].", "citas": [["ACT", 14, 1], ["ACT", 16, 2]]},
+    {"id": "listra", "n": "Lύsτrα", "tr": "Listra", "reg": "Licaonia · Asia Menor", "x": 761.4, "y": 233.9, "lat": 37.58, "lon": 32.46, "pri": 0, "capas": ["paulos"], "desc": "Colonia licaonia donde Pαῦlος fue apedreado y de donde era originario Τιmόdsεος [Timoteo].", "citas": [["ACT", 14, 8], ["ACT", 16, 1], ["2TI", 3, 11]]},
+    {"id": "derbe", "n": "Δέrβē", "tr": "Derbe", "reg": "Licaonia · Asia Menor", "x": 791.3, "y": 242.3, "lat": 37.36, "lon": 33.36, "pri": 0, "capas": ["paulos"], "desc": "Límite oriental del primer viaje por Asia Menor; allí anunciaron el buen mensaje e hicieron aprendices [estudiantes] antes de volver fortaleciendo cada convocación fuera [asamblea].", "citas": [["ACT", 14, 20], ["ACT", 16, 1]]},
+    {"id": "colosas", "n": "Κοlοssαί", "tr": "Colosas", "reg": "Valle del Lico · Asia", "x": 666.0, "y": 226.5, "lat": 37.79, "lon": 29.26, "pri": 0, "capas": ["paulos"], "desc": "Ciudad del valle del Lico vecina de Lαοδίκεια; a su convocación fuera [asamblea] y a Fιlḗmōn dirigió Pαῦlος dos cartas.", "citas": [["COL", 1, 2], ["PHM", 1, 1]]},
+    {"id": "laodicea", "n": "Lαοδίκεια", "tr": "Laodicea", "reg": "Las 7 convocaciones fuera · Asia", "x": 654.0, "y": 221.5, "lat": 37.84, "lon": 29.11, "pri": 0, "capas": ["paulos", "apokalypsis"], "desc": "Próspera ciudad comercial y bancaria del valle del Lico; séptima convocación fuera [asamblea] de Ἀpοκάlυpsις, amonestada por su tibieza.", "citas": [["REV", 3, 14], ["COL", 4, 16]]},
+    {"id": "filadelfia", "n": "Fιlαδέlfεια", "tr": "Filadelfia", "reg": "Las 7 convocaciones fuera · Asia", "x": 631.4, "y": 204.4, "lat": 38.35, "lon": 28.52, "pri": 0, "capas": ["apokalypsis"], "desc": "Ciudad en una zona sísmica de Lidia; sexta convocación fuera [asamblea] de Ἀpοκάlυpsις, ante la cual se pone una entrada [abertura] abierta.", "citas": [["REV", 3, 7], ["REV", 1, 11]]},
+    {"id": "sardis", "n": "Sάrδεις", "tr": "Sardis", "reg": "Las 7 convocaciones fuera · Asia", "x": 615.6, "y": 199.2, "lat": 38.49, "lon": 28.04, "pri": 0, "capas": ["apokalypsis"], "desc": "Antigua capital lidia famosa por su acrópolis; quinta convocación fuera [asamblea] de Ἀpοκάlυpsις, llamada a velar y afianzar lo restante.", "citas": [["REV", 3, 1], ["REV", 1, 11]]},
+    {"id": "tiatira", "n": "Dsυάτειrα", "tr": "Tiatira", "reg": "Las 7 convocaciones fuera · Asia", "x": 609.0, "y": 182.7, "lat": 38.92, "lon": 27.84, "pri": 0, "capas": ["paulos", "apokalypsis"], "desc": "Ciudad artesanal célebre por sus gremios y su púrpura (de allí era Λυδία [Lidia]) y cuarta convocación fuera [asamblea] de Ἀpοκάlυpsις.", "citas": [["REV", 2, 18], ["ACT", 16, 14]]},
+    {"id": "pergamo", "n": "Pέrgαmος", "tr": "Pérgamo", "reg": "Las 7 convocaciones fuera · Asia", "x": 587.3, "y": 174.7, "lat": 39.13, "lon": 27.18, "pri": 1, "capas": ["apokalypsis"], "desc": "Capital administrativa de Asia, célebre por sus santuarios y su biblioteca en pergamino; tercera convocación fuera [asamblea] de Ἀpοκάlυpsις.", "citas": [["REV", 2, 12], ["REV", 1, 11]]},
+    {"id": "esmirna", "n": "Smύrnα", "tr": "Esmirna", "reg": "Las 7 convocaciones fuera · Asia", "x": 586.0, "y": 201.8, "lat": 38.42, "lon": 27.14, "pri": 0, "capas": ["apokalypsis"], "desc": "Puerto de la costa jonia; segunda convocación fuera [asamblea] de Ἀpοκάlυpsις, animada a ser confiable [fiel] en la tribulación [aflicción].", "citas": [["REV", 2, 8], ["REV", 1, 11]]},
+    {"id": "efeso", "n": "Ἔfεsος", "tr": "Éfeso", "reg": "Las 7 convocaciones fuera · Asia", "x": 592.6, "y": 220.0, "lat": 37.94, "lon": 27.34, "pri": 1, "capas": ["paulos", "apokalypsis"], "desc": "Gran puerto de Asia donde Pαῦlος enseñó más de dos años y primera de las siete convocaciones fuera [asambleas] de Ἀpοκάlυpsις.", "citas": [["ACT", 19, 1], ["EPH", 1, 1], ["1TI", 1, 3], ["REV", 2, 1]]},
+    {"id": "mileto", "n": "Μίlēτος", "tr": "Mileto", "reg": "Costa de Asia", "x": 590.4, "y": 235.6, "lat": 37.53, "lon": 27.28, "pri": 0, "capas": ["paulos"], "desc": "Puerto al sur de Ἔfεsος donde Pαῦlος mandó llamar a los más viejos [mayores] de la convocación fuera [asamblea] efesia camino a Yᵉrūshāláyim.", "citas": [["ACT", 20, 17], ["2TI", 4, 20]]},
+    {"id": "patmos", "n": "Pάτmος", "tr": "Patmos", "reg": "Mar Egeo", "x": 566.3, "y": 243.5, "lat": 37.32, "lon": 26.55, "pri": 1, "capas": ["apokalypsis"], "desc": "Pequeña isla rocosa del Egeo donde YÔḥānā́n [Juan] estuvo desterrado y recibió las visiones de Ἀpοκάlυpsις.", "citas": [["REV", 1, 9]]},
+    {"id": "troas", "n": "Τrōͅάς", "tr": "Troas", "reg": "Misia · Egeo", "x": 553.4, "y": 151.0, "lat": 39.75, "lon": 26.16, "pri": 0, "capas": ["paulos"], "desc": "Puerto del noroeste de Asia donde Pαῦlος tuvo la visión del varón de Macedonia y embarcó hacia Europa.", "citas": [["ACT", 16, 8], ["ACT", 20, 6], ["2CO", 2, 12]]},
+    {"id": "filipos", "n": "Fίlιppοι", "tr": "Filipos", "reg": "Macedonia", "x": 491.7, "y": 103.2, "lat": 41.01, "lon": 24.29, "pri": 1, "capas": ["paulos"], "desc": "Colonia romana en la Vía Egnatia y primera convocación fuera [asamblea] establecida por Pαῦlος en Europa; destinataria de Fιlιppḗsιοι.", "citas": [["ACT", 16, 12], ["PHP", 1, 1], ["1TH", 2, 2]]},
+    {"id": "tesalonica", "n": "Dsεssαlοnίκē", "tr": "Tesalónica", "reg": "Macedonia", "x": 447.4, "y": 117.5, "lat": 40.64, "lon": 22.94, "pri": 1, "capas": ["paulos"], "desc": "Capital portuaria de Macedonia; destinataria de las dos primeras cartas conservadas de Pαῦlος.", "citas": [["ACT", 17, 1], ["1TH", 1, 1], ["2TH", 1, 1]]},
+    {"id": "berea", "n": "Βέrοια", "tr": "Berea", "reg": "Macedonia", "x": 422.9, "y": 121.8, "lat": 40.52, "lon": 22.2, "pri": 0, "capas": ["paulos"], "desc": "Ciudad macedonia célebre porque sus oyentes examinaban cada día las Escrituras para comprobar si estas cosas eran así.", "citas": [["ACT", 17, 10], ["ACT", 17, 11]]},
+    {"id": "atenas", "n": "Ἀdsē̂nαι", "tr": "Atenas", "reg": "Acaya", "x": 473.2, "y": 218.8, "lat": 37.97, "lon": 23.73, "pri": 1, "capas": ["paulos"], "desc": "Cuna filosófica de Grecia donde Pαῦlος habló en el Ἀrείου pάgου [Areópago] ante estoicos y epicúreos acerca del altar «para un Dios desconocido».", "citas": [["ACT", 17, 16], ["ACT", 17, 22], ["1TH", 3, 1]]},
+    {"id": "corinto", "n": "Κόrιndsος", "tr": "Corinto", "reg": "Acaya", "x": 445.2, "y": 221.3, "lat": 37.91, "lon": 22.88, "pri": 1, "capas": ["paulos"], "desc": "Puerto estratégico entre dos mares donde Pαῦlος permaneció un año y medio junto a Ἀκύlας [Aquila] y Prίsκιllα [Priscila].", "citas": [["ACT", 18, 1], ["1CO", 1, 2], ["2CO", 1, 1]]},
+    {"id": "creta", "n": "Κrḗτē", "tr": "Creta", "reg": "Mar Mediterráneo", "x": 512.6, "y": 328.8, "lat": 35.08, "lon": 24.92, "pri": 1, "capas": ["paulos"], "desc": "Gran isla mediterránea donde quedó Τίτος [Tito] poniendo en orden las convocaciones fuera [asambleas] y que bordeó la nave de Pαῦlος antes de la tormenta.", "citas": [["TIT", 1, 5], ["ACT", 27, 7]]},
+    {"id": "malta", "n": "Μεlίτē", "tr": "Malta", "reg": "Mediterráneo central", "x": 166.3, "y": 297.2, "lat": 35.91, "lon": 14.43, "pri": 1, "capas": ["paulos"], "desc": "Isla donde encalló la nave que llevaba a Pαῦlος hacia ῾Hrṓmē y donde pasaron el invierno con hospitalidad.", "citas": [["ACT", 28, 1], ["ACT", 28, 11]]},
+    {"id": "roma", "n": "῾Hrṓmē", "tr": "Roma", "reg": "Italia", "x": 102.0, "y": 69.7, "lat": 41.89, "lon": 12.49, "pri": 1, "capas": ["paulos"], "desc": "Capital del Imperio; destinataria de la carta a ῾Hrōmαῖοι y lugar donde Pαῦlος enseñó con libertad durante su custodia.", "citas": [["ACT", 28, 16], ["ACT", 28, 30], ["ROM", 1, 7], ["2TI", 1, 17]]},
   ];
   const ATLAS_RUTAS = [
-    { id: "r1", t: "1er viaje", ids: ["antioquia", "chipre", "perge", "antioquia-pisidia", "iconio", "listra", "derbe", "perge", "antioquia"] },
-    { id: "r2", t: "2do viaje", ids: ["antioquia", "tarso", "derbe", "listra", "iconio", "troas", "filipos", "tesalonica", "berea", "atenas", "corinto", "efeso", "cesarea", "jerusalen"] },
-    { id: "r3", t: "3er viaje", ids: ["antioquia", "tarso", "antioquia-pisidia", "efeso", "troas", "filipos", "corinto", "troas", "mileto", "tiro", "cesarea", "jerusalen"] },
-    { id: "r4", t: "Viaje a ῾Hrṓmē", ids: ["cesarea", "sidon", "creta", "malta", "roma"] },
+    { id: "r1", capa: "paulos", t: "1er viaje de Pαῦlος", ids: ["antioquia", "chipre", "perge", "antioquia-pisidia", "iconio", "listra", "derbe", "perge", "antioquia"] },
+    { id: "r2", capa: "paulos", t: "2do viaje de Pαῦlος", ids: ["antioquia", "tarso", "derbe", "listra", "iconio", "troas", "filipos", "tesalonica", "berea", "atenas", "corinto", "efeso", "cesarea", "jerusalen"] },
+    { id: "r3", capa: "paulos", t: "3er viaje de Pαῦlος", ids: ["antioquia", "tarso", "antioquia-pisidia", "efeso", "troas", "filipos", "corinto", "troas", "mileto", "tiro", "cesarea", "jerusalen"] },
+    { id: "r4", capa: "paulos", t: "Travesía a ῾Hrṓmē", ids: ["cesarea", "sidon", "creta", "malta", "roma"] },
+    { id: "ry", capa: "yeshua", t: "Senda de YēshŪ́aʿ", ids: ["belen", "nazaret", "jordan", "cana", "capernaum", "tiberias", "tiro", "samaria", "jerico", "betania", "jerusalen"] },
+    { id: "ra", capa: "apokalypsis", t: "Las 7 convocaciones fuera", ids: ["patmos", "efeso", "esmirna", "pergamo", "tiatira", "sardis", "filadelfia", "laodicea"] },
   ];
   const ATLAS_LIBRO_DEF = {
     ROM: ["roma"], "1CO": ["corinto"], "2CO": ["corinto"], EPH: ["efeso"], PHP: ["filipos"],
@@ -9886,9 +10323,36 @@
     const seen = new Set();
     return res.filter((x) => !seen.has(x.id) && seen.add(x.id)).slice(0, 3);
   }
+  function rosaAstrolabioSVG(sEl) {
+    // Rosa náutica de astrolabio estrictamente geométrica de 8 puntas alrededor de un anillo abierto (0 cruces, 0 estrellas de 5 puntas)
+    const pts = [];
+    for (let k = 0; k < 8; k++) {
+      const ang = (k * Math.PI) / 4 - Math.PI / 2;
+      const rExt = k % 2 === 0 ? 19.5 : 14.2;
+      const rInt = 6.8;
+      const aL = ang - 0.19, aR = ang + 0.19;
+      const x1 = (24 + Math.cos(aL) * rInt).toFixed(2), y1 = (24 + Math.sin(aL) * rInt).toFixed(2);
+      const xm = (24 + Math.cos(ang) * rExt).toFixed(2), ym = (24 + Math.sin(ang) * rExt).toFixed(2);
+      const x2 = (24 + Math.cos(aR) * rInt).toFixed(2), y2 = (24 + Math.sin(aR) * rInt).toFixed(2);
+      pts.push(sEl("polygon", {
+        points: `${x1},${y1} ${xm},${ym} ${x2},${y2}`,
+        fill: k === 0 ? "var(--oro-vivo)" : (k % 2 === 0 ? "rgba(218, 184, 112, .72)" : "rgba(218, 184, 112, .38)"),
+        stroke: "rgba(12, 10, 8, .55)",
+        "stroke-width": ".45",
+      }));
+    }
+    return sEl("svg", { class: "mp-rosa", viewBox: "0 0 48 48", "aria-hidden": "true" },
+      sEl("circle", { cx: "24", cy: "24", r: "20.5", fill: "rgba(9, 14, 22, .52)", stroke: "rgba(218, 184, 112, .38)", "stroke-width": ".8" }),
+      sEl("circle", { cx: "24", cy: "24", r: "14.2", fill: "none", stroke: "rgba(218, 184, 112, .22)", "stroke-width": ".6", "stroke-dasharray": "1.5 2" }),
+      ...pts,
+      sEl("circle", { cx: "24", cy: "24", r: "6.4", fill: "rgba(12, 16, 24, .82)", stroke: "var(--oro)", "stroke-width": ".85" }),
+      sEl("circle", { cx: "24", cy: "24", r: "1.8", fill: "var(--oro-vivo)" }),
+      sEl("text", { x: "24", y: "3.9", "text-anchor": "middle", fill: "var(--oro-vivo)", style: "font:700 5.2px/1 var(--f-ui);letter-spacing:.08em" }, "N"));
+  }
   function vistaMapa(lugarId) {
     navActual("#/buscar");
     document.title = "Atlas bíblico · BiEx";
+    INMERSION_25D.refrescar();
     const NS = "http://www.w3.org/2000/svg";
     const sEl = (tag, attrs, ...kids) => {
       const el = document.createElementNS(NS, tag);
@@ -9903,65 +10367,156 @@
       if (sel.capas.length === 1) capa = sel.capas[0];
       else if (sel.id === "patmos" || sel.reg.includes("7 convocaciones")) capa = "apokalypsis";
     }
-    const PRESETS = {
-      todos: { x: 20, y: 15, w: 920, h: 520 },
-      yeshua: { x: 758, y: 344, w: 160, h: 112 },
-      paulos: { x: 40, y: 50, w: 880, h: 440 },
-      apokalypsis: { x: 512, y: 154, w: 176, h: 114 },
+    let rutaId = capa === "yeshua" ? "ry" : capa === "apokalypsis" ? "ra" : "r1";
+    let etapaIdx = -1;
+    let svgEl = null;
+
+    const ratioMarco = () => {
+      const r = svgEl && svgEl.isConnected ? svgEl.getBoundingClientRect() : null;
+      if (r && r.width > 30 && r.height > 30) return r.height / r.width;
+      return window.innerWidth <= 640 ? 0.75 : (580 / 1080);
     };
-    let vb = Object.assign({}, PRESETS[capa] || PRESETS.todos);
+    const presetDe = (c) => {
+      const ar = ratioMarco();
+      // Cajas geográficas completas sin recorte en el extremo oriental (x llega hasta 1035 con Siria, Chipre, Yehudā́h y Éufrates a la vista)
+      const base = c === "yeshua"
+        ? { cx: 854, cy: 432, w: 138 }
+        : c === "paulos"
+          ? { cx: 506, cy: 262, w: 930 }
+          : c === "apokalypsis"
+            ? { cx: 612, cy: 210, w: 184 }
+            : { cx: 518, cy: 282, w: 996 };
+      const h = base.w * ar;
+      return { x: base.cx - base.w / 2, y: base.cy - h / 2, w: base.w, h };
+    };
+    let vb = presetDe(capa);
+    let animRaf = 0;
+
     const lugarLeido = (l) => l.citas.some(([c, cap, v]) => LEI.es(c, cap, v));
     const visibles = () => capa === "todos" ? ATLAS_LUGARES : ATLAS_LUGARES.filter((l) => l.capas.includes(capa));
 
-    const svgEl = sEl("svg", { class: "mp-svg", viewBox: `${vb.x} ${vb.y} ${vb.w} ${vb.h}`, role: "group", "aria-label": "Mapa interactivo del Mediterráneo y el Levante en la Nueva Voluntad" });
+    svgEl = sEl("svg", {
+      class: "mp-svg",
+      viewBox: `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`,
+      preserveAspectRatio: "xMidYMid meet",
+      role: "group",
+      "aria-label": "Mapa interactivo del Mediterráneo y el Levante en la Nueva Voluntad",
+    });
+
+    const defs = sEl("defs", {},
+      sEl("linearGradient", { id: "mpGradTierra", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        sEl("stop", { offset: "0%", "stop-color": "#211c14" }),
+        sEl("stop", { offset: "52%", "stop-color": "#17130e" }),
+        sEl("stop", { offset: "100%", "stop-color": "#251e14" })),
+      sEl("linearGradient", { id: "mpGradTierraClaro", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        sEl("stop", { offset: "0%", "stop-color": "#f5ecd9" }),
+        sEl("stop", { offset: "55%", "stop-color": "#eadcc0" }),
+        sEl("stop", { offset: "100%", "stop-color": "#dfd0b0" })));
+
+    // Gratícula geográfica de meridianos y paralelos reales
+    const gGrat = sEl("g", {});
+    for (const lon of [15, 20, 25, 30, 35, 40]) {
+      const x = (20 + ((lon - 10) / 31.5) * 1040).toFixed(1);
+      gGrat.append(
+        sEl("line", { class: "mp-grat", x1: x, y1: "-120", x2: x, y2: "700", "stroke-width": ".7" }),
+        sEl("text", { class: "mp-grat-l", x: (+x + 3).toFixed(1), y: "24" }, lon + "°E"));
+    }
+    for (const lat of [31, 35, 39]) {
+      const y = (560 - ((lat - 29) / 14.2) * 540).toFixed(1);
+      gGrat.append(
+        sEl("line", { class: "mp-grat", x1: "-120", y1: y, x2: "1200", y2: y, "stroke-width": ".7" }),
+        sEl("text", { class: "mp-grat-l", x: "30", y: (+y - 3).toFixed(1) }, lat + "°N"));
+    }
+
+    const gCosta = sEl("g", {});
     const gTierra = sEl("g", {});
-    for (const pts of ATLAS_GEO.poligonos) gTierra.append(sEl("polygon", { class: "mp-tierra", points: pts }));
+    for (const pts of ATLAS_GEO.poligonos) {
+      gCosta.append(sEl("polygon", { class: "mp-costa-halo", points: pts, "stroke-width": "4.5" }));
+      gTierra.append(sEl("polygon", { class: "mp-tierra", points: pts, "stroke-width": "1.0" }));
+    }
     gTierra.append(
-      sEl("polygon", { points: ATLAS_GEO.galilea, fill: "rgba(96, 152, 206, .58)", stroke: "rgba(130, 186, 238, .6)", "stroke-width": ".6" }),
-      sEl("polygon", { points: ATLAS_GEO.muerto, fill: "rgba(86, 134, 182, .52)", stroke: "rgba(130, 186, 238, .5)", "stroke-width": ".6" }),
-      sEl("polyline", { points: ATLAS_GEO.jordan, fill: "none", stroke: "rgba(116, 174, 228, .68)", "stroke-width": ".95", "stroke-linecap": "round" }));
+      sEl("polygon", { class: "mp-agua-in", points: ATLAS_GEO.galilea, "stroke-width": ".65" }),
+      sEl("polygon", { class: "mp-agua-in", points: ATLAS_GEO.muerto, "stroke-width": ".65" }));
+    for (const rPts of ATLAS_GEO.rios) gTierra.append(sEl("polyline", { class: "mp-rio", points: rPts, "stroke-width": "1.05" }));
+    for (const mPts of ATLAS_GEO.montes) gTierra.append(sEl("polyline", { class: "mp-monte", points: mPts, "stroke-width": "1.1" }));
+
     const gLabels = sEl("g", {});
     for (const a of ATLAS_GEO.aguas) gLabels.append(sEl("text", { class: "mp-agua-l", x: a.x, y: a.y, "text-anchor": "middle" }, a.t));
     for (const r of ATLAS_GEO.regiones) gLabels.append(sEl("text", { class: "mp-reg-l", x: r.x, y: r.y, "text-anchor": "middle" }, r.t));
     const gRutas = sEl("g", {});
     const gPins = sEl("g", {});
-    svgEl.append(gTierra, gLabels, gRutas, gPins);
+    svgEl.append(defs, gGrat, gCosta, gTierra, gLabels, gRutas, gPins);
+
+    const escalaTx = h("span", { text: "250 km" });
+    const escalaHud = h("div", { class: "mp-escala", "aria-hidden": "true" }, h("i", { class: "mp-escala-b" }), escalaTx);
 
     const clampVb = () => {
-      vb.w = Math.max(84, Math.min(960, vb.w));
-      vb.h = vb.w * (10 / 16);
-      vb.x = Math.max(-40, Math.min(980 - vb.w, vb.x));
-      vb.y = Math.max(-20, Math.min(550 - vb.h, vb.y));
+      const ar = ratioMarco();
+      vb.w = Math.max(72, Math.min(1060, vb.w));
+      vb.h = vb.w * ar;
+      vb.x = Math.max(-36, Math.min(1076 - vb.w, vb.x));
+      vb.y = Math.max(-70, Math.min(640 - vb.h, vb.y));
     };
     const aplicarVb = () => {
       clampVb();
       svgEl.setAttribute("viewBox", `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`);
       pintarEscala();
     };
-    const zoomPor = (factor, cx, cy) => {
-      const nw = Math.max(84, Math.min(960, vb.w * factor));
-      const nh = nw * (10 / 16);
+    const volarVb = (dest) => {
+      if (animRaf) { cancelAnimationFrame(animRaf); animRaf = 0; }
+      const ar = ratioMarco();
+      const fin = { w: Math.max(72, Math.min(1060, dest.w)) };
+      fin.h = fin.w * ar;
+      fin.x = Math.max(-36, Math.min(1076 - fin.w, dest.x));
+      fin.y = Math.max(-70, Math.min(640 - fin.h, dest.y));
+      const sinMov = document.documentElement.getAttribute("data-mov") === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      if (sinMov) { vb = fin; aplicarVb(); return; }
+      const ini = Object.assign({}, vb), t0 = performance.now(), dur = 260;
+      const paso = (now) => {
+        const p = Math.min(1, (now - t0) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        vb.x = ini.x + (fin.x - ini.x) * e;
+        vb.y = ini.y + (fin.y - ini.y) * e;
+        vb.w = ini.w + (fin.w - ini.w) * e;
+        vb.h = ini.h + (fin.h - ini.h) * e;
+        aplicarVb();
+        if (p < 1) animRaf = requestAnimationFrame(paso);
+        else animRaf = 0;
+      };
+      animRaf = requestAnimationFrame(paso);
+    };
+    const zoomPor = (factor, cx, cy, anim = false) => {
+      const ar = ratioMarco();
+      const nw = Math.max(72, Math.min(1060, vb.w * factor));
+      const nh = nw * ar;
       const rx = cx != null ? cx : vb.x + vb.w / 2;
       const ry = cy != null ? cy : vb.y + vb.h / 2;
-      vb.x = rx - (rx - vb.x) * (nw / vb.w);
-      vb.y = ry - (ry - vb.y) * (nh / vb.h);
-      vb.w = nw; vb.h = nh;
-      aplicarVb();
+      const dest = {
+        x: rx - (rx - vb.x) * (nw / vb.w),
+        y: ry - (ry - vb.y) * (nh / vb.h),
+        w: nw, h: nh,
+      };
+      if (anim) volarVb(dest);
+      else { vb = dest; aplicarVb(); }
     };
-    const centrarEn = (l, ancho) => {
+    const centrarEn = (l, ancho, anim = true) => {
       if (!l) return;
-      const w = ancho || Math.min(vb.w, 340);
-      vb.w = w; vb.h = w * (10 / 16);
-      vb.x = l.x - vb.w / 2; vb.y = l.y - vb.h / 2;
-      aplicarVb();
+      const ar = ratioMarco();
+      const w = ancho || Math.min(vb.w, 320);
+      const h = w * ar;
+      const dest = { x: l.x - w / 2, y: l.y - h / 2, w, h };
+      if (anim) volarVb(dest);
+      else { vb = dest; aplicarVb(); }
     };
 
-    // Paneo y pellizco dentro del mapa (nunca afecta el tamaño de letra general)
+    // Paneo y pellizco dentro del mapa (sin alterar jamás el tamaño general de letra de la página)
     const ptrs = new Map();
     let arrastre = null, distIni = 0, vbIni = null;
     svgEl.addEventListener("pointerdown", (e) => {
+      INMERSION_25D.pedirPermiso();
+      if (animRaf) { cancelAnimationFrame(animRaf); animRaf = 0; }
       if (e.target.closest && e.target.closest(".mp-pin")) return;
-      svgEl.setPointerCapture(e.pointerId);
+      try { svgEl.setPointerCapture(e.pointerId); } catch (err) {}
       ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (ptrs.size === 1) { arrastre = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; }
       else if (ptrs.size === 2) {
@@ -9982,8 +10537,9 @@
         const [a, b] = [...ptrs.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y) || distIni;
         const f = distIni / d;
-        const nw = Math.max(84, Math.min(960, vbIni.w * f));
-        const nh = nw * (10 / 16);
+        const ar = ratioMarco();
+        const nw = Math.max(72, Math.min(1060, vbIni.w * f));
+        const nh = nw * ar;
         const mx = vbIni.x + vbIni.w / 2, my = vbIni.y + vbIni.h / 2;
         vb.w = nw; vb.h = nh; vb.x = mx - nw / 2; vb.y = my - nh / 2;
         aplicarVb();
@@ -9997,41 +10553,46 @@
       const rect = svgEl.getBoundingClientRect();
       const px = vb.x + ((e.clientX - rect.left) / Math.max(1, rect.width)) * vb.w;
       const py = vb.y + ((e.clientY - rect.top) / Math.max(1, rect.height)) * vb.h;
-      zoomPor(e.deltaY > 0 ? 1.18 : 0.84, px, py);
+      zoomPor(e.deltaY > 0 ? 1.18 : 0.84, px, py, false);
     }, { passive: false });
 
     const ficha = h("aside", { class: "mp-ficha", "aria-live": "polite" });
-    const listaEl = h("div", { class: "mp-lista" });
+    const dirCont = h("div", {});
+    const dirSub = h("small", { text: "" });
+    const rutaBar = h("div", { class: "mp-ruta-bar", hidden: true });
     const filtros = h("div", { class: "mp-filtros", role: "group", "aria-label": "Capas históricas del Atlas" });
     const busq = h("input", { type: "search", class: "libs-lupa", placeholder: "Buscar un lugar (Yᵉrūshāláyim, Éfeso, Roma, Nazaret…)", "aria-label": "Buscar un lugar bíblico", autocomplete: "off", spellcheck: "false" });
+    let libroDir = null, idsEnLibro = [];
 
-    // Desplazamientos cartográficos finos [dx, dy, anchor] para evitar solapamientos en zonas densas (Levante, 7 convocaciones, Acaya)
+    // Desplazamientos cartográficos finos [dx, dy, anchor] para evitar solapamientos en zonas densas
     const ATLAS_OFF = {
       corinto: [-8, 3, "end"], atenas: [8, 3, "start"],
       pergamo: [-8, -6, "end"], tiatira: [8, -4, "start"], esmirna: [-8, 3, "end"],
       sardis: [8, -4, "start"], filadelfia: [8, 6, "start"], efeso: [-8, 5, "end"],
-      mileto: [-8, 10, "end"], laodicea: [8, 4, "start"], colosas: [8, 12, "start"], patmos: [-8, 8, "end"],
+      mileto: [-8, 10, "end"], laodicea: [-8, -5, "end"], colosas: [8, 9, "start"], patmos: [-8, 8, "end"],
       sidon: [8, 1, "start"], tiro: [-8, 2, "end"], capernaum: [8, -5, "start"],
-      cana: [-8, -6, "end"], nazaret: [-8, 2, "end"], tiberias: [8, 5, "start"],
-      cesarea: [-8, 2, "end"], samaria: [-8, 3, "end"], jordan: [8, 3, "start"],
-      jope: [-8, 4, "end"], jerico: [8, 1, "start"], jerusalen: [-8, 2, "end"],
-      betania: [8, 6, "start"], belen: [-8, 10, "end"],
+      cana: [-8, -5, "end"], nazaret: [-8, 3, "end"], tiberias: [8, 5, "start"],
+      cesarea: [-8, 2, "end"], samaria: [-8, 3, "end"], jordan: [8, 2, "start"],
+      jope: [-8, 4, "end"], jerico: [8, 1, "start"], jerusalen: [-8, 1, "end"],
+      betania: [8, 5, "start"], belen: [-8, 9, "end"],
     };
 
     const pintarEscala = () => {
-      const sc = Math.max(0.16, Math.min(1, vb.w / 920));
-      const cerca = vb.w <= 480 || capa === "yeshua" || capa === "apokalypsis";
-      const fs = Math.max(2.6, 10.2 * sc);
-      const sw = Math.max(0.55, 2.4 * sc);
+      const sc = Math.max(0.14, Math.min(1, vb.w / 996));
+      const cerca = vb.w <= 500 || capa === "yeshua" || capa === "apokalypsis";
+      const fs = Math.max(2.35, 9.8 * sc);
+      const sw = Math.max(0.5, 2.3 * sc);
       for (const g of gPins.children) {
         const esSel = g.classList.contains("sel");
         const pri = g.dataset.pri === "1";
         const off = ATLAS_OFF[g.dataset.id] || [0, -8, "middle"];
         const halo = g.querySelector("circle.halo");
+        const aro = g.querySelector("circle.aro");
         const dot = g.querySelector("circle.dot");
         const tx = g.querySelector("text");
-        if (halo) halo.setAttribute("r", ((esSel ? 12.5 : 8.0) * sc).toFixed(2));
-        if (dot) { dot.setAttribute("r", ((esSel ? 5.6 : 4.0) * sc).toFixed(2)); dot.setAttribute("stroke-width", (1.25 * sc).toFixed(2)); }
+        if (halo) halo.setAttribute("r", ((esSel ? 13.5 : 8.2) * sc).toFixed(2));
+        if (aro) { aro.setAttribute("r", (8.8 * sc).toFixed(2)); aro.setAttribute("stroke-width", (1.15 * sc).toFixed(2)); }
+        if (dot) { dot.setAttribute("r", ((esSel ? 5.2 : 3.9) * sc).toFixed(2)); dot.setAttribute("stroke-width", (1.2 * sc).toFixed(2)); }
         if (tx) {
           tx.style.display = (esSel || pri || cerca) ? "" : "none";
           tx.setAttribute("x", (off[0] * sc).toFixed(2));
@@ -10041,21 +10602,99 @@
           tx.style.strokeWidth = sw.toFixed(2) + "px";
         }
       }
-      gLabels.style.opacity = vb.w < 320 ? "0.22" : "1";
-      for (const p of gRutas.children) p.setAttribute("stroke-width", Math.max(0.7, 1.8 * sc).toFixed(2));
+      for (const p of gCosta.children) p.setAttribute("stroke-width", Math.max(1.2, 4.4 * sc).toFixed(2));
+      for (const p of gTierra.children) {
+        if (p.classList.contains("mp-tierra")) p.setAttribute("stroke-width", Math.max(0.32, 0.95 * sc).toFixed(2));
+        else if (p.classList.contains("mp-rio")) p.setAttribute("stroke-width", Math.max(0.45, 1.15 * sc).toFixed(2));
+      }
+      gLabels.style.opacity = vb.w < 300 ? "0.24" : "1";
+      for (const p of gRutas.children) {
+        const base = p.classList.contains("mp-ruta-sombra") ? 3.2 : (p.classList.contains("mp-etapa-linea") ? 2.8 : 1.85);
+        p.setAttribute("stroke-width", Math.max(0.55, base * sc).toFixed(2));
+      }
+      // Escala física dinámica (36 px en pantalla -> unidades SVG -> km y estadios romanos de ~185 m)
+      const rect = svgEl.getBoundingClientRect();
+      const pxW = rect.width > 40 ? rect.width : 620;
+      const km36 = (36 / pxW) * vb.w * 2.726;
+      const redondeado = km36 >= 200 ? Math.round(km36 / 50) * 50 : km36 >= 40 ? Math.round(km36 / 10) * 10 : Math.max(5, Math.round(km36 / 5) * 5);
+      const est = Math.round(redondeado / 0.185);
+      escalaTx.textContent = `~${redondeado} km · ${est} est.`;
+    };
+
+    const rutaActiva = () => {
+      if (capa === "todos") return null;
+      return ATLAS_RUTAS.find((r) => r.id === rutaId && r.capa === capa) || ATLAS_RUTAS.find((r) => r.capa === capa) || null;
+    };
+
+    const pintarRutaBar = () => {
+      const rt = rutaActiva();
+      if (!rt) { rutaBar.hidden = true; rutaBar.replaceChildren(); return; }
+      rutaBar.hidden = false;
+      const paradas = rt.ids.map((id) => porId.get(id)).filter(Boolean);
+      const idx = etapaIdx >= 0 && etapaIdx < paradas.length ? etapaIdx : Math.max(0, paradas.findIndex((l) => sel && l.id === l.id && l.id === sel.id));
+      const actual = paradas[idx] || paradas[0];
+      const irEtapa = (nuevoIdx) => {
+        const k = Math.max(0, Math.min(paradas.length - 1, nuevoIdx));
+        etapaIdx = k;
+        sel = paradas[k];
+        try { history.replaceState(history.state, "", urlHash("#/mapa/" + sel.id)); } catch (e) {}
+        const prev = k > 0 ? paradas[k - 1] : sel;
+        const dist = Math.hypot(sel.x - prev.x, sel.y - prev.y);
+        const w = capa === "yeshua" ? 132 : capa === "apokalypsis" ? 170 : Math.max(210, Math.min(540, dist * 2.4));
+        centrarEn(sel, w, true);
+        pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
+      };
+      const selViaje = capa === "paulos" ? h("div", { style: "display:flex;flex-wrap:wrap;gap:5px" },
+        ATLAS_RUTAS.filter((r) => r.capa === "paulos").map((r) => h("button", {
+          type: "button", class: "mp-ruta-btn",
+          style: r.id === rt.id ? "border-color:var(--oro);color:var(--oro-vivo)" : "",
+          onclick: () => { rutaId = r.id; etapaIdx = 0; irEtapa(0); },
+          text: r.t.replace(" de Pαῦlος", ""),
+        }))) : null;
+
+      rutaBar.replaceChildren(
+        h("div", { class: "mp-ruta-info" },
+          h("small", { text: `${rt.t} · Etapa ${idx + 1} de ${paradas.length}` }),
+          h("b", { text: actual ? `${actual.n} (${actual.tr})` : rt.t }),
+          selViaje),
+        h("div", { class: "mp-ruta-acc" },
+          h("button", { type: "button", class: "mp-ruta-btn", disabled: idx <= 0 ? "" : null, onclick: () => irEtapa(idx - 1) }, "‹ Anterior"),
+          h("button", { type: "button", class: "mp-ruta-btn", disabled: idx >= paradas.length - 1 ? "" : null, onclick: () => irEtapa(idx + 1) }, "Siguiente ›")));
+    };
+
+    const sincronizarPaginaLibro = () => {
+      if (!libroDir || !sel) return;
+      const idx = idsEnLibro.indexOf(sel.id);
+      if (idx >= 0) {
+        const pag = Math.floor(idx / 8);
+        if (pag !== libroDir.pagina()) libroDir.ir(pag);
+      }
+      for (const b of dirCont.querySelectorAll(".mp-item")) {
+        b.setAttribute("aria-current", b.dataset.id === sel.id ? "true" : "false");
+      }
     };
 
     const pintarMapa = () => {
       gRutas.replaceChildren();
-      if (capa === "paulos" || capa === "todos") {
-        for (const rt of ATLAS_RUTAS) {
-          const pts = rt.ids.map((id) => porId.get(id)).filter(Boolean).map((l) => `${l.x},${l.y}`).join(" ");
-          gRutas.append(sEl("polyline", { class: "mp-ruta " + rt.id, points: pts, opacity: capa === "paulos" ? "0.88" : "0.42" }));
+      const mostrarRutas = capa === "todos"
+        ? ATLAS_RUTAS.filter((r) => r.capa === "paulos")
+        : ATLAS_RUTAS.filter((r) => r.capa === capa);
+      const rtAct = rutaActiva();
+      for (const rt of mostrarRutas) {
+        const ptsArr = rt.ids.map((id) => porId.get(id)).filter(Boolean);
+        const pts = ptsArr.map((l) => `${l.x},${l.y}`).join(" ");
+        const esAct = !rtAct || rt.id === rtAct.id;
+        const cls = rt.id.startsWith("r") && /^r[1-4]$/.test(rt.id) ? rt.id : (rt.id === "ry" ? "r1" : "r3");
+        gRutas.append(
+          sEl("polyline", { class: "mp-ruta-sombra", points: pts, opacity: capa === "todos" ? "0.22" : (esAct ? "0.5" : "0.18") }),
+          sEl("polyline", { class: "mp-ruta " + cls, points: pts, opacity: capa === "todos" ? "0.46" : (esAct ? "0.92" : "0.28") }));
+        if (rtAct && rt.id === rtAct.id && etapaIdx > 0 && etapaIdx < ptsArr.length) {
+          const a = ptsArr[etapaIdx - 1], b = ptsArr[etapaIdx];
+          gRutas.append(sEl("line", { class: "mp-etapa-linea", x1: a.x, y1: a.y, x2: b.x, y2: b.y }));
         }
       }
       gPins.replaceChildren();
       const vis = visibles();
-      // Colocar seleccionado al final para quedar siempre por encima
       const ord = vis.slice().sort((a, b) => (a.id === sel.id ? 1 : b.id === sel.id ? -1 : 0));
       for (const l of ord) {
         const leido = lugarLeido(l);
@@ -10070,12 +10709,15 @@
           "data-pri": l.pri ? "1" : "0",
         },
           sEl("circle", { class: "halo", r: "8" }),
-          sEl("circle", { class: "dot", r: "4.2" }),
+          esSel ? sEl("circle", { class: "aro", r: "8.8" }) : null,
+          sEl("circle", { class: "dot", r: "4.0" }),
           sEl("text", { y: "-8", "text-anchor": "middle" }, l.n));
         const elegir = () => {
           sel = l;
+          const rt = rutaActiva();
+          if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
           try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
-          pintarMapa(); pintarFicha(); pintarLista();
+          pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
         };
         g.addEventListener("click", (e) => { e.stopPropagation(); elegir(); });
         g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); elegir(); } });
@@ -10093,33 +10735,77 @@
         return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v },
           svg(ICO.libro), h("span", { text: et }));
       });
+      const coordTxt = sel.lat && sel.lon ? `${sel.lat.toFixed(2)}° N · ${sel.lon.toFixed(2)}° E` : "";
       ficha.replaceChildren(
         h("div", { class: "mp-ficha-cab" },
-          h("small", { text: sel.reg + (leido ? " · Ya visitado en tu lectura ✓" : "") }),
+          h("small", { text: sel.reg + (leido ? " · Visitado en tu lectura ✓" : "") }),
           h("h2", { text: sel.n }),
-          h("span", { class: "mp-trad", text: "Tradicional: " + sel.tr })),
+          h("span", { class: "mp-trad", text: "Tradicional: " + sel.tr }),
+          coordTxt ? h("span", { class: "mp-coords", text: coordTxt }) : null),
         h("p", { class: "mp-desc", text: sel.desc }),
         h("div", { class: "mp-citas" },
           h("h4", { text: "Pasajes clave en BiEx" }),
           h("div", { class: "mp-cita-l" }, citas)),
         h("div", { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:2px" },
-          h("button", { type: "button", class: "btn chico", onclick: () => centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 145 : 220) }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
+          h("button", { type: "button", class: "btn chico", onclick: () => centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 132 : 210, true) }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
           h("a", { class: "btn chico", href: "#/cronologia" }, svg(ICO.tiempo), h("span", { text: "Línea del tiempo" }))));
     };
 
+    // Directorio paginado en secciones con efecto hoja de libro (libroPaginas, 8 lugares por hoja) + gesto deslizar
     const pintarLista = () => {
       const q = sinMarcas(busq.value || "").toLowerCase().trim();
       const vis = visibles().filter((l) => !q || sinMarcas(l.n + " " + l.tr + " " + l.reg).toLowerCase().includes(q));
-      listaEl.replaceChildren(...(vis.length ? vis.map((l) => h("button", {
-        type: "button", class: "mp-item", "aria-current": sel && l.id === sel.id ? "true" : "false",
+      idsEnLibro = vis.map((l) => l.id);
+      if (!vis.length) {
+        libroDir = null;
+        dirSub.textContent = "0 lugares";
+        dirCont.replaceChildren(h("p", { class: "nota-ui", text: "Ningún lugar coincide con esa búsqueda en esta capa." }));
+        return;
+      }
+      const porPag = 8;
+      const totalPags = Math.max(1, Math.ceil(vis.length / porPag));
+      const idxSel = Math.max(0, vis.findIndex((l) => sel && l.id === sel.id));
+      const pagIni = Math.floor(idxSel / porPag);
+      const actSub = (p) => { dirSub.textContent = `${vis.length} ${vis.length === 1 ? "lugar" : "lugares"} · Hoja ${p + 1} de ${totalPags}`; };
+      actSub(pagIni);
+      libroDir = libroPaginas(vis, porPag, (l) => h("li", {}, h("button", {
+        type: "button",
+        class: "mp-item",
+        "data-id": l.id,
+        "aria-current": sel && l.id === sel.id ? "true" : "false",
         onclick: () => {
           sel = l;
+          const rt = rutaActiva();
+          if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
           try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
-          centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 160 : 280);
-          pintarMapa(); pintarFicha(); pintarLista();
+          centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 148 : 260, true);
+          pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
         },
-      }, h("b", { text: l.n }), h("small", { text: l.tr + (lugarLeido(l) ? " · ✓" : "") })))
-        : [h("p", { class: "nota-ui", text: "Ningún lugar coincide con esa búsqueda en esta capa." })]));
+      },
+        h("span", { class: "mp-item-top" }, h("b", { text: l.n }), lugarLeido(l) ? h("em", { text: "✓ Leído" }) : null),
+        h("small", { text: l.tr + " · " + l.reg }))), {
+        clase: "mp-libro",
+        etiqueta: "Hojas del directorio de lugares bíblicos",
+        pag: pagIni,
+        alCambiar: (p) => actSub(p),
+      });
+      const marcoHoja = libroDir.querySelector(".lp-marco");
+      if (marcoHoja && totalPags > 1) {
+        let sx = 0, sy = 0, activo = false;
+        marcoHoja.addEventListener("pointerdown", (e) => {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          sx = e.clientX; sy = e.clientY; activo = true;
+        }, { passive: true });
+        marcoHoja.addEventListener("pointerup", (e) => {
+          if (!activo) return;
+          activo = false;
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+            libroDir.ir(libroDir.pagina() + (dx < 0 ? 1 : -1));
+          }
+        }, { passive: true });
+      }
+      dirCont.replaceChildren(libroDir);
     };
 
     const CAPAS = [
@@ -10133,25 +10819,31 @@
         type: "button", class: "mp-fil", "data-c": id, "aria-pressed": capa === id ? "true" : "false", text: et,
         onclick: () => {
           capa = id;
+          rutaId = id === "yeshua" ? "ry" : id === "apokalypsis" ? "ra" : "r1";
+          etapaIdx = 0;
           for (const b of filtros.children) b.setAttribute("aria-pressed", b.dataset.c === id ? "true" : "false");
           const vis = visibles();
-          if (!vis.some((l) => l.id === sel.id)) sel = vis[0] || ATLAS_LUGARES[0];
-          vb = Object.assign({}, PRESETS[id] || PRESETS.todos);
-          aplicarVb(); pintarMapa(); pintarFicha(); pintarLista();
+          const rt = rutaActiva();
+          if (rt && rt.ids.length && porId.has(rt.ids[0])) sel = porId.get(rt.ids[0]);
+          else if (!vis.some((l) => l.id === sel.id)) sel = vis[0] || ATLAS_LUGARES[0];
+          volarVb(presetDe(id));
+          pintarMapa(); pintarFicha(); pintarLista(); pintarRutaBar();
         },
       }));
     }
     busq.addEventListener("input", pintarLista);
 
     const ctrls = h("div", { class: "mp-ctrls" },
-      h("button", { type: "button", class: "mp-ctrl", title: "Acercar mapa", "aria-label": "Acercar mapa", onclick: () => zoomPor(0.76) }, "+"),
-      h("button", { type: "button", class: "mp-ctrl", title: "Alejar mapa", "aria-label": "Alejar mapa", onclick: () => zoomPor(1.32) }, "−"),
-      h("button", { type: "button", class: "mp-ctrl", title: "Centrar capa", "aria-label": "Centrar capa", onclick: () => { vb = Object.assign({}, PRESETS[capa] || PRESETS.todos); aplicarVb(); } }, "⌖"));
+      h("button", { type: "button", class: "mp-ctrl", title: "Acercar mapa", "aria-label": "Acercar mapa", onclick: () => zoomPor(0.74, null, null, true) }, "+"),
+      h("button", { type: "button", class: "mp-ctrl", title: "Alejar mapa", "aria-label": "Alejar mapa", onclick: () => zoomPor(1.34, null, null, true) }, "−"),
+      h("button", { type: "button", class: "mp-ctrl", title: "Encuadrar capa completa", "aria-label": "Encuadrar capa completa", onclick: () => volarVb(presetDe(capa)) }, "⌖"));
     const leyenda = h("div", { class: "mp-ley", "aria-hidden": "true" },
-      h("span", {}, h("i", { style: "background:var(--oro-vivo)" }), "Lugar"),
-      h("span", {}, h("i", { style: "background:#6fc08f" }), "Ya leído"),
-      h("span", {}, h("i", { style: "background:#74a5ea" }), "Rutas"));
-    const marco = h("div", { class: "mp-marco" }, svgEl, ctrls, leyenda);
+      h("span", {}, h("i", { style: "background:var(--oro-vivo)" }), "Enclave"),
+      h("span", {}, h("i", { style: "background:#6fc08f" }), "Visitado"),
+      h("span", {}, h("i", { style: "background:#7fb2f5" }), "Rutas"));
+    const pieHud = h("div", { class: "mp-pie-hud" }, leyenda, escalaHud);
+    const marco = h("div", { class: "mp-marco" }, rosaAstrolabioSVG(sEl), svgEl, ctrls, pieHud);
+    const colMapa = h("div", { class: "mp-col-mapa" }, marco, rutaBar);
 
     const leidosTot = ATLAS_LUGARES.filter(lugarLeido).length;
     vista().replaceChildren(h("div", { class: "in" }, h("section", { class: "panel mp-pag" },
@@ -10162,15 +10854,22 @@
         h("p", { class: "nota-ui", text: `Recorre ${ATLAS_LUGARES.length} enclaves históricos del Levante y el Mediterráneo con las transliteraciones de BiEx. Has visitado en tu lectura ${leidosTot} de ${ATLAS_LUGARES.length} lugares.` })),
       guiaSeccion("mapa"),
       filtros,
-      h("div", { class: "mp-grid" }, marco, ficha),
-      h("div", { class: "tarjeta", style: "display:grid;gap:12px" },
-        h("h2", { style: "margin:0;font:500 1.05rem/1.2 var(--f-display)", text: "Directorio de lugares" }),
+      h("div", { class: "mp-grid" }, colMapa, ficha),
+      h("div", { class: "tarjeta", style: "display:grid;gap:12px;min-width:0" },
+        h("div", { class: "mp-dir-cab" },
+          h("h2", { style: "font:500 1.08rem/1.2 var(--f-display)", text: "Códice de lugares" }),
+          dirSub),
         h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), busq),
-        listaEl))));
-    if (lugarId && porId.has(String(lugarId).toLowerCase())) centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") ? 160 : 260);
-    else aplicarVb();
-    pintarMapa(); pintarFicha(); pintarLista();
-    if (restaurando()) intentarRestaurar();
+        dirCont))));
+
+    if (lugarId && porId.has(String(lugarId).toLowerCase())) {
+      centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") ? 148 : 250, false);
+    } else {
+      vb = presetDe(capa);
+      aplicarVb();
+    }
+    pintarMapa(); pintarFicha(); pintarLista(); pintarRutaBar();
+    alTope();
   }
 
   // ================================================================== PR #17 · Tarjetas de repaso breve de raíces griegas — 1 min/día (#/raices/repaso)
@@ -10439,7 +11138,7 @@
         fetch(API_JG + "/error", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ m: msg, a: String(a || "").slice(0, 120), l: +l || 0, v: "pr17" }),
+          body: JSON.stringify({ m: msg, a: String(a || "").slice(0, 120), l: +l || 0, v: "pr18" }),
           credentials: "omit",
           keepalive: true,
         }).catch(() => {});

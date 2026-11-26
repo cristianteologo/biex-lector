@@ -973,3 +973,41 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check app.js juego.js sw.js busqueda.js`, balance CSS (`3192/3192`), cero `:has()`, auditoría léxica sobre todo el diff y las 42 entradas del Atlas cotejadas contra `datos/libros/`: **CLEAN**.
 - Suite Playwright 3× HD (`verificar_pr17.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core`: **`pageerrors=0`, `axe_violations=0`, `0 px` de desborde en todas las vistas (`280 px` incluido)**, todas las capturas 3× HD inspeccionadas visualmente a **10/10**.
 - `python3 wix/sellar.py`: **al día** (`f8da4cf622e2`).
+
+---
+
+## Entrada #18 · PR #18 · Fluidez 60 fps, pinceladas flotantes de puntas suaves, Constelación 3D + giroscopio 2.5D, Atlas de museo con hoja de libro, coincidencia exacta de líneas, iluminación de citas, El Coloso a 60 fps, novedades de 3 días y cuidado teológico de «poder» (2026-11-26)
+
+**Rama:** `neon/pr18-fluidez-25d-atlas-lineas-coloso`
+**Archivos modificados:** `app.css`, `app.js`, `juego.js`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios entregados y verificados
+1. **Fluidez de desplazamiento a 60 fps en lectura bíblica y portada (`app.css`, `app.js`, `juego.js`):**
+   - Eliminado el último selector `:has()` global (`0` ocurrencias de `body:has` / `html:has` / `#vista:has` en todo el repositorio), retirado `backdrop-filter` de los controles flotantes presentes durante el scroll (`.saltos-rap`, `.jg-sala-p`), pausadas las animaciones ambientales durante `html.desplazando` y omitidas las lecturas de geometría en `tick()` mientras la página se desplaza.
+2. **Los 5 botones de portada flotando sutilmente con pinceladas de puntas suaves (`.hero .acciones > .btn`, `app.css`):**
+   - Extremos dorados y sepia rediseñados en abanico redondeado y aterciopelado (sin puntas agudas ni astillas), con levitación sutil desfasada (`heroFlota` en compositor GPU) y sombra proyectada propia (`::after` centrada con `transform: translate3d(0, 0, 0)` y `animation: none`) directamente bajo cada pincelada en temas *Obsidiana* y *Pergamino*.
+3. **Constelación en profundidad 3D real (`#/constelacion`) + inmersión 2.5D sensible al giroscopio (`INMERSION_25D` / `window.BiEx25D`, `app.js`, `app.css`, `juego.js`):**
+   - Motor `motorConstelacion` evolucionado a proyección en perspectiva 3D multicapa (`z` determinista por anillo jerárquico, ordenamiento de pintor de fondo a frente, niebla atmosférica y escala focal) sensible en tiempo real a la inclinación del dispositivo (`deviceorientation` con autocalibración suave) y al puntero en escritorio, manteniendo **0 % de uso de CPU/batería en reposo y durante el desplazamiento**, más paralaje 2.5D sutil en Portada, Atlas y El Coloso.
+4. **Iluminación dorada exacta del número de verso en saltos directos de citas (`.vn-foco`, `marcarVerso(v, true)`, `BiExJuego.fijarVersoFoco`):**
+   - Al tocar cualquier cita en el Atlas Bíblico, buscador, estudios o enlaces directos (`#/LIB/CAP/l/V`), el verso aterriza en la banda de lectura (`39,5 %`, ampliando `padding-bottom` si es uno de los últimos versos del capítulo como `Lουκᾶς 24:50`) e ilumina exactamente su número con halo dorado (`.vn-foco`) sincronizado con el foco activo de *Escudriña*.
+5. **Coincidencia exacta línea por línea entre `Lectura ↔ Textual` y `Por versos ↔ Continuo` + cero sobresalto arriba (`capturarAnclaLinea`, `yDeAncla`, `.encab-cifras.dos`):**
+   - Unificadas al milímetro las métricas tipográficas (`--t-verso: .98rem`, `line-height: calc(1.76 * var(--lh))`) y el alto de `.encab` (`106 px` idénticos en una sola fila horizontal para *Revisión* y *Reordenamiento*).
+   - `capturarAnclaLinea` clava el renglón inicial de `#v1` cuando `.encab` sigue a la vista cerca del inicio (`0 px` de sobresalto arriba) y ancla por rectángulo subpíxel real de línea en el resto del capítulo (`Δ ≤ 0,5 px` en `Lectura ↔ Textual` y `Por versos ↔ Continuo`).
+6. **Atlas bíblico de lujo sin recortes + Códice con efecto hoja de libro (`#/mapa`, `vistaMapa`, `libroPaginas`):**
+   - Lienzo completo `1080 × 580` (`4:3` en móvil, `width: 100%; max-width: 100%`, `0 px` de corte derecho desde `῾Hrṓmē` hasta `Damméśeq` y el Éufrates) con 14 polígonos costeros e insulares, 8 ríos históricos, 5 cordilleras, gratícula geográfica, rosa astrolabio de 8 puntas (cero cruces/estrellas), escala dinámica en km y estadios romanos, recorrido interactivo etapa por etapa y **Códice de lugares** paginado con giro 3D de hoja de libro (`libroPaginas`).
+7. **Armonización general del tamaño del texto (`--t-verso: .98rem`):**
+   - Aplicada de forma equilibrada en *Lectura*, *Textual*, *Análisis* (`.av-cab`, `.pal`), *Ficha del verso* (`.fv-es`), *Opciones* (`.op-muestra`), *Búsqueda* (`.rv-tx .vt`) y *Escudriña* (`.jg-vl-t`, `.jg-preg .t`, `.jg-vc-t`, `.jg-fj-v p`, `.jg-gt`).
+8. **El Coloso a 60 fps en sitio + estallido diegético acoplado al escenario (`pintarColoso`, `ejecutarGolpe` en `juego.js`):**
+   - Suprimida la reconstrucción completa del DOM al atacar (`<canvas>` e `<img>` intactos, `0 ms` de tirón), eliminada la notificación plana `.aviso-flot` sobre la capucha y añadidos el impacto energético diegético `.jg-col-imp` dentro de la escena y la estela de drenaje `.jg-col-hp-trail`.
+9. **Ocultación inmediata al pie (`.en-pie`), limpieza de espacios vacíos al final de capítulo, bonos persistentes y salto limpio al capítulo siguiente:**
+   - `observarFinVista` (`IntersectionObserver` sobre `footer.pie-a`, `.fin-leido` y `nav.fin-cap`) oculta al instante todos los iconos flotantes inferiores izquierdos al llegar al tramo final; depurados los márgenes verticales al cierre del capítulo; `MED.firma` reiniciada al recrear `.jg-med` para que `+50 %`, `×1,5` y `×2` persistan siempre tras cambiar de vista; `irCapituloInicio` aterriza siempre en `scrollY = 0`; y corregido el botón deshabilitado de capítulo en `.encab` (`<button disabled>`) para cumplir 100 % WCAG AA.
+10. **Registro de novedades de los últimos 3 días (`sincronizarNov3d`, `abrirHistorialNovedades` en `juego.js`):**
+    - Historial rodante local de 72 horas (`jg:nov3d`) con ventana modal **«Registro de los últimos 3 días»** agrupada por jornadas y formateadores `NOVEDAD` blindados contra campos opcionales ausentes (`0` `undefined` / `NaN`).
+
+### 2. Norma teológico-editorial permanente añadida a la memoria de Neon (Entrada #18)
+- **El poder proviene de Dios, nunca es propiedad del creyente:** jamás anteponer posesivos personales de primera o segunda persona delante de «poder» en consejos, descripciones, atributos ni mensajes de interfaz. Se escribe siempre **«subir poder»**, **«el poder»** o **«el poder de Dios obrando en la persona»** (corregidas las 5 apariciones previas en `app.js` y `juego.js`).
+
+### 3. Comprobaciones pasadas (Entrada #18)
+- `node --check app.js juego.js sw.js busqueda.js`, balance de llaves CSS (`3263 / 3263`), auditoría editorial y de rendimiento (`0` posesivos ante «poder», `0` palabras prohibidas, `0` `:has()` globales): **CLEAN**.
+- Suite Playwright 3× HD (`verificar_pr18.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core` WCAG 2.1 AA: **`0` violaciones `axe-core` en todas las vistas, `0` errores JS en móvil y escritorio, `0 px` de desborde lateral en `280 / 390 / 1280 px`**, todas las capturas 3× HD inspeccionadas visualmente.
+- `python3 wix/sellar.py`: **al día**.
