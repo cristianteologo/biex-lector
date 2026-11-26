@@ -164,6 +164,7 @@
       if (sw) sw.postMessage({ tipo: "widgetDatos", nivel: yo.nivel | 0, rango: yo.rangoNombre || "", pers: yo.perseverancia | 0, hoyV: (yo.hoy && yo.hoy.v) | 0, apodo: yo.apodo || "" });
     } catch (e) {}
     const ult = Number(A.store.get("jg:avT", 0)) || 0, l = yo.avisos || [];
+    sincronizarNov3d(l);
     if (l.length) {
       A.store.set("jg:avT", Math.max(ult, ...l.map((a) => a.t || 0)));
       const nuevos = ult ? l.filter((a) => a.t > ult && (a.k === "liga" || a.k === "compania" || a.k === "mision" || a.k === "beneficio")) : [];
@@ -601,7 +602,7 @@ html[data-mov="no"] .co-medidor.brilla .co-destello::before{animation:none}
 .jg-vl.espera{opacity:0;transform:translateY(6px)}
 .jg-vl-luz{position:absolute;inset:-40% -10% auto;height:80%;z-index:-1;background:radial-gradient(closest-side,color-mix(in srgb,var(--oro) 22%,transparent),transparent);opacity:.8}
 .jg-vl-rot{font:600 .68rem/1 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:var(--oro)}
-.jg-vl .jg-vl-t{margin:0;font-family:var(--f-texto);font-size:1.02rem;line-height:1.55;color:var(--tinta)}
+.jg-vl .jg-vl-t{margin:0;font-family:var(--f-texto);font-size:var(--t-verso,.98rem);line-height:1.58;color:var(--tinta)}
 .jg-vl-pie{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 10px;margin-top:4px}
 .jg-vl-ref{display:inline-flex;align-items:center;gap:4px;font:500 .82rem/1 var(--f-ui);color:var(--oro-vivo);text-decoration:none;padding:6px 10px;border-radius:999px}
 .jg-vl-ref svg{width:13px;height:13px}
@@ -1264,13 +1265,13 @@ html[data-mov="no"] .jg-qz-fondo i,html[data-mov="no"] .jg-qz .jg-preg{animation
   background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 26%,transparent),color-mix(in srgb,var(--oro) 8%,transparent));border:1px solid color-mix(in srgb,var(--oro) 42%,transparent);box-shadow:inset 0 1px 0 rgba(255,246,214,.3)}
 .jg-preg-cab .num{font:500 .7rem/1 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--tenue)}
 .jg-preg.bien .jg-preg-cab .num{color:var(--oro-vivo)}
-.jg-qz .jg-preg .t{position:relative;z-index:1;font:400 1.08rem/1.7 var(--f-texto)}
+.jg-qz .jg-preg .t{position:relative;z-index:1;font:400 var(--t-verso,.98rem)/1.68 var(--f-texto)}
 .jg-qz .jg-preg .t u{min-width:5em;padding:0 .35em;border-bottom:2px solid color-mix(in srgb,var(--oro) 80%,transparent);border-radius:6px 6px 0 0;
   background:linear-gradient(0deg,color-mix(in srgb,var(--oro) 20%,transparent),transparent 72%);box-shadow:0 6px 12px -8px color-mix(in srgb,var(--oro) 70%,transparent)}
 .jg-qz .jg-preg .t u.lleno{animation:jg-qz-hueco .45s cubic-bezier(.3,1.5,.5,1)}
 @keyframes jg-qz-hueco{from{transform:scale(.86);opacity:.4}to{transform:none;opacity:1}}
 .jg-qz .jg-ops{position:relative;z-index:1;gap:9px}
-.jg-qz .jg-op{position:relative;overflow:hidden;isolation:isolate;padding:13px 26px;min-height:48px;font:500 1rem/1.25 var(--f-texto);color:var(--tinta);border-radius:14px;
+.jg-qz .jg-op{position:relative;overflow:hidden;isolation:isolate;padding:13px 26px;min-height:48px;font:500 .96rem/1.25 var(--f-texto);color:var(--tinta);border-radius:14px;
   background:linear-gradient(160deg,var(--vd-f1),var(--vd-f2));border:1px solid var(--vd-br);box-shadow:inset 0 1px 0 var(--vd-in),0 10px 22px -16px var(--vd-so);
   transition:transform .2s cubic-bezier(.3,1.4,.5,1),border-color .2s,box-shadow .25s,color .2s;-webkit-tap-highlight-color:transparent}
 .jg-qz .jg-op>span{position:relative;z-index:1}
@@ -1307,7 +1308,7 @@ html[data-dal="mono"] .jg-qz .jg-op.mal::before{border-color:var(--tenue);backgr
 .jg-vc-sel{display:inline-flex;gap:2px;padding:2px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,transparent)}
 .jg-vc-b{font:500 .62rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:0;background:none;color:var(--tenue);cursor:pointer}
 .jg-vc-b[aria-pressed="true"]{background:color-mix(in srgb,var(--oro) 22%,transparent);color:var(--oro-vivo,var(--oro))}
-.jg-vc-t{margin:0;font:400 1rem/1.65 var(--f-texto);color:var(--tinta)}
+.jg-vc-t{margin:0;font:400 var(--t-verso,.98rem)/1.65 var(--f-texto);color:var(--tinta)}
 /* resultado: medalla con anillo de luz */
 .jg-qz-res{display:grid;justify-items:center;gap:10px;padding:20px 16px 18px;text-align:center}
 .jg-qz-res>*{position:relative;z-index:1}
@@ -1339,10 +1340,10 @@ html[data-theme="light"] .cf-raiz .cf-info{background:rgba(255,255,255,.7);borde
 
 .jg-preg:last-of-type{border-bottom:0}
 .jg-preg .ref{font:500 .74rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--oro)}
-.jg-preg .t{font:400 1.06rem/1.6 var(--f-texto);color:var(--tinta);margin:0}
+.jg-preg .t{font:400 var(--t-verso,.98rem)/1.6 var(--f-texto);color:var(--tinta);margin:0}
 .jg-preg .t u{text-decoration:none;display:inline-block;min-width:4.5em;border-bottom:2px solid var(--oro);color:var(--oro-vivo);text-align:center}
 .jg-ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.jg-op{font:400 .95rem/1.25 var(--f-texto);padding:11px 10px;border-radius:12px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer;text-align:center}
+.jg-op{font:400 .94rem/1.25 var(--f-texto);padding:11px 10px;border-radius:12px;border:1px solid var(--linea-2);background:var(--hoja-2);color:var(--tinta);cursor:pointer;text-align:center}
 .jg-op[aria-pressed=true]{border-color:var(--oro);background:var(--oro-suave);color:var(--oro-vivo)}
 .jg-op.ok{border-color:#6fbf8f;background:rgba(111,191,143,.16);color:var(--tinta)}
 .jg-op.mal{border-color:#d9785f;background:rgba(217,120,95,.14);color:var(--tinta)}
@@ -1386,12 +1387,13 @@ button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px
 .jg-comp-ico{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--linea);color:var(--oro);flex:none}
 .jg-comp-ico svg{width:20px;height:20px}
 .jg-mis-t{font-size:1.12rem}
-.jg-sala-p{position:sticky;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 120px);height:34px;box-sizing:border-box;margin:-34px auto 0;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--hoja) 72%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);color:var(--tinta);font:500 .8rem/1 var(--f-ui);cursor:pointer;box-shadow:var(--vidrio-sombra,0 8px 30px rgba(0,0,0,.3));white-space:nowrap}
+.jg-sala-p{position:sticky;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 120px);height:34px;box-sizing:border-box;margin:-34px auto 0;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 48%,var(--linea));background:linear-gradient(180deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 97%,transparent));color:var(--tinta);font:500 .8rem/1 var(--f-ui);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,248,224,.16),0 8px 24px -8px rgba(0,0,0,.62);white-space:nowrap;transition:opacity .14s ease,transform .16s ease}
 .jg-sala-p span{overflow:hidden;text-overflow:ellipsis}
 .jg-sala-p b{font-weight:400;color:var(--tenue)}
 .jg-sala-p i{position:relative;width:8px;height:8px;border-radius:50%;background:var(--tenue);flex:none}
 .jg-sala-p i.on{background:#7bc98f}
 .jg-sala-p i.on::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(123,201,143,.6);animation:jg-latido 2.4s ease-out infinite}
+html.desplazando .jg-sala-p i.on::after,html.oculto .jg-sala-p i.on::after{animation-play-state:paused}
 @keyframes jg-latido{from{transform:scale(.55);opacity:1}to{transform:scale(1.9);opacity:0}}
 .jg-con-m{position:relative}
 .jg-sala-m{position:absolute;right:-4px;top:-12px;display:flex;gap:2px;z-index:2;pointer-events:none}
@@ -1624,7 +1626,7 @@ html[data-mov="no"] .jg-yo .jg-emb::before,html[data-mov="no"] .jg-yo>.jg-mota{a
 .jg-fj-c b{font:500 1.7rem/1.05 var(--f-display);color:var(--ac,var(--oro-vivo));font-variant-numeric:lining-nums tabular-nums}
 .jg-fj-t{margin:0;max-width:34ch;color:var(--tinta-2);font:400 .92rem/1.45 var(--f-ui)}
 .jg-fj-v{display:grid;justify-items:center;gap:6px;max-width:40ch}
-.jg-fj-v p{margin:0;font:400 1.02rem/1.5 var(--f-texto,inherit);color:var(--tinta)}
+.jg-fj-v p{margin:0;font:400 var(--t-verso,.98rem)/1.52 var(--f-texto,inherit);color:var(--tinta)}
 @media (prefers-reduced-motion:reduce){.jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}.jg-fj-fig.anim .ser-in{animation:none}}
 html[data-mov="no"] .jg-fj-fig .fa-luz.forjada{animation:none;opacity:.85}html[data-mov="no"] .jg-fj-fig.anim .ser-in{animation:none}
 .ap-cita{display:inline-flex;align-items:center;gap:7px;padding:2px 10px 2px 7px;border-radius:99px;border:1px solid color-mix(in srgb,var(--oro) 45%,transparent);background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo);font:inherit;cursor:pointer}
@@ -1730,7 +1732,7 @@ html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px)
 .jg-escena{position:relative;height:clamp(210px,36vh,300px);border-radius:16px;overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 40%,transparent);background:radial-gradient(90% 90% at 50% 18%,color-mix(in srgb,var(--oro) 17%,transparent),transparent 70%),color-mix(in srgb,#000 34%,var(--hoja-2));display:grid;place-items:center;touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .jg-escena>*{animation:jg-entra .6s cubic-bezier(.2,.7,.2,1) both}
 .jg-guia>h2{font:600 clamp(1.5rem,6vw,2rem)/1.1 var(--f-display);color:var(--tinta);margin:0;letter-spacing:.01em;text-transform:none;display:block}
-.jg-guia .jg-gt{font:400 1.08rem/1.55 var(--f-texto);color:var(--tinta-2);margin:0;min-height:5em}
+.jg-guia .jg-gt{font:400 1rem/1.55 var(--f-texto);color:var(--tinta-2);margin:0;min-height:5em}
 .jg-guia-pie{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .jg-puntos{display:flex;gap:4px}
 .jg-puntos button{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
@@ -1778,7 +1780,7 @@ html.jg-con-muelle .jg-sala-p{bottom:calc(88px + env(safe-area-inset-bottom,0px)
 html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov="no"] .jg-epica .jg-brasa,html[data-mov="no"] .jg-epica .jg-brasa::after,html[data-mov="no"] .ap-lumbre::after{animation:none}html[data-mov="no"] .jg-escena *,html[data-mov="no"] .jg-escena *::after,html[data-mov="no"] .jg-yo .jg-emb::after,html[data-mov="no"] .jg-yo .jg-barra>i::after,html[data-mov="no"] .jg-llave::before,html[data-mov="no"] .jg-llave .jg-codigo span,html[data-mov="no"] .jg-muelle,html[data-mov="no"] .jg-tiembla{animation:none!important}
 /* N10 + Nitidez HD (Neon, 23-nov-2026): sombra aplicada solo al SVG (no al padre) para que NIVEL, cifra y bonos
    se dibujen nítidos a densidad real sin pasar por capa rasterizada de filtro; tipografía en px fijos inmune a --k */
-.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:59px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55)}
+.jg-med{position:fixed;z-index:61;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:59px;display:block;text-decoration:none;-webkit-tap-highlight-color:transparent;--m1:#fbe7a6;--m2:#d1a640;--m3:#6f5016;--mg:rgba(209,166,64,.55);transition:opacity .14s ease,transform .16s ease}
 .jg-med[data-r="0"]{--m1:#f6d2ad;--m2:#bd844c;--m3:#5a381a;--mg:rgba(189,132,76,.5)}
 .jg-med[data-r="1"]{--m1:#f5f7fb;--m2:#b6bfcc;--m3:#535b67;--mg:rgba(182,191,204,.5)}
 .jg-med[data-r="3"]{--m1:#e6fbea;--m2:#56c48c;--m3:#1b5539;--mg:rgba(86,196,140,.5)}
@@ -1786,6 +1788,7 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 .jg-med svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 6px 9px rgba(0,0,0,.58));shape-rendering:geometricPrecision}
 .jg-med .arco{transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
 .jg-med .barrido{animation:jg-med-barrido 9s ease-in-out infinite}
+html.desplazando .jg-med .barrido{animation-play-state:paused}
 @keyframes jg-med-barrido{0%,62%{transform:translate3d(0,0,0)}100%{transform:translate3d(96px,0,0)}}
 .jg-med .nvk{position:absolute;left:0;right:0;top:20px;text-align:center;font:600 5.5px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.7px!important;text-indent:.7px;color:var(--m2);pointer-events:none;white-space:nowrap;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 .jg-med b{position:absolute;left:0;right:0;top:27px;text-align:center;font:600 15px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:0!important;font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 8px var(--mg),0 1px 0 rgba(0,0,0,.78);pointer-events:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
@@ -1819,6 +1822,7 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 @media (prefers-reduced-motion:reduce){.jg-med .barrido,.jg-med.sube .rayos,.jg-med.pulso{animation:none}.jg-med .arco{transition:none}}
 html[data-mov="no"] .jg-med .barrido,html[data-mov="no"] .jg-med.sube .rayos,html[data-mov="no"] .jg-med.pulso{animation:none}
 html.con-modal .jg-med{opacity:0;pointer-events:none}
+.jg-med.en-pie,.jg-sala-p.en-pie{opacity:0!important;pointer-events:none!important;transform:translate3d(0,10px,0) scale(.94)!important;transition:opacity .14s ease,transform .16s ease!important}
 html.jg-con-med .adelante{bottom:calc(122px + env(safe-area-inset-bottom,0px))}
 html.jg-con-med.jg-con-lb .adelante{bottom:calc(134px + env(safe-area-inset-bottom,0px))}
 .jg-rota{display:inline-block}
@@ -2270,6 +2274,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-stage{position:relative;width:100%;aspect-ratio:16/9.2;min-height:208px;max-height:375px;overflow:hidden;background:#050506;isolation:isolate}
 @media (max-width:520px){.jg-col-stage{aspect-ratio:16/10.5;min-height:196px}}
 .jg-col-art-w{position:absolute;inset:0;will-change:transform}
+.jg-col-25d{position:absolute;inset:0;transform:translate3d(calc(var(--px25,0)*-4.5px),calc(var(--py25,0)*-3.2px),0);transition:transform .16s ease-out;will-change:transform}
 .jg-col-art-w.sacude-1{animation:col-sacude-1 .38s cubic-bezier(.2,.8,.2,1)}
 .jg-col-art-w.sacude-2{animation:col-sacude-2 .48s cubic-bezier(.18,.82,.22,1)}
 .jg-col-art-w.sacude-3{animation:col-sacude-3 .62s cubic-bezier(.16,.84,.2,1)}
@@ -2290,6 +2295,17 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-tit-wrap{position:absolute;left:16px;right:16px;bottom:8px;z-index:4;text-align:center;display:grid;gap:2px;pointer-events:none}
 .jg-col-tit-wrap h2{margin:0;font:500 clamp(1.26rem,4.4vw,1.76rem)/1.1 var(--f-display);color:#fbf5e9;letter-spacing:.03em;text-shadow:0 3px 22px rgba(0,0,0,.95)}
 .jg-col-fase{font:600 .62rem/1.2 var(--f-ui);letter-spacing:.2em;text-transform:uppercase;color:#dfb96e;text-shadow:0 2px 12px rgba(0,0,0,.95)}
+.jg-col-imp{--ic:#f4cf73;position:absolute;top:43%;left:50%;transform:translate3d(-50%,-50%,0);display:grid;justify-items:center;gap:4px;pointer-events:none;z-index:6;will-change:transform,opacity;animation:col-imp-txt 1.95s cubic-bezier(.16,.88,.24,1) forwards}
+.jg-col-imp.palabra{--ic:#8cc4fa}
+.jg-col-imp.fuerza{--ic:#ffe292}
+.jg-col-imp-onda{position:absolute;left:50%;top:50%;width:128px;height:128px;margin:-64px 0 0 -64px;border-radius:50%;border:2px solid var(--ic);box-shadow:inset 0 0 22px color-mix(in srgb,var(--ic) 55%,transparent);pointer-events:none;z-index:5;will-change:transform,opacity;animation:col-imp-onda .68s cubic-bezier(.16,.84,.28,1) forwards}
+.jg-col-imp-tajo{position:absolute;left:50%;top:43%;width:min(78%,280px);height:3px;margin:-1.5px 0 0 calc(min(78%,280px)*-.5);border-radius:999px;background:linear-gradient(90deg,transparent,var(--ic),#ffffff,var(--ic),transparent);pointer-events:none;z-index:5;will-change:transform,opacity;animation:col-imp-tajo .46s cubic-bezier(.18,.88,.28,1) forwards}
+.jg-col-imp-num{font:700 clamp(1.95rem,6.6vw,2.75rem)/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums;color:#fff7d6;text-shadow:0 0 26px var(--ic),0 4px 18px rgba(0,0,0,.98);letter-spacing:.01em}
+.jg-col-imp.crit .jg-col-imp-num{color:#ffffff;font-size:clamp(2.15rem,7.2vw,3rem);text-shadow:0 0 34px var(--ic),0 0 12px #ffffff,0 4px 20px rgba(0,0,0,.98)}
+.jg-col-imp-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font:700 .64rem/1.1 var(--f-ui);letter-spacing:.15em;text-transform:uppercase;color:#fff8df;background:linear-gradient(90deg,rgba(10,9,8,.88),color-mix(in srgb,var(--ic) 28%,rgba(12,10,8,.92)),rgba(10,9,8,.88));border:1px solid color-mix(in srgb,var(--ic) 78%,rgba(255,255,255,.3));box-shadow:0 8px 20px -6px rgba(0,0,0,.85)}
+@keyframes col-imp-onda{0%{opacity:.95;transform:scale(.22)}70%{opacity:.55}100%{opacity:0;transform:scale(1.85)}}
+@keyframes col-imp-tajo{0%{opacity:0;transform:rotate(-16deg) scaleX(.18)}24%{opacity:1;transform:rotate(-16deg) scaleX(1.06)}100%{opacity:0;transform:rotate(-16deg) scaleX(1.28)}}
+@keyframes col-imp-txt{0%{opacity:0;transform:translate3d(-50%,-28%,0) scale(.68)}12%{opacity:1;transform:translate3d(-50%,-56%,0) scale(1.14)}24%{opacity:1;transform:translate3d(-50%,-52%,0) scale(1)}76%{opacity:1;transform:translate3d(-50%,-68%,0) scale(1)}100%{opacity:0;transform:translate3d(-50%,-92%,0) scale(.94)}}
 .jg-col-dano{position:absolute;top:38%;left:50%;transform:translate3d(-50%,0,0);display:grid;justify-items:center;gap:4px;font:700 clamp(1.85rem,6.2vw,2.55rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 26px rgba(245,188,78,.98),0 4px 18px rgba(0,0,0,.98);pointer-events:none;z-index:6;animation:col-dano 3.6s cubic-bezier(.18,.82,.24,1) forwards;will-change:transform,opacity}
 .jg-col-dano small{font:700 .68rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:#ffe69b;padding:4px 11px;border-radius:999px;background:rgba(12,10,8,.9);border:1px solid rgba(255,222,130,.72);box-shadow:0 6px 18px rgba(0,0,0,.72)}
 .jg-col-dano.crit{color:#ffffff;text-shadow:0 0 32px rgba(255,214,102,1),0 0 12px rgba(126,184,240,.85),0 4px 18px rgba(0,0,0,.98)}
@@ -2313,7 +2329,8 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-hp-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 10px;font:500 .76rem/1.2 var(--f-ui);color:#d7cfbf}
 .jg-col-hp-cab b{font:600 1.06rem/1 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.02em}
 .jg-col-hp-bar{position:relative;height:13px;border-radius:999px;background:linear-gradient(180deg,#1a1612,#0c0a08);overflow:hidden;border:1px solid rgba(212,175,105,.46);padding:2px;box-shadow:inset 0 2px 6px rgba(0,0,0,.85),0 0 16px -6px rgba(235,172,72,.35)}
-.jg-col-hp-bar>i{position:relative;display:block;height:100%;border-radius:inherit;overflow:hidden;background:linear-gradient(90deg,#8f241c 0%,#cc5a28 38%,#e8a23c 78%,#ffe69c 100%);box-shadow:0 0 14px rgba(238,164,62,.55);transition:width .55s cubic-bezier(.2,.8,.2,1)}
+.jg-col-hp-trail{position:absolute;left:2px;top:2px;bottom:2px;border-radius:inherit;background:linear-gradient(90deg,rgba(255,214,132,.55),#fff7da);box-shadow:0 0 12px rgba(255,232,152,.78);pointer-events:none;z-index:0;transition:width .68s .16s cubic-bezier(.22,1,.36,1)}
+.jg-col-hp-bar>i{position:relative;z-index:1;display:block;height:100%;border-radius:inherit;overflow:hidden;background:linear-gradient(90deg,#8f241c 0%,#cc5a28 38%,#e8a23c 78%,#ffe69c 100%);box-shadow:0 0 14px rgba(238,164,62,.55);transition:width .22s cubic-bezier(.2,.9,.2,1)}
 .jg-col-hp-bar>i::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,rgba(255,250,232,.46) 50%,transparent 72%);transform:translate3d(-120%,0,0);animation:col-hp-luz 4.8s ease-in-out infinite;will-change:transform}
 @keyframes col-hp-luz{0%,42%{transform:translate3d(-120%,0,0)}100%{transform:translate3d(140%,0,0)}}
 .jg-col-hp-m{position:absolute;top:0;bottom:0;width:1.5px;background:rgba(5,5,6,.72);box-shadow:1px 0 0 rgba(255,232,168,.24);pointer-events:none;z-index:2}
@@ -2386,10 +2403,18 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-jp-ult{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);font:400 .8rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .jg-jp-ult i{width:8px;height:8px;border-radius:50%;background:var(--oro);opacity:.72;flex:none}
 .jg-jp-ult b{color:var(--tinta);font-weight:500}
+html.desplazando .jg-col-art,html.desplazando .jg-col-velo,html.desplazando .jg-col-prev img,html.desplazando .jg-col-hp-bar>i::after,
 html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after,
 html.oculto .jg-jp-hero::before,html.oculto .jg-jp-hero::after,html.oculto .jg-jp-aro,html.oculto .jg-col-art,html.oculto .jg-col-velo,html.oculto .jg-col-prev img,html.oculto .jg-col-hp-bar>i::after,html.oculto .jg-col-hab.t3.listo::after,html.oculto .jg-med .barrido{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-art,.jg-col-velo,.jg-col-prev img,.jg-col-hp-bar>i::after,.jg-col-hab.t3.listo::after{animation:none}}
 html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,html[data-mov="no"] .jg-jp-aro,html[data-mov="no"] .jg-col-art,html[data-mov="no"] .jg-col-velo,html[data-mov="no"] .jg-col-prev img,html[data-mov="no"] .jg-col-hp-bar>i::after,html[data-mov="no"] .jg-col-hab.t3.listo::after{animation:none}
+.jg-nov-pie{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-top:6px;margin-top:2px;border-top:1px solid var(--linea-2)}
+.jg-nov-pie small{font:400 .72rem/1.2 var(--f-ui);color:var(--tenue)}
+.jg-nov-3d-btn{appearance:none;background:color-mix(in srgb,var(--oro) 10%,var(--hoja-2));border:1px solid color-mix(in srgb,var(--oro) 38%,var(--linea-2));border-radius:999px;padding:5px 11px;color:var(--oro-vivo);font:600 .7rem/1.1 var(--f-ui);letter-spacing:.05em;cursor:pointer;transition:border-color .16s,background-color .16s}
+.jg-nov-3d-btn:hover,.jg-nov-3d-btn:focus-visible{border-color:var(--oro-vivo);background:color-mix(in srgb,var(--oro) 18%,var(--hoja-2));outline:none}
+.jg-nov-3d-wrap{display:grid;gap:14px}
+.jg-nov-dia{display:grid;gap:7px}
+.jg-nov-dia-h{margin:0;padding-bottom:4px;border-bottom:1px solid var(--linea-2);font:600 .68rem/1.2 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--oro)}
 
 /* PR #13 · Ajedrez Bíblico («Escudriña · Estrategia» · .aj-*) */
 .aj-card-ent{position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--oro) 48%,var(--linea-2));border-radius:18px;padding:15px 16px;display:grid;gap:10px;background:radial-gradient(120% 90% at 92% 10%,color-mix(in srgb,var(--oro) 16%,transparent),transparent 62%),linear-gradient(165deg,color-mix(in srgb,var(--hoja-2) 96%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 color-mix(in srgb,var(--oro-vivo) 22%,transparent),0 18px 38px -28px rgba(0,0,0,.78)}
@@ -2412,7 +2437,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
 
 .aj-arena{display:grid;gap:14px;align-items:start}
 @media (min-width:900px){.aj-arena{grid-template-columns:minmax(320px,min(468px,calc(100dvh - 440px))) minmax(0,1fr);gap:18px}}
-@media (max-width:760px){body:has(.aj-tab) .saltos-rap{opacity:0!important;pointer-events:none!important}}
+@media (max-width:760px){html.jg-con-muelle .saltos-rap{opacity:0!important;pointer-events:none!important}}
 .aj-col-tab{display:grid;gap:9px;min-width:0}
 .aj-col-lat{display:grid;gap:12px;min-width:0}
 
@@ -2939,7 +2964,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       h("div", {}, barraEpica(y, pct),
         h("div", { class: "jg-nivel" }, h("span", { text: y.enTope ? "Llegaste al nivel tope de este mes (" + y.tope + "): el 1.º del mes se abren de 2 a 7 niveles nuevos y tu reserva sube contigo" : fmt(y.xpNivel) + " de " + fmt(y.xpSig) + " para el nivel " + (y.nivel + 1) }))));
     t.classList.add("jg-yo");
-    // P24 + V18 (BiEx, 11 y 12-nov-2026): la tarjeta crece por etapas con tu poder (Semilla, Brote, Raíz honda, Copa, Fruto;
+    // P24 + V18 (BiEx, 11 y 12-nov-2026): la tarjeta crece por etapas con el poder (Semilla, Brote, Raíz honda, Copa, Fruto;
     // Tehillim [Salmos] 1:3): marco con filigrana de vid en las esquinas, cada etapa con su metal; desde la segunda, un aura que
     // respira tras el emblema; desde la cuarta, motas de luz; en la quinta, destellos rubí. Todo quieto salvo la opacidad.
     const poder = (y.av && y.av.poder) | 0, et = poder >= 2400 ? 5 : poder >= 1200 ? 4 : poder >= 600 ? 3 : poder >= 250 ? 2 : 1;
@@ -2948,7 +2973,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const esq = (cl) => h("span", { class: "jg-esq " + cl, "aria-hidden": "true" }, A.svg('<path d="M3 41C3 21 21 3 41 3" fill="none" stroke="var(--et)" stroke-width="1.6" stroke-linecap="round"/><path d="M9 41C9 25 25 9 41 9" fill="none" stroke="var(--et)" stroke-opacity=".5" stroke-width="1"/>' +
       '<path d="M15 24c3-6 9-8 13-5-4 4-9 6-13 5zM24 15c5-4 11-3 13 1-5 2-10 2-13-1z" fill="var(--et)" fill-opacity=".75"/><circle cx="8" cy="20" r="1.6" fill="var(--et)"/>', "0 0 44 44"));
     t.prepend(esq("e1"), esq("e2"));
-    const rg = t.querySelector(".jg-rango"); if (rg) rg.after(h("div", { class: "jg-etapa", title: "Tu tarjeta crece con tu poder (" + fmt(poder) + ")", text: "Etapa " + ["", "I", "II", "III", "IV", "V"][et] + " · " + ETN[et] }));
+    const rg = t.querySelector(".jg-rango"); if (rg) rg.after(h("div", { class: "jg-etapa", title: "Tu tarjeta crece con el poder (" + fmt(poder) + ")", text: "Etapa " + ["", "I", "II", "III", "IV", "V"][et] + " · " + ETN[et] }));
     if (et >= 4) for (let i = 0; i < 4; i++) t.append(h("i", { class: "jg-mota", "aria-hidden": "true", style: "left:" + (14 + i * 23) + "%;--d:" + (i * 1.7).toFixed(1) + "s;--t:" + (6.5 + i * 0.9).toFixed(1) + "s" }));
     // V18: lo ganado hoy se ve en la barra (tramo más claro antes del borde) y en el renglón de abajo
     const hoyXp = (y.hoy && y.hoy.xp) | 0, bar = t.querySelector(".jg-epica");
@@ -3161,12 +3186,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     adoptados: (a) => (a.n === 1 ? "1 persona que llegó con lo que compartiste antes de tener cuenta ya está en tu árbol de la siembra." : fmt(a.n) + " personas que llegaron con lo que compartiste antes de tener cuenta ya están en tu árbol de la siembra."), propuesta: (a) => "Tu propuesta se hizo realidad: +" + a.h + " h de experiencia doble. ¡Gracias por construir Escudriña!",
     nivel10: (a) => a.a + " llegó al nivel 10: +" + a.xp + ".", reparo: (a) => "Te devolvimos " + plural(a.pts | 0, "punto de atributo", "puntos de atributo") + (a.compras ? " (los " + a.compras + " que compraste por " + fmt(a.dr | 0) + " dracmas y los de tus niveles nuevos)" : " de tus niveles nuevos") + " que no se veían por un fallo. Ya puedes repartirlos.",
     libroInv: (a) => a.a + " terminó su primer libro" + (a.lib ? ", " + nombreLibro(a.lib) + "," : "") + " y tú recibes +" + fmt(a.xp) + " de experiencia.", libro: (a) => "Terminaste " + nombreLibro(a.lib) + ": +" + a.xp + ".",
-    liga: (a) => "Semana de liga cerrada: puesto " + a.pos + " de " + a.n + (a.nvNuevo > a.nv ? "; ¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
+    liga: (a) => "Semana de liga cerrada" + (a.pos != null && a.n != null ? ": puesto " + a.pos + " de " + a.n : "") + (a.nvNuevo > a.nv ? (a.pos != null && a.n != null ? "; " : ": ") + "¡subiste a la liga " + ligaNombre(a.nvNuevo) + "!" : "") + (a.h ? " +" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + a.dr + " dracmas" : "") : "") + ".",
     compania: (a) => "¡«" + a.nombre + "» logró su meta común de la semana! +" + a.h + " h de experiencia doble.",
     renuevo: (a) => "¡Renuevo cumplido! Recuperaste " + plural(a.p, "día", "días") + " de perseverancia: ahora llevas " + plural(a.pers, "día", "días") + ".",
     renuevo_vence: (a) => "Tu Renuevo venció sin completar sus misiones; tus " + plural(a.p, "día", "días") + " de perseverancia siguen esperando otro Renuevo.",
     fruto: (a) => "Tu " + ({ be: "benevolencia", go: "gozosidad", pl: "placidez", lo: "longanimidad", bn: "benignidad", bo: "bondad", cf: "confiabilidad", ma: "mansedumbre", te: "templanza" }[a.f] || "fruto") + " subió al nivel " + a.n + ": su cámara de la granada brilla más.",
-    mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + "+" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") + ".",
+    mision: (a) => (a.ok ? (a.e ? "¡Se logró el relevo " + (a.e + 1) + " de la misión mundial! " : "¡La misión mundial se logró! ") : (a.e ? "El relevo " + (a.e + 1) + " no se alcanzó esta vez, pero tu aporte cuenta: " : "La misión mundial no se alcanzó esta vez, pero tu aporte cuenta: ")) + (a.h ? "+" + horas(a.h * 3600e3) + " de experiencia doble" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") : (a.xp ? "+" + fmt(a.xp) + " de experiencia" + (a.dr ? " y " + plural(a.dr, "dracma", "dracmas") : "") : (a.dr ? "+" + plural(a.dr, "dracma", "dracmas") : "gracias por participar"))) + ".",
     renMedia: (a) => (a.m % 2 ? "Siete días seguidos de perseverancia: ganaste un descanso y media pieza de Renuevo (te falta otra media para un Renuevo sin dracmas)." : "Siete días seguidos de perseverancia: ganaste un descanso y completaste una pieza de Renuevo: tu próximo Renuevo sale sin dracmas."),
     beneficio: (a) => {
       const de = a.de || "Un lector";
@@ -3217,9 +3242,37 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const ayer = new Date(hoy); ayer.setDate(hoy.getDate() - 1);
     return (igual(d, ayer) ? "Ayer" : F_DIA.format(d) + (d.getFullYear() !== hoy.getFullYear() ? " de " + d.getFullYear() : "")) + " · " + hr;
   }
-  // AC12: lo que sale al marcar «Leído» (fragmentos y dracmas) también queda en Novedades: se guarda en este dispositivo y se
-  // une a las novedades del servidor por su hora
-  function novedadLocal(k, d) { const l = A.store.get("jg:novL", null) || []; l.unshift(Object.assign({ k, t: Date.now() }, d)); A.store.set("jg:novL", l.slice(0, 30)); }
+  // AC12 + PR #18: registro completo de Novedades de los últimos 3 días (72 h) combinando servidor (yo.avisos) y eventos locales
+  const NOV_3D_MS = 3 * 86400e3;
+  function claveNov(a) {
+    if (!a || !a.k) return "";
+    return [a.k, Math.round((a.t || 0) / 2000), a.a || "", a.nvNuevo || a.pos || a.dr || a.n || a.m || ""].join("|");
+  }
+  function sincronizarNov3d(extra) {
+    if (!A || !A.store) return [];
+    const ahora = Date.now();
+    const prev = Array.isArray(A.store.get("jg:nov3d", null)) ? A.store.get("jg:nov3d", null) : [];
+    const loc = Array.isArray(A.store.get("jg:novL", null)) ? A.store.get("jg:novL", null) : [];
+    const serv = S.yo && Array.isArray(S.yo.avisos) ? S.yo.avisos : [];
+    const mapa = new Map();
+    for (const x of [...(Array.isArray(extra) ? extra : []), ...serv, ...loc, ...prev]) {
+      if (!x || !x.k || !NOVEDAD[x.k] || !x.t) continue;
+      if (ahora - x.t > NOV_3D_MS) continue;
+      const ck = claveNov(x);
+      if (ck && !mapa.has(ck)) mapa.set(ck, x);
+    }
+    const lista = [...mapa.values()].sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 240);
+    A.store.set("jg:nov3d", lista);
+    return lista;
+  }
+  function novedadLocal(k, d) {
+    const ahora = Date.now();
+    const item = Object.assign({ k, t: ahora }, d);
+    const l = (A.store.get("jg:novL", null) || []).filter((x) => x && x.t && ahora - x.t <= NOV_3D_MS);
+    l.unshift(item);
+    A.store.set("jg:novL", l.slice(0, 120));
+    sincronizarNov3d([item]);
+  }
   // Competencia en Novedades: guarda una foto ligera de tu puesto en cada ámbito (liga, clasificación, compañía) y registra
   // quién te adelantó (o a quién superaste) con la hora y la diferencia de experiencia, sin duplicar avisos ya enviados por el servidor.
   function comprobarAdelantamientos(clave, lista, amb, ruta, yoExtra) {
@@ -3262,26 +3315,51 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (ks.length > 18) ks.sort((a, b) => (snaps[a].t || 0) - (snaps[b].t || 0)).slice(0, ks.length - 18).forEach((k) => { delete snaps[k]; });
     A.store.set("jg:snapPos", snaps);
   }
+  function filaNovedad(a, seguir, horas, cierraModal) {
+    const t = a.t ? h("time", { class: "jg-nov-t", datetime: new Date(a.t).toISOString(), text: cuandoFue(a.t) }) : null;
+    if (t && horas) horas.push([t, a.t]);
+    const esComp = a.k === "adelantado" || a.k === "cerca_puesto" || a.k === "interaccion";
+    const esSub = a.k === "adelantaste";
+    const alIr = cierraModal ? () => { if (A.cerrarModal) A.cerrarModal(); } : null;
+    const acc = a.k === "adelantado" || a.k === "cerca_puesto"
+      ? h("a", { class: "jg-nov-acc", href: seguir, onclick: alIr, text: a.k === "adelantado" ? "Leer para recuperar tu puesto ›" : "Leer para adelantarlo ›" })
+      : (a.k === "interaccion" ? h("a", { class: "jg-nov-acc", href: a.ruta || seguir, onclick: alIr, text: "Ir a leer ›" }) : a.ruta && esSub ? h("a", { class: "jg-nov-acc", href: a.ruta, onclick: alIr, text: "Ver puestos ›" }) : null);
+    return h("li", { class: esComp ? "comp" : esSub ? "subio" : "" }, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }), acc);
+  }
+  function abrirHistorialNovedades(hist, seguir) {
+    const hoy = new Date();
+    const ayer = new Date(hoy); ayer.setDate(hoy.getDate() - 1);
+    const igualDia = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const grupos = new Map();
+    for (const a of hist) {
+      const d = new Date(a.t || Date.now());
+      const et = igualDia(d, hoy) ? "Hoy" : igualDia(d, ayer) ? "Ayer" : F_DIA.format(d);
+      if (!grupos.has(et)) grupos.set(et, []);
+      grupos.get(et).push(a);
+    }
+    const bloques = [...grupos.entries()].map(([dia, items]) => h("section", { class: "jg-nov-dia" },
+      h("h4", { class: "jg-nov-dia-h", text: `${dia} (${items.length})` }),
+      h("ul", { class: "jg-novedades" }, items.map((a) => filaNovedad(a, seguir, null, true)))));
+    A.abrirModal(() => A.cajaModal(
+      A.cabModal("Registro de los últimos 3 días", "Novedades · Escudriña"),
+      h("div", { class: "jg-nov-3d-wrap" },
+        h("p", { class: "jg-mini", style: "margin:0", text: "Se conservan aquí todas tus novedades, hallazgos y movimientos de los últimos 3 días completos." }),
+        ...bloques)));
+  }
   function tarjetaNovedades(y) {
-    const loc = (A.store.get("jg:novL", null) || []).filter((a) => a && a.t);
-    const l = [...(y.avisos || []), ...loc].filter((a) => NOVEDAD[a.k]).sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 8);
+    const hist = sincronizarNov3d(y && y.avisos ? y.avisos : []);
+    const l = hist.slice(0, 8);
     if (!l.length) return null;
     const horas = [];
     const u = A.ultimo && A.ultimo(), seguir = (u && u.h) || "#/MAT/1";
-    const ul = h("ul", { class: "jg-novedades" }, l.map((a) => {
-      const t = a.t ? h("time", { class: "jg-nov-t", datetime: new Date(a.t).toISOString(), text: cuandoFue(a.t) }) : null;
-      if (t) horas.push([t, a.t]);
-      const esComp = a.k === "adelantado" || a.k === "cerca_puesto" || a.k === "interaccion";
-      const esSub = a.k === "adelantaste";
-      const acc = a.k === "adelantado" || a.k === "cerca_puesto"
-        ? h("a", { class: "jg-nov-acc", href: seguir, text: a.k === "adelantado" ? "Leer para recuperar tu puesto ›" : "Leer para adelantarlo ›" })
-        : (a.k === "interaccion" ? h("a", { class: "jg-nov-acc", href: a.ruta || seguir, text: "Ir a leer ›" }) : a.ruta && esSub ? h("a", { class: "jg-nov-acc", href: a.ruta, text: "Ver puestos ›" }) : null);
-      return h("li", { class: esComp ? "comp" : esSub ? "subio" : "" }, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }), acc);
-    }));
+    const ul = h("ul", { class: "jg-novedades" }, l.map((a) => filaNovedad(a, seguir, horas, false)));
     if (horas.some(([, t]) => Date.now() - t < 3600e3)) {
       const reloj = setInterval(() => { if (!ul.isConnected) return clearInterval(reloj); if (document.hidden) return; for (const [el, t] of horas) el.textContent = cuandoFue(t); }, 60000);
     }
-    return tarjeta("Novedades", null, ul);
+    const pieNov = h("div", { class: "jg-nov-pie" },
+      h("small", { text: "Guardado de los últimos 3 días" }),
+      h("button", { type: "button", class: "jg-nov-3d-btn", onclick: () => abrirHistorialNovedades(hist, seguir), text: `Últimos 3 días (${hist.length})` }));
+    return tarjeta("Novedades", null, ul, pieNov);
   }
   const nombreLibro = (c) => (A.nombreLibro && A.nombreLibro(c)) || c;
   async function pintarPanel(cont) {
@@ -3998,12 +4076,23 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   }
   async function pintarColoso(cont) {
     document.title = "El Coloso de la Tradición · Escudriña · BiEx";
+    if (window.BiEx25D && window.BiEx25D.refrescar) window.BiEx25D.refrescar();
     const yaC = COLOSO_CACHE.d;
     const zona = h("div", { class: "jg jg-col-arena" }, yaC ? null : h("p", { class: "cargando", text: "Despertando la incursión…" }));
     marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), A.guiaSeccion ? A.guiaSeccion("coloso") : null, zona);
     let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0, ultGolpe = null;
     const pararRes = () => { if (resRaf) { cancelAnimationFrame(resRaf); resRaf = 0; } };
-    const pintar = (c, infoGolpe) => {
+    const filasTop = (lista) => lista.slice(0, 15).map((x, idx) => {
+      const ap = x.apodo || x.a || "Lector", [l, col] = embDe(x.emb || x.e);
+      const pts = x.aporte != null ? x.aporte : (x.dano != null ? x.dano : (x.pts | 0));
+      return h("li", { class: "jg-fila" + (x.yo || (S.yo && ap === S.yo.apodo) ? " yo" : "") },
+        h("span", { class: "p", text: String(idx + 1) }),
+        emblema(l, col, x.marco || x.m || 0, x.foto || x.f),
+        h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
+        h("span", { class: "x", text: fmt(pts) }));
+    });
+    const pintar = (cIni, infoGolpe) => {
+      let c = cIni;
       pararRes();
       if (tPost) { clearInterval(tPost); tPost = 0; }
       if (cont !== S.cont || !zona.isConnected) return;
@@ -4024,14 +4113,16 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       const perf = perfilResonanciaNivel(nivelYo);
       const mult = 1 + poderYo / 2000;
       const cargas = Math.max(0, c.cargas | 0), cmax = Math.max(1, c.cargasMax || 6);
-      const postAct = COLOSO_POSTURAS[idxPost % COLOSO_POSTURAS.length];
+      let postAct = COLOSO_POSTURAS[idxPost % COLOSO_POSTURAS.length];
       const lienzoFx = h("canvas", { class: "jg-col-fx", "aria-hidden": "true" });
       const sacudeCl = infoGolpe ? (infoGolpe.hab === "fuerza" || infoGolpe.crit ? " sacude-3" : infoGolpe.hab === "palabra" || infoGolpe.brecha ? " sacude-2" : " sacude-1") : "";
       const artWrap = h("div", { class: "jg-col-art-w" + (derrotado ? " caido" : "") + sacudeCl },
-        h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
-        h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
-        h("div", { class: "jg-col-velo b", "aria-hidden": "true" }));
+        h("div", { class: "jg-col-25d" },
+          h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
+          h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
+          h("div", { class: "jg-col-velo b", "aria-hidden": "true" })));
       const premioTxt = premioColosoTxt(c.premio);
+      const faseEl = h("span", { class: "jg-col-fase", text: faseColoso(pct, derrotado) });
       const stage = h("div", { class: "jg-col-stage" },
         artWrap,
         lienzoFx,
@@ -4039,33 +4130,78 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("div", { class: "jg-col-top" },
           h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "En vivo" })),
           c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null),
-        infoGolpe && infoGolpe.dano ? h("span", { class: "jg-col-dano" + (infoGolpe.crit || infoGolpe.brecha ? " crit" : "") },
-          h("span", { text: "−" + fmt(infoGolpe.dano) }),
-          infoGolpe.etiq ? h("small", { text: infoGolpe.etiq }) : null) : null,
         h("div", { class: "jg-col-tit-wrap" },
-          h("span", { class: "jg-col-fase", text: faseColoso(pct, derrotado) }),
+          faseEl,
           h("h2", { text: jefe.nombre || "El Coloso de la Tradición" })));
+
+      const hpCabSpan = h("span", { text: derrotado ? "¡Derribado entre todos!" : "Resistencia restante · " + pct.toFixed(1).replace(".", ",") + " %" });
+      const hpCabB = h("b", { text: fmt(vida) + " / " + fmt(vmax) });
+      const hpTrailEl = h("span", { class: "jg-col-hp-trail", style: "width:" + pct.toFixed(1) + "%", "aria-hidden": "true" });
+      const hpFillEl = h("i", { style: "width:" + pct.toFixed(1) + "%" });
+      const hpBarEl = h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida del Coloso" },
+        hpTrailEl,
+        hpFillEl,
+        h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
+        h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
+        h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }));
+      const stPartB = h("b", { text: fmt(c.participantes | 0) });
+      const stPartS = h("span", { text: (c.participantes | 0) === 1 ? "Lector" : "Lectores" });
+      const stAporteB = h("b", { text: fmt(c.miAporte | 0) });
       const hud = h("div", { class: "jg-col-hud" },
         h("div", { class: "jg-col-hp" },
-          h("div", { class: "jg-col-hp-cab" },
-            h("span", { text: derrotado ? "¡Derribado entre todos!" : "Resistencia restante · " + pct.toFixed(1).replace(".", ",") + " %" }),
-            h("b", { text: fmt(vida) + " / " + fmt(vmax) })),
-          h("div", { class: "jg-col-hp-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(vmax), "aria-valuenow": String(vida), "aria-label": "Vida del Coloso" },
-            h("i", { style: "width:" + pct.toFixed(1) + "%" }),
-            h("span", { class: "jg-col-hp-m", style: "left:25%", "aria-hidden": "true" }),
-            h("span", { class: "jg-col-hp-m", style: "left:50%", "aria-hidden": "true" }),
-            h("span", { class: "jg-col-hp-m", style: "left:75%", "aria-hidden": "true" }))),
+          h("div", { class: "jg-col-hp-cab" }, hpCabSpan, hpCabB),
+          hpBarEl),
         h("div", { class: "jg-col-stats" },
-          h("div", { class: "jg-col-st" }, h("b", { text: fmt(c.participantes | 0) }), h("span", { text: (c.participantes | 0) === 1 ? "Lector" : "Lectores" })),
-          h("div", { class: "jg-col-st" }, h("b", { text: fmt(c.miAporte | 0) }), h("span", { text: "Tu aporte" })),
+          h("div", { class: "jg-col-st" }, stPartB, stPartS),
+          h("div", { class: "jg-col-st" }, stAporteB, h("span", { text: "Tu aporte" })),
           h("div", { class: "jg-col-st" }, h("b", { text: "×" + mult.toFixed(2).replace(".", ",") }), h("span", { text: "Bono Árbol" })),
           h("div", { class: "jg-col-st" }, h("b", { text: derrotado ? "Cerrado" : (c.fin ? restaTexto(c.fin) : "Activo") }), h("span", { text: derrotado ? "Estado" : "Restante" }))),
         premioTxt ? h("div", { class: "jg-col-premio" }, h("span", { text: "Recompensa por victoria:" }), h("b", { text: premioTxt })) : null);
 
-      // B4 · Consola táctica integrada con Pulso de Resonancia escalado por nivel
-      let fxCtrl = null;
+      const habBtns = [];
+      const cgTitB = h("b", { text: cargas + " / " + cmax + " cargas" });
+      const rachaEl = h("span", { class: "jg-col-racha", hidden: rachaTac < 2, text: "Racha ×" + Math.max(2, rachaTac) });
+      const cgSubTiempo = h("span", { text: cargas >= cmax ? "Al máximo" : c.cargaEn ? "+1 en " + restaTexto(c.cargaEn) : "+1 cada 3 h" });
+      const cristalesEls = Array.from({ length: cmax }, (_, i) => h("span", { class: "jg-col-cg-c" + (i < cargas ? " on" : "") }, h("i", {})));
+      const postNomEl = h("b", { text: postAct.nom });
+      const postBrEl = h("span", { class: "jg-col-post-br", text: postAct.et });
+      const postBar = !derrotado ? h("div", { class: "jg-col-post-bar", style: "--pc:" + postAct.col },
+        h("span", { class: "jg-col-post-izq" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Postura:" }), postNomEl),
+        postBrEl) : null;
+      const ultSpan = h("span", {});
+      const ultSmall = h("small", { hidden: true });
+      const pintarUltBar = (ug) => {
+        if (!ug) return;
+        ultSpan.replaceChildren("Último impacto: ", h("b", { text: "−" + fmt(ug.dano) }), ug.nom ? " · " + ug.nom : "");
+        if (ug.etiq) { ultSmall.textContent = ug.etiq; ultSmall.hidden = false; } else ultSmall.hidden = true;
+      };
+      if (ultGolpe) pintarUltBar(ultGolpe);
+      const ultBar = h("div", { class: "jg-col-ult", role: "status", "aria-live": "polite", hidden: !ultGolpe }, ultSpan, ultSmall);
+
+      let fxCtrl = null, topOl = null, impTimer = 0;
       const resCaja = h("div", { class: "jg-col-res", hidden: true });
       let enviandoAcc = false;
+
+      const lanzarImpactoEscena = (danoVal, habEs, crit, brecha, textoTag) => {
+        if (impTimer) { clearTimeout(impTimer); impTimer = 0; }
+        for (const viejo of stage.querySelectorAll(".jg-col-imp, .jg-col-imp-onda, .jg-col-imp-tajo")) viejo.remove();
+        const colImp = habEs === "palabra" ? "#8cc4fa" : habEs === "fuerza" ? "#ffe292" : "#f4cf73";
+        const onda = !sinAnim() ? h("span", { class: "jg-col-imp-onda", style: "--ic:" + colImp, "aria-hidden": "true" }) : null;
+        const tajo = !sinAnim() ? h("span", { class: "jg-col-imp-tajo", style: "--ic:" + colImp, "aria-hidden": "true" }) : null;
+        const imp = h("div", { class: "jg-col-imp " + habEs + (crit || brecha ? " crit" : ""), "aria-hidden": "true" },
+          h("span", { class: "jg-col-imp-num", text: "−" + fmt(danoVal) }),
+          textoTag ? h("span", { class: "jg-col-imp-tag", text: textoTag }) : null);
+        if (onda) stage.append(onda);
+        if (tajo) stage.append(tajo);
+        stage.append(imp);
+        impTimer = setTimeout(() => {
+          if (onda) onda.remove();
+          if (tajo) tajo.remove();
+          imp.remove();
+          impTimer = 0;
+        }, 2000);
+      };
+
       const ejecutarGolpe = async (hab, nomHab, precision, brecha) => {
         if (enviandoAcc) return;
         enviandoAcc = true;
@@ -4073,6 +4209,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         resCaja.hidden = true;
         const crit = precision === "critico";
         const habEs = hab === "fuerza" ? "fuerza" : hab === "palabra" ? "palabra" : "golpe";
+        // Respuesta cinética inmediata a 0 ms en el lienzo vivo (sin reconstruir DOM ni congelar el cuadro)
+        if (!sinAnim()) {
+          const clSac = habEs === "fuerza" || crit ? "sacude-3" : habEs === "palabra" || brecha ? "sacude-2" : "sacude-1";
+          artWrap.classList.remove("sacude-1", "sacude-2", "sacude-3");
+          void artWrap.offsetWidth;
+          artWrap.classList.add(clSac);
+        }
         if (fxCtrl) fxCtrl.golpear(habEs, crit, brecha);
         if (crit || habEs === "fuerza") vibrar([42, 20, 92, 24, 64]);
         else if (habEs === "palabra" || brecha) vibrar([24, 18, 48, 18, 28]);
@@ -4097,10 +4240,52 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
         const bonoMult = r.bono && Number(r.bono.mult) > 1 ? " · ×" + String(Number(r.bono.mult).toFixed(2)).replace(".", ",").replace(/,00$/, "") : "";
         const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "Impacto firme";
-        A.avisar((etiq ? etiq + " " : "") + (dano ? "Impacto de " + fmt(dano) + bonoMult + " contra El Coloso" : "Acción registrada contra El Coloso"));
-        pintar(nuevo, { dano: dano || 1, hab: habEs, nom: nomHab || habEs, crit, brecha, etiq });
-        const escEl = zona.querySelector(".jg-col-escena");
-        if (escEl && escEl.getBoundingClientRect().top < 40) escEl.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" });
+        ultGolpe = { dano: dano || 1, hab: habEs, nom: nomHab || habEs, crit, brecha, etiq: etiq + bonoMult };
+        const ahoraDerrotado = nuevo.estado === "derrotado" || (nuevo.vida | 0) <= 0;
+        if (ahoraDerrotado) {
+          pintar(nuevo, ultGolpe);
+          return;
+        }
+        // Actualización en sitio a 60 fps: conserva lienzo, partículas e imagen intactos y proyecta el impacto dentro de la arena
+        c = nuevo;
+        postAct = COLOSO_POSTURAS[idxPost];
+        const nvida = Math.max(0, c.vida | 0), nvmax = Math.max(1, c.vidaMax | 0);
+        const npct = Math.max(0, Math.min(100, (100 * nvida) / nvmax));
+        hpCabSpan.textContent = "Resistencia restante · " + npct.toFixed(1).replace(".", ",") + " %";
+        hpCabB.textContent = fmt(nvida) + " / " + fmt(nvmax);
+        hpBarEl.setAttribute("aria-valuenow", String(nvida));
+        hpBarEl.setAttribute("aria-valuemax", String(nvmax));
+        hpFillEl.style.width = npct.toFixed(1) + "%";
+        hpTrailEl.style.width = npct.toFixed(1) + "%";
+        faseEl.textContent = faseColoso(npct, false);
+        stPartB.textContent = fmt(c.participantes | 0);
+        stPartS.textContent = (c.participantes | 0) === 1 ? "Lector" : "Lectores";
+        contarRapido(stAporteB, c.miAporte | 0, 520);
+        const ncargas = Math.max(0, c.cargas | 0);
+        cgTitB.textContent = ncargas + " / " + cmax + " cargas";
+        cgSubTiempo.textContent = ncargas >= cmax ? "Al máximo" : c.cargaEn ? "+1 en " + restaTexto(c.cargaEn) : "+1 cada 3 h";
+        rachaEl.hidden = rachaTac < 2;
+        if (rachaTac >= 2) rachaEl.textContent = "Racha ×" + rachaTac;
+        cristalesEls.forEach((elCr, i) => elCr.classList.toggle("on", i < ncargas));
+        pintarUltBar(ultGolpe);
+        ultBar.hidden = false;
+        if (postBar) {
+          postBar.style.setProperty("--pc", postAct.col);
+          postNomEl.textContent = postAct.nom;
+          postBrEl.textContent = postAct.et;
+        }
+        for (const hb of habBtns) {
+          const lista = ncargas >= hb.cost;
+          const faltaCg = Math.max(0, hb.cost - ncargas);
+          const esBr = postAct.debil === hb.id;
+          hb.bt.disabled = !lista;
+          hb.bt.classList.toggle("listo", lista);
+          hb.bt.classList.toggle("brecha", esBr);
+          hb.goTxt.textContent = lista ? "Enfocar ataque" : "Faltan " + plural(faltaCg, "carga", "cargas");
+          hb.tagBr.hidden = !esBr;
+        }
+        if (topOl && Array.isArray(c.top) && c.top.length) topOl.replaceChildren(...filasTop(c.top));
+        lanzarImpactoEscena(dano || 1, habEs, crit, brecha, etiq + bonoMult + (rachaTac >= 2 ? " · Racha ×" + rachaTac : ""));
       };
       const iniciarResonancia = (hab, nom, brecha) => {
         if (enviandoAcc) return;
@@ -4152,25 +4337,16 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       const habsFuente = Array.isArray(c.habilidades) && c.habilidades.length
         ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
         : COLOSO_HABS;
-      const habBtns = [];
-      const postNomEl = h("b", { text: postAct.nom });
-      const postBrEl = h("span", { class: "jg-col-post-br", text: postAct.et });
-      const postBar = !derrotado ? h("div", { class: "jg-col-post-bar", style: "--pc:" + postAct.col },
-        h("span", { class: "jg-col-post-izq" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Postura:" }), postNomEl),
-        postBrEl) : null;
-      const ultBar = ultGolpe ? h("div", { class: "jg-col-ult", role: "status", "aria-live": "polite" },
-        h("span", {}, "Último impacto: ", h("b", { text: "−" + fmt(ultGolpe.dano) }), ultGolpe.nom ? " · " + ultGolpe.nom : ""),
-        ultGolpe.etiq ? h("small", { text: ultGolpe.etiq }) : null) : null;
       const comb = !derrotado ? h("div", { class: "jg-col-comb" },
         h("div", { class: "jg-col-cg-cab" },
           h("div", { class: "jg-col-cg-tit" },
             h("span", { text: "Energía táctica" }),
-            h("b", { text: cargas + " / " + cmax + " cargas" })),
+            cgTitB),
           h("div", { class: "jg-col-cg-sub" },
-            rachaTac >= 2 ? h("span", { class: "jg-col-racha", text: "Racha ×" + rachaTac }) : null,
+            rachaEl,
             h("span", { class: "jg-col-mult", text: "Niv. " + nivelYo + " · " + perf.grado }),
-            h("span", { text: cargas >= cmax ? "Al máximo" : c.cargaEn ? "+1 en " + restaTexto(c.cargaEn) : "+1 cada 3 h" }))),
-        h("div", { class: "jg-col-crist", "aria-hidden": "true" }, Array.from({ length: cmax }, (_, i) => h("span", { class: "jg-col-cg-c" + (i < cargas ? " on" : "") }, h("i", {})))),
+            cgSubTiempo)),
+        h("div", { class: "jg-col-crist", "aria-hidden": "true" }, cristalesEls),
         ultBar,
         postBar,
         resCaja,
@@ -4182,6 +4358,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           const tier = id === "fuerza" || cost >= 4 ? "t3" : id === "palabra" || cost >= 2 ? "t2" : ("t" + Math.min(3, idx + 1));
           const dots = h("span", { class: "jg-col-hab-dots", "aria-hidden": "true" }, Array.from({ length: Math.min(6, cost) }, () => h("i", {})));
           const tagBr = h("span", { class: "jg-col-brecha-tag", hidden: !esBrecha, text: "Brecha" });
+          const goTxt = h("span", { text: lista ? "Enfocar ataque" : "Faltan " + plural(faltaCg, "carga", "cargas") });
           const bt = h("button", { class: "jg-col-hab " + tier + (lista ? " listo" : "") + (esBrecha ? " brecha" : ""), type: "button", disabled: !lista, onclick: () => iniciarResonancia(id, nom, bt.classList.contains("brecha")) },
             h("div", { class: "jg-col-hab-top" },
               h("span", { class: "jg-col-sig", "aria-hidden": "true" }, colosoSigilo(id)),
@@ -4189,29 +4366,21 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
                 h("b", { text: nom }),
                 h("span", { class: "jg-col-hab-cost" }, dots, h("span", { text: plural(cost, "carga", "cargas") }))),
               h("span", { class: "jg-col-hab-dmg", text: "~" + fmt(est) })),
-            h("span", { class: "jg-col-hab-go" },
-              h("span", { text: lista ? "Enfocar ataque" : "Faltan " + plural(faltaCg, "carga", "cargas") }),
-              tagBr));
-          habBtns.push({ id, bt, tagBr });
+            h("span", { class: "jg-col-hab-go" }, goTxt, tagBr));
+          habBtns.push({ id, cost, bt, goTxt, tagBr });
           return bt;
         }))) : null;
       const escena = h("section", { class: "jg-col-escena" }, stage, hud, comb);
+      escena.addEventListener("pointerdown", () => { if (window.BiEx25D && window.BiEx25D.pedirPermiso) window.BiEx25D.pedirPermiso(); }, { passive: true });
+      if (infoGolpe && infoGolpe.dano) lanzarImpactoEscena(infoGolpe.dano, infoGolpe.hab || "golpe", infoGolpe.crit, infoGolpe.brecha, infoGolpe.etiq);
       // B5 · Enseñanza del jefe + cita real de BiEx
       const ens = jefe.ensenanza || jefe.cita ? h("section", { class: "jg-col-ens" },
         h("span", { class: "eyebrow", text: "Enseñanza de esta incursión" }),
         jefe.ensenanza ? h("p", { text: jefe.ensenanza }) : null,
         jefe.cita ? bloqueCitaColoso(jefe.cita) : null) : null;
       const topL = Array.isArray(c.top) ? c.top : [];
-      const topCard = topL.length ? tarjeta("Mayores aportes de la semana", ico("liga"),
-        h("ol", { class: "jg-lista mini" }, topL.slice(0, 15).map((x, idx) => {
-          const ap = x.apodo || x.a || "Lector", [l, col] = embDe(x.emb || x.e);
-          const pts = x.aporte != null ? x.aporte : (x.dano != null ? x.dano : (x.pts | 0));
-          return h("li", { class: "jg-fila" + (x.yo || (S.yo && ap === S.yo.apodo) ? " yo" : "") },
-            h("span", { class: "p", text: String(idx + 1) }),
-            emblema(l, col, x.marco || x.m || 0, x.foto || x.f),
-            h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
-            h("span", { class: "x", text: fmt(pts) }));
-        }))) : null;
+      topOl = topL.length ? h("ol", { class: "jg-lista mini" }, filasTop(topL)) : null;
+      const topCard = topOl ? tarjeta("Mayores aportes de la semana", ico("liga"), topOl) : null;
       const avisoPre = avisoPrelanzamientoColoso(false);
       // Prelanzamiento siempre debajo de Mayores aportes para mantener el Coloso y los poderes arriba en pantalla
       zona.replaceChildren(...[escena, ens, topCard, avisoPre].filter(Boolean));
@@ -4221,11 +4390,11 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           if (!zona.isConnected) { clearInterval(tPost); tPost = 0; return; }
           if (document.hidden || !resCaja.hidden) return;
           idxPost = (idxPost + 1) % COLOSO_POSTURAS.length;
-          const np = COLOSO_POSTURAS[idxPost];
-          postBar.style.setProperty("--pc", np.col);
-          postNomEl.textContent = np.nom;
-          postBrEl.textContent = np.et;
-          for (const hb of habBtns) { const on = hb.id === np.debil; hb.bt.classList.toggle("brecha", on); hb.tagBr.hidden = !on; }
+          postAct = COLOSO_POSTURAS[idxPost];
+          postBar.style.setProperty("--pc", postAct.col);
+          postNomEl.textContent = postAct.nom;
+          postBrEl.textContent = postAct.et;
+          for (const hb of habBtns) { const on = hb.id === postAct.debil; hb.bt.classList.toggle("brecha", on); hb.tagBr.hidden = !on; }
         }, 14000);
       }
     };
@@ -6571,7 +6740,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const ET_DESC = { 2: "marco plateado y aura viva tras tu emblema", 3: "filigrana de oro bruñido en tu tarjeta", 4: "oro radiante y motas de luz ascendentes", 5: "destellos rubí y corona plena del poder" };
     const etProx = sig
       ? h("p", { class: "ap-vp-etprox" }, "Próxima etapa · ", h("b", { text: sig[2] + " (" + fmt(meta) + ")" }), ": faltan ", h("b", { text: fmt(Math.max(0, meta - poder)) }), " de poder → desbloquea " + ET_DESC[sig[0]] + ".")
-      : h("p", { class: "ap-vp-etprox" }, h("b", { text: "Etapa máxima alcanzada (Fruto)" }), ": llevas todos los distintivos visuales activos y cada punto sigue elevando tu poder.");
+      : h("p", { class: "ap-vp-etprox" }, h("b", { text: "Etapa máxima alcanzada (Fruto)" }), ": llevas todos los distintivos visuales activos y cada punto sigue elevando el poder.");
     const evoBox = h("div", { class: "ap-vp-evo" },
       h("div", { class: "ap-vp-3t" }, colAntes, colHoy, colSig),
       histBl,
@@ -8170,12 +8339,25 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     });
     window.addEventListener("pagehide", () => { if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; } guardarCola(true); enviar(true); });
   }
+  function sincronizarFocoCita(lib, cap) {
+    const vf = A && A.versoFoco && A.versoFoco();
+    if (vf && vf.c === lib && vf.cap === cap && vf.v > 0 && Date.now() - (vf.t || 0) < 8000) {
+      R.focoCita = { lc: lib + "." + cap, v: +vf.v, t: performance.now(), y: window.scrollY };
+      R.vf = +vf.v;
+    }
+  }
   function capitulo(lib, cap, modo) {
     if (!S.token) S.token = A.store.get("jg:t", null);
     const lc = lib && cap ? lib + "." + cap : "";
     if (!S.token || modo !== "l") {
       salir(!!(S.token && lc));
-      if (S.token && lc) { SL.lcAct = lc; retomarSala(); if (SL.cod) setTimeout(() => posSala(true), 250); }
+      if (S.token && lc) {
+        estilos();
+        medidor(true);
+        SL.lcAct = lc;
+        retomarSala();
+        if (SL.cod) setTimeout(() => posSala(true), 250);
+      }
       return;
     }
     SL.lcAct = lc;
@@ -8183,8 +8365,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (R.lib !== lib || R.cap !== cap) {
       soltar();
       Object.assign(R, { lib, cap, pal: [], hoy: "", acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), quiere: new Set(), prueba: false, dw: cargarDw(lib + "." + cap) });
+      sincronizarFocoCita(lib, cap);
       prepararCapitulo(lib, cap);
-    } else if (R.prueba) setTimeout(tarjetaPrueba, 50);
+    } else {
+      sincronizarFocoCita(lib, cap);
+      if (R.prueba) setTimeout(tarjetaPrueba, 50);
+    }
     observar();
     retomarSala(); if (SL.cod) setTimeout(() => { pintarMarcas(); posSala(true); }, 400);
     actividad(); R.ultTick = performance.now();
@@ -8211,7 +8397,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (LB.el) LB.el.classList.remove("en-pie");
     if (LB.pb) LB.pb.classList.remove("en-pie");
     ponerLB(0);
-    Object.assign(R, { els: [], vis: new Map() });
+    Object.assign(R, { els: [], vis: new Map(), focoCita: null });
     const p = document.querySelector(".jg-pres"); if (p) p.remove();
     for (const s of document.querySelectorAll(".jg-sello")) s.remove();
   }
@@ -8221,7 +8407,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
     if (!conservarCap) SL.lcAct = "";
     guardarDw(true);
-    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false, dw: new Map() });
+    Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false, dw: new Map(), focoCita: null });
     // fuera de los capítulos, lo pendiente sale pronto si no se ha enviado aún en esta lectura (mantiene la presencia al día)
     if (R.cola.length && S.token) setTimeout(() => { if (!R.lib && R.cola.length && (Date.now() - R.ultEnvio > CADA || R.tPres)) enviar(false); }, 1000);
   }
@@ -8245,11 +8431,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function tick() {
     const ahora = performance.now(), dt = Math.min(1000, Math.max(0, ahora - (R.ultTick || ahora)));
     R.ultTick = ahora;
-    if (LB.el && LB.modal !== document.documentElement.classList.contains("con-modal")) elegirLB();
-    if (COFRE.pend && !document.documentElement.classList.contains("con-modal")) { const cf = COFRE.pend; COFRE.pend = null; A.avisar(COFRES[Math.max(0, Math.min(4, cf.n | 0))].n + ": +" + cf.dr + " dracmas (ya están en tu cuenta)"); }
+    const raiz = document.documentElement;
+    if (raiz.classList.contains("desplazando")) return;
+    if (LB.el && LB.modal !== raiz.classList.contains("con-modal")) elegirLB();
+    if (COFRE.pend && !raiz.classList.contains("con-modal")) { const cf = COFRE.pend; COFRE.pend = null; A.avisar(COFRES[Math.max(0, Math.min(4, cf.n | 0))].n + ": +" + cf.dr + " dracmas (ya están en tu cuenta)"); }
     if (SL.cod) posSala(false);
     if (R.cola.length && !R.enviando && Date.now() - R.ultEnvio > CADA) enviar(false);
-    if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || document.documentElement.classList.contains("con-modal")) return;
+    if (!R.pal.length || document.hidden || !R.ultAct || ahora - R.ultAct > (R.ventana || 45000) || raiz.classList.contains("con-modal")) return;
     if (R.els.length && !R.els[0].isConnected) observar();
     let el = null, hay = false; const Tv = topeBarras() + 20;
     for (const e of R.els) {
@@ -8413,13 +8601,17 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("span", { class: "jg-lb-i", "aria-hidden": "true" }), h("span", { class: "jg-lb-t" }, h("b", { text: "Perícopa leída" }), h("small", { text: "" })));
       document.body.append(LB.pb);
     }
-    LB.pb.classList.remove("en-pie");
+    const epIni = !!(A && A.enPieActual && A.enPieActual());
+    LB.enPie = epIni;
+    LB.el.classList.toggle("en-pie", epIni);
+    LB.pb.classList.toggle("en-pie", epIni);
     LB.ok = new Set([...LB.ok].filter((k) => k.startsWith(R.lib + "." + R.cap + ".")));
     pintarMarcados();
+    sincronizarFocoCita(R.lib, R.cap);
     // los versos a la vista (la franja fija de lectura los recorre: ver zonaLectura y versoFranja)
     LB.io = new IntersectionObserver((ents) => { for (const e of ents) { const v = +e.target.id.slice(1); if (e.isIntersecting) LB.vis.add(v); else LB.vis.delete(v); } pedirLB(); }, { threshold: 0 });
     for (const e of R.els) LB.io.observe(e);
-    // PR #14 (fluidez al pie): ocultar «Leído» en el pie usando solo IntersectionObserver pasivo y .en-pie por GPU (0 reflujos, 0 cambios en <html>)
+    // PR #14 + PR #18 (fluidez y ocultación inmediata al pie): IntersectionObserver pasivo con margen anticipado
     const piePag = document.querySelector("footer.pie-a");
     if (piePag) {
       LB.pieIO = new IntersectionObserver((ents) => {
@@ -8428,7 +8620,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         LB.enPie = en;
         if (LB.el) { LB.el.classList.toggle("en-pie", en); LB.el.tabIndex = en || LB.el.classList.contains("fuera") ? -1 : 0; }
         if (LB.pb) { LB.pb.classList.toggle("en-pie", en); LB.pb.tabIndex = en || LB.pb.classList.contains("fuera") ? -1 : 0; }
-      }, { rootMargin: "0px 0px -8px 0px", threshold: 0.01 });
+      }, { rootMargin: "0px 0px 88px 0px", threshold: 0 });
       LB.pieIO.observe(piePag);
     }
     // si cambia la letra, la vista o el ancho, el hilo y el halo vuelven a su verso
@@ -8444,6 +8636,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       document.addEventListener("transitionend", (e) => { if (e.propertyName === "transform" && e.target instanceof Element && e.target.matches("header.barra, .barra-hoja")) pedirLB(); }, true);
     }
     finCapJuego();
+    pedirLB();
   }
   function pedirLB() { if (LB.raf) return; LB.raf = requestAnimationFrame(() => { LB.raf = 0; elegirLB(); }); }
   // borde inferior de las barras de arriba (la superior y la del capítulo cuando está pegada): lo que queda debajo no se ve
@@ -8503,6 +8696,26 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   }
   function versoFranja() {
     if (!R.els || !R.els.length) return 0;
+    // PR #18: cuando se salta directamente a una cita bíblica (incluso en los primeros o últimos versos del capítulo donde el
+    // desplazamiento queda limitado por el tope o el pie), la iluminación permanece en el número exacto citado hasta desplazarse.
+    if (R.focoCita && R.focoCita.lc === R.lib + "." + R.cap) {
+      const dt = performance.now() - R.focoCita.t;
+      if (dt > 650 && Math.abs(window.scrollY - R.focoCita.y) > 30) {
+        R.focoCita = null;
+      } else {
+        if (dt <= 650) R.focoCita.y = window.scrollY;
+        const elF = document.getElementById("v" + R.focoCita.v);
+        if (elF) {
+          const rf = elF.getBoundingClientRect();
+          if (rf.bottom > 0 && rf.top < innerHeight) {
+            R.vf = R.focoCita.v;
+            LB.zona = [R.vf];
+            LB.dos = null;
+            return R.vf;
+          }
+        }
+      }
+    }
     const [a, b] = zonaLectura(), vis = LB.vis && LB.vis.size ? LB.vis : null, dentro = [];
     let cruza = 0;
     for (const el of R.els) {
@@ -8554,7 +8767,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function elegirLB() {
     if (!R.lib || !LB.vis) return ponerLB(0);
     let v = versoFranja();
-    if (alFinalPag() && (!v || !marcable(v))) { const d = debajoFranja(marcable); if (d) v = d; }
+    const esFocoCita = !!(R.focoCita && R.focoCita.lc === R.lib + "." + R.cap && R.focoCita.v === v);
+    if (!esFocoCita && alFinalPag() && (!v || !marcable(v))) { const d = debajoFranja(marcable); if (d) v = d; }
     const H = v && marcable(v) ? v : 0;
     const m = H && R.pend.has(H) ? H : (listoArriba(H || v) || H);
     const dos = LB.dos && LB.dos.includes(v) ? LB.dos.filter((x) => marcable(x)) : null;
@@ -8965,7 +9179,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     for (const lc of r.pruebas || []) if (!e.p.includes(lc)) e.p.push(lc);
     actualizarYo(r.yo); R.pred = null; pintarMedidor();
     if (r.subio) hitoNivel(r.subio.nivel);
-    if (e.f !== r.yo.hoy.f) { e.f = r.yo.hoy.f; }
+    if (r.yo && r.yo.hoy && e.f !== r.yo.hoy.f) { e.f = r.yo.hoy.f; }
     A.store.set("jg:hoy", e);
     if (r.pres) { S.pres = r.pres; pintarPresencia(); }
     celebrar(r);
@@ -8989,13 +9203,20 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   // «Que la subida de nivel se vea como un hito, y un medidor del avance en la vista donde se gana la experiencia.»
   // Un sello pequeño abajo a la izquierda: el nivel y un aro que se llena con cada verso validado (estimación local al
   // instante; el servidor la confirma con cada tanda). Al subir de nivel se abre un momento con el hito. Tocarlo lleva al panel.
-  const MED = { el: null, nv: null, mas: null, hito: null, t: 0 };
+  const MED = { el: null, nv: null, mas: null, hito: null, t: 0, firma: "" };
+  let enPieJg = false;
   function medidor(ver) {
     const raiz = document.documentElement;
-    if (!ver || !S.token || !S.yo) { if (MED.el) { MED.el.remove(); MED.el = null; clearTimeout(MED.tz); } raiz.classList.remove("jg-con-med"); if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro); return; }
+    if (!ver || !S.token || !S.yo) {
+      if (MED.el) { MED.el.remove(); MED.el = null; MED.firma = ""; clearTimeout(MED.tz); }
+      raiz.classList.remove("jg-con-med");
+      if (A.ubicarFaro) requestAnimationFrame(A.ubicarFaro);
+      return;
+    }
     if (!MED.el) {
       // Escudo de nivel (BiEx, 10-nov-2026: «vuélvelo épico»): vectorial, con el metal del rango (bronce, plata, oro,
       // esmeralda y oro radiante), anillo de avance con su punta de luz, laureles, barrido de luz y rayos al subir de nivel
+      MED.firma = "";
       MED.nv = h("b", {}); MED.mas = h("i", { "aria-hidden": "true" }); MED.hito = h("span", { class: "hito" });
       const esc = A.svg(SVG_MED, "0 0 58 68"); esc.setAttribute("aria-hidden", "true");
       MED.arco = esc.querySelector(".arco"); MED.punta = esc.querySelector(".punta");
@@ -9004,6 +9225,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       document.body.append(MED.el);
       chispasAzar();
     }
+    const ep = (A && A.enPieActual ? !!A.enPieActual() : false) || enPieJg;
+    MED.el.classList.toggle("en-pie", ep);
     raiz.classList.add("jg-con-med");
     pintarMedidor();
     if (A.ubicarFaro) { A.ubicarFaro(); requestAnimationFrame(A.ubicarFaro); }
@@ -10221,8 +10444,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     let p = document.querySelector(".jg-sala-p");
     document.documentElement.classList.toggle("jg-con-sala", !!SL.cod);
     if (!SL.cod) { if (p) p.remove(); return; }
-    // AL6 (BiEx, 22-nov-2026): la píldora vive entre las dos partes del pie (pegada al borde mientras se lee; en su hueco al final)
     if (!p) p = h("button", { class: "jg-sala-p", type: "button", onclick: abrirSala });
+    const ep = (A && A.enPieActual ? !!A.enPieActual() : false) || enPieJg;
+    p.classList.toggle("en-pie", ep);
     const anclaP = document.getElementById("pie-b");
     if (anclaP ? p.nextElementSibling !== anclaP : !p.isConnected) anclaP ? anclaP.before(p) : document.body.append(p);
     const n = SL.miembros.length, conectada = SL.ws && SL.ws.readyState === 1, nom = nombreSalaDe(SL.cod, SL.nombre);
@@ -10668,7 +10892,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
           est);
       })() : null;
       const pie = h("div", { class: "jg-jp-pie" },
-        h("span", { text: esOtro && miPoder != null ? "Tu poder actual: " : "Códice Viviente · " }, esOtro && miPoder != null ? h("b", { text: fmt(miPoder) }) : h("b", { text: "Escudriña" })),
+        h("span", { text: esOtro && miPoder != null ? "Poder actual: " : "Códice Viviente · " }, esOtro && miPoder != null ? h("b", { text: fmt(miPoder) }) : h("b", { text: "Escudriña" })),
         h("span", { text: esOtro && miPoder != null ? (poder > miPoder ? "Te lleva " + fmt(poder - miPoder) + " de poder · ¡gran meta!" : poder === miPoder ? "¡Exactamente al mismo poder!" : "Llevas " + fmt(miPoder - poder) + " de ventaja") : "Cada verso confirmado forja el árbol interior" }));
       zona.replaceChildren(
         hero,
@@ -10689,9 +10913,22 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
   if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, ajedrez: { AJ_ENG, AJ_FIGURAS, AJ_ENIGMAS }, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
-    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
+    iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); enPieJg = !!(A && A.enPieActual && A.enPieActual()); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
     abrirJugador: abrirJugadorPublico,
+    fijarVersoFoco(c, cap, v) {
+      if (!c || !cap || !(v > 0)) return;
+      R.focoCita = { lc: c + "." + cap, v: +v, t: performance.now(), y: window.scrollY };
+      if (R.lib === c && R.cap === +cap) { R.vf = +v; LB.forzar = true; pedirLB(); }
+    },
+    enPie(si) {
+      enPieJg = !!si;
+      if (MED.el) MED.el.classList.toggle("en-pie", enPieJg);
+      const sp = document.querySelector(".jg-sala-p");
+      if (sp) sp.classList.toggle("en-pie", enPieJg);
+      if (LB.el) { LB.el.classList.toggle("en-pie", enPieJg); if (enPieJg) LB.el.tabIndex = -1; }
+      if (LB.pb) { LB.pb.classList.toggle("en-pie", enPieJg); if (enPieJg) LB.pb.tabIndex = -1; }
+    },
     estadoSalaVence: () => ({ aviso: avisoVenceSala(), vencida: A && A.store ? A.store.get("jg:salaVencida", null) : null }),
     actividadRuta(ruta) { if (S.token) latirPresencia(false, ruta); },
     // AC16: la sesión volvió desde la copia del sitio oficial (el marco había perdido su almacenamiento)
