@@ -930,7 +930,7 @@ html.con-modal #vista .jg-yo *{animation-play-state:paused!important}
 .jg-coloso-dot{position:relative;flex:none;width:7px;height:7px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 8px color-mix(in srgb,var(--oro-vivo) 75%,transparent)}
 .jg-coloso-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--oro-vivo);opacity:0;animation:jg-coloso-pulso 2.6s ease-out infinite}
 @keyframes jg-coloso-pulso{0%{transform:scale(.5);opacity:.85}100%{transform:scale(1.9);opacity:0}}
-html.con-modal .jg-coloso::after,html.con-modal .jg-coloso-dot::after,html.desplazando .jg-coloso::after,html.desplazando .jg-coloso-dot::after{animation-play-state:paused}
+html.con-modal .jg-coloso::after,html.con-modal .jg-coloso-dot::after{animation-play-state:paused}
 html[data-mov="no"] .jg-coloso::after,html[data-mov="no"] .jg-coloso-dot::after{animation:none;display:none}
 @media (prefers-reduced-motion:reduce){.jg-coloso::after,.jg-coloso-dot::after{animation:none;display:none}}
 .jg-coloso-h{margin:0;font:500 clamp(1.18rem,4.2vw,1.48rem)/1.18 var(--f-display);color:var(--tinta);letter-spacing:.02em}
@@ -1393,7 +1393,7 @@ button.jg-pel:focus-visible{outline:2px solid var(--oro-vivo);outline-offset:2px
 .jg-sala-p i{position:relative;width:8px;height:8px;border-radius:50%;background:var(--tenue);flex:none}
 .jg-sala-p i.on{background:#7bc98f}
 .jg-sala-p i.on::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(123,201,143,.6);animation:jg-latido 2.4s ease-out infinite}
-html.desplazando .jg-sala-p i.on::after,html.oculto .jg-sala-p i.on::after{animation-play-state:paused}
+html.oculto .jg-sala-p i.on::after{animation-play-state:paused}
 @keyframes jg-latido{from{transform:scale(.55);opacity:1}to{transform:scale(1.9);opacity:0}}
 .jg-con-m{position:relative}
 .jg-sala-m{position:absolute;right:-4px;top:-12px;display:flex;gap:2px;z-index:2;pointer-events:none}
@@ -1788,7 +1788,6 @@ html[data-mov="no"] .ap-fig .fa-luz.on{animation:none;opacity:.85}html[data-mov=
 .jg-med svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 6px 9px rgba(0,0,0,.58));shape-rendering:geometricPrecision}
 .jg-med .arco{transition:stroke-dasharray .6s cubic-bezier(.2,.8,.2,1)}
 .jg-med .barrido{animation:jg-med-barrido 9s ease-in-out infinite}
-html.desplazando .jg-med .barrido{animation-play-state:paused}
 @keyframes jg-med-barrido{0%,62%{transform:translate3d(0,0,0)}100%{transform:translate3d(96px,0,0)}}
 .jg-med .nvk{position:absolute;left:0;right:0;top:20px;text-align:center;font:600 5.5px/1 "BiEx Interfaz","Jost",system-ui,sans-serif;letter-spacing:.7px!important;text-indent:.7px;color:var(--m2);pointer-events:none;white-space:nowrap;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 .jg-med b{position:absolute;left:0;right:0;top:27px;text-align:center;font:600 15px/1 "BiEx Titular","Cormorant Garamond",Georgia,serif;letter-spacing:0!important;font-variant-numeric:lining-nums tabular-nums;color:var(--m1);text-shadow:0 0 8px var(--mg),0 1px 0 rgba(0,0,0,.78);pointer-events:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
@@ -2044,7 +2043,7 @@ html[data-mov="no"] .jg-ah .f,html[data-mov="no"] .jg-ah .n{animation:none}
 .jg-mm-aviso.ya .jg-mm-dot{background:#6fbf8f;box-shadow:0 0 8px rgba(111,191,143,.7)}
 .jg-mm-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid currentColor;color:var(--oro-vivo);opacity:0;animation:jg-coloso-pulso 2.6s ease-out infinite}
 .jg-mm-aviso.ya .jg-mm-dot::after{color:#6fbf8f}
-html.con-modal .jg-mm-dot::after,html.desplazando .jg-mm-dot::after{animation-play-state:paused}
+html.con-modal .jg-mm-dot::after{animation-play-state:paused}
 html[data-mov="no"] .jg-mm-dot::after{animation:none;display:none}
 @media (prefers-reduced-motion:reduce){.jg-mm-dot::after{animation:none;display:none}}
 .jg-mm-meta{font:600 .68rem/1 var(--f-ui);padding:4px 9px;border-radius:999px;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro) 38%,transparent);background:color-mix(in srgb,var(--oro) 10%,transparent);white-space:nowrap}
@@ -2338,7 +2337,7 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 @media (max-width:520px){.jg-col-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .jg-col-st{display:grid;gap:1px;padding:6px 8px;border-radius:10px;text-align:center;background:rgba(255,244,214,.04);border:1px solid rgba(212,175,105,.18)}
 .jg-col-st b{font:600 .92rem/1.15 var(--f-display);color:#f7e2aa;font-variant-numeric:lining-nums tabular-nums}
-.jg-col-st span{font:500 .62rem/1.2 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:#b8afa0}
+.jg-col-st span{font:500 .7rem/1.2 var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:#c2b9aa}
 .jg-col-comb{position:relative;z-index:4;display:grid;gap:10px;padding:12px 14px 14px;background:radial-gradient(110% 80% at 50% 0%,rgba(218,176,96,.12),transparent 68%),#0e0c09;border-top:1px solid rgba(212,175,105,.24)}
 .jg-col-cg-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
 .jg-col-cg-tit{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
@@ -2351,15 +2350,47 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-cg-c{position:relative;height:20px;display:grid;place-items:center}
 .jg-col-cg-c i{position:relative;display:block;width:13px;height:13px;border-radius:3px;transform:rotate(45deg);background:#221e18;border:1.5px solid rgba(212,175,105,.28);transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .28s,border-color .28s,box-shadow .28s}
 .jg-col-cg-c.on i{background:linear-gradient(135deg,#fff3c8 0%,#f4cf73 46%,#c79234 100%);border-color:#fff2c6;box-shadow:0 0 12px rgba(244,207,115,.72),inset 0 0 4px rgba(255,255,255,.72);transform:rotate(45deg) scale(1.06)}
-.jg-col-res{display:grid;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(244,207,115,.58);background:radial-gradient(100% 90% at 50% 0%,rgba(244,207,115,.16),transparent 70%),rgba(8,7,6,.94);box-shadow:0 0 28px -12px rgba(244,207,115,.55)}
-.jg-col-res[hidden]{display:none}
-.jg-col-res-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;font:600 .72rem/1.2 var(--f-ui);color:#fae3a7;letter-spacing:.06em;text-transform:uppercase}
-.jg-col-res-cab small{font-weight:500;color:#cfc6b6;text-transform:none;letter-spacing:0}
-.jg-col-res-pista{position:relative;height:26px;border-radius:999px;background:linear-gradient(180deg,#16130f,#080706);border:1px solid rgba(212,175,105,.44);overflow:hidden;cursor:pointer;touch-action:manipulation}
-.jg-col-res-zona{position:absolute;top:2px;bottom:2px;border-radius:999px;background:linear-gradient(90deg,rgba(218,162,74,.28),rgba(244,207,115,.52),rgba(218,162,74,.28));border:1px solid rgba(255,228,150,.55)}
-.jg-col-res-crit{position:absolute;top:2px;bottom:2px;border-radius:999px;background:rgba(255,248,214,.78);box-shadow:0 0 14px rgba(255,232,150,.9)}
-.jg-col-res-cur{position:absolute;top:1px;bottom:1px;left:0;width:6px;margin-left:-3px;border-radius:999px;background:#ffffff;box-shadow:0 0 14px #fff4cc,0 0 4px #ffffff;will-change:transform}
-.jg-col-res-btn{width:100%;justify-content:center}
+.jg-col-res{display:grid;gap:10px;padding:12px 13px;border-radius:16px;border:1.5px solid rgba(244,207,115,.68);background:radial-gradient(100% 90% at 50% 0%,rgba(244,207,115,.18),transparent 72%),rgba(8,7,6,.96);box-shadow:0 0 30px -10px rgba(244,207,115,.55);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.jg-col-res[hidden]{display:none!important}
+.jg-col-res-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;font:600 .76rem/1.2 var(--f-ui);color:#fae3a7;letter-spacing:.05em;text-transform:uppercase}
+.jg-col-res-cab small{font-weight:500;font-size:.76rem;color:#d9d0c0;text-transform:none;letter-spacing:0}
+.jg-col-res-gemas{display:inline-flex;align-items:center;gap:8px}
+.jg-col-res-gema{width:11px;height:11px;border-radius:2.5px;transform:rotate(45deg);border:1.5px solid rgba(212,175,105,.46);background:#1c1712;transition:transform .16s,background-color .16s,border-color .16s,box-shadow .16s}
+.jg-col-res-gema.act{border-color:#fff2c6;transform:rotate(45deg) scale(1.18);box-shadow:0 0 10px rgba(244,207,115,.68)}
+.jg-col-res-gema.ok{background:#f4cf73;border-color:#fff4cc;box-shadow:0 0 10px rgba(244,207,115,.85)}
+.jg-col-res-gema.crit{background:#ffffff;border-color:#ffe292;box-shadow:0 0 14px #fff4cc,0 0 6px #7eb8f0;transform:rotate(45deg) scale(1.22)}
+.jg-col-res-gema.firme{background:#b4844a;border-color:#e4ba7a}
+.jg-col-res-pista{position:relative;height:48px;border-radius:999px;background:linear-gradient(180deg,#1a1510,#090806);border:1.5px solid rgba(212,175,105,.56);overflow:hidden;cursor:pointer;touch-action:manipulation;box-shadow:inset 0 3px 10px rgba(0,0,0,.85)}
+.jg-col-res-zona{position:absolute;top:3px;bottom:3px;border-radius:999px;background:linear-gradient(90deg,rgba(218,162,74,.32),rgba(244,207,115,.58),rgba(218,162,74,.32));border:1px solid rgba(255,228,150,.62);pointer-events:none;transition:left .14s ease-out,width .14s ease-out}
+.jg-col-res-crit{position:absolute;top:3px;bottom:3px;border-radius:999px;background:rgba(255,248,214,.86);box-shadow:0 0 16px rgba(255,232,150,.95);pointer-events:none;transition:left .14s ease-out,width .14s ease-out}
+.jg-col-res-cur{position:absolute;top:3px;bottom:3px;left:0;width:9px;margin-left:-4.5px;border-radius:999px;background:#ffffff;box-shadow:0 0 18px #fff4cc,0 0 6px #ffffff;will-change:transform;pointer-events:none}
+.jg-col-res-fb{font:600 .76rem/1.2 var(--f-ui);color:#ffe69c;min-height:1em;text-align:center;letter-spacing:.04em}
+.jg-col-res-acc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.jg-col-res-btn{width:100%;min-height:46px;justify-content:center;font-size:.88rem!important;touch-action:manipulation}
+.jg-col-res-cancel{min-height:46px;padding:0 13px;border-radius:12px;border:1px solid rgba(212,175,105,.32);background:rgba(255,244,214,.06);color:#d7cebe;font:500 .78rem/1 var(--f-ui);cursor:pointer;touch-action:manipulation}
+.jg-col-res-cancel:hover,.jg-col-res-cancel:focus-visible{border-color:#f4cf73;color:#fff6dc;outline:none}
+.jg-col-inm-btn{appearance:none;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;border:1px solid rgba(244,207,115,.54);background:rgba(10,9,8,.78);color:#fae3a7;font:600 .72rem/1 var(--f-ui);letter-spacing:.05em;cursor:pointer;pointer-events:auto;transition:border-color .16s,background-color .16s,color .16s}
+.jg-col-inm-btn:hover,.jg-col-inm-btn:focus-visible{border-color:#fff2c6;background:rgba(28,22,14,.92);color:#ffffff;outline:none}
+/* PR #19 · Modo Combate Inmersivo a pantalla completa del Coloso (enmarca desde el Coloso hasta la 3.ª opción sin desplazamiento) */
+html.jg-col-inm{overflow:hidden!important}
+html.jg-col-inm header.barra,html.jg-col-inm .jg-muelle,html.jg-col-inm .faro-btn,html.jg-col-inm .saltos-rap,html.jg-col-inm .adelante{opacity:0!important;pointer-events:none!important}
+.jg-col-escena.inm{position:fixed!important;inset:0!important;z-index:120!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;border:0!important;border-radius:0!important;display:grid!important;grid-template-rows:minmax(150px,1fr) auto auto!important;overflow:hidden!important;background:#090807!important}
+.jg-col-escena.inm .jg-col-stage{height:100%!important;min-height:150px!important;max-height:none!important;aspect-ratio:auto!important}
+.jg-col-escena.inm .jg-col-top{top:max(12px,env(safe-area-inset-top,0px));left:12px;right:12px}
+.jg-col-escena.inm .jg-col-tit-wrap{padding:10px 14px 8px}
+.jg-col-escena.inm .jg-col-tit-wrap h2{font-size:clamp(1.16rem,4.4vw,1.58rem)}
+.jg-col-escena.inm .jg-col-hud{padding:8px 14px;gap:6px}
+.jg-col-escena.inm .jg-col-stats,.jg-col-escena.inm .jg-col-premio,.jg-col-escena.inm .jg-col-ult{display:none}
+.jg-col-escena.inm .jg-col-comb{padding:8px 14px max(12px,env(safe-area-inset-bottom,0px));gap:7px}
+.jg-col-escena.inm .jg-col-crist{padding:4px 10px}
+.jg-col-escena.inm .jg-col-cg-c{height:15px}
+.jg-col-escena.inm .jg-col-cg-c i{width:10px;height:10px}
+.jg-col-escena.inm .jg-col-post-bar{padding:5px 10px}
+.jg-col-escena.inm .jg-col-habs[hidden]{display:none!important}
+.jg-col-escena.inm .jg-col-hab{padding:7px 10px;gap:4px}
+.jg-col-escena.inm .jg-col-hab-top{grid-template-columns:30px minmax(0,1fr) auto;gap:7px}
+.jg-col-escena.inm .jg-col-sig{width:30px;height:30px}
+.jg-col-escena.inm .jg-col-hab-go{padding-top:4px}
 .jg-col-habs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media (max-width:560px){.jg-col-habs{grid-template-columns:1fr;gap:7px}}
 .jg-col-hab{--hc:#d79b5b;position:relative;overflow:hidden;display:grid;align-content:space-between;gap:6px;text-align:left;padding:10px 11px;border-radius:14px;border:1px solid color-mix(in srgb,var(--hc) 44%,rgba(255,244,214,.14));background:radial-gradient(120% 80% at 10% 0%,color-mix(in srgb,var(--hc) 17%,transparent),transparent 62%),linear-gradient(180deg,#171410,#0d0c09);color:#f6f0e4;cursor:pointer;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--hc) 34%,transparent),0 10px 22px -16px rgba(0,0,0,.85);transition:transform .2s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .2s,opacity .2s}
@@ -2376,11 +2407,11 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-sig svg{width:19px;height:19px;display:block}
 .jg-col-hab-id{display:grid;gap:2px;min-width:0}
 .jg-col-hab-id b{font:600 .95rem/1.12 var(--f-display);color:#fbf5e9}
-.jg-col-hab-cost{display:inline-flex;align-items:center;gap:4px;width:fit-content;font:600 .6rem/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--hc)}
+.jg-col-hab-cost{display:inline-flex;align-items:center;gap:4px;width:fit-content;font:600 .7rem/1 var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--hc)}
 .jg-col-hab-dots{display:inline-flex;gap:2.5px}
 .jg-col-hab-dots i{width:5px;height:5px;border-radius:1px;transform:rotate(45deg);background:currentColor}
 .jg-col-hab-dmg{font:600 1.06rem/1 var(--f-display);color:#fae3a7;font-variant-numeric:lining-nums tabular-nums;text-align:right}
-.jg-col-hab-go{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:6px;border-top:1px solid rgba(255,244,214,.09);font:600 .64rem/1 var(--f-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--hc)}
+.jg-col-hab-go{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:6px;border-top:1px solid rgba(255,244,214,.09);font:600 .72rem/1 var(--f-ui);letter-spacing:.07em;text-transform:uppercase;color:var(--hc)}
 .jg-col-hab:disabled .jg-col-hab-go{color:#9a9284}
 .jg-col-brecha-tag{padding:2px 6px;border-radius:999px;background:color-mix(in srgb,var(--hc) 22%,transparent);border:1px solid color-mix(in srgb,var(--hc) 56%,transparent);color:#fff6dc;font-size:.58rem}
 .jg-col-pre{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oro) 44%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--oro) 13%,var(--hoja-2)),color-mix(in srgb,var(--hoja-2) 94%,transparent));font:400 .8rem/1.48 var(--f-ui);color:var(--tinta-2)}
@@ -2403,7 +2434,6 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-jp-ult{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 82%,transparent);font:400 .8rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .jg-jp-ult i{width:8px;height:8px;border-radius:50%;background:var(--oro);opacity:.72;flex:none}
 .jg-jp-ult b{color:var(--tinta);font-weight:500}
-html.desplazando .jg-col-art,html.desplazando .jg-col-velo,html.desplazando .jg-col-prev img,html.desplazando .jg-col-hp-bar>i::after,
 html.con-modal .jg-col-art,html.con-modal .jg-col-velo,html.con-modal .jg-col-hp-bar>i::after,html.con-modal .jg-col-hab.t3.listo::after,
 html.oculto .jg-jp-hero::before,html.oculto .jg-jp-hero::after,html.oculto .jg-jp-aro,html.oculto .jg-col-art,html.oculto .jg-col-velo,html.oculto .jg-col-prev img,html.oculto .jg-col-hp-bar>i::after,html.oculto .jg-col-hab.t3.listo::after,html.oculto .jg-med .barrido{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.jg-jp-hero::before,.jg-jp-hero::after,.jg-jp-aro,.jg-col-art,.jg-col-velo,.jg-col-prev img,.jg-col-hp-bar>i::after,.jg-col-hab.t3.listo::after{animation:none}}
@@ -3411,7 +3441,21 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     };
     insignia("hoy", faltan ? "m:" + dia : "", String(faltan), "Misiones por cumplir");
     insignia("mas", y && !y.asegurado ? "a:" + dia : "", "!", "Asegura tu avance");
+    insigniaMundo(sec);
     insigniaSalas();
+  }
+  function insigniaMundo(secAct) {
+    const a = MU && MU.querySelector('a[data-s="mundo"]'); if (!a) return;
+    const snap = COLOSO_CACHE.d || (A && A.store && A.store.get("jg:coloso_snap", null));
+    const colActivo = !!(snap && snap.estado === "activo" && (snap.vida | 0) > 0);
+    const cg = colActivo ? Math.max(0, snap.cargas | 0) : 0;
+    const enMundo = secAct ? secAct === "mundo" : a.classList.contains("act");
+    if (enMundo || !colActivo || cg <= 0) {
+      a.removeAttribute("data-n"); a.removeAttribute("title");
+      return;
+    }
+    a.setAttribute("data-n", String(cg));
+    a.title = "El Coloso de la Tradición activo · " + plural(cg, "carga lista", "cargas listas");
   }
   function resaltarZona(k) {
     setTimeout(() => {
@@ -3422,7 +3466,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       z.classList.add("jg-resalta"); setTimeout(() => z.classList.remove("jg-resalta"), 2600);
     }, 420);
   }
-  window.addEventListener("hashchange", () => { if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; terminarVista(); } });
+  window.addEventListener("hashchange", () => { if (!/^#\/escudrina\/coloso(\/|$)/.test(location.hash)) document.documentElement.classList.remove("jg-col-inm"); if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; terminarVista(); } });
   function cabeceraJuego(sec) {
     const t = TIT[sec] || TIT.hoy;
     const ayuda = sec === "hoy" ? h("a", { class: "jg-ayuda", href: "#/escudrina/guia", title: "Cómo se juega", "aria-label": "Cómo se juega: paso a paso y a tu ritmo", onclick: () => { S.guiaPaso = 0; vibrar(8); } }, ico("jugar"), h("span", { text: "Cómo se juega" })) : null;
@@ -3513,6 +3557,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function dibujarPanel(cont, y) {
     const sec = SECC_DE[S.sub[0] || ""] || "hoy";
     if (sec !== "juntos") salasAbiertas(false).catch(() => {});
+    if (sec === "hoy" && S.token) cargarColoso(false).catch(() => {});
     const pend = null; // P20 (12-nov-2026): ya no se piden confirmaciones manuales
     const salaInv = (() => { const ps = A.store.get("jg:salaInv", null); return ps && ps.c && !SL.cod ? h("div", { class: "jg-aviso" }, "Te invitaron a la sala de lectura ", h("b", { text: ps.c }), ". ", h("a", { href: "#/escudrina/sala/" + ps.c, text: "Entrar" })) : null; })();
     let partes;
@@ -3523,7 +3568,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
         h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
-    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), A.guiaSeccion ? A.guiaSeccion("escudrina") : null, tarjetaColoso(true), avisoMisionMundial(y), pend,
+    else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), A.guiaSeccion ? A.guiaSeccion("escudrina") : null, pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
       h("div", { class: "jg-dos" }, h("div", { class: "jg" }, tarjetaMisiones(y), tarjetaAjedrez(true)), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       salaInv,
@@ -3829,7 +3874,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         ctx.ellipse(bx * w, by * hC, w * b.rx, hC * b.ry, 0, 0, Math.PI * 2);
         ctx.fill();
       }
-      // 3) Brasas y esferas de luz ascendentes (nunca se congelan al desplazarse)
+      // 3) Brasas y esferas de luz ascendentes con sprites cacheados (25 fps máx, nunca congeladas al desplazarse)
       ctx.globalCompositeOperation = "lighter";
       for (const p of brasas) {
         p.y -= p.vy * dt;
@@ -3838,11 +3883,11 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         const py = p.y * hC;
         const al = Math.sin(Math.max(0, Math.min(1, p.y)) * Math.PI) * (0.42 + 0.52 * (0.5 + 0.5 * Math.sin(t * 2.4 + p.ph)));
         if (al < 0.04) continue;
-        ctx.fillStyle = p.oro ? "rgba(255,224,142," + al.toFixed(3) + ")" : "rgba(232,148,66," + (al * 0.85).toFixed(3) + ")";
-        ctx.beginPath();
-        ctx.arc(px, py, p.r, 0, Math.PI * 2);
-        ctx.fill();
+        const sz = p.r * 5.6;
+        ctx.globalAlpha = p.oro ? al : al * 0.88;
+        ctx.drawImage(p.oro ? spOro : spAmbar, px - sz * 0.5, py - sz * 0.5, sz, sz);
       }
+      ctx.globalAlpha = 1;
       // 4) Destello de impacto y efectos propios de cada habilidad
       if (flashAmt > 0) {
         flashAmt = Math.max(0, flashAmt - dt * 1.9);
@@ -3910,6 +3955,16 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (chispas.length > 90) chispas = chispas.filter((c) => c.life > 0);
       ctx.globalCompositeOperation = "source-over";
     };
+    const mkBrasa = (c1, c2) => {
+      const c = document.createElement("canvas"); c.width = 24; c.height = 24;
+      const g = c.getContext("2d");
+      const gr = g.createRadialGradient(12, 12, 1, 12, 12, 11);
+      gr.addColorStop(0, c1); gr.addColorStop(0.45, c2); gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = gr; g.fillRect(0, 0, 24, 24);
+      return c;
+    };
+    const spOro = mkBrasa("rgba(255,248,214,1)", "rgba(255,214,122,.52)");
+    const spAmbar = mkBrasa("rgba(255,222,150,1)", "rgba(232,148,66,.46)");
     let ult = performance.now();
     const limpiar = () => {
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
@@ -3921,12 +3976,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       raf = 0;
       if (!canvas.isConnected) return limpiar();
       if (!visible || document.hidden) return;
-      const dtRaw = Math.min(0.05, Math.max(0.008, (ahora - ult) / 1000));
+      const desl = document.documentElement.classList.contains("desplazando");
+      const intMs = desl ? 72 : 40; // Tope 25 fps normal, ~14 fps al desplazarse (nunca se paraliza)
+      if (ahora - ult < intMs) { raf = requestAnimationFrame(paso); return; }
+      const dtRaw = Math.min(0.08, Math.max(0.016, (ahora - ult) / 1000));
       ult = ahora;
       if (!document.documentElement.classList.contains("con-modal")) {
-        // Ralentizar suavemente durante el scroll en vez de congelar las partículas (cero sensación de bug visual)
-        const desl = document.documentElement.classList.contains("desplazando");
-        dibujar(desl ? dtRaw * 0.42 : dtRaw);
+        dibujar(desl ? dtRaw * 0.5 : dtRaw);
       }
       raf = requestAnimationFrame(paso);
     };
@@ -3995,7 +4051,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function guardarSnapColoso(r) {
     if (!r || r.error || !A || !A.store) return;
     A.store.set("jg:coloso_snap", { estado: r.estado, vida: r.vida | 0, vidaMax: r.vidaMax | 0, cargas: r.cargas | 0, cargasMax: r.cargasMax || 6, t: Date.now() });
-    try { document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
+    try { insigniaMundo(); document.dispatchEvent(new Event("biex:faro")); } catch (e) {}
   }
   async function cargarColoso(forzar) {
     if (!S.token) return null;
@@ -4080,8 +4136,18 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const yaC = COLOSO_CACHE.d;
     const zona = h("div", { class: "jg jg-col-arena" }, yaC ? null : h("p", { class: "cargando", text: "Despertando la incursión…" }));
     marco(cont, cabSub("El Coloso de la Tradición", "Batalla táctica cooperativa · sintoniza el Pulso de Resonancia y aprovecha cada brecha.", "#/escudrina/mundo"), A.guiaSeccion ? A.guiaSeccion("coloso") : null, zona);
-    let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0, ultGolpe = null;
+    let rachaTac = 0, idxPost = Math.floor(Date.now() / 16000) % COLOSO_POSTURAS.length, tPost = 0, resRaf = 0, ultGolpe = null, salirInmTimer = 0, inmManualOff = false;
     const pararRes = () => { if (resRaf) { cancelAnimationFrame(resRaf); resRaf = 0; } };
+    const aplicarInm = (escEl, btnEl, on) => {
+      const act = !!on;
+      document.documentElement.classList.toggle("jg-col-inm", act);
+      if (escEl) escEl.classList.toggle("inm", act);
+      if (btnEl) {
+        btnEl.textContent = act ? "✕ Salir de arena" : "⛶ Combate inmersivo";
+        btnEl.setAttribute("aria-pressed", String(act));
+        btnEl.title = act ? "Salir del combate a pantalla completa" : "Entrar en combate a pantalla completa";
+      }
+    };
     const filasTop = (lista) => lista.slice(0, 15).map((x, idx) => {
       const ap = x.apodo || x.a || "Lector", [l, col] = embDe(x.emb || x.e);
       const pts = x.aporte != null ? x.aporte : (x.dano != null ? x.dano : (x.pts | 0));
@@ -4122,6 +4188,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
           h("div", { class: "jg-col-velo b", "aria-hidden": "true" })));
       const premioTxt = premioColosoTxt(c.premio);
+      let escenaRef = null;
+      const btnInm = h("button", { type: "button", class: "jg-col-inm-btn", "aria-pressed": "false", hidden: derrotado || cargas <= 0, text: "✕ Salir de arena", onclick: (e) => { e.stopPropagation(); const ahoraOn = document.documentElement.classList.contains("jg-col-inm"); inmManualOff = ahoraOn; aplicarInm(escenaRef, btnInm, !ahoraOn); } });
       const faseEl = h("span", { class: "jg-col-fase", text: faseColoso(pct, derrotado) });
       const stage = h("div", { class: "jg-col-stage" },
         artWrap,
@@ -4129,7 +4197,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("div", { class: "jg-col-vig", "aria-hidden": "true" }),
         h("div", { class: "jg-col-top" },
           h("span", { class: "jg-col-badge" }, h("i", { class: "jg-coloso-dot", "aria-hidden": "true" }), h("span", { text: derrotado ? "Coloso derribado" : "En vivo" })),
-          c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null),
+          !derrotado ? btnInm : (c.semana ? h("span", { class: "jg-col-badge tenue", text: "Semana " + c.semana }) : null)),
         h("div", { class: "jg-col-tit-wrap" },
           faseEl,
           h("h2", { text: jefe.nombre || "El Coloso de la Tradición" })));
@@ -4178,7 +4246,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       if (ultGolpe) pintarUltBar(ultGolpe);
       const ultBar = h("div", { class: "jg-col-ult", role: "status", "aria-live": "polite", hidden: !ultGolpe }, ultSpan, ultSmall);
 
-      let fxCtrl = null, topOl = null, impTimer = 0;
+      let fxCtrl = null, topOl = null, impTimer = 0, habsWrap = null;
       const resCaja = h("div", { class: "jg-col-res", hidden: true });
       let enviandoAcc = false;
 
@@ -4241,12 +4309,14 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         const bonoMult = r.bono && Number(r.bono.mult) > 1 ? " · ×" + String(Number(r.bono.mult).toFixed(2)).replace(".", ",").replace(/,00$/, "") : "";
         const etiq = crit && brecha ? "¡Brecha perfecta!" : crit ? "¡Resonancia exacta!" : brecha ? "¡Brecha aprovechada!" : precision === "resonancia" ? "¡En resonancia!" : "Impacto firme";
         ultGolpe = { dano: dano || 1, hab: habEs, nom: nomHab || habEs, crit, brecha, etiq: etiq + bonoMult };
+        if (habsWrap) habsWrap.hidden = false;
         const ahoraDerrotado = nuevo.estado === "derrotado" || (nuevo.vida | 0) <= 0;
         if (ahoraDerrotado) {
+          aplicarInm(escenaRef, btnInm, false);
           pintar(nuevo, ultGolpe);
           return;
         }
-        // Actualización en sitio a 60 fps: conserva lienzo, partículas e imagen intactos y proyecta el impacto dentro de la arena
+        // Actualización en sitio sin saltos de DOM: conserva lienzo, partículas e imagen intactos y proyecta el impacto dentro de la arena
         c = nuevo;
         postAct = COLOSO_POSTURAS[idxPost];
         const nvida = Math.max(0, c.vida | 0), nvmax = Math.max(1, c.vidaMax | 0);
@@ -4286,49 +4356,147 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         }
         if (topOl && Array.isArray(c.top) && c.top.length) topOl.replaceChildren(...filasTop(c.top));
         lanzarImpactoEscena(dano || 1, habEs, crit, brecha, etiq + bonoMult + (rachaTac >= 2 ? " · Racha ×" + rachaTac : ""));
+        // Cuando se completan los ataques (0 cargas), esperar el destello final (~1.35 s) y retirar la vista inmersiva para explorar Enseñanza y Aportes
+        if (ncargas <= 0) {
+          btnInm.hidden = true;
+          if (salirInmTimer) clearTimeout(salirInmTimer);
+          salirInmTimer = setTimeout(() => {
+            salirInmTimer = 0;
+            aplicarInm(escenaRef, btnInm, false);
+          }, 1350);
+        }
       };
+      // PR #19 · Barra de Resonancia táctil infalible (pointerdown en pista, caja y botón; 2 a 4 marcas aleatorias; 25 fps máx)
       const iniciarResonancia = (hab, nom, brecha) => {
         if (enviandoAcc) return;
         if (sinAnim()) return ejecutarGolpe(hab, nom, "resonancia", brecha);
         pararRes();
-        const centro = 32 + ((Date.now() * 13 + nivelYo * 19) % 36);
-        const z0 = Math.max(8, centro - perf.ancho / 2), zW = perf.ancho;
-        const c0 = Math.max(z0 + 1, centro - perf.crit / 2), cW = perf.crit;
+        const meta = 2 + Math.floor(Math.random() * 3); // 2, 3 o 4 pulsos aleatorios
+        const zW = Math.max(16, perf.ancho);
+        const cW = Math.max(6, perf.crit);
+        let centro = 28 + Math.floor(Math.random() * 44);
+        let z0 = Math.max(8, Math.min(92 - zW, centro - zW / 2));
+        let c0 = Math.max(z0 + 1, Math.min(z0 + zW - cW - 1, centro - cW / 2));
+        const zonaEl = h("span", { class: "jg-col-res-zona", style: "left:" + z0.toFixed(1) + "%;width:" + zW.toFixed(1) + "%" });
+        const critEl = h("span", { class: "jg-col-res-crit", style: "left:" + c0.toFixed(1) + "%;width:" + cW.toFixed(1) + "%" });
         const cur = h("span", { class: "jg-col-res-cur" });
-        let pos = 4, dir = 1, pases = 0, tUlt = performance.now(), resuelto = false;
-        const cerrarYDisparar = (ev) => {
-          if (ev) ev.stopPropagation();
+        const gemas = Array.from({ length: meta }, (_, gi) => h("i", { class: "jg-col-res-gema" + (gi === 0 ? " act" : ""), "aria-hidden": "true" }));
+        const pasoTxt = h("small", { text: "Marca 1 de " + meta });
+        const fbEl = h("div", { class: "jg-col-res-fb", text: "Toca en la banda dorada (" + meta + " marcas)" });
+        let pos = 5, dir = 1, pases = 0, pasoAct = 0, puntos = 0, crits = 0, firmes = 0;
+        let tUlt = performance.now(), tDib = 0, ultToque = 0, resuelto = false;
+
+        const reubicarMarca = () => {
+          let nuevoC = 20 + Math.floor(Math.random() * 60);
+          if (Math.abs(nuevoC - centro) < 18) nuevoC = centro < 50 ? Math.min(78, centro + 26) : Math.max(22, centro - 26);
+          centro = nuevoC;
+          z0 = Math.max(8, Math.min(92 - zW, centro - zW / 2));
+          c0 = Math.max(z0 + 1, Math.min(z0 + zW - cW - 1, centro - cW / 2));
+          zonaEl.style.left = z0.toFixed(1) + "%";
+          critEl.style.left = c0.toFixed(1) + "%";
+        };
+        const cerrarFinal = () => {
           if (resuelto) return;
           resuelto = true;
           pararRes();
-          const enCrit = pos >= c0 && pos <= c0 + cW;
-          const enZona = pos >= z0 && pos <= z0 + zW;
-          const prec = enCrit ? "critico" : enZona ? "resonancia" : "firme";
+          resCaja.onpointerdown = null;
+          if (habsWrap) habsWrap.hidden = false;
+          const prom = puntos / Math.max(1, meta);
+          const prec = (prom >= 1.45 || (crits >= Math.ceil(meta / 2) && firmes === 0)) ? "critico"
+            : prom >= 0.75 ? "resonancia" : "firme";
           ejecutarGolpe(hab, nom, prec, brecha);
         };
-        const pista = h("div", { class: "jg-col-res-pista", role: "button", tabindex: "0", "aria-label": "Toca cuando la luz cruce la zona dorada", onclick: cerrarYDisparar },
-          h("span", { class: "jg-col-res-zona", style: "left:" + z0.toFixed(1) + "%;width:" + zW.toFixed(1) + "%" }),
-          h("span", { class: "jg-col-res-crit", style: "left:" + c0.toFixed(1) + "%;width:" + cW.toFixed(1) + "%" }),
-          cur);
-        const btGolpe = h("button", { class: "btn oro chico jg-col-res-btn", type: "button", onclick: cerrarYDisparar }, h("span", { text: "¡Desatar " + nom + " ahora!" }));
+        const cancelarRes = (e) => {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          if (resuelto) return;
+          resuelto = true;
+          pararRes();
+          resCaja.onpointerdown = null;
+          resCaja.hidden = true;
+          if (habsWrap) habsWrap.hidden = false;
+        };
+        const registrarToque = (ev) => {
+          if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+          if (resuelto) return;
+          const ahora = performance.now();
+          if (ahora - ultToque < 115) return;
+          ultToque = ahora;
+          const enCrit = pos >= c0 - 1.5 && pos <= c0 + cW + 1.5;
+          const enZona = pos >= z0 - 2.2 && pos <= z0 + zW + 2.2;
+          const g = gemas[pasoAct];
+          if (g) {
+            g.classList.remove("act");
+            g.classList.add(enCrit ? "crit" : enZona ? "ok" : "firme");
+          }
+          if (enCrit) { puntos += 2; crits++; fbEl.textContent = "¡Resonancia exacta!"; vibrar(22); }
+          else if (enZona) { puntos += 1; fbEl.textContent = "¡En la marca!"; vibrar(14); }
+          else { firmes++; fbEl.textContent = "Pulso firme"; vibrar(8); }
+          pasoAct++;
+          if (pasoAct >= meta) {
+            cerrarFinal();
+            return;
+          }
+          if (gemas[pasoAct]) gemas[pasoAct].classList.add("act");
+          pasoTxt.textContent = "Marca " + (pasoAct + 1) + " de " + meta;
+          btSpan.textContent = "¡Acertar marca! (" + (pasoAct + 1) + "/" + meta + ")";
+          pases = 0;
+          reubicarMarca();
+        };
+        const onClickTeclado = (e) => {
+          if (e.detail === 0) registrarToque(e);
+          else e.stopPropagation();
+        };
+        const pista = h("div", {
+          class: "jg-col-res-pista", role: "button", tabindex: "0",
+          "aria-label": "Toca cuando la luz cruce la zona dorada",
+          onpointerdown: registrarToque,
+          onclick: onClickTeclado,
+          onkeydown: (e) => { if (e.key === " " || e.key === "Enter") registrarToque(e); },
+        }, zonaEl, critEl, cur);
+        const btSpan = h("span", { text: "¡Acertar marca! (1/" + meta + ")" });
+        const btGolpe = h("button", {
+          class: "btn oro chico jg-col-res-btn", type: "button",
+          onpointerdown: registrarToque,
+          onclick: onClickTeclado,
+        }, btSpan);
+        const btCancel = h("button", {
+          class: "jg-col-res-cancel", type: "button",
+          onpointerdown: cancelarRes,
+          onclick: cancelarRes,
+          text: "Cancelar",
+        });
+        resCaja.onpointerdown = (e) => {
+          if (e.target && e.target.closest && e.target.closest(".jg-col-res-cancel")) return;
+          registrarToque(e);
+        };
         resCaja.replaceChildren(
           h("div", { class: "jg-col-res-cab" },
-            h("span", { text: "Pulso de Resonancia · " + perf.grado + " (Niv. " + nivelYo + ")" }),
-            h("small", { text: "Toca en la banda dorada" })),
+            h("span", { text: "Pulso · " + nom }),
+            h("div", { class: "jg-col-res-gemas" }, ...gemas),
+            pasoTxt),
           pista,
-          btGolpe);
+          fbEl,
+          h("div", { class: "jg-col-res-acc" }, btGolpe, btCancel));
+        if (habsWrap && document.documentElement.classList.contains("jg-col-inm")) habsWrap.hidden = true;
         resCaja.hidden = false;
         vibrar(10);
         const tick = (ahora) => {
           resRaf = 0;
           if (!resCaja.isConnected || resuelto) return;
-          const dt = Math.min(0.04, (ahora - tUlt) / 1000);
+          if (ahora - tDib < 40) { resRaf = requestAnimationFrame(tick); return; } // 25 fps máx
+          tDib = ahora;
+          const dt = Math.min(0.06, Math.max(0.016, (ahora - tUlt) / 1000));
           tUlt = ahora;
-          pos += dir * (82 * perf.vel) * dt;
-          if (pos >= 97) { pos = 97; dir = -1; pases++; }
-          else if (pos <= 3) { pos = 3; dir = 1; pases++; }
+          const acel = 1 + pasoAct * 0.08;
+          pos += dir * (78 * perf.vel * acel) * dt;
+          if (pos >= 96) { pos = 96; dir = -1; pases++; }
+          else if (pos <= 4) { pos = 4; dir = 1; pases++; }
           cur.style.transform = "translate3d(" + (pos * (pista.clientWidth || 260) / 100).toFixed(1) + "px,0,0)";
-          if (pases >= 4) { cerrarYDisparar(); return; }
+          if (pases >= 6) {
+            // Si el jugador deja de tocar por completo durante varios pases, completa los pulsos pendientes como firmes y dispara
+            cerrarFinal();
+            return;
+          }
           resRaf = requestAnimationFrame(tick);
         };
         resRaf = requestAnimationFrame(tick);
@@ -4350,7 +4518,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         ultBar,
         postBar,
         resCaja,
-        h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base], idx) => {
+        (habsWrap = h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base], idx) => {
           const est = Math.round(base * mult);
           const lista = cargas >= cost;
           const faltaCg = Math.max(0, cost - cargas);
@@ -4369,8 +4537,10 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
             h("span", { class: "jg-col-hab-go" }, goTxt, tagBr));
           habBtns.push({ id, cost, bt, goTxt, tagBr });
           return bt;
-        }))) : null;
+        })))) : null;
       const escena = h("section", { class: "jg-col-escena" }, stage, hud, comb);
+      escenaRef = escena;
+      aplicarInm(escena, btnInm, !derrotado && cargas > 0 && !inmManualOff);
       escena.addEventListener("pointerdown", () => { if (window.BiEx25D && window.BiEx25D.pedirPermiso) window.BiEx25D.pedirPermiso(); }, { passive: true });
       if (infoGolpe && infoGolpe.dano) lanzarImpactoEscena(infoGolpe.dano, infoGolpe.hab || "golpe", infoGolpe.crit, infoGolpe.brecha, infoGolpe.etiq);
       // B5 · Enseñanza del jefe + cita real de BiEx
@@ -6832,15 +7002,17 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       pie, panelV);
     // Inclinación 3D + paralaje 2.5D solo al interactuar con dedo o puntero: al soltar vuelve a reposo (transform:none, 0 % CPU)
     // sin eventos continuos de giroscopio que interfieran con el desplazamiento vertical en móvil.
-    let rx = 0, ry = 0, trx = 0, tryy = 0, raf = 0, arrastra = false;
+    let rx = 0, ry = 0, trx = 0, tryy = 0, raf = 0, ult3d = 0, arrastra = false;
     const limpiar3D = () => {
       escena.classList.remove("inclinada");
       escena.style.removeProperty("--rx"); escena.style.removeProperty("--ry");
       escena.style.removeProperty("--px"); escena.style.removeProperty("--py");
     };
-    const animar3D = () => {
+    const animar3D = (ahora) => {
       raf = 0; if (!cuerpo.isConnected) return;
-      rx += (trx - rx) * 0.18; ry += (tryy - ry) * 0.18;
+      if (ahora - ult3d < 40) { raf = requestAnimationFrame(animar3D); return; }
+      ult3d = ahora;
+      rx += (trx - rx) * 0.28; ry += (tryy - ry) * 0.28;
       if (!arrastra && Math.abs(trx) < 0.01 && Math.abs(tryy) < 0.01 && Math.abs(rx) < 0.06 && Math.abs(ry) < 0.06) {
         rx = 0; ry = 0; limpiar3D(); return;
       }

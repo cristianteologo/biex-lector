@@ -879,46 +879,124 @@
     if (!tn) return n.getBoundingClientRect();
     const rg = document.createRange(); rg.selectNodeContents(tn); const r = rg.getBoundingClientRect(); return r.height ? r : n.getBoundingClientRect();
   };
-  // PR #18 · Renglones reales renderizados de un verso (agrupa fragmentos inline en su línea visual y toma el tope tipográfico principal)
+  // PR #18/#19 · Nodos de texto puro del verso (excluye <sup>, .vn y etiquetas auxiliares para evitar saltos por superíndices)
+  function nodosTextoVerso(el) {
+    if (!el) return [];
+    const raiz = el.querySelector(".vtx") || el.querySelector(".vt") || el;
+    const out = [];
+    const tw = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        if (!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const p = n.parentElement;
+        if (p && p.closest("sup, .vn, .marca-et, .v-tag")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    let cur;
+    while ((cur = tw.nextNode())) out.push(cur);
+    return out;
+  }
   function lineasVerso(el) {
     if (!el) return [];
-    const nodo = el.querySelector(".vtx") || el.querySelector(".vt") || el;
+    const tns = nodosTextoVerso(el);
+    if (!tns.length) return [];
     const rg = document.createRange();
-    rg.selectNodeContents(nodo);
-    const rs = rg.getClientRects();
     const out = [];
-    for (let i = 0; i < rs.length; i++) {
-      const r = rs[i];
-      if (r.width < 1.5 || r.height < 6) continue;
-      const mid = (r.top + r.bottom) * 0.5;
-      let g = null;
-      for (let j = out.length - 1; j >= 0; j--) {
-        if (Math.abs(out[j].mid - mid) < 9) { g = out[j]; break; }
+    for (let t = 0; t < tns.length; t++) {
+      rg.selectNodeContents(tns[t]);
+      const rs = rg.getClientRects();
+      for (let i = 0; i < rs.length; i++) {
+        const r = rs[i];
+        if (r.width < 1.5 || r.height < 6) continue;
+        const mid = (r.top + r.bottom) * 0.5;
+        let g = null;
+        for (let j = out.length - 1; j >= 0; j--) {
+          if (Math.abs(out[j].mid - mid) < 9) { g = out[j]; break; }
+        }
+        if (!g) out.push({ top: r.top, bottom: r.bottom, maxH: r.height, mid });
+        else if (r.height > g.maxH) { g.top = r.top; g.bottom = r.bottom; g.maxH = r.height; g.mid = mid; }
       }
-      if (!g) out.push({ top: r.top, bottom: r.bottom, maxH: r.height, mid });
-      else if (r.height > g.maxH) { g.top = r.top; g.bottom = r.bottom; g.maxH = r.height; g.mid = mid; }
     }
     out.sort((a, b) => a.top - b.top);
     return out;
   }
-  // PR #18 · Coincidencia exacta línea por línea entre Lectura ↔ Textual y Por versos ↔ Continuo (0 px de deriva en ida y vuelta)
+  function charOffsetDeLinea(el, targetTop) {
+    const tns = nodosTextoVerso(el);
+    if (!tns.length) return { charOff: 0, totChars: 1 };
+    const rg = document.createRange();
+    let acc = 0, hallado = -1;
+    for (let t = 0; t < tns.length; t++) {
+      const tn = tns[t], s = tn.nodeValue || "";
+      if (hallado < 0) {
+        rg.selectNodeContents(tn);
+        const rAll = rg.getBoundingClientRect();
+        if (rAll.bottom >= targetTop - 8 && rAll.top <= targetTop + 26) {
+          let lo = 0, hi = s.length - 1;
+          while (lo < hi) {
+            const m = (lo + hi) >> 1;
+            rg.setStart(tn, m); rg.setEnd(tn, Math.min(s.length, m + 1));
+            const r = rg.getBoundingClientRect();
+            if (r.height && r.top < targetTop - 7) lo = m + 1;
+            else hi = m;
+          }
+          while (lo < s.length && /\s/.test(s[lo])) lo++;
+          if (lo < s.length) hallado = acc + lo;
+        }
+      }
+      acc += s.length;
+    }
+    return { charOff: Math.max(0, hallado < 0 ? 0 : hallado), totChars: Math.max(1, acc) };
+  }
+  function topDeCharOffset(el, charOff) {
+    const tns = nodosTextoVerso(el);
+    if (!tns.length) return null;
+    const rg = document.createRange();
+    let acc = 0;
+    const meta = Math.max(0, charOff | 0);
+    for (let t = 0; t < tns.length; t++) {
+      const tn = tns[t], s = tn.nodeValue || "";
+      if (meta < acc + s.length || t === tns.length - 1) {
+        let idx = Math.max(0, Math.min(s.length - 1, meta - acc));
+        while (idx < s.length - 1 && /\s/.test(s[idx])) idx++;
+        while (idx > 0 && /\s/.test(s[idx])) idx--;
+        rg.setStart(tn, idx); rg.setEnd(tn, Math.min(s.length, idx + 1));
+        const r = rg.getBoundingClientRect();
+        if (r && r.height >= 4) return r.top;
+      }
+      acc += s.length;
+    }
+    return null;
+  }
+  // PR #18/#19 · Coincidencia exacta línea por línea entre Lectura ↔ Textual y Por versos ↔ Continuo (0 px de deriva en ida y vuelta)
   function capturarAnclaLinea() {
     if (window.scrollY <= 2) return { tope: true };
     const top = bordeSup() + 4, ref = top + (window.innerHeight - top) * 0.38;
-    const fija = (a) => { RP.ultLinea = { v: a.v, k: a.k, total: a.total, lineTop: a.lineTop }; if (navigator.webdriver) window.__biexAnclaNum = a; return a; };
+    const fija = (a, elRef) => {
+      const co = a.charOff != null ? { charOff: a.charOff, totChars: a.totChars || 1 } : (elRef ? charOffsetDeLinea(elRef, a.lineTop) : { charOff: 0, totChars: 1 });
+      const out = Object.assign({}, a, { charOff: co.charOff, totChars: co.totChars, disp: prefs.disp, lorg: !!prefs.lorg });
+      RP.ultLinea = { v: out.v, k: out.k, total: out.total, lineTop: out.lineTop, charOff: out.charOff, totChars: out.totChars, disp: out.disp, lorg: out.lorg };
+      if (navigator.webdriver) window.__biexAnclaNum = out;
+      return out;
+    };
     // Cuando el encabezado del capítulo sigue a la vista arriba, se clava el renglón inicial del primer verso visible (0 px de sobresalto arriba)
     const enc = document.querySelector("#vista .encab");
     if (enc && enc.getBoundingClientRect().bottom > top + 4) {
       const p1 = document.querySelector("#vista [id^='v']");
       const ls1 = p1 && /^v\d+$/.test(p1.id) ? lineasVerso(p1) : [];
-      if (ls1.length) return fija({ v: +p1.id.slice(1), k: 0, total: ls1.length, lineTop: ls1[0].top, abs: 1, frac: 0, off: 0 });
+      if (ls1.length) return fija({ v: +p1.id.slice(1), k: 0, total: ls1.length, lineTop: ls1[0].top, charOff: 0, abs: 1, frac: 0, off: 0 }, p1);
     }
     if (RP.ultLinea) {
       const eu = document.getElementById("v" + RP.ultLinea.v), ls = eu ? lineasVerso(eu) : [];
       if (ls.length) {
+        const tChar = RP.ultLinea.charOff != null ? topDeCharOffset(eu, RP.ultLinea.charOff) : null;
+        if (tChar != null && Math.abs(tChar - RP.ultLinea.lineTop) < 3) {
+          let bk = 0, bd = Infinity;
+          for (let i = 0; i < ls.length; i++) { const d = Math.abs(ls[i].top - tChar); if (d < bd) { bd = d; bk = i; } }
+          return fija({ v: RP.ultLinea.v, k: bk, total: ls.length, lineTop: RP.ultLinea.lineTop, charOff: RP.ultLinea.charOff, totChars: RP.ultLinea.totChars, abs: 1, frac: 0, off: 0 }, eu);
+        }
         let bk = 0, bd = Infinity;
         for (let i = 0; i < ls.length; i++) { const d = Math.abs(ls[i].top - RP.ultLinea.lineTop); if (d < bd) { bd = d; bk = i; } }
-        if (bd < 2) return fija({ v: RP.ultLinea.v, k: bk, total: ls.length, lineTop: RP.ultLinea.lineTop, abs: 1, frac: 0, off: 0 });
+        if (bd < 2.5) return fija({ v: RP.ultLinea.v, k: bk, total: ls.length, lineTop: RP.ultLinea.lineTop, abs: 1, frac: 0, off: 0 }, eu);
       }
     }
     try {
@@ -927,10 +1005,10 @@
       const visA = lsa.map((l, idx) => ({ l, idx })).filter((x) => x.l.bottom > top && x.l.top < window.innerHeight - 16);
       if (visA.length) {
         visA.sort((a, b) => Math.abs(a.l.top - ref) - Math.abs(b.l.top - ref));
-        return fija({ v: va, k: visA[0].idx, total: lsa.length, lineTop: visA[0].l.top, abs: 1, frac: 0, off: 0 });
+        return fija({ v: va, k: visA[0].idx, total: lsa.length, lineTop: visA[0].l.top, abs: 1, frac: 0, off: 0 }, ea);
       }
     } catch (e) { /* sin juego */ }
-    let mejor = null, dm = Infinity;
+    let mejor = null, mejorEl = null, dm = Infinity;
     for (const el of document.querySelectorAll("#vista [id^='v']")) {
       if (!/^v\d+$/.test(el.id)) continue;
       const r0 = el.getBoundingClientRect();
@@ -939,10 +1017,10 @@
       for (let i = 0; i < ls.length; i++) {
         if (ls[i].bottom <= top || ls[i].top >= window.innerHeight - 12) continue;
         const d = Math.abs(ls[i].top - ref);
-        if (d < dm) { dm = d; mejor = { v: +el.id.slice(1), k: i, total: ls.length, lineTop: ls[i].top, abs: 1, frac: 0, off: 0 }; }
+        if (d < dm) { dm = d; mejorEl = el; mejor = { v: +el.id.slice(1), k: i, total: ls.length, lineTop: ls[i].top, abs: 1, frac: 0, off: 0 }; }
       }
     }
-    return mejor ? fija(mejor) : capturarAncla(true);
+    return mejor ? fija(mejor, mejorEl) : capturarAncla(true);
   }
   function capturarAnclaNum() { return capturarAnclaLinea(); }
   function yDeAncla(a) {
@@ -951,6 +1029,11 @@
       if (el) {
         for (let n = el, acc = 0; n && acc < window.innerHeight * 1.6; n = n.previousElementSibling) { n.classList.add("cv-vis"); acc += n.getBoundingClientRect().height; }
         if (el.nextElementSibling) el.nextElementSibling.classList.add("cv-vis");
+        // Misma traducción cambiando disposición (Por versos ↔ Continuo): ancla por posición exacta del carácter (0 px de desajuste)
+        if (a.charOff != null && a.lorg === !!prefs.lorg) {
+          const tC = topDeCharOffset(el, a.charOff);
+          if (tC != null) return Math.max(0, window.scrollY + tC - a.lineTop);
+        }
         const ls = lineasVerso(el);
         if (ls.length) {
           const k2 = a.total > 1 ? Math.min(ls.length - 1, Math.round((a.k / Math.max(1, a.total - 1)) * (ls.length - 1))) : 0;
@@ -3602,7 +3685,7 @@
   function libroPaginas(items, porPag, pintar, op = {}) {
     const n = Math.max(1, Math.ceil(items.length / porPag));
     let p = Math.min(n - 1, Math.max(0, op.pag | 0)), girando = false, alto = 0;
-    const armar = (k) => { const nodos = items.slice(k * porPag, (k + 1) * porPag).map((x, i) => pintar(x, k * porPag + i)); return op.pagina ? op.pagina(nodos) : h("ol", { class: "lp-lista" }, nodos); };
+    const armar = (k) => { const nodos = items.slice(k * porPag, (k + 1) * porPag).map((x, i) => pintar(x, k * porPag + i)); return op.pagina ? op.pagina(nodos, k) : h("ol", { class: "lp-lista" }, nodos); };
     const hoja = h("div", { class: "lp-hoja" }, armar(p));
     const marco = h("div", { class: "lp-marco" + (op.clase ? " " + op.clase : "") + (n > 1 ? " con-lomo" : "") }, hoja);
     const pie = h("nav", { class: "lp-pie", "aria-label": op.etiqueta || "Páginas" });
@@ -4541,7 +4624,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "080cf89abc", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "f0e9d90158", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5228,21 +5311,22 @@
       const x = L[i], n = L[i + 1];
       if (PR_V.includes(x.c)) {
         const dg = n && PR_V.includes(n.c) && !n.d ? x.c + n.c : "";
-        if (i === 0 && (x.a || (dg && n.a))) U.push({ k: "", e: "h", c: "" });
+        // Koiné del siglo I (Allen, Buth, Horrocks, Gignac): el espíritu áspero inicial /h/ todavía se articula
+        if (i === 0 && (x.a || (dg && n.a))) U.push({ k: "h", e: "h", c: "h" });
         if (["αι", "ει", "οι", "υι", "ου"].includes(dg)) {
           U.push({ k: { αι: "ɛ", ει: "i", οι: "y", υι: "yi", ου: "u" }[dg], e: { αι: "ai̯", ει: "ei̯", οι: "oi̯", υι: "yi̯", ου: "uː" }[dg], v: 1, t: x.t || n.t }); i++; continue;
         }
         if (["αυ", "ευ", "ηυ"].includes(dg)) {
-          U.push({ k: { αυ: "a", ευ: "ɛ", ηυ: "e" }[dg], e: { αυ: "au̯", ευ: "eu̯", ηυ: "eːu̯" }[dg], v: 1, t: x.t || n.t });
-          U.push({ k: sorda(L[i + 2]) ? "f" : "v", e: "", c: "υ" }); i++; continue;
+          U.push({ k: { αυ: "a", ευ: "ɛ", ηυ: "e̝" }[dg], e: { αυ: "au̯", ευ: "eu̯", ηυ: "eːu̯" }[dg], v: 1, t: x.t || n.t });
+          U.push({ k: sorda(L[i + 2]) ? "ɸ" : "β", e: "", c: "υ" }); i++; continue;
         }
-        U.push({ k: { α: "a", ε: "ɛ", η: "e", ι: "i", ο: "o", υ: "y", ω: "o" }[x.c], e: { α: "a", ε: "e", η: "eː", ι: "i", ο: "o", υ: "y", ω: "oː" }[x.c], v: 1, t: x.t });
+        U.push({ k: { α: "a", ε: "ɛ", η: "e̝", ι: "i", ο: "o", υ: "y", ω: "o" }[x.c], e: { α: "a", ε: "e", η: "eː", ι: "i", ο: "o", υ: "y", ω: "oː" }[x.c], v: 1, t: x.t });
         continue;
       }
       const sig = n ? n.c : "";
       let K = "", E = "";
       switch (x.c) {
-        case "β": K = "v"; E = "b"; break;
+        case "β": K = "β"; E = "b"; break;
         case "γ": if (sig && "γκξχ".includes(sig)) { K = E = "ŋ"; } else { K = anterior(i + 1) ? "ʝ" : "ɣ"; E = "g"; } break;
         case "δ": K = "ð"; E = "d"; break;
         case "ζ": K = "z"; E = "dz"; break;
@@ -5253,10 +5337,10 @@
         case "ν": K = E = "n"; break;
         case "ξ": K = E = "ks"; break;
         case "π": K = E = "p"; break;
-        case "ρ": K = "r"; E = i === 0 && x.a ? "rʰ" : "r"; break;
-        case "σ": K = sig && "βγδμ".includes(sig) ? "z" : "s"; E = "s"; break;
+        case "ρ": K = i === 0 && x.a ? "r̥" : "r"; E = i === 0 && x.a ? "rʰ" : "r"; break;
+        case "σ": K = sig && "βγδμνρ".includes(sig) ? "z" : "s"; E = "s"; break;
         case "τ": K = E = "t"; break;
-        case "φ": K = E = "f"; break;
+        case "φ": K = "ɸ"; E = "f"; break;
         case "χ": K = anterior(i + 1) ? "ç" : "x"; E = "x"; break;
         case "ψ": K = E = "ps"; break;
       }
@@ -5338,18 +5422,369 @@
     if (!MAPA_TL) { MAPA_TL = new Map(); T.F.forEach((f, i) => MAPA_TL.set(f, T.FT[i])); (T.L || []).forEach((l, i) => { const k = String(l).split(/,\s*/)[0]; if (!MAPA_TL.has(k) && T.LT) MAPA_TL.set(k, String(T.LT[i] || "").split(",")[0]); }); }
     return MAPA_TL.get(forma) || "";
   };
-  const TXT_PRON = "Las pronunciaciones académicas del griego, la koiné reconstruida y la erasmiana, vienen sobre todo de libros escritos en inglés y están pensadas para sus hablantes. Por eso Biblia Exacta desarrolló un método propio para quienes hablamos español: su transliteración conserva las letras griegas que se parecen a las nuestras y adapta las demás a nuestros sonidos. La lectura BiEx presenta así cada palabra, en sílabas y con la tónica resaltada.";
+  // PR #19 · Motor fonológico y sintetizador acústico Klatt de griego koiné histórico del siglo I d.H.D. (100 % local en Web Audio API)
+  // Basado en el consenso histórico-filológico de W. S. Allen (Vox Graeca), R. Buth (Imperial Koine), G. Horrocks y F. Gignac:
+  // conserva espíritu áspero /h/, η cerrada alta /e̝/, υ/οι anterior redondeada /y/, ε/αι /ɛ/, ει/ι /i/, ο/ω /o/, ου /u/,
+  // β /β/, φ /ɸ/, δ /ð/, θ /θ/, γ /ɣ,ʝ,ŋ/, χ /x,ç/, ζ /z/, σ sonora ante βγδμνρ, geminadas y acento dinámico de intensidad.
+  const KOINE_S1 = (() => {
+    const INI = /^([πκτβγδθφχ][λρνμ]|σ[τκπθφχμ]|κτ|πτ|φθ|χθ|βδ|μν|γν|κν|πν|θν|τμ|δμ)$/;
+    const F_TAB = {
+      a:  { tipo: "v", dur: 0.098, f: [730, 1180, 2520, 3450], bw: [85, 110, 150, 220], amp: 1.00 },
+      "ɛ":{ tipo: "v", dur: 0.094, f: [540, 1840, 2560, 3500], bw: [75, 105, 150, 220], amp: 0.96 },
+      "e̝":{ tipo: "v", dur: 0.104, f: [360, 2180, 2760, 3620], bw: [65, 95, 145, 210],  amp: 0.95 },
+      i:  { tipo: "v", dur: 0.092, f: [275, 2320, 2980, 3720], bw: [60, 90, 145, 210],  amp: 0.90 },
+      o:  { tipo: "v", dur: 0.098, f: [470, 860, 2460, 3380],  bw: [75, 95, 150, 220],  amp: 0.96 },
+      y:  { tipo: "v", dur: 0.096, f: [285, 1840, 2260, 3400], bw: [65, 95, 140, 210],  amp: 0.90 },
+      u:  { tipo: "v", dur: 0.102, f: [315, 790, 2320, 3320],  bw: [65, 90, 145, 210],  amp: 0.90 },
+      j:  { tipo: "s", dur: 0.056, f: [270, 2260, 2940, 3680], bw: [65, 95, 150, 210],  amp: 0.72 },
+      l:  { tipo: "s", dur: 0.068, f: [360, 1340, 2680, 3550], bw: [80, 125, 170, 230], amp: 0.66 },
+      m:  { tipo: "n", dur: 0.072, f: [260, 1020, 2240, 3250], bw: [65, 140, 180, 240], amp: 0.56 },
+      n:  { tipo: "n", dur: 0.068, f: [265, 1480, 2520, 3380], bw: [65, 140, 180, 240], amp: 0.58 },
+      "ŋ":{ tipo: "n", dur: 0.070, f: [255, 1180, 2360, 3280], bw: [65, 150, 190, 240], amp: 0.55 },
+      r:  { tipo: "r", dur: 0.076, f: [410, 1420, 2380, 3420], bw: [85, 135, 175, 230], amp: 0.68 },
+      "r̥":{ tipo: "rh", dur: 0.090, f: [420, 1460, 2420, 3420], bw: [95, 145, 185, 230], amp: 0.62, fn: 2200, qn: 1.6 },
+      h:  { tipo: "f", dur: 0.064, voz: 0, fn: 1650, qn: 1.1, amp: 0.30 },
+      s:  { tipo: "f", dur: 0.088, voz: 0, fn: 5400, qn: 2.6, amp: 0.40 },
+      z:  { tipo: "f", dur: 0.082, voz: 1, fn: 4800, qn: 2.4, amp: 0.36, f: [300, 1650, 2550, 3480] },
+      "θ":{ tipo: "f", dur: 0.082, voz: 0, fn: 3600, qn: 1.4, amp: 0.25 },
+      "ð":{ tipo: "f", dur: 0.072, voz: 1, fn: 3100, qn: 1.4, amp: 0.32, f: [310, 1580, 2500, 3450] },
+      "ɸ":{ tipo: "f", dur: 0.080, voz: 0, fn: 2450, qn: 1.2, amp: 0.26 },
+      "β":{ tipo: "f", dur: 0.070, voz: 1, fn: 1850, qn: 1.2, amp: 0.36, f: [300, 1120, 2320, 3320] },
+      x:  { tipo: "f", dur: 0.084, voz: 0, fn: 1750, qn: 1.9, amp: 0.32 },
+      "ç":{ tipo: "f", dur: 0.080, voz: 0, fn: 3150, qn: 2.1, amp: 0.30 },
+      "ɣ":{ tipo: "f", dur: 0.072, voz: 1, fn: 1550, qn: 1.7, amp: 0.38, f: [320, 1220, 2340, 3320] },
+      "ʝ":{ tipo: "f", dur: 0.070, voz: 1, fn: 2750, qn: 1.9, amp: 0.40, f: [290, 2120, 2860, 3580] },
+      p:  { tipo: "p", dur: 0.074, fn: 1150, qn: 1.3, amp: 0.44, vot: 0.015 },
+      t:  { tipo: "p", dur: 0.072, fn: 3450, qn: 1.8, amp: 0.48, vot: 0.017 },
+      k:  { tipo: "p", dur: 0.078, fn: 2150, qn: 2.0, amp: 0.46, vot: 0.022 },
+    };
+    const analizar = (forma) => {
+      const texto = String(forma || "").split(/[,·;()[\]]/)[0].trim();
+      const L = [];
+      for (const ch of texto.normalize("NFD")) {
+        const cp = ch.codePointAt(0);
+        if (cp >= 0x300 && cp <= 0x36f) {
+          const u = L[L.length - 1];
+          if (u) {
+            if (cp === 0x301 || cp === 0x300 || cp === 0x342) u.t = 1;
+            else if (cp === 0x314) u.a = 1;
+            else if (cp === 0x308) u.d = 1;
+          }
+          continue;
+        }
+        const c = ch.toLowerCase();
+        if (c === "ς") L.push({ c: "σ" });
+        else if (/[α-ω]/.test(c)) L.push({ c });
+      }
+      const U = [];
+      const sorda = (x) => !x || "θκξπστφχψ".includes(x.c);
+      const ant = (j) => {
+        const x = L[j], y = L[j + 1];
+        if (!x) return false;
+        if ("εηιυ".includes(x.c)) return true;
+        if ((x.c === "α" || x.c === "ο") && y && y.c === "ι" && !y.d) return true;
+        return false;
+      };
+      for (let i = 0; i < L.length; i++) {
+        const x = L[i], n = L[i + 1];
+        if (PR_V.includes(x.c)) {
+          const dg = n && PR_V.includes(n.c) && !n.d ? x.c + n.c : "";
+          if (i === 0 && (x.a || (dg && n.a))) U.push({ ph: "h", c: "h" });
+          if (["αι", "ει", "οι", "ου"].includes(dg)) {
+            U.push({ ph: { αι: "ɛ", ει: "i", οι: "y", ου: "u" }[dg], v: 1, t: !!(x.t || n.t), c: dg });
+            i++; continue;
+          }
+          if (dg === "υι") {
+            U.push({ ph: "y", v: 1, t: !!(x.t || n.t), c: "υι" });
+            U.push({ ph: "j", c: "ι" });
+            i++; continue;
+          }
+          if (["αυ", "ευ", "ηυ"].includes(dg)) {
+            U.push({ ph: { αυ: "a", ευ: "ɛ", ηυ: "e̝" }[dg], v: 1, t: !!(x.t || n.t), c: dg });
+            U.push({ ph: sorda(L[i + 2]) ? "ɸ" : "β", c: "υ" });
+            i++; continue;
+          }
+          U.push({ ph: { α: "a", ε: "ɛ", η: "e̝", ι: "i", ο: "o", υ: "y", ω: "o" }[x.c], v: 1, t: !!x.t, c: x.c });
+          continue;
+        }
+        const sig = n ? n.c : "";
+        if (x.c === "ξ") { U.push({ ph: "k", c: "ξ" }, { ph: "s", c: "ξ" }); continue; }
+        if (x.c === "ψ") { U.push({ ph: "p", c: "ψ" }, { ph: "s", c: "ψ" }); continue; }
+        let ph = "";
+        switch (x.c) {
+          case "β": ph = "β"; break;
+          case "γ": ph = (sig && "γκξχ".includes(sig)) ? "ŋ" : (ant(i + 1) ? "ʝ" : "ɣ"); break;
+          case "δ": ph = "ð"; break;
+          case "ζ": ph = "z"; break;
+          case "θ": ph = "θ"; break;
+          case "κ": ph = "k"; break;
+          case "λ": ph = "l"; break;
+          case "μ": ph = "m"; break;
+          case "ν": ph = "n"; break;
+          case "π": ph = "p"; break;
+          case "ρ": ph = (i === 0 && x.a) ? "r̥" : "r"; break;
+          case "σ": ph = (sig && "βγδμνρ".includes(sig)) ? "z" : "s"; break;
+          case "τ": ph = "t"; break;
+          case "φ": ph = "ɸ"; break;
+          case "χ": ph = ant(i + 1) ? "ç" : "x"; break;
+        }
+        if (ph) {
+          // Geminación real del griego koiné s. I (λλ, μμ, νν, ρρ, σσ, ππ, ττ, κκ)
+          const ult = U[U.length - 1];
+          if (ult && !ult.v && ult.ph === ph && ult.c === x.c && !ult.gem) { ult.gem = true; continue; }
+          U.push({ ph, c: x.c });
+        }
+      }
+      // División silábica paralela a la ortografía griega para iluminar cada sílaba al sonar
+      const nucs = U.map((u, idx) => (u.v ? idx : -1)).filter((k) => k >= 0);
+      const silabas = [];
+      if (!nucs.length) {
+        if (U.length) silabas.push({ fons: U, ton: false });
+      } else {
+        const cortes = [0];
+        for (let q = 1; q < nucs.length; q++) {
+          const a = nucs[q - 1] + 1, z = nucs[q];
+          const cs = [];
+          for (let k = a; k < z; k++) cs.push(k);
+          if (!cs.length) cortes.push(z);
+          else if (cs.length === 1) cortes.push(cs[0]);
+          else cortes.push(INI.test((U[cs[cs.length - 2]].c || "") + (U[cs[cs.length - 1]].c || "")) ? cs[cs.length - 2] : cs[cs.length - 1]);
+        }
+        cortes.push(U.length);
+        for (let q = 0; q < cortes.length - 1; q++) {
+          const fons = U.slice(cortes[q], cortes[q + 1]);
+          silabas.push({ fons, ton: fons.some((x) => x.t) });
+        }
+      }
+      if (silabas.length === 1 && !silabas[0].ton) silabas[0].ton = true;
+      return { fonemas: U, silabas, afi: silabas.map((s) => (s.ton && silabas.length > 1 ? "ˈ" : "") + s.fons.map((f) => f.ph + (f.gem ? "ː" : "")).join("")).join("") };
+    };
+
+    let ac = null, fuenteAct = null, timersAct = [], finAct = null;
+    const cache = new Map();
+    const asegurarCtx = () => {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!ac) ac = new AC();
+      if (ac.state === "suspended") ac.resume().catch(() => {});
+      return ac;
+    };
+    const parar = () => {
+      for (const id of timersAct) clearTimeout(id);
+      timersAct = [];
+      if (fuenteAct) { try { fuenteAct.stop(); fuenteAct.disconnect(); } catch (e) {} fuenteAct = null; }
+      if (finAct) { const fn = finAct; finAct = null; try { fn(); } catch (e) {} }
+    };
+    // Sintetizador Klatt en PCM puro (4 formantes resonantes + fuente glotal Rosenberg-LF + fricativas/oclusivas/vibrante)
+    const sintetizar = (ctx, forma, lento) => {
+      const clave = String(forma || "") + (lento ? "|0" : "|1");
+      if (cache.has(clave)) {
+        const hit = cache.get(clave);
+        cache.delete(clave); cache.set(clave, hit);
+        return hit;
+      }
+      const an = analizar(forma);
+      const sr = ctx ? ctx.sampleRate : 24000;
+      const esc = lento ? 1.42 : 1.0;
+      const segs = [];
+      const marcas = [];
+      let tAcc = 0.03;
+      const nSil = an.silabas.length;
+      const idxTon = Math.max(0, an.silabas.findIndex((s) => s.ton));
+      for (let si = 0; si < nSil; si++) {
+        const sil = an.silabas[si];
+        const tIniSil = tAcc;
+        for (let fi = 0; fi < sil.fons.length; fi++) {
+          const item = sil.fons[fi];
+          const spec = F_TAB[item.ph] || F_TAB.a;
+          let d = spec.dur * esc;
+          if (spec.tipo === "v") {
+            if (sil.ton) d *= 1.28;
+            if (si === nSil - 1) d *= 1.14;
+          } else if (item.gem) {
+            d *= 1.55;
+          }
+          segs.push({ ph: item.ph, spec, t0: tAcc, dur: d, ton: sil.ton, si, gem: !!item.gem });
+          tAcc += d;
+        }
+        marcas.push({ si, t0: tIniSil, t1: tAcc });
+      }
+      const durTot = Math.max(0.24, tAcc + 0.14);
+      const nM = Math.ceil(durTot * sr);
+      const pcm = new Float32Array(nM);
+      // Estado de 4 filtros resonadores de 2.º orden (formantes vocales) + 1 pasabanda de ruido
+      const y1 = [0, 0, 0, 0], y2 = [0, 0, 0, 0];
+      let ny1 = 0, ny2 = 0, nx1 = 0, nx2 = 0, glotPrev = 0, fase = 0, seed = 2463534242;
+      const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return ((seed >>> 0) / 4294967296) * 2 - 1; };
+      const fBase = 132; // tenor-barítono cálido y claro
+      let segIdx = 0;
+      const defF = [500, 1450, 2500, 3450], defBw = [85, 115, 160, 220];
+      let curF = defF.slice(), curBw = defBw.slice();
+      for (let i = 0; i < nM; i++) {
+        const t = i / sr;
+        while (segIdx < segs.length - 1 && t >= segs[segIdx].t0 + segs[segIdx].dur) segIdx++;
+        const sg = segs[segIdx];
+        if (!sg || t < sg.t0 || t >= sg.t0 + sg.dur) continue;
+        const u = (t - sg.t0) / Math.max(0.001, sg.dur);
+        const sp = sg.spec;
+        // Contorno natural de frecuencia fundamental F0 (pico suave en la tónica y cadencia serena al final)
+        const progW = Math.max(0, Math.min(1, t / Math.max(0.15, tAcc)));
+        const centroTon = nSil > 1 ? (idxTon + 0.5) / nSil : 0.42;
+        const picoTon = Math.exp(-Math.pow((progW - centroTon) / 0.28, 2));
+        const f0 = fBase * (1.02 + 0.17 * picoTon - 0.14 * progW) * (1 + 0.006 * Math.sin(2 * Math.PI * 5.2 * t));
+        fase += f0 / sr;
+        if (fase >= 1) fase -= 1;
+        // Pulso glotal Rosenberg-LF derivado (timbre natural cálido, nunca onda sierra chillona)
+        const gRaw = fase < 0.42 ? 0.5 * (1 - Math.cos(Math.PI * (fase / 0.42)))
+          : fase < 0.58 ? Math.cos(Math.PI * 0.5 * ((fase - 0.42) / 0.16)) : 0;
+        const glot = (gRaw - glotPrev) * 14.5 + rnd() * 0.028;
+        glotPrev = gRaw;
+
+        // Coarticulación suave hacia el siguiente segmento con formantes definidos
+        const nxt = segs[segIdx + 1];
+        const tarF = sp.f || (nxt && nxt.spec.f) || defF;
+        const tarBw = sp.bw || defBw;
+        const coef = u > 0.72 && nxt && nxt.spec.f ? (u - 0.72) / 0.28 : 0;
+        for (let k = 0; k < 4; k++) {
+          const mF = coef > 0 ? tarF[k] * (1 - coef) + nxt.spec.f[k] * coef : tarF[k];
+          curF[k] += (mF - curF[k]) * 0.045;
+          curBw[k] += (tarBw[k] - curBw[k]) * 0.045;
+        }
+
+        let env = 1;
+        if (u < 0.12) env = u / 0.12;
+        else if (u > 0.86) env = (1 - u) / 0.14;
+        if (sg.ton && sp.tipo === "v") env *= 1.18;
+
+        let vozOut = 0;
+        const conVoz = sp.tipo === "v" || sp.tipo === "s" || sp.tipo === "n" || sp.tipo === "r" || (sp.tipo === "rh" && u > 0.32) || (sp.tipo === "f" && sp.voz);
+        if (conVoz) {
+          let srcV = glot;
+          if (sp.tipo === "r" || sp.tipo === "rh") {
+            // Vibrante alveolar /r/ con 2–3 golpes rápidos (~27 Hz)
+            srcV *= 0.45 + 0.55 * Math.max(0, Math.sin(2 * Math.PI * 27 * (t - sg.t0)));
+          }
+          const pesos = sp.tipo === "n" ? [1.15, 0.34, 0.22, 0.12] : [1.0, 0.72, 0.46, 0.26];
+          for (let k = 0; k < 4; k++) {
+            const rad = Math.exp(-Math.PI * curBw[k] / sr);
+            const a1 = 2 * rad * Math.cos(2 * Math.PI * curF[k] / sr);
+            const a2 = -rad * rad;
+            const g0 = 1 - a1 - a2;
+            const y = g0 * srcV + a1 * y1[k] + a2 * y2[k];
+            y2[k] = y1[k]; y1[k] = y;
+            vozOut += y * pesos[k];
+          }
+          vozOut *= sp.amp * env;
+        }
+
+        let ruiOut = 0;
+        const conRuido = sp.tipo === "f" || sp.tipo === "p" || (sp.tipo === "rh" && u <= 0.45);
+        if (conRuido) {
+          let rEnv = 0;
+          if (sp.tipo === "p") {
+            // Oclusiva griega sorda no aspirada: silencio de cierre (0..0.64) + breve explosión nítida (0.64..1)
+            const burst = (t - sg.t0) - sg.dur * 0.64;
+            if (burst >= 0 && burst <= (sp.vot || 0.018)) {
+              rEnv = Math.exp(-burst / 0.0065) * 1.35;
+            }
+          } else {
+            rEnv = env * (sp.tipo === "rh" ? 0.65 : 1);
+          }
+          if (rEnv > 0.002) {
+            const w0 = 2 * Math.PI * Math.min(sr * 0.44, sp.fn || 2400) / sr;
+            const alpha = Math.sin(w0) / (2 * (sp.qn || 1.6));
+            const b0 = alpha, b2 = -alpha, a0 = 1 + alpha, a1 = -2 * Math.cos(w0), a2 = 1 - alpha;
+            const xIn = rnd();
+            const ny = (b0 * xIn + b2 * nx2 - a1 * ny1 - a2 * ny2) / a0;
+            nx2 = nx1; nx1 = xIn; ny2 = ny1; ny1 = ny;
+            ruiOut = ny * sp.amp * rEnv * 1.9;
+          }
+        }
+        pcm[i] = Math.tanh((vozOut + ruiOut) * 1.18) * 0.86;
+      }
+      // Micro-sala cálida de estudio (eco corto de 24 ms al 11 %) y normalización limpia sin clipping
+      const dly = Math.round(sr * 0.024);
+      let pico = 0.001;
+      for (let i = dly; i < nM; i++) pcm[i] += pcm[i - dly] * 0.11;
+      for (let i = 0; i < nM; i++) { const a = Math.abs(pcm[i]); if (a > pico) pico = a; }
+      const gan = Math.min(1.4, 0.88 / pico);
+      for (let i = 0; i < nM; i++) pcm[i] *= gan;
+      const buf = ctx ? ctx.createBuffer(1, nM, sr) : null;
+      if (buf) buf.getChannelData(0).set(pcm);
+      const res = { buf, pcm, sr, dur: durTot, marcas, afi: an.afi, silabas: an.silabas };
+      cache.set(clave, res);
+      if (cache.size > 40) cache.delete(cache.keys().next().value);
+      return res;
+    };
+    const hablar = (forma, op = {}) => {
+      parar();
+      const ctx = asegurarCtx();
+      if (!ctx) return null;
+      const s = sintetizar(ctx, forma, !!op.lento);
+      if (!s || !s.buf) return s;
+      const src = ctx.createBufferSource();
+      src.buffer = s.buf;
+      const g = ctx.createGain();
+      g.gain.value = 0.92;
+      src.connect(g); g.connect(ctx.destination);
+      fuenteAct = src;
+      finAct = () => { if (op.alFin) op.alFin(); };
+      if (op.alSilaba) {
+        s.marcas.forEach((m) => {
+          timersAct.push(setTimeout(() => { try { op.alSilaba(m.si); } catch (e) {} }, Math.max(0, Math.round(m.t0 * 1000))));
+        });
+      }
+      src.onended = () => {
+        if (fuenteAct === src) fuenteAct = null;
+        for (const id of timersAct) clearTimeout(id);
+        timersAct = [];
+        const fn = finAct; finAct = null;
+        if (fn) try { fn(); } catch (e) {}
+      };
+      try { src.start(0); } catch (e) { parar(); }
+      return s;
+    };
+    const api = { analizar, sintetizar, hablar, parar, tamCache: () => cache.size };
+    window.BiExKoine = api;
+    return api;
+  })();
+
+  const TXT_PRON = "El audio koiné del siglo I sintetiza localmente cada fonema reconstruido del griego bíblico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Junto a las transcripciones académicas (Koiné y Erasmiana), la lectura BiEx presenta la palabra en sílabas para hispanohablantes con la tónica resaltada.";
   const lineaPron = (forma, tl) => {
     const p = pronunciar(forma), sil = (() => { try { const x = tl || tlDe(forma); return x ? silabasBiEx(x) : null; } catch (e) { return null; } })();
     const info = h("p", { class: "fp-pron-info", hidden: true, text: TXT_PRON });
     const bInfo = h("button", { type: "button", class: "fp-pron-i", "aria-label": "De dónde vienen estas pronunciaciones", "aria-expanded": "false", title: "De dónde vienen estas pronunciaciones",
       onclick: (e) => { e.stopPropagation(); info.hidden = !info.hidden; bInfo.setAttribute("aria-expanded", String(!info.hidden)); if (!info.hidden && info.animate && document.documentElement.getAttribute("data-mov") !== "no") info.animate([{ opacity: 0, transform: "translateY(-4px)" }, { opacity: 1, transform: "none" }], { duration: 240, easing: "ease-out" }); } }, "i");
+    const silEls = [];
+    const silNodo = sil ? h("b", { class: "pr-sil" }, sil.flatMap((x, i) => {
+      const sp = h("span", { class: "pr-s" }, x.ton ? h("em", { text: x.t }) : x.t);
+      silEls.push(sp);
+      return [i ? h("i", { text: "·" }) : null, sp];
+    }).filter(Boolean)) : null;
+    const limpiarSils = () => silEls.forEach((el) => el.classList.remove("sonando"));
+    const bEsc = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar pronunciación histórica en griego koiné del siglo I", "aria-label": "Escuchar " + forma + " en griego koiné del siglo I" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
+    const bLen = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar más despacio (0,7×) para estudiar cada sílaba", "aria-label": "Escuchar " + forma + " más despacio en griego koiné del siglo I", text: "0,7×" });
+    const disparar = (lento, btn) => (e) => {
+      e.stopPropagation();
+      bEsc.classList.remove("sonando"); bLen.classList.remove("sonando"); limpiarSils();
+      btn.classList.add("sonando");
+      KOINE_S1.hablar(forma, {
+        lento,
+        alSilaba: (idx) => {
+          limpiarSils();
+          if (silEls.length) silEls[Math.min(idx, silEls.length - 1)].classList.add("sonando");
+        },
+        alFin: () => { btn.classList.remove("sonando"); limpiarSils(); },
+      });
+    };
+    bEsc.onclick = disparar(false, bEsc);
+    bLen.onclick = disparar(true, bLen);
     return h("div", { class: "fp-pron-caja" },
       h("p", { class: "fp-pron" },
-        sil ? h("span", { class: "pr-biex", title: "Lectura BiEx para hispanohablantes: la transliteración de BiEx en sílabas, con la tónica resaltada" }, "BiEx ",
-          h("b", { class: "pr-sil" }, sil.flatMap((x, i) => [i ? h("i", { text: "·" }) : null, x.ton ? h("em", { text: x.t }) : x.t]).filter(Boolean))) : null,
-        h("span", { title: "Pronunciación en el alfabeto fonético internacional" }, "Koiné ", h("b", { text: "[" + p.k + "]" })),
-        h("span", { class: "pr-ult" }, h("span", { title: "Pronunciación en el alfabeto fonético internacional" }, "Erasmiana ", h("b", { text: "[" + p.e + "]" })), bInfo)),
+        silNodo ? h("span", { class: "pr-biex", title: "Lectura BiEx para hispanohablantes: la transliteración de BiEx en sílabas, con la tónica resaltada" }, "BiEx ", silNodo) : null,
+        h("span", { title: "Pronunciación histórica del griego koiné del siglo I en el alfabeto fonético internacional" }, "Koiné s. I ", h("b", { text: "[" + p.k + "]" })),
+        h("span", { class: "pr-ult" }, h("span", { title: "Pronunciación académica erasmiana en el alfabeto fonético internacional" }, "Erasmiana ", h("b", { text: "[" + p.e + "]" })), bInfo)),
+      h("div", { class: "fp-pron-aud" }, bEsc, bLen),
       info);
   };
   // búsqueda de lemas compartida (concordancia y diccionario de raíces): griego, letras latinas, traducción o código Strong
@@ -8518,29 +8953,33 @@
     return { nodos, aristas };
   }
 
-  // PR #18 · Motor de inmersión 2.5D / 3D sensible al giroscopio y puntero con 0 % de gasto en reposo o desplazamiento
+  // PR #18/#19 · Motor de inmersión 2.5D / 3D a 25 fps máx (ralentiza suavemente al desplazarse sin detenerse jamás)
   const INMERSION_25D = (() => {
-    let ax = 0, ay = 0, mx = 0, my = 0, g0 = null, b0 = null, raf25 = 0, tieneGiro = false, ultPtr = 0, permisoPedido = false;
+    let ax = 0, ay = 0, mx = 0, my = 0, g0 = null, b0 = null, raf25 = 0, ultF = 0, tieneGiro = false, ultPtr = 0, permisoPedido = false;
     const subs = new Set();
     const sinMov25 = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
     const escenaCss = () => {
       const hh = location.hash || "#/";
       return hh === "#/" || hh === "" || /^#\/(mapa|escudrina\/coloso)(\/|\?|$)/.test(hh);
     };
-    const bloqueado = () => document.hidden || sinMov25() || document.documentElement.classList.contains("desplazando") || document.documentElement.classList.contains("con-modal");
+    const bloqueado = () => document.hidden || sinMov25() || document.documentElement.classList.contains("con-modal");
     const escribirCss = (x, y) => {
       const st = document.documentElement.style;
       st.setProperty("--px25", x.toFixed(3));
       st.setProperty("--py25", y.toFixed(3));
     };
-    const paso = () => {
+    const paso = (ahora) => {
       raf25 = 0;
       if (bloqueado()) return;
-      ax += (mx - ax) * 0.14;
-      ay += (my - ay) * 0.14;
+      const desl = document.documentElement.classList.contains("desplazando");
+      const intMs = desl ? 72 : 40; // 25 fps máx normal, ~14 fps al desplazarse (nunca congelado)
+      if (ahora - ultF < intMs) { raf25 = requestAnimationFrame(paso); return; }
+      ultF = ahora;
+      ax += (mx - ax) * 0.22;
+      ay += (my - ay) * 0.22;
       if (escenaCss()) escribirCss(ax, ay);
       subs.forEach((fn) => { try { fn(ax, ay); } catch (e) {} });
-      if (Math.hypot(mx - ax, my - ay) > 0.0035 && (subs.size > 0 || escenaCss())) {
+      if (Math.hypot(mx - ax, my - ay) > 0.004 && (subs.size > 0 || escenaCss())) {
         raf25 = requestAnimationFrame(paso);
       }
     };
@@ -8551,12 +8990,12 @@
       window.addEventListener("deviceorientation", (e) => {
         if (e.gamma == null || e.beta == null || bloqueado()) return;
         tieneGiro = true;
-        const g = Math.max(-65, Math.min(65, +e.gamma || 0));
-        const b = Math.max(-45, Math.min(115, +e.beta || 0));
+        const g = Math.max(-70, Math.min(70, +e.gamma || 0));
+        const b = Math.max(-45, Math.min(120, +e.beta || 0));
+        // Fijar el origen UNA sola vez al activar/calibrar (sin auto-borrado que anule la inclinación real)
         if (g0 === null) { g0 = g; b0 = b; }
-        else { g0 += (g - g0) * 0.016; b0 += (b - b0) * 0.016; }
-        mx = Math.max(-1, Math.min(1, (g - g0) / 16));
-        my = Math.max(-1, Math.min(1, (b - b0) / 16));
+        mx = Math.max(-1, Math.min(1, (g - g0) / 18));
+        my = Math.max(-1, Math.min(1, (b - b0) / 18));
         despertar25();
       }, { passive: true });
     }
@@ -8566,8 +9005,8 @@
       if (ahora - ultPtr < 44) return;
       ultPtr = ahora;
       if (!subs.size && !escenaCss()) return;
-      mx = Math.max(-0.75, Math.min(0.75, ((e.clientX / Math.max(1, window.innerWidth)) - 0.5) * 1.4));
-      my = Math.max(-0.75, Math.min(0.75, ((e.clientY / Math.max(1, window.innerHeight)) - 0.5) * 1.4));
+      mx = Math.max(-0.85, Math.min(0.85, ((e.clientX / Math.max(1, window.innerWidth)) - 0.5) * 1.6));
+      my = Math.max(-0.85, Math.min(0.85, ((e.clientY / Math.max(1, window.innerHeight)) - 0.5) * 1.6));
       despertar25();
     }, { passive: true });
     window.addEventListener("hashchange", () => {
@@ -8577,15 +9016,18 @@
     const api = {
       leer: () => ({ x: ax, y: ay, giro: tieneGiro }),
       fijar: (nx, ny) => { mx = Math.max(-1, Math.min(1, +nx || 0)); my = Math.max(-1, Math.min(1, +ny || 0)); ax = mx; ay = my; if (escenaCss()) escribirCss(ax, ay); subs.forEach((fn) => { try { fn(ax, ay); } catch (e) {} }); },
+      recalibrar: () => { g0 = null; b0 = null; mx = 0; my = 0; },
       refrescar: () => { if (!escenaCss()) escribirCss(0, 0); else escribirCss(ax, ay); },
-      pedirPermiso: () => {
-        if (permisoPedido) return;
+      pedirPermiso: async () => {
+        if (permisoPedido) return true;
         permisoPedido = true;
         try {
           if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-            DeviceOrientationEvent.requestPermission().catch(() => {});
+            const st = await DeviceOrientationEvent.requestPermission();
+            return st === "granted";
           }
-        } catch (e) {}
+          return "DeviceOrientationEvent" in window;
+        } catch (e) { return false; }
       },
       suscribir: (fn) => { subs.add(fn); return () => subs.delete(fn); },
     };
@@ -8597,13 +9039,18 @@
     const o = opts || {};
     const mini = !!o.mini;
     const canvas = h("canvas", { class: "cn-lienzo", "data-sin-pellizco": "1", "aria-label": "Mapa interactivo tridimensional de conexiones" });
-    const estBadge = h("span", { class: "cn-est" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Calculando constelación…" }));
+    const estBadge = h("span", { class: "cn-est" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Calculando esfera 3D…" }));
     const bMas = h("button", { class: "cn-zbtn", type: "button", title: "Acercar", "aria-label": "Acercar", text: "+" });
     const bMen = h("button", { class: "cn-zbtn", type: "button", title: "Alejar", "aria-label": "Alejar", text: "−" });
-    const bCen = h("button", { class: "cn-zbtn wide", type: "button", title: "Centrar mapa", text: "Centrar" });
+    const bCen = h("button", { class: "cn-zbtn wide", type: "button", title: "Centrar y reiniciar 3D", text: "Centrar" });
+    let modoOrbita = !mini, giroOn = true, fsOn = false;
+    const bOrb = !mini ? h("button", { class: "cn-modo-btn", type: "button", "aria-pressed": "true", title: "Arrastra con un dedo para girar 360° en 3D", text: "Órbita 3D" }) : null;
+    const bGiro = !mini ? h("button", { class: "cn-modo-btn", type: "button", "aria-pressed": "true", title: "Activar o recalibrar el giroscopio del teléfono", text: "Giroscopio" }) : null;
+    const bFs = !mini ? h("button", { class: "cn-zbtn", type: "button", title: "Pantalla completa", "aria-label": "Pantalla completa de la Constelación", "aria-pressed": "false", text: "⛶" }) : null;
     const escena = h("div", { class: "cn-escena" + (mini ? " cn-mini" : ""), "data-sin-pellizco": "1" },
       h("div", { class: "cn-campo" },
-        h("div", { class: "cn-zoom" }, bMen, bMas, bCen),
+        !mini ? h("div", { class: "cn-hud-izq" }, bOrb, bGiro) : null,
+        h("div", { class: "cn-zoom" }, bMen, bMas, bCen, bFs),
         estBadge,
         canvas),
       o.leyenda || null);
@@ -8612,21 +9059,25 @@
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return { enfocarTexto: () => false };
+    // PR #19 · Esfera 3D profunda real: distribución áurea en 3 ejes (x, y, z en -185..+185) con pivotes en núcleo interior y libros/ecos en cáscara exterior
+    const R3_INT = mini ? 58 : 108, R3_EXT = mini ? 118 : 196;
     const N = grafo.nodos.map((n, i) => {
       const ang = i * 2.3999632;
+      const frac = (i + 0.5) / Math.max(1, grafo.nodos.length);
+      const phi = Math.acos(1 - 2 * frac);
       const baseR = n.pivote && i === 0 && n.anillo !== 0 ? 0
-        : (n.anillo === 1 ? (mini ? 104 : 184) + ((i * 19) % 44) : (mini ? 24 : 36) + Math.sqrt(i + 1) * (mini ? 20 : 32));
-      const ex = mini ? 1.08 : 1.24;
-      // Coordenada de profundidad 3D determinista: pivotes al frente (+z), capa interior media y anillo exterior en cosmos profundo (-z)
-      const z0 = n.pivote
-        ? 0.56 + ((i * 5) % 7) * 0.052
-        : (n.anillo === 1 ? -0.36 + Math.cos(i * 2.37) * 0.42 : 0.08 + Math.sin(i * 1.91) * 0.36);
+        : (n.anillo === 1 ? R3_EXT + ((i * 19) % 34) - 16 : (mini ? 26 : 42) + Math.sqrt(i + 1) * (mini ? 18 : 26));
+      const zProf = n.pivote && i === 0 ? 34
+        : (n.anillo === 1 ? Math.cos(phi) * R3_EXT * 0.94 : Math.cos(phi * 1.35 + i * 0.7) * R3_INT * 0.92);
       return Object.assign({}, n, {
-        x: Math.cos(ang) * baseR * ex, y: Math.sin(ang) * baseR * 0.88, z: z0, vx: 0, vy: 0, deg: 0,
+        x: Math.cos(ang) * baseR * (mini ? 1.02 : 1.12),
+        y: Math.sin(ang) * baseR * 0.88,
+        z: zProf,
+        vx: 0, vy: 0, deg: 0,
         phX: i * 1.6180339, phY: i * 2.2360679 + 0.7, phH: i * 3.1415926,
-        spX: 0.42 + ((i * 7) % 11) * 0.031, spX2: 0.27 + ((i * 13) % 9) * 0.029,
-        spY: 0.39 + ((i * 5) % 13) * 0.027, spY2: 0.23 + ((i * 11) % 7) * 0.033,
-        spH: 0.55 + ((i * 3) % 7) * 0.06,
+        spX: 0.36 + ((i * 7) % 11) * 0.025, spX2: 0.22 + ((i * 13) % 9) * 0.024,
+        spY: 0.34 + ((i * 5) % 13) * 0.022, spY2: 0.19 + ((i * 11) % 7) * 0.026,
+        spH: 0.48 + ((i * 3) % 7) * 0.05,
       });
     });
     const byId = new Map(N.map((n) => [n.id, n]));
@@ -8639,19 +9090,50 @@
       a.deg++; b.deg++;
       adj.get(a.id).add(b.id); adj.get(b.id).add(a.id);
     }
-    // Polvo estelar estratificado en 3 planos de profundidad z (-1.15 .. +0.30) para paralaje cósmico real
-    const estrellas = Array.from({ length: mini ? 22 : 48 }, (_, i) => ({
-      rx: ((Math.sin(i * 12.9898 + N.length) * 43758.5453) % 1 + 1) % 1,
-      ry: ((Math.sin(i * 78.233 + E.length) * 23421.631) % 1 + 1) % 1,
-      rz: -1.15 + ((i * 11) % 15) * 0.1,
-      r: 0.55 + ((i * 7) % 10) * 0.11,
-      a: 0.08 + ((i * 13) % 10) * 0.022,
-    }));
+    // Campo estelar profundo en esfera 3D (96 estrellas con paralaje al girar)
+    const estrellas = Array.from({ length: mini ? 32 : 96 }, (_, i) => {
+      const th = i * 2.3999632, ph = Math.acos(1 - 2 * ((i + 0.5) / (mini ? 32 : 96)));
+      const rr = (mini ? 210 : 380) + (i % 7) * 28;
+      return {
+        x: Math.sin(ph) * Math.cos(th) * rr,
+        y: Math.sin(ph) * Math.sin(th) * rr,
+        z: Math.cos(ph) * rr,
+        r: 0.6 + ((i * 7) % 10) * 0.12,
+        a: 0.11 + ((i * 13) % 10) * 0.028,
+      };
+    });
+
+    // Caché de sprites de orbes por color + tema para ahorrar gradientes radiales por cuadro
+    const spriteCache = new Map();
+    const getOrbeSprite = (col, claro, focoOn) => {
+      const k = col + (claro ? "|L" : "|D") + (focoOn ? "|F" : "");
+      if (spriteCache.has(k)) return spriteCache.get(k);
+      const S = 96, c2 = document.createElement("canvas");
+      c2.width = S; c2.height = S;
+      const g2 = c2.getContext("2d");
+      const mid = S / 2, rad = focoOn ? 11.5 : 15;
+      const haloR = mid - 2;
+      const rg = g2.createRadialGradient(mid, mid, rad * 0.3, mid, mid, haloR);
+      rg.addColorStop(0, col);
+      rg.addColorStop(0.42, claro ? "rgba(143,101,20,.22)" : "rgba(244,222,168,.26)");
+      rg.addColorStop(1, "rgba(0,0,0,0)");
+      g2.fillStyle = rg;
+      g2.beginPath(); g2.arc(mid, mid, haloR, 0, Math.PI * 2); g2.fill();
+      const cg = g2.createRadialGradient(mid - rad * 0.28, mid - rad * 0.28, rad * 0.12, mid, mid, rad);
+      cg.addColorStop(0, claro ? "#fff8e8" : "#fffdf2");
+      cg.addColorStop(0.42, col);
+      cg.addColorStop(1, col);
+      g2.fillStyle = cg;
+      g2.beginPath(); g2.arc(mid, mid, rad, 0, Math.PI * 2); g2.fill();
+      spriteCache.set(k, { c: c2, ratio: S / (rad * 2) });
+      return spriteCache.get(k);
+    };
 
     let W = 0, H = 0, dpr = 1, raf = 0, respRaf = 0, pasos = 0, dormido = false, camManual = false, enVista = true, tVivo = 0;
     const cam = { x: 0, y: 0, k: 1 };
+    const orb = { yaw: 0.28, pitch: -0.22, vy: 0, vp: 0 };
     let hov = null, sel = null;
-    let arrNodo = null, panOn = false, p0 = null, movido = false;
+    let arrNodo = null, panOn = false, orbOn = false, p0 = null, movido = false;
     const ptrs = new Map();
     let pinchD0 = 0, pinchK0 = 1;
     const ptUlt = new Map();
@@ -8681,56 +9163,58 @@
       return true;
     };
     const aMundo = (sx, sy) => ({ x: (sx - W / 2) / cam.k + cam.x, y: (sy - H / 2) / cam.k + cam.y });
-    // Proyección en perspectiva 3D sensible al giroscopio, puntero e inercia de cámara
     const angulos3D = () => {
-      const g = INMERSION_25D.leer();
-      const yaw = Math.max(-0.34, Math.min(0.34, g.x * 0.28 - vel.x * 0.0055));
-      const pitch = Math.max(-0.30, Math.min(0.30, g.y * 0.24 + vel.y * 0.0055));
-      return { cy: Math.cos(yaw), sy: Math.sin(yaw), cx: Math.cos(pitch), sx: Math.sin(pitch), gx: g.x, gy: g.y };
+      const g = giroOn ? INMERSION_25D.leer() : { x: 0, y: 0 };
+      const yaw = orb.yaw + g.x * 0.56 - vel.x * 0.005;
+      const pitch = Math.max(-1.28, Math.min(1.28, orb.pitch + g.y * 0.44 + vel.y * 0.005));
+      return { cy: Math.cos(yaw), sy: Math.sin(yaw), cx: Math.cos(pitch), sx: Math.sin(pitch), gx: g.x, gy: g.y, yaw, pitch };
     };
-    const aPant3D = (wx, wy, wz, A3) => {
-      const FOCAL = 620;
-      const prof = (mini ? 64 : 118) * Math.pow(cam.k, 0.45);
-      const dx = (wx - cam.x) * cam.k, dy = (wy - cam.y) * cam.k, dz = (wz || 0) * prof;
+    const aPant3D = (wx, wy, wz, A3, esFondo) => {
+      const FOCAL = mini ? 390 : 460;
+      const kEsc = esFondo ? 1 : cam.k;
+      const dx = (esFondo ? wx : (wx - cam.x)) * kEsc;
+      const dy = (esFondo ? wy : (wy - cam.y)) * kEsc;
+      const dz = (wz || 0) * (esFondo ? 1 : Math.pow(cam.k, 0.72));
       const rx = dx * A3.cy + dz * A3.sy;
       const rz1 = -dx * A3.sy + dz * A3.cy;
       const ry = dy * A3.cx - rz1 * A3.sx;
       const rz = dy * A3.sx + rz1 * A3.cx;
-      const sc = FOCAL / Math.max(220, FOCAL - rz);
-      const zn = Math.max(0, Math.min(1, (rz / Math.max(40, prof) + 1) * 0.5));
+      const sc = FOCAL / Math.max(145, FOCAL - rz);
+      const rRef = (mini ? 130 : 210) * Math.max(0.65, kEsc);
+      const zn = Math.max(0, Math.min(1, (rz / Math.max(60, rRef) + 1) * 0.5));
       return { x: W / 2 + rx * sc, y: H / 2 + ry * sc, sc, rz, zn };
     };
     const posViva = (n) => {
       if (!tVivo || n === arrNodo) return { x: n.x, y: n.y, z: n.z };
       const amp = n.pivote ? 0.65 : 1;
       return {
-        x: n.x + (Math.sin(tVivo * n.spX + n.phX) * 1.45 + Math.cos(tVivo * n.spX2 + n.phY) * 0.85) * amp,
-        y: n.y + (Math.cos(tVivo * n.spY + n.phY) * 1.45 + Math.sin(tVivo * n.spY2 + n.phX) * 0.85) * amp,
-        z: n.z + Math.sin(tVivo * 0.34 + n.phH) * 0.06,
+        x: n.x + (Math.sin(tVivo * n.spX + n.phX) * 1.4 + Math.cos(tVivo * n.spX2 + n.phY) * 0.8) * amp,
+        y: n.y + (Math.cos(tVivo * n.spY + n.phY) * 1.4 + Math.sin(tVivo * n.spY2 + n.phX) * 0.8) * amp,
+        z: n.z + Math.sin(tVivo * 0.36 + n.phH) * 4.5,
       };
     };
     const limites = () => {
       if (!N.length || !W || !H) return { x0: -120, x1: 120, y0: -120, y1: 120, cx: 0, cy: 0, kFit: 1 };
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      for (const n of N) { x0 = Math.min(x0, n.x - 31); x1 = Math.max(x1, n.x + 31); y0 = Math.min(y0, n.y - 26); y1 = Math.max(y1, n.y + 34); }
-      const bw = Math.max(120, x1 - x0), bh = Math.max(120, y1 - y0);
-      const kFit = Math.max(0.46, Math.min(1.72, Math.min((W - 44) / bw, (H - 60) / bh)));
+      for (const n of N) { x0 = Math.min(x0, n.x - 36); x1 = Math.max(x1, n.x + 36); y0 = Math.min(y0, n.y - 32); y1 = Math.max(y1, n.y + 38); }
+      const bw = Math.max(140, x1 - x0), bh = Math.max(140, y1 - y0);
+      const kFit = Math.max(0.46, Math.min(1.55, Math.min((W - 54) / bw, (H - 68) / bh)));
       return { x0, x1, y0, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, kFit };
     };
     const limitesCam = (L, k) => {
       const kk = Math.max(0.35, k || cam.k || 1);
       const bw = Math.max(80, L.x1 - L.x0), bh = Math.max(80, L.y1 - L.y0);
       const halfW = (W / 2) / kk, halfH = (H / 2) / kk;
-      const padX = Math.max(18, (W * 0.12) / kk), padY = Math.max(18, (H * 0.12) / kk);
-      const spanX = Math.max(14 / kk, (bw / 2) - halfW + padX);
-      const spanY = Math.max(14 / kk, (bh / 2) - halfH + padY);
+      const padX = Math.max(18, (W * 0.14) / kk), padY = Math.max(18, (H * 0.14) / kk);
+      const spanX = Math.max(16 / kk, (bw / 2) - halfW + padX);
+      const spanY = Math.max(16 / kk, (bh / 2) - halfH + padY);
       return { bx0: L.cx - spanX, bx1: L.cx + spanX, by0: L.cy - spanY, by1: L.cy + spanY };
     };
     const encuadrar = () => {
       const L = limites();
       cam.x = L.cx; cam.y = L.cy; cam.k = L.kFit;
     };
-    let camRaf = 0, metaCam = null, ultTap = 0;
+    let camRaf = 0, metaCam = null, ultTap = 0, ultCamMs = 0;
     const vel = { x: 0, y: 0 };
     const pararCam = () => { if (camRaf) { cancelAnimationFrame(camRaf); camRaf = 0; } };
     const correrCam = () => {
@@ -8746,24 +9230,33 @@
           cam.x = Math.max(B.bx0, Math.min(B.bx1, cam.x));
           cam.y = Math.max(B.by0, Math.min(B.by1, cam.y));
         }
-        vel.x = 0; vel.y = 0; dibujar(); return;
+        vel.x = 0; vel.y = 0; orb.vy = 0; orb.vp = 0; dibujar(); return;
       }
-      const tick = () => {
+      const tick = (ahora) => {
         camRaf = 0;
-        if (!canvas.isConnected || panOn || arrNodo || ptrs.size >= 2) return;
+        if (!canvas.isConnected || panOn || orbOn || arrNodo || ptrs.size >= 2) return;
+        const intMs = document.documentElement.classList.contains("desplazando") ? 72 : 40;
+        if (ahora - ultCamMs < intMs) { camRaf = requestAnimationFrame(tick); return; }
+        ultCamMs = ahora;
         let mov = false;
+        if (Math.abs(orb.vy) > 0.0012 || Math.abs(orb.vp) > 0.0012) {
+          orb.yaw += orb.vy;
+          orb.pitch = Math.max(-1.22, Math.min(1.22, orb.pitch + orb.vp));
+          orb.vy *= 0.86; orb.vp *= 0.84;
+          mov = true;
+        } else { orb.vy = 0; orb.vp = 0; }
         if (metaCam) {
           const dx = metaCam.x - cam.x, dy = metaCam.y - cam.y, dk = metaCam.k - cam.k;
-          if (Math.abs(dx) + Math.abs(dy) < 0.35 && Math.abs(dk) < 0.003) {
+          if (Math.abs(dx) + Math.abs(dy) < 0.45 && Math.abs(dk) < 0.004) {
             cam.x = metaCam.x; cam.y = metaCam.y; cam.k = metaCam.k; metaCam = null;
           } else {
-            cam.x += dx * 0.16; cam.y += dy * 0.16; cam.k += dk * 0.16; mov = true;
+            cam.x += dx * 0.24; cam.y += dy * 0.24; cam.k += dk * 0.24; mov = true;
           }
         } else {
           const L = limites();
-          if (Math.hypot(vel.x, vel.y) > 0.18) {
+          if (Math.hypot(vel.x, vel.y) > 0.2) {
             cam.x += vel.x; cam.y += vel.y;
-            vel.x *= 0.84; vel.y *= 0.84;
+            vel.x *= 0.82; vel.y *= 0.82;
             mov = true;
           } else { vel.x = 0; vel.y = 0; }
           const kMin = Math.min(0.48, L.kFit * 0.85), kMax = 3.2;
@@ -8772,8 +9265,8 @@
           const tx = cam.x < B.bx0 ? B.bx0 : cam.x > B.bx1 ? B.bx1 : cam.x;
           const ty = cam.y < B.by0 ? B.by0 : cam.y > B.by1 ? B.by1 : cam.y;
           const ex = tx - cam.x, ey = ty - cam.y, ek = tk - cam.k;
-          if (Math.abs(ex) > 0.35 || Math.abs(ey) > 0.35 || Math.abs(ek) > 0.003) {
-            cam.x += ex * 0.16; cam.y += ey * 0.16; cam.k += ek * 0.16;
+          if (Math.abs(ex) > 0.45 || Math.abs(ey) > 0.45 || Math.abs(ek) > 0.004) {
+            cam.x += ex * 0.24; cam.y += ey * 0.24; cam.k += ek * 0.24;
             vel.x *= 0.55; vel.y *= 0.55;
             mov = true;
           } else {
@@ -8787,11 +9280,11 @@
     };
     const irA = (x, y, k) => { metaCam = { x, y, k: k != null ? k : cam.k }; vel.x = 0; vel.y = 0; correrCam(); };
     const pasoFisica = (cool) => {
-      const rep = mini ? 3300 : 7200;
-      const lBase = mini ? 68 : 106;
+      const rep = mini ? 3300 : 7000;
+      const lBase = mini ? 68 : 104;
       const sepMin = mini ? 22 : 34;
-      const gx = mini ? 0.0046 : (W > H ? 0.0024 : 0.0048);
-      const gy = mini ? 0.0046 : (W > H ? 0.0048 : 0.0026);
+      const gx = mini ? 0.0048 : 0.0038;
+      const gy = mini ? 0.0048 : 0.0042;
       for (let i = 0; i < N.length; i++) {
         const a = N[i];
         for (let j = i + 1; j < N.length; j++) {
@@ -8829,43 +9322,60 @@
       }
       return energia / Math.max(1, N.length);
     };
+    const dibujarAnillo3D = (rr, rotX, rotY, claro, punteado) => {
+      const SEG = 44;
+      const cX = Math.cos(rotX), sX = Math.sin(rotX), cY = Math.cos(rotY), sY = Math.sin(rotY);
+      const A3 = angulos3D();
+      for (let capa = 0; capa < 2; capa++) {
+        // capa 0 = arco posterior tenue, capa 1 = arco frontal luminoso (da percepción inmediata de esfera 3D)
+        ctx.save();
+        ctx.strokeStyle = capa === 1
+          ? (claro ? "rgba(138,96,18,.28)" : "rgba(232,196,120,.26)")
+          : (claro ? "rgba(117,87,29,.09)" : "rgba(218,184,114,.08)");
+        ctx.lineWidth = capa === 1 ? 1.15 : 0.85;
+        if (punteado || capa === 0) ctx.setLineDash(capa === 0 ? [2.5, 5.5] : [4, 5]);
+        ctx.beginPath();
+        let trazando = false;
+        for (let s = 0; s <= SEG; s++) {
+          const th = (s / SEG) * Math.PI * 2;
+          const x0 = Math.cos(th) * rr, y0 = Math.sin(th) * rr, z0 = 0;
+          const y1 = y0 * cX - z0 * sX, z1 = y0 * sX + z0 * cX;
+          const x2 = x0 * cY + z1 * sY, z2 = -x0 * sY + z1 * cY;
+          const p = aPant3D(x2, y1, z2, A3, false);
+          const enCapa = capa === 1 ? p.rz >= -6 : p.rz < 6;
+          if (enCapa) {
+            if (!trazando) { ctx.moveTo(p.x, p.y); trazando = true; }
+            else ctx.lineTo(p.x, p.y);
+          } else {
+            trazando = false;
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
     const dibujar = () => {
       if (!W || !H) return;
       const claro = esClaro();
       const A3 = angulos3D();
       ctx.clearRect(0, 0, W, H);
-      // 1) Polvo estelar en 3 planos de profundidad + 3 órbitas armilares 3D inclinadas
+      // 1) Campo estelar profundo 3D girando con la esfera + 3 anillos armilares 3D reales (ecuador + 2 meridianos)
       ctx.save();
       for (let si = 0; si < estrellas.length; si++) {
         const st = estrellas[si];
-        const par = (st.rz + 1.2) * 14;
-        const sx = ((st.rx * W + A3.gx * par - cam.x * 0.04 * (st.rz + 1.4)) % W + W) % W;
-        const sy = ((st.ry * H + A3.gy * par - cam.y * 0.04 * (st.rz + 1.4)) % H + H) % H;
-        const pul = tVivo ? (0.86 + 0.14 * Math.sin(tVivo * (0.45 + (si % 5) * 0.11) + si * 1.7)) : 1;
-        const escZ = 0.72 + (st.rz + 1.15) * 0.32;
-        ctx.fillStyle = claro ? "rgba(117,87,29," + (st.a * 0.72 * pul * escZ).toFixed(3) + ")" : "rgba(244,226,184," + (st.a * pul * escZ).toFixed(3) + ")";
+        const p = aPant3D(st.x, st.y, st.z, A3, true);
+        if (p.x < -10 || p.x > W + 10 || p.y < -10 || p.y > H + 10) continue;
+        const pul = tVivo ? (0.82 + 0.18 * Math.sin(tVivo * (0.45 + (si % 5) * 0.12) + si * 1.7)) : 1;
+        const op = Math.min(0.68, st.a * pul * (0.45 + 0.95 * p.zn));
+        ctx.fillStyle = claro ? "rgba(117,87,29," + (op * 0.72).toFixed(3) + ")" : "rgba(246,230,192," + op.toFixed(3) + ")";
         ctx.beginPath();
-        ctx.arc(sx, sy, st.r * escZ, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, Math.max(0.5, st.r * p.sc * 0.85), 0, Math.PI * 2);
         ctx.fill();
       }
-      // Tres órbitas de esfera armilar proyectadas en 3D a distintas alturas z e inclinaciones
-      [[124, -0.45, 0.22, -0.15, false], [236, 0.0, -0.18, 0.24, false], [348, 0.36, 0.28, 0.12, true]].forEach(([rr, zz, ix, iy, punteada]) => {
-        ctx.save();
-        ctx.strokeStyle = claro ? "rgba(117,87,29,.095)" : "rgba(218,184,114,.078)";
-        ctx.lineWidth = 1;
-        if (punteada) ctx.setLineDash([2.5, 7]);
-        ctx.beginPath();
-        const SEG = 40;
-        for (let s = 0; s <= SEG; s++) {
-          const th = (s / SEG) * Math.PI * 2;
-          const ox = Math.cos(th) * rr, oy = Math.sin(th) * rr;
-          const oz = zz + (ox * iy + oy * ix) / 360;
-          const p = aPant3D(ox, oy, oz, A3);
-          if (s === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-        ctx.restore();
-      });
+      const rArm = mini ? 128 : 226;
+      dibujarAnillo3D(rArm, Math.PI * 0.5, 0.08, claro, false);
+      dibujarAnillo3D(rArm * 0.82, 0.22, Math.PI * 0.42, claro, false);
+      dibujarAnillo3D(rArm * 0.96, -0.34, -Math.PI * 0.36, claro, true);
       ctx.restore();
 
       const foco = hov || sel;
@@ -8873,9 +9383,8 @@
       ptUlt.clear();
       for (const n of N) {
         const pv = posViva(n);
-        const zN = foco === n ? Math.max(pv.z, 0.72) : pv.z;
-        const p = aPant3D(pv.x, pv.y, zN, A3);
-        p.rad = Math.max(3.2, n.r * Math.pow(cam.k, 0.52) * p.sc);
+        const p = aPant3D(pv.x, pv.y, pv.z, A3, false);
+        p.rad = Math.max(3.0, n.r * Math.pow(cam.k, 0.52) * p.sc);
         ptUlt.set(n.id, p);
       }
 
@@ -8892,7 +9401,7 @@
         const viva = !foco || e.a === foco || e.b === foco;
         const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
-        const curv = (i % 2 === 0 ? 1 : -1) * 0.085;
+        const curv = (i % 2 === 0 ? 1 : -1) * 0.08;
         const cx = mx - dy * curv, cy = my + dx * curv;
         const profMed = (p1.zn + p2.zn) * 0.5;
         ctx.beginPath();
@@ -8901,21 +9410,21 @@
         if (foco && viva) {
           ctx.save();
           ctx.strokeStyle = claro ? "rgba(163,114,22,.22)" : "rgba(244,214,140,.24)";
-          ctx.lineWidth = 5.2;
+          ctx.lineWidth = 4.8;
           ctx.stroke();
-          ctx.strokeStyle = claro ? "rgba(138,96,14,.9)" : "rgba(255,236,184,.92)";
-          ctx.lineWidth = Math.max(1.35, Math.min(2.5, (1.3 + e.peso * 0.55) * (0.88 + profMed * 0.24)));
+          ctx.strokeStyle = claro ? "rgba(138,96,14,.92)" : "rgba(255,236,184,.94)";
+          ctx.lineWidth = Math.max(1.3, Math.min(2.4, (1.25 + e.peso * 0.5) * (0.78 + profMed * 0.42)));
           ctx.stroke();
           ctx.restore();
         } else {
-          const al = foco ? (claro ? 0.055 : 0.05) : (claro ? 0.14 + profMed * 0.20 : 0.15 + profMed * 0.22);
+          const al = foco ? (claro ? 0.05 : 0.045) : (claro ? 0.11 + profMed * 0.28 : 0.11 + profMed * 0.30);
           ctx.strokeStyle = claro ? "rgba(126,90,26," + al.toFixed(3) + ")" : "rgba(220,186,116," + al.toFixed(3) + ")";
-          ctx.lineWidth = Math.max(0.75, Math.min(1.75, (0.75 + e.peso * 0.35) * (0.82 + profMed * 0.32)));
+          ctx.lineWidth = Math.max(0.65, Math.min(1.85, (0.68 + e.peso * 0.36) * (0.72 + profMed * 0.48)));
           ctx.stroke();
         }
       }
 
-      // 3) Orbes luminosos ordenados por pintor (rz creciente: lejanos atrás con perspectiva atmosférica, cercanos delante nítidos)
+      // 3) Orbes 3D con sprites cacheados (algoritmo del pintor: lejanos atrás atenuados, cercanos al frente grandes y nítidos)
       const NOrd = N.slice().sort((a, b) => (ptUlt.get(a.id)?.rz || 0) - (ptUlt.get(b.id)?.rz || 0));
       for (const n of NOrd) {
         const p = ptUlt.get(n.id);
@@ -8924,42 +9433,28 @@
         const esFoco = foco === n;
         const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
         const rad = p.rad;
-        const atm = esFoco ? 1 : (0.64 + 0.36 * p.zn);
+        const atm = esFoco ? 1 : (0.38 + 0.62 * p.zn);
+        const sp = getOrbeSprite(col, claro, esFoco);
+        const respH = tVivo ? (1 + 0.05 * Math.sin(tVivo * n.spH + n.phH)) : 1;
+        const drawW = rad * 2 * sp.ratio * respH;
         ctx.save();
-        ctx.globalAlpha = esVec ? atm : 0.13;
-        const respH = tVivo ? (1 + 0.06 * Math.sin(tVivo * n.spH + n.phH)) : 1;
-        const haloR = rad * (esFoco ? 3.8 : (n.pivote ? 2.75 : 2.15)) * respH;
-        const rg = ctx.createRadialGradient(p.x, p.y, rad * 0.28, p.x, p.y, haloR);
-        rg.addColorStop(0, col);
-        rg.addColorStop(0.4, claro ? "rgba(143,101,20,.16)" : "rgba(244,222,168,.20)");
-        rg.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = rg;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, haloR, 0, Math.PI * 2);
-        ctx.fill();
-        const cg = ctx.createRadialGradient(p.x - rad * 0.28, p.y - rad * 0.28, rad * 0.1, p.x, p.y, rad);
-        cg.addColorStop(0, claro ? "#fff8e8" : "#fffcf0");
-        cg.addColorStop(0.42, col);
-        cg.addColorStop(1, col);
-        ctx.fillStyle = cg;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.globalAlpha = esVec ? atm : 0.12;
+        ctx.drawImage(sp.c, p.x - drawW / 2, p.y - drawW / 2, drawW, drawW);
         if (n.pivote || esFoco) {
-          ctx.strokeStyle = esFoco ? (claro ? "#100d0a" : "#fff7dc") : (claro ? "rgba(16,13,10,.36)" : "rgba(255,244,212,.48)");
+          ctx.strokeStyle = esFoco ? (claro ? "#100d0a" : "#fff7dc") : (claro ? "rgba(16,13,10,.36)" : "rgba(255,244,212,.52)");
           ctx.lineWidth = esFoco ? 1.7 : 1;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, rad + (esFoco ? 4.2 : 3.2), 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, rad + (esFoco ? 4.2 : 3.0), 0, Math.PI * 2);
           ctx.stroke();
         }
         ctx.restore();
       }
 
-      // 4) Capa de etiquetas sin colisiones (ordenadas por prioridad y cercanía 3D)
+      // 4) Capa de etiquetas sin colisiones (prioridad por foco, cercanía real en Z y grado)
       const ordenEt = [...N].sort((a, b) => {
         const za = ptUlt.get(a.id)?.zn || 0.5, zb = ptUlt.get(b.id)?.zn || 0.5;
-        const pa = (foco === a ? 1000 : 0) + (foco && vecFoco && vecFoco.has(a.id) ? 300 : 0) + (a.pivote ? 100 : 0) + a.deg * 4 + a.r + za * 18;
-        const pb = (foco === b ? 1000 : 0) + (foco && vecFoco && vecFoco.has(b.id) ? 300 : 0) + (b.pivote ? 100 : 0) + b.deg * 4 + b.r + zb * 18;
+        const pa = (foco === a ? 1000 : 0) + (foco && vecFoco && vecFoco.has(a.id) ? 300 : 0) + za * 65 + (a.pivote ? 48 : 0) + a.deg * 2.5 + a.r;
+        const pb = (foco === b ? 1000 : 0) + (foco && vecFoco && vecFoco.has(b.id) ? 300 : 0) + zb * 65 + (b.pivote ? 48 : 0) + b.deg * 2.5 + b.r;
         return pb - pa;
       });
       const cajas = [];
@@ -8970,14 +9465,15 @@
         const esFoco = foco === n;
         const esVec = !foco || esFoco || (vecFoco && vecFoco.has(n.id));
         if (foco && !esVec) continue;
+        if (!esFoco && p.zn < 0.24 && N.length > 20) continue;
         const rad = p.rad;
-        const fs = Math.round(Math.max(9.5, Math.min(14, (esFoco ? 13 : n.pivote ? 11.6 : 10.3) * Math.pow(cam.k, 0.26) * (0.9 + p.zn * 0.16))));
+        const fs = Math.round(Math.max(9.5, Math.min(15, (esFoco ? 13.5 : n.pivote ? 11.8 : 10.6) * Math.pow(cam.k, 0.22) * (0.82 + p.zn * 0.34))));
         ctx.save();
-        ctx.globalAlpha = esFoco ? 1 : (0.76 + 0.24 * p.zn);
+        ctx.globalAlpha = esFoco ? 1 : (0.52 + 0.48 * p.zn);
         ctx.font = (esFoco || n.pivote ? "700 " : "400 ") + fs + "px 'BiEx Texto', 'Gentium Plus', Georgia, serif";
         const mw = ctx.measureText(n.et).width;
         const mostrarSub = (esFoco || cam.k >= 1.55) && n.sub;
-        const pw = Math.max(mw + 14, mostrarSub ? Math.min(146, n.sub.length * 6.5 + 14) : 0);
+        const pw = Math.max(mw + 14, mostrarSub ? Math.min(148, n.sub.length * 6.5 + 14) : 0);
         const ph = fs + (mostrarSub ? fs + 5 : 6);
         const bx = { x0: p.x - pw / 2 - 4, x1: p.x + pw / 2 + 4, y0: p.y + rad + 4, y1: p.y + rad + 4 + ph + 3 };
         if (!esFoco && choca(bx)) { ctx.restore(); continue; }
@@ -8986,7 +9482,7 @@
         pillPath(p.x - pw / 2, yPill, pw, ph, 7);
         ctx.fillStyle = esFoco
           ? (claro ? "rgba(255,250,239,.95)" : "rgba(12,13,20,.94)")
-          : (claro ? "rgba(247,241,229,.84)" : "rgba(7,8,13,.80)");
+          : (claro ? "rgba(247,241,229,.86)" : "rgba(7,8,13,.82)");
         ctx.fill();
         if (esFoco || n.pivote) {
           ctx.strokeStyle = esFoco ? (claro ? "rgba(143,101,20,.65)" : "rgba(244,222,168,.65)") : (claro ? "rgba(117,87,29,.22)" : "rgba(218,184,114,.22)");
@@ -9007,21 +9503,27 @@
     };
     const sinAnimCn = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
     const pararRespirar = () => { if (respRaf) { clearTimeout(respRaf); respRaf = 0; } };
-    const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !document.documentElement.classList.contains("desplazando") && !sinAnimCn();
+    // Nunca se detiene durante el scroll: al desplazarse ralentiza suavemente (~14 fps) en lugar de congelar la esfera 3D
+    const puedeRespirar = () => canvas.isConnected && dormido && enVista && !document.hidden && !document.documentElement.classList.contains("con-modal") && !sinAnimCn();
     const iniciarRespirar = () => {
       if (respRaf || !puedeRespirar()) return;
       const pasoResp = () => {
         respRaf = 0;
         if (!puedeRespirar()) return;
+        const desl = document.documentElement.classList.contains("desplazando");
         tVivo = performance.now() * 0.001;
-        if (!arrNodo && !panOn && !camRaf) dibujar();
-        respRaf = setTimeout(pasoResp, 72);
+        if (!arrNodo && !panOn && !orbOn && !camRaf) {
+          // Auto-órbita 3D majestuosa y muy suave (25 fps normal, ~14 fps durante desplazamiento)
+          if (!sel && !hov) orb.yaw += desl ? 0.0022 : 0.0044;
+          dibujar();
+        }
+        respRaf = setTimeout(pasoResp, desl ? 72 : 40);
       };
-      respRaf = setTimeout(pasoResp, 72);
+      respRaf = setTimeout(pasoResp, 40);
     };
     const actualizarBadge = () => {
       estBadge.classList.toggle("reposo", dormido);
-      const suf = dormido ? (sinAnimCn() ? " · 3D reposo" : " · 3D viva") : "";
+      const suf = dormido ? (sinAnimCn() ? " · 3D reposo" : " · Esfera 3D") : "";
       estBadge.lastChild.textContent = fmt(N.length) + " nodos · " + fmt(E.length) + " conexiones" + suf;
     };
     const pintarInspector = (n) => {
@@ -9043,6 +9545,7 @@
           n.focoLibro && o.alEnfocarLibro ? h("button", { class: "btn chico", type: "button", onclick: () => o.alEnfocarLibro(n.focoLibro) }, svg(ICO.refs), h("span", { text: "Ver ecos de este libro" })) : null,
           h("button", { class: "btn chico", type: "button", onclick: () => { sel = null; pintarInspector(null); dibujar(); } }, h("span", { text: "Soltar foco" }))));
     };
+    let ultFisMs = 0;
     const despertar = (pasosExtra) => {
       pararRespirar();
       dormido = false;
@@ -9050,9 +9553,12 @@
       actualizarBadge();
       if (!raf) raf = requestAnimationFrame(bucle);
     };
-    const bucle = () => {
+    const bucle = (ahora) => {
       raf = 0;
       if (!canvas.isConnected) return limpiar();
+      const intMs = document.documentElement.classList.contains("desplazando") ? 72 : 40;
+      if (ahora - ultFisMs < intMs) { raf = requestAnimationFrame(bucle); return; }
+      ultFisMs = ahora;
       const cool = Math.max(0.05, 1 - pasos / 170);
       const en = pasoFisica(cool);
       pasos++;
@@ -9075,7 +9581,7 @@
         if (!p) continue;
         const d = Math.hypot(p.x - sx, p.y - sy);
         const tol = Math.max(p.rad + 12, 18);
-        if (d < tol && (d - p.zn * 2.5) < dMin) { dMin = d - p.zn * 2.5; mejor = n; }
+        if (d < tol && (d - p.zn * 4) < dMin) { dMin = d - p.zn * 4; mejor = n; }
       }
       return mejor;
     };
@@ -9086,7 +9592,7 @@
       INMERSION_25D.pedirPermiso();
       try { const selW = window.getSelection && window.getSelection(); if (selW && !selW.isCollapsed) selW.removeAllRanges(); } catch (e) {}
       const pt = ptRel(ev);
-      pararCam(); metaCam = null; vel.x = 0; vel.y = 0;
+      pararCam(); metaCam = null; vel.x = 0; vel.y = 0; orb.vy = 0; orb.vp = 0;
       ptrs.set(ev.pointerId, pt);
       try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
       if (ptrs.size === 2) {
@@ -9094,12 +9600,13 @@
         pinchD0 = Math.hypot(b.x - a.x, b.y - a.y) || 1;
         pinchK0 = cam.k;
         pinchMidW = aMundo((a.x + b.x) / 2, (a.y + b.y) / 2);
-        arrNodo = null; panOn = false; camManual = true;
+        arrNodo = null; panOn = false; orbOn = false; camManual = true;
         return;
       }
       p0 = pt; movido = false;
       const n = hitTest(pt.x, pt.y);
-      if (n) { arrNodo = n; canvas.classList.add("arrastra"); }
+      if (n && !modoOrbita) { arrNodo = n; canvas.classList.add("arrastra"); }
+      else if (modoOrbita) { arrNodo = n || null; orbOn = true; canvas.classList.add("arrastra"); }
       else { panOn = true; canvas.classList.add("arrastra"); }
     });
     canvas.addEventListener("pointermove", (ev) => {
@@ -9116,6 +9623,16 @@
         }
         camManual = true;
         dibujar(); return;
+      }
+      if (orbOn && p0) {
+        const dx = pt.x - p0.x, dy = pt.y - p0.y;
+        if (Math.hypot(dx, dy) > 4) { movido = true; arrNodo = null; }
+        const dYaw = dx * 0.0085, dPit = dy * 0.0068;
+        orb.yaw += dYaw;
+        orb.pitch = Math.max(-1.22, Math.min(1.22, orb.pitch + dPit));
+        orb.vy = Math.max(-0.14, Math.min(0.14, orb.vy * 0.4 + dYaw * 0.6));
+        orb.vp = Math.max(-0.12, Math.min(0.12, orb.vp * 0.4 + dPit * 0.6));
+        p0 = pt; dibujar(); return;
       }
       if (arrNodo) {
         if (p0 && Math.hypot(pt.x - p0.x, pt.y - p0.y) > 4) movido = true;
@@ -9147,7 +9664,7 @@
       if (nh !== hov) { hov = nh; canvas.style.cursor = nh ? "pointer" : "grab"; dibujar(); }
     });
     const soltar = (ev) => {
-      const eraPan = panOn || ptrs.size >= 2;
+      const eraDrag = panOn || orbOn || ptrs.size >= 2;
       ptrs.delete(ev.pointerId);
       if (ptrs.size < 2) pinchMidW = null;
       if (arrNodo && !movido) {
@@ -9155,18 +9672,19 @@
         pintarInspector(sel);
         if (sel) irA(sel.x, sel.y, Math.max(cam.k, 1.05));
         else dibujar();
-      } else if (panOn && !movido) {
+      } else if ((panOn || orbOn) && !movido) {
         const ahora = performance.now();
         if (ahora - ultTap < 320) {
           camManual = false; sel = null; pintarInspector(null);
+          orb.yaw = 0.28; orb.pitch = -0.22; orb.vy = 0; orb.vp = 0;
           const L = limites(); irA(L.cx, L.cy, L.kFit);
         } else {
           sel = null; pintarInspector(null); dibujar();
         }
         ultTap = ahora;
       }
-      arrNodo = null; panOn = false; canvas.classList.remove("arrastra");
-      if (eraPan && movido && !ptrs.size) correrCam();
+      arrNodo = null; panOn = false; orbOn = false; canvas.classList.remove("arrastra");
+      if (eraDrag && movido && !ptrs.size) correrCam();
     };
     canvas.addEventListener("pointerup", soltar);
     canvas.addEventListener("pointercancel", soltar);
@@ -9195,10 +9713,42 @@
     }, { passive: false });
     bMas.onclick = () => { camManual = true; irA(cam.x, cam.y, Math.min(3.2, cam.k * 1.25)); };
     bMen.onclick = () => { const L = limites(); camManual = true; irA(cam.x, cam.y, Math.max(Math.min(0.48, L.kFit * 0.85), cam.k * 0.8)); };
-    bCen.onclick = () => { camManual = false; const L = limites(); irA(L.cx, L.cy, L.kFit); };
+    bCen.onclick = () => { camManual = false; orb.yaw = 0.28; orb.pitch = -0.22; orb.vy = 0; orb.vp = 0; INMERSION_25D.recalibrar(); const L = limites(); irA(L.cx, L.cy, L.kFit); };
+    if (bOrb) {
+      bOrb.onclick = () => {
+        modoOrbita = !modoOrbita;
+        bOrb.setAttribute("aria-pressed", String(modoOrbita));
+        bOrb.textContent = modoOrbita ? "Órbita 3D" : "Mover 2D";
+      };
+    }
+    if (bGiro) {
+      bGiro.onclick = async () => {
+        if (!giroOn) {
+          await INMERSION_25D.pedirPermiso();
+          INMERSION_25D.recalibrar();
+          giroOn = true;
+          bGiro.setAttribute("aria-pressed", "true");
+          avisar("Giroscopio 3D calibrado");
+        } else {
+          giroOn = false;
+          bGiro.setAttribute("aria-pressed", "false");
+        }
+        dibujar();
+      };
+    }
+    const ponerFsCn = (on) => {
+      fsOn = !!on;
+      escena.classList.toggle("cn-fs", fsOn);
+      document.documentElement.classList.toggle("cn-fs-on", fsOn);
+      if (bFs) { bFs.setAttribute("aria-pressed", String(fsOn)); bFs.textContent = fsOn ? "✕" : "⛶"; bFs.title = fsOn ? "Salir de pantalla completa" : "Pantalla completa"; }
+      requestAnimationFrame(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } });
+    };
+    if (bFs) bFs.onclick = () => ponerFsCn(!fsOn);
+    const onKeyCn = (ev) => { if (ev.key === "Escape" && fsOn) ponerFsCn(false); };
+    window.addEventListener("keydown", onKeyCn);
 
     const off25d = INMERSION_25D.suscribir(() => {
-      if (canvas.isConnected && enVista && !arrNodo && !panOn && !camRaf) dibujar();
+      if (canvas.isConnected && enVista && giroOn && !arrNodo && !panOn && !orbOn && !camRaf) dibujar();
     });
     const ro = window.ResizeObserver ? new ResizeObserver(() => { if (medir()) { if (!camManual) encuadrar(); dibujar(); } }) : null;
     if (ro) ro.observe(canvas);
@@ -9212,12 +9762,14 @@
     let ultTemaCn = document.documentElement.getAttribute("data-theme") || "dark";
     const moTema = new MutationObserver(() => {
       const tm = document.documentElement.getAttribute("data-theme") || "dark";
-      if (tm !== ultTemaCn) { ultTemaCn = tm; dibujar(); }
+      if (tm !== ultTemaCn) { ultTemaCn = tm; spriteCache.clear(); dibujar(); }
       if (puedeRespirar()) iniciarRespirar(); else pararRespirar();
     });
     moTema.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mov", "class"] });
     const limpiar = () => {
       off25d();
+      if (fsOn) document.documentElement.classList.remove("cn-fs-on");
+      window.removeEventListener("keydown", onKeyCn);
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
       pararRespirar();
       pararCam();
@@ -9754,7 +10306,7 @@
     { sec: "sinopsis", t: "Ilumina una palabra en ambos", d: "Toca cualquier ficha dorada o palabra griega para ver dónde reaparece en el otro pasaje, abrir su concordancia o guardar el par en tu diario." },
     // Atlas bíblico
     { sec: "mapa", t: "Capas históricas vivas", d: "Cambia arriba entre el mapa completo, la vida de YēshŪ́aʿ, los viajes de Pαῦlος [Pablo] o las 7 convocaciones fuera [asambleas] de Ἀpοκάlυpsις; cada punto abre sus pasajes." },
-    { sec: "mapa", t: "Tu progreso en el mapa", d: "Los puntos en verde señalan lugares cuyos versos ya marcaste como leídos. Pellizca con dos dedos o usa + y − para acercarte sin deformar la página." },
+    { sec: "mapa", t: "Tu progreso en el mapa", d: "Los puntos en verde señalan lugares cuyos versos ya marcaste como leídos. Pellizca con dos dedos o usa + y − para acercarte." },
     // Repaso de raíces · 1 min
     { sec: "repaso", t: "Un minuto que fija familias enteras", d: "Cada tarjeta muestra una raíz griega de la Nueva Voluntad. Al evaluar si la recordaste, el sistema espaciado programa su próximo repaso en 1, 2, 4, 8 o 16 días." },
     { sec: "repaso", t: "Sincronizado con tu cuenta", d: "Tus cajas de repaso se guardan en tu dispositivo y se sincronizan con la nube al entrar en Escudriña, para continuar desde cualquier pantalla." },
@@ -9775,28 +10327,91 @@
     { sec: "juntos", t: "Leer acompañado en vivo", d: "Crea una sala en Escudriña › Juntos o únete a una abierta para recorrer el mismo capítulo con otros lectores y ganar experiencia adicional." },
     { sec: "app", t: "Lectura sin internet y avisos", d: "Desde aquí puedes guardar toda la Nueva Voluntad en tu dispositivo para leer sin conexión y activar avisos cuando haya eventos o misiones." },
   ];
+  // PR #19 · Historial de consejos (máximo 2 impresiones por consejo en una ventana de 15 días) + consejos replegados por defecto
+  const GUIA_HIST = (() => {
+    const VENTANA_MS = 15 * 86400e3;
+    const idDe = (tp) => (tp ? tp.sec + ":" + tp.t : "");
+    const leer = () => {
+      const raw = store.get("guiaHist", null);
+      const limpio = {}, lim = Date.now() - VENTANA_MS;
+      if (raw && typeof raw === "object") {
+        for (const [k, arr] of Object.entries(raw)) {
+          if (!Array.isArray(arr)) continue;
+          const ok = arr.filter((ts) => typeof ts === "number" && ts > lim);
+          if (ok.length) limpio[k] = ok;
+        }
+      }
+      return limpio;
+    };
+    const vistas = (tp, hist) => ((hist || leer())[idDe(tp)] || []).length;
+    const registrar = (tp) => {
+      if (!tp) return;
+      const hist = leer(), id = idDe(tp);
+      const arr = (hist[id] || []).slice();
+      arr.push(Date.now());
+      hist[id] = arr.slice(-4);
+      store.set("guiaHist", hist);
+    };
+    const elegir = (cands, evitarId) => {
+      const hist = leer();
+      const disp = cands.filter((tp) => vistas(tp, hist) < 2);
+      if (!disp.length) return null;
+      const pool = disp.length > 1 && evitarId ? disp.filter((tp) => idDe(tp) !== evitarId) : disp;
+      const pref0 = pool.filter((tp) => vistas(tp, hist) === 0);
+      const base = pref0.length ? pref0 : pool;
+      return base[(Math.floor(Date.now() / 180000) + base.length) % base.length];
+    };
+    return { idDe, leer, vistas, registrar, elegir };
+  })();
+  if (navigator.webdriver) window.__biexGuiaHist = GUIA_HIST;
   function guiaSeccion(sec) {
     const off = store.get("guiasOff", null) || {};
     if (off[sec]) return null;
     const lista = FARO_TIPS.filter((x) => x.sec === sec);
-    if (!lista.length) return null;
-    let idx = (Math.floor(Date.now() / 180000) + sec.length) % lista.length;
-    const tx = h("span", { class: "guia-ctx-t" });
+    let actual = GUIA_HIST.elegir(lista, null);
+    if (!actual) return null;
+    let contado = false;
+    const sumTit = h("span", { class: "guia-ctx-tit" });
+    const descEl = h("p", { class: "guia-ctx-t" });
+    const bOtro = h("button", { type: "button", title: "Ver otro consejo de esta sección", text: "Otro ↻" });
     const pintar = () => {
-      const tp = lista[idx];
-      tx.replaceChildren(h("b", { text: "Consejo · " + tp.t + ": " }), tp.d);
+      sumTit.replaceChildren(h("b", { text: "Consejo · " }), actual.t);
+      descEl.textContent = actual.d;
+      const hayMas = !!GUIA_HIST.elegir(lista, GUIA_HIST.idDe(actual));
+      bOtro.hidden = !hayMas;
+    };
+    bOtro.onclick = (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const sig = GUIA_HIST.elegir(lista, GUIA_HIST.idDe(actual));
+      if (!sig) { bOtro.hidden = true; return; }
+      actual = sig;
+      GUIA_HIST.registrar(actual);
+      contado = true;
+      pintar();
     };
     pintar();
-    const caja = h("aside", { class: "guia-ctx", role: "note", "aria-label": "Consejo útil de esta sección" },
-      h("i", { "aria-hidden": "true" }),
-      tx,
-      h("div", { class: "guia-ctx-acc" },
-        lista.length > 1 ? h("button", { type: "button", title: "Ver otro consejo de esta sección", onclick: () => { idx = (idx + 1) % lista.length; pintar(); } }, "Otro ↻") : null,
-        h("button", { type: "button", title: "Ocultar consejos en esta sección", "aria-label": "Ocultar consejos en esta sección", onclick: () => {
-          const cur = Object.assign({}, store.get("guiasOff", null) || {});
-          cur[sec] = 1; store.set("guiasOff", cur);
-          caja.remove();
-        } }, "×")));
+    const caja = h("details", { class: "guia-ctx" },
+      h("summary", { "aria-label": "Desplegar consejo útil de esta sección" },
+        h("i", { "aria-hidden": "true" }),
+        sumTit,
+        h("span", { class: "guia-ctx-chev", "aria-hidden": "true" }, "Leer ", h("b", { text: "▾" }))),
+      h("div", { class: "guia-ctx-cuerpo" },
+        descEl,
+        h("div", { class: "guia-ctx-acc" },
+          bOtro,
+          h("button", { type: "button", title: "Ocultar consejos en esta sección", "aria-label": "Ocultar consejos en esta sección", onclick: (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const cur = Object.assign({}, store.get("guiasOff", null) || {});
+            cur[sec] = 1; store.set("guiasOff", cur);
+            caja.remove();
+          } }, "Ocultar"))));
+    caja.addEventListener("toggle", () => {
+      if (caja.open && !contado) {
+        GUIA_HIST.registrar(actual);
+        contado = true;
+        pintar();
+      }
+    });
     return caja;
   }
   const FARO = {
@@ -10037,15 +10652,13 @@
         : /^#\/planes/.test(hh) ? "planes"
         : /^#\/app/.test(hh) ? "app"
         : (esc.modo === "a" ? "analisis" : "lectura");
-      if (siguiente || this.tipIdx >= 0) {
-        this.tipIdx = (this.tipIdx + 1) % FARO_TIPS.length;
-        return FARO_TIPS[this.tipIdx];
-      }
-      const ctxIdx = FARO_TIPS.findIndex((x) => x.sec === sec);
-      const base = ctxIdx >= 0 ? ctxIdx : 0;
-      const rot = (Math.floor(Date.now() / 60000) + base) % FARO_TIPS.length;
-      this.tipIdx = rot;
-      return FARO_TIPS[this.tipIdx];
+      const evitar = this.ultTipId || null;
+      const deSec = !siguiente ? FARO_TIPS.filter((x) => x.sec === sec) : [];
+      const elegido = GUIA_HIST.elegir(deSec, evitar) || GUIA_HIST.elegir(FARO_TIPS, evitar);
+      if (!elegido) return null;
+      this.ultTipId = GUIA_HIST.idDe(elegido);
+      GUIA_HIST.registrar(elegido);
+      return elegido;
     },
     montar() {
       if (this.btn && this.btn.isConnected) return this.actualizar();
@@ -10078,22 +10691,27 @@
       const lista = this.pendientes();
       if (!lista.length) { this.actualizar(); return; }
       const tipP = h("p", {});
-      const pintarTip = (sig) => {
-        const tp = this.elegirTip(sig);
+      const tpIni = this.elegirTip(false);
+      const bMasTip = h("button", { type: "button", class: "faro-tip-mas", text: "Otro consejo ↻" });
+      const pintarTip = (tp) => {
+        if (!tp) { tipP.hidden = true; bMasTip.hidden = true; return; }
+        tipP.hidden = false;
         tipP.replaceChildren(h("b", { text: tp.t + ": " }), tp.d);
+        bMasTip.hidden = !GUIA_HIST.elegir(FARO_TIPS, GUIA_HIST.idDe(tp));
       };
-      pintarTip(false);
+      bMasTip.onclick = () => pintarTip(this.elegirTip(true));
+      pintarTip(tpIni);
       const guiasOcultas = Object.keys(store.get("guiasOff", null) || {}).length > 0;
-      const tipCaja = h("div", { class: "faro-tip" },
-        h("div", { class: "faro-tip-cab" },
-          h("span", { class: "faro-tip-et", text: "Descubre BiEx (" + FARO_TIPS.length + " consejos)" }),
-          h("button", { type: "button", class: "faro-tip-mas", onclick: () => pintarTip(true), text: "Otro consejo ↻" })),
-        tipP,
+      const tipCaja = (tpIni || guiasOcultas) ? h("div", { class: "faro-tip" },
+        tpIni ? h("div", { class: "faro-tip-cab" },
+          h("span", { class: "faro-tip-et", text: "Consejo de BiEx" }),
+          bMasTip) : null,
+        tpIni ? tipP : null,
         guiasOcultas ? h("button", { type: "button", class: "faro-tip-mas", style: "margin-top:6px", onclick: (ev) => {
           store.set("guiasOff", {});
           ev.currentTarget.remove();
           avisar("Consejos en secciones activados de nuevo");
-        }, text: "Mostrar consejos en secciones" }) : null);
+        }, text: "Mostrar consejos en secciones" }) : null) : null;
       const sopNotif = BIEX_NOTIF.estadoSoporte();
       const notifPie = sopNotif === "ok" ? h("div", { class: "faro-notif-pie" },
         h("span", { text: BIEX_NOTIF.activa() ? "Avisos del dispositivo activos" : "¿Recibir avisos en tu dispositivo?" }),
@@ -10455,7 +11073,9 @@
       vb.w = Math.max(72, Math.min(1060, vb.w));
       vb.h = vb.w * ar;
       vb.x = Math.max(-36, Math.min(1076 - vb.w, vb.x));
-      vb.y = Math.max(-70, Math.min(640 - vb.h, vb.y));
+      const yMin = vb.h > 640 ? Math.min(-70, 310 - vb.h * 0.56) : -70;
+      const yMax = vb.h > 640 ? Math.max(640 - vb.h, 310 - vb.h * 0.36) : 640 - vb.h;
+      vb.y = Math.max(yMin, Math.min(yMax, vb.y));
     };
     const aplicarVb = () => {
       clampVb();
@@ -10468,12 +11088,17 @@
       const fin = { w: Math.max(72, Math.min(1060, dest.w)) };
       fin.h = fin.w * ar;
       fin.x = Math.max(-36, Math.min(1076 - fin.w, dest.x));
-      fin.y = Math.max(-70, Math.min(640 - fin.h, dest.y));
+      const yMin = fin.h > 640 ? Math.min(-70, 310 - fin.h * 0.56) : -70;
+      const yMax = fin.h > 640 ? Math.max(640 - fin.h, 310 - fin.h * 0.36) : 640 - fin.h;
+      fin.y = Math.max(yMin, Math.min(yMax, dest.y));
       const sinMov = document.documentElement.getAttribute("data-mov") === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
       if (sinMov) { vb = fin; aplicarVb(); return; }
       const ini = Object.assign({}, vb), t0 = performance.now(), dur = 260;
+      let ultMs = 0;
       const paso = (now) => {
         const p = Math.min(1, (now - t0) / dur);
+        if (p < 1 && now - ultMs < 40) { animRaf = requestAnimationFrame(paso); return; }
+        ultMs = now;
         const e = 1 - Math.pow(1 - p, 3);
         vb.x = ini.x + (fin.x - ini.x) * e;
         vb.y = ini.y + (fin.y - ini.y) * e;
@@ -10578,11 +11203,30 @@
     };
 
     const pintarEscala = () => {
+      const rect = svgEl.getBoundingClientRect();
+      const pxW = rect.width > 40 ? rect.width : Math.min(window.innerWidth - 28, 620);
+      const pxH = rect.height > 40 ? rect.height : pxW * ratioMarco();
       const sc = Math.max(0.14, Math.min(1, vb.w / 996));
-      const cerca = vb.w <= 500 || capa === "yeshua" || capa === "apokalypsis";
-      const fs = Math.max(2.35, 9.8 * sc);
-      const sw = Math.max(0.5, 2.3 * sc);
-      for (const g of gPins.children) {
+      const upp = vb.w / pxW; // unidades SVG por cada píxel CSS real
+      const esMov = pxW <= 560;
+      const cerca = vb.w <= 520 || capa === "yeshua" || capa === "apokalypsis";
+      // PR #19 · Tamaño real en píxeles CSS (doble de legibilidad en teléfono: ~11.4 px reales, ~12.4 px en escritorio) con anti-colisión
+      const targetPx = esMov ? 11.4 : 12.4;
+      const fs = Math.max(2.6, Math.min(34, targetPx * upp));
+      const sw = Math.max(0.65, fs * 0.24);
+      const offEsc = upp * (esMov ? 1.12 : 1.05);
+      const cajasTx = [
+        // Reservar la zona de controles (+ − ⌖ ⛶) arriba a la derecha y la rosa náutica arriba a la izquierda
+        { x0: pxW - 50, x1: pxW + 4, y0: -4, y1: 170 },
+        { x0: -4, x1: 58, y0: -4, y1: 58 },
+      ];
+      const chocaTx = (b) => cajasTx.some((c) => !(b.x1 < c.x0 || b.x0 > c.x1 || b.y1 < c.y0 || b.y0 > c.y1));
+      const pinesOrd = [...gPins.children].sort((a, b) => {
+        const pa = (a.classList.contains("sel") ? 100 : 0) + (a.dataset.pri === "1" ? 20 : 0) + (a.classList.contains("leido") ? 4 : 0);
+        const pb = (b.classList.contains("sel") ? 100 : 0) + (b.dataset.pri === "1" ? 20 : 0) + (b.classList.contains("leido") ? 4 : 0);
+        return pb - pa;
+      });
+      for (const g of pinesOrd) {
         const esSel = g.classList.contains("sel");
         const pri = g.dataset.pri === "1";
         const off = ATLAS_OFF[g.dataset.id] || [0, -8, "middle"];
@@ -10590,16 +11234,38 @@
         const aro = g.querySelector("circle.aro");
         const dot = g.querySelector("circle.dot");
         const tx = g.querySelector("text");
-        if (halo) halo.setAttribute("r", ((esSel ? 13.5 : 8.2) * sc).toFixed(2));
-        if (aro) { aro.setAttribute("r", (8.8 * sc).toFixed(2)); aro.setAttribute("stroke-width", (1.15 * sc).toFixed(2)); }
-        if (dot) { dot.setAttribute("r", ((esSel ? 5.2 : 3.9) * sc).toFixed(2)); dot.setAttribute("stroke-width", (1.2 * sc).toFixed(2)); }
+        if (halo) halo.setAttribute("r", ((esSel ? 12.2 : 7.6) * upp).toFixed(2));
+        if (aro) { aro.setAttribute("r", (8.4 * upp).toFixed(2)); aro.setAttribute("stroke-width", (1.25 * upp).toFixed(2)); }
+        if (dot) { dot.setAttribute("r", ((esSel ? 5.2 : 3.9) * upp).toFixed(2)); dot.setAttribute("stroke-width", (1.25 * upp).toFixed(2)); }
         if (tx) {
-          tx.style.display = (esSel || pri || cerca) ? "" : "none";
-          tx.setAttribute("x", (off[0] * sc).toFixed(2));
-          tx.setAttribute("y", (off[1] * sc).toFixed(2));
-          tx.setAttribute("text-anchor", off[2]);
+          const quiere = esSel || pri || cerca;
+          if (!quiere) { tx.style.display = "none"; continue; }
+          const lx = Number(g.dataset.x || 0), ly = Number(g.dataset.y || 0);
+          let anch = off[2], dx0 = off[0], dy0 = off[1];
+          const txt = tx.textContent || "";
+          const tw = Math.max(24, txt.length * targetPx * 0.58);
+          const pinSx = ((lx - vb.x) / vb.w) * pxW;
+          const pinSy = ((ly - vb.y) / vb.h) * pxH;
+          if (pinSx < -10 || pinSx > pxW + 10 || pinSy < -10 || pinSy > pxH + 10) { tx.style.display = "none"; continue; }
+          // Voltear automáticamente etiquetas cercanas al borde derecho o izquierdo para que ningún nombre se corte jamás
+          if (anch === "start" && pinSx + Math.abs(dx0) + tw > pxW - 14) { anch = "end"; dx0 = -Math.max(8, Math.abs(dx0)); }
+          else if (anch === "end" && pinSx - Math.abs(dx0) - tw < 10) { anch = "start"; dx0 = Math.max(8, Math.abs(dx0)); }
+          else if (anch === "middle" && pinSx + tw * 0.5 > pxW - 14) { anch = "end"; dx0 = -8; }
+          else if (anch === "middle" && pinSx - tw * 0.5 < 10) { anch = "start"; dx0 = 8; }
+          const ox = dx0 * offEsc, oy = dy0 * offEsc;
+          tx.setAttribute("x", ox.toFixed(2));
+          tx.setAttribute("y", oy.toFixed(2));
+          tx.setAttribute("text-anchor", anch);
           tx.style.fontSize = fs.toFixed(2) + "px";
           tx.style.strokeWidth = sw.toFixed(2) + "px";
+          const sx = ((lx + ox - vb.x) / vb.w) * pxW;
+          const sy = ((ly + oy - vb.y) / vb.h) * pxH;
+          const x0 = anch === "start" ? sx : anch === "end" ? sx - tw : sx - tw * 0.5;
+          if (!esSel && (x0 < 6 || x0 + tw > pxW - 6 || sy - targetPx < 6 || sy > pxH - 36)) { tx.style.display = "none"; continue; }
+          const bx = { x0: x0 - 4, x1: x0 + tw + 4, y0: sy - targetPx - 2, y1: sy + 4 };
+          if (!esSel && chocaTx(bx)) { tx.style.display = "none"; continue; }
+          cajasTx.push(bx);
+          tx.style.display = "";
         }
       }
       for (const p of gCosta.children) p.setAttribute("stroke-width", Math.max(1.2, 4.4 * sc).toFixed(2));
@@ -10613,8 +11279,6 @@
         p.setAttribute("stroke-width", Math.max(0.55, base * sc).toFixed(2));
       }
       // Escala física dinámica (36 px en pantalla -> unidades SVG -> km y estadios romanos de ~185 m)
-      const rect = svgEl.getBoundingClientRect();
-      const pxW = rect.width > 40 ? rect.width : 620;
       const km36 = (36 / pxW) * vb.w * 2.726;
       const redondeado = km36 >= 200 ? Math.round(km36 / 50) * 50 : km36 >= 40 ? Math.round(km36 / 10) * 10 : Math.max(5, Math.round(km36 / 5) * 5);
       const est = Math.round(redondeado / 0.185);
@@ -10669,7 +11333,7 @@
         const pag = Math.floor(idx / 8);
         if (pag !== libroDir.pagina()) libroDir.ir(pag);
       }
-      for (const b of dirCont.querySelectorAll(".mp-item")) {
+      for (const b of dirCont.querySelectorAll(".mp-cod-fila")) {
         b.setAttribute("aria-current", b.dataset.id === sel.id ? "true" : "false");
       }
     };
@@ -10707,6 +11371,8 @@
           "aria-label": `${l.n} (${l.tr}), ${l.reg}${leido ? ", ya leído" : ""}`,
           "data-id": l.id,
           "data-pri": l.pri ? "1" : "0",
+          "data-x": String(l.x),
+          "data-y": String(l.y),
         },
           sEl("circle", { class: "halo", r: "8" }),
           esSel ? sEl("circle", { class: "aro", r: "8.8" }) : null,
@@ -10726,13 +11392,41 @@
       pintarEscala();
     };
 
+    const aRomano = (n) => {
+      const vals = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+      let x = Math.max(1, n | 0), out = "";
+      for (const [v, s] of vals) while (x >= v) { out += s; x -= v; }
+      return out;
+    };
+    const fsFicha = h("div", { class: "mp-fs-ficha", hidden: true });
+    let mapaFs = false;
+    const ponerMapaFs = (on) => {
+      mapaFs = !!on;
+      marco.classList.toggle("mp-fs", mapaFs);
+      document.documentElement.classList.toggle("mp-fs-on", mapaFs);
+      bMapaFs.setAttribute("aria-pressed", String(mapaFs));
+      bMapaFs.textContent = mapaFs ? "✕" : "⛶";
+      bMapaFs.title = mapaFs ? "Salir de pantalla completa" : "Mapa a pantalla completa";
+      bMapaFs.setAttribute("aria-label", bMapaFs.title);
+      fsFicha.hidden = !mapaFs || !sel;
+      requestAnimationFrame(() => { vb = presetDe(capa); aplicarVb(); });
+    };
+    const limpiarMapaFs = () => {
+      if (mapaFs) ponerMapaFs(false);
+      window.removeEventListener("keydown", onKeyMapa);
+      window.removeEventListener("hashchange", limpiarMapaFs);
+    };
+    const onKeyMapa = (e) => { if (e.key === "Escape" && mapaFs) ponerMapaFs(false); };
+    window.addEventListener("keydown", onKeyMapa);
+    window.addEventListener("hashchange", limpiarMapaFs);
+
     const pintarFicha = () => {
       if (!sel) return;
       const leido = lugarLeido(sel);
       const citas = sel.citas.map(([c, cap, v]) => {
         const lb = libroDe(c);
         const et = lb ? (lb.t || lb.n) + " " + cap + ":" + v : c + " " + cap + ":" + v;
-        return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v },
+        return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v, onclick: () => { if (mapaFs) ponerMapaFs(false); } },
           svg(ICO.libro), h("span", { text: et }));
       });
       const coordTxt = sel.lat && sel.lon ? `${sel.lat.toFixed(2)}° N · ${sel.lon.toFixed(2)}° E` : "";
@@ -10749,9 +11443,22 @@
         h("div", { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:2px" },
           h("button", { type: "button", class: "btn chico", onclick: () => centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 132 : 210, true) }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
           h("a", { class: "btn chico", href: "#/cronologia" }, svg(ICO.tiempo), h("span", { text: "Línea del tiempo" }))));
+      // Ficha compacta flotante para navegación en mapa a pantalla completa
+      const citasFs = sel.citas.slice(0, 3).map(([c, cap, v]) => {
+        const lb = libroDe(c);
+        const et = lb ? (lb.t || lb.n) + " " + cap + ":" + v : c + " " + cap + ":" + v;
+        return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v, onclick: () => ponerMapaFs(false) },
+          svg(ICO.libro), h("span", { text: et }));
+      });
+      fsFicha.replaceChildren(
+        h("div", { class: "mp-fs-f-cab" },
+          h("b", { text: sel.n }),
+          h("small", { text: sel.tr + " · " + sel.reg })),
+        h("div", { class: "mp-cita-l" }, citasFs));
+      fsFicha.hidden = !mapaFs;
     };
 
-    // Directorio paginado en secciones con efecto hoja de libro (libroPaginas, 8 lugares por hoja) + gesto deslizar
+    // PR #19 · Códice de lugares iluminado de museo con folios romanos, lomo encuadernado, efecto hoja de libro y gesto deslizar
     const pintarLista = () => {
       const q = sinMarcas(busq.value || "").toLowerCase().trim();
       const vis = visibles().filter((l) => !q || sinMarcas(l.n + " " + l.tr + " " + l.reg).toLowerCase().includes(q));
@@ -10766,29 +11473,45 @@
       const totalPags = Math.max(1, Math.ceil(vis.length / porPag));
       const idxSel = Math.max(0, vis.findIndex((l) => sel && l.id === sel.id));
       const pagIni = Math.floor(idxSel / porPag);
-      const actSub = (p) => { dirSub.textContent = `${vis.length} ${vis.length === 1 ? "lugar" : "lugares"} · Hoja ${p + 1} de ${totalPags}`; };
+      const actSub = (p) => { dirSub.textContent = `${vis.length} ${vis.length === 1 ? "enclave" : "enclaves"} · Folio ${aRomano(p + 1)} de ${aRomano(totalPags)}`; };
       actSub(pagIni);
-      libroDir = libroPaginas(vis, porPag, (l) => h("li", {}, h("button", {
-        type: "button",
-        class: "mp-item",
-        "data-id": l.id,
-        "aria-current": sel && l.id === sel.id ? "true" : "false",
-        onclick: () => {
-          sel = l;
-          const rt = rutaActiva();
-          if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
-          try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
-          centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 148 : 260, true);
-          pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
+      libroDir = libroPaginas(vis, porPag, (l) => {
+        const lei = lugarLeido(l);
+        return h("li", {}, h("button", {
+          type: "button",
+          class: "mp-cod-fila" + (lei ? " leido" : ""),
+          "data-id": l.id,
+          "aria-current": sel && l.id === sel.id ? "true" : "false",
+          onclick: () => {
+            sel = l;
+            const rt = rutaActiva();
+            if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
+            try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
+            centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 148 : 260, true);
+            pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
+          },
         },
-      },
-        h("span", { class: "mp-item-top" }, h("b", { text: l.n }), lugarLeido(l) ? h("em", { text: "✓ Leído" }) : null),
-        h("small", { text: l.tr + " · " + l.reg }))), {
-        clase: "mp-libro",
-        etiqueta: "Hojas del directorio de lugares bíblicos",
+          h("i", { class: "mp-cod-dot", "aria-hidden": "true" }),
+          h("span", { class: "mp-cod-txt" },
+            h("b", { text: l.n }),
+            h("small", { text: l.tr + " · " + l.reg })),
+          h("span", { class: "mp-cod-meta", text: (lei ? "✓ · " : "") + l.citas.length + (l.citas.length === 1 ? " cita ›" : " citas ›") })));
+      }, {
+        clase: "mp-cod-libro",
+        etiqueta: "Folios del códice de lugares bíblicos",
         pag: pagIni,
+        pagina: (nodos, k) => {
+          const tramo = vis.slice(k * porPag, (k + 1) * porPag);
+          const rango = tramo.length > 1 ? tramo[0].tr + " — " + tramo[tramo.length - 1].tr : (tramo[0] ? tramo[0].tr : "");
+          return h("div", {},
+            h("div", { class: "mp-cod-folio-cab" },
+              h("b", { text: `Folio ${aRomano(k + 1)} · ${aRomano(totalPags)}` }),
+              h("small", { text: rango })),
+            h("ol", { class: "lp-lista" }, nodos));
+        },
         alCambiar: (p) => actSub(p),
       });
+      libroDir.classList.add("mp-cod-libro");
       const marcoHoja = libroDir.querySelector(".lp-marco");
       if (marcoHoja && totalPags > 1) {
         let sx = 0, sy = 0, activo = false;
@@ -10833,16 +11556,18 @@
     }
     busq.addEventListener("input", pintarLista);
 
+    const bMapaFs = h("button", { type: "button", class: "mp-ctrl", title: "Mapa a pantalla completa", "aria-label": "Mapa a pantalla completa", "aria-pressed": "false", onclick: () => ponerMapaFs(!mapaFs) }, "⛶");
     const ctrls = h("div", { class: "mp-ctrls" },
       h("button", { type: "button", class: "mp-ctrl", title: "Acercar mapa", "aria-label": "Acercar mapa", onclick: () => zoomPor(0.74, null, null, true) }, "+"),
       h("button", { type: "button", class: "mp-ctrl", title: "Alejar mapa", "aria-label": "Alejar mapa", onclick: () => zoomPor(1.34, null, null, true) }, "−"),
-      h("button", { type: "button", class: "mp-ctrl", title: "Encuadrar capa completa", "aria-label": "Encuadrar capa completa", onclick: () => volarVb(presetDe(capa)) }, "⌖"));
+      h("button", { type: "button", class: "mp-ctrl", title: "Encuadrar capa completa", "aria-label": "Encuadrar capa completa", onclick: () => volarVb(presetDe(capa)) }, "⌖"),
+      bMapaFs);
     const leyenda = h("div", { class: "mp-ley", "aria-hidden": "true" },
       h("span", {}, h("i", { style: "background:var(--oro-vivo)" }), "Enclave"),
       h("span", {}, h("i", { style: "background:#6fc08f" }), "Visitado"),
       h("span", {}, h("i", { style: "background:#7fb2f5" }), "Rutas"));
     const pieHud = h("div", { class: "mp-pie-hud" }, leyenda, escalaHud);
-    const marco = h("div", { class: "mp-marco" }, rosaAstrolabioSVG(sEl), svgEl, ctrls, pieHud);
+    const marco = h("div", { class: "mp-marco" }, rosaAstrolabioSVG(sEl), svgEl, ctrls, fsFicha, pieHud);
     const colMapa = h("div", { class: "mp-col-mapa" }, marco, rutaBar);
 
     const leidosTot = ATLAS_LUGARES.filter(lugarLeido).length;
@@ -10855,9 +11580,9 @@
       guiaSeccion("mapa"),
       filtros,
       h("div", { class: "mp-grid" }, colMapa, ficha),
-      h("div", { class: "tarjeta", style: "display:grid;gap:12px;min-width:0" },
+      h("div", { class: "mp-cod-caja" },
         h("div", { class: "mp-dir-cab" },
-          h("h2", { style: "font:500 1.08rem/1.2 var(--f-display)", text: "Códice de lugares" }),
+          h("h2", { style: "font:500 1.16rem/1.2 var(--f-display)", text: "Códice de lugares" }),
           dirSub),
         h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), busq),
         dirCont))));
@@ -11019,10 +11744,21 @@
       const topLibs = [...sumaLib.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
         .map(([bi, n]) => D && D.libros[bi] ? (D.libros[bi].t || D.libros[bi].n) + " (" + n + ")" : "").filter(Boolean);
 
+      const formaRaiz = lemaCorto(item.r);
+      const bAudR = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar pronunciación histórica en griego koiné del siglo I", "aria-label": "Escuchar " + formaRaiz + " en griego koiné del siglo I" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
+      const bAudL = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar despacio (0,7×)", "aria-label": "Escuchar " + formaRaiz + " más despacio", text: "0,7×" });
+      const sonarRaiz = (lento, bt) => () => {
+        bAudR.classList.remove("sonando"); bAudL.classList.remove("sonando");
+        bt.classList.add("sonando");
+        KOINE_S1.hablar(formaRaiz, { lento, alFin: () => bt.classList.remove("sonando") });
+      };
+      bAudR.onclick = sonarRaiz(false, bAudR);
+      bAudL.onclick = sonarRaiz(true, bAudL);
       const carta = h("article", { class: "rr-carta" },
         h("span", { class: "rr-caja-chip", text: badge }),
-        h("p", { class: "rr-gr", lang: "grc", text: lemaCorto(item.r) }),
+        h("p", { class: "rr-gr", lang: "grc", text: formaRaiz }),
         h("p", { class: "rr-tl", text: tlCorta(item.r) }),
+        h("div", { class: "rr-aud-fila" }, bAudR, bAudL),
         h("p", { class: "rr-frec", text: `${fmt(item.total)} apariciones · ${item.fam.length === 1 ? "1 palabra" : "familia de " + fmt(item.fam.length) + " palabras"}` }),
         !revelada
           ? h("div", { style: "margin-top:6px" },

@@ -1011,3 +1011,43 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check app.js juego.js sw.js busqueda.js`, balance de llaves CSS (`3263 / 3263`), auditoría editorial y de rendimiento (`0` posesivos ante «poder», `0` palabras prohibidas, `0` `:has()` globales): **CLEAN**.
 - Suite Playwright 3× HD (`verificar_pr18.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core` WCAG 2.1 AA: **`0` violaciones `axe-core` en todas las vistas, `0` errores JS en móvil y escritorio, `0 px` de desborde lateral en `280 / 390 / 1280 px`**, todas las capturas 3× HD inspeccionadas visualmente.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #19 · PR #19 · Griego koiné histórico del siglo I (motor acústico Klatt), El Coloso inmersivo a pantalla completa + Resonancia de 2–4 marcas, Constelación 3D armilar, Atlas 2× móvil + pantalla completa + Códice iluminado, consejos plegables (15 días) y tope 25 fps sin congelar al desplazarse (2026-11-26)
+
+### 1. Cambios entregados en PR #19
+1. **Motor histórico de pronunciación y audio del griego koiné del siglo I (`KOINE_S1`, `pronunciar`, `lineaPron` y `vistaRepasoRaices` en `app.js`):**
+   - Implementado sintetizador acústico local 100 % offline en Web Audio API (modelo Klatt de 4 formantes resonantes `F1–F4` + fuente glotal Rosenberg-LF + coarticulación suave + generadores calibrados de fricativas, oclusivas no aspiradas, nasales y vibrante alveolar `/r/` a 27 Hz + caché LRU de 40 `AudioBuffer`).
+   - Reconstrucción fiel al consenso académico del griego koiné del siglo I d.H.D. (W. S. Allen *Vox Graeca*, R. Buth *Imperial Koine*, G. Horrocks y F. Gignac): conserva espíritu áspero inicial `/h/` (y `ρ` inicial aspirada `/r̥/`), `η /e̝/` cerrada alta, `υ/οι /y/` anterior redondeada, `αυ/ευ/ηυ → Vβ/Vɸ`, `β /β/`, `φ /ɸ/`, `δ /ð/`, `θ /θ/`, `γ /ɣ,ʝ,ŋ/`, `χ /x,ç/`, sonorización `σ → z` ante `βγδμνρ` (p. ej. `κόσμος [ˈkozmos]`), geminadas reales y acento dinámico con contorno entonacional natural.
+   - Integrado con botones **«Escuchar koiné s. I»** y **«0,7×»** e iluminación silábica en vivo en ficha de palabra, página de lema, página de raíz, analizador y `#/raices/repaso`.
+2. **El Coloso inmersivo a pantalla completa + Barra de Resonancia táctil de 2–4 marcas (`juego.js`):**
+   - Corregido el fallo táctil móvil de la barra de Resonancia: pista elevada a `48 px` con captura instantánea `pointerdown` en pista, caja completa y botón principal (con protección anti-rebote de `115 ms`), secuencia aleatoria de **2 a 4 marcas** (`meta = 2..4`) con gemas de progreso (`◆ ◇ ◇`) que reubican el objetivo tras cada toque y disparan `POST /coloso/accion` de inmediato al completar la última marca.
+   - Al entrar en `#/escudrina/coloso` con cargas disponibles (`cargas > 0`), se activa automáticamente la arena inmersiva a pantalla completa (`html.jg-col-inm` / `.jg-col-escena.inm`, `100dvh × 100vw`) enmarcando limpiamente desde la figura del Coloso hasta la 3.ª habilidad (`bottom: 832 px` en `844 px`) con botón discreto **«✕ Salir de arena»**; al gastar la última carga o derrotar al Coloso, espera `1,35 s` el estallido final y se retira automáticamente dejando visible *Enseñanza* y *Mayores aportes*.
+3. **Limpieza de `Hoy` vs `Mundo` en Escudriña (`juego.js`):**
+   - Retiradas las tarjetas duplicadas de *El Coloso* y *Misión mundial* de la pestaña `Hoy` (quedan exclusivamente en `Mundo`), precargando silenciosamente el estado del Coloso en `Hoy` para iluminar la insignia activa de cargas en la pestaña **`Mundo`** del muelle inferior (`insigniaMundo`).
+4. **Consejos replegados por defecto, sin contador total y tope de 2 vistas cada 15 días (`GUIA_HIST`, `guiaSeccion`, `FARO` en `app.js`):**
+   - Reemplazados los banners abiertos por `<details class="guia-ctx">` plegados por defecto (`• Consejo · <título>   Leer ▾`) que el lector despliega manualmente solo si desea leerlos.
+   - Eliminada la cuenta total `"(" + FARO_TIPS.length + " consejos)"` en el modal del Faro → `"Consejo de BiEx"`.
+   - Implementado historial rodante de 15 días (`biex:guiaHist`) que garantiza que nadie vea el mismo consejo más de **2 veces en 15 días**.
+5. **Tope de 25 fps en todas las animaciones, sprites cacheados y cero congelamiento al desplazarse (`app.css`, `app.js`, `juego.js`):**
+   - Eliminadas todas las reglas `html.desplazando { animation-play-state: paused }` en `app.css` y `juego.js`.
+   - Limitados todos los bucles JS/Canvas (`INMERSION_25D`, `motorConstelacion`, `volarVb` del Atlas, `montarAtmosferaColoso`, barra de Resonancia y `animar3D` del Árbol) a **25 fps** (`40 ms`), ralentizando suavemente a `~14 fps` (`72 ms`) durante el desplazamiento sin paralizar jamás las animaciones; añadidos cachés de sprites offscreen para orbes de Constelación y brasas del Coloso.
+6. **Coincidencia exacta de líneas en `Por versos ↔ Continuo` y `Lectura ↔ Textual` (`nodosTextoVerso`, `charOffsetDeLinea`, `topDeCharOffset` en `app.js`):**
+   - Excluidos `<sup>` y `.vn` al medir renglones del verso y anclada la transición `Por versos ↔ Continuo` por índice exacto de carácter (`charOff`): **`Δ = 0,0–0,41 px`** tanto al inicio como a mitad de capítulo (`LUK 5`).
+7. **Pinceladas caligráficas PR #17 restauradas en los 4 botones secundarios de portada (`app.css`):**
+   - Recuperados los brochazos planos detallados `--br-a` / `--br-b` de PR #17 para los 4 botones secundarios, conservando el botón primario dorado suave de PR #18, la levitación `heroFlota` y la sombra proyectada centrada.
+8. **Constelación 3D profunda real (`motorConstelacion` en `app.js`):**
+   - Distribución esférica profunda en 3 ejes (`z` en `-196..+196`, `FOCAL = 460`), 3 anillos armilares 3D con arcos frontales luminosos y traseros punteados, 96 estrellas en esfera 3D, **órbita 3D 360° con un dedo** + auto-órbita suave a 25 fps, calibración fija de **Giroscopio** sin auto-borrado (`INMERSION_25D.recalibrar()`) y **pantalla completa (`⛶`)**.
+9. **Atlas Bíblico 2× más legible en móvil, pantalla completa opaca y Códice de lugares iluminado (`vistaMapa` en `app.js` y `app.css`):**
+   - Etiquetas calculadas en píxeles CSS reales (`11,4 px` móvil / `12,4 px` escritorio — **3,2× más legibles en teléfono**) con auto-volteo en bordes y reserva de controles/brújula para cero cortes ni solapes; retirada la frase `"sin deformar la página."` del consejo del mapa.
+   - Nuevo modo **pantalla completa (`⛶`)** 100 % opaco con encuadre vertical centrado y ficha rápida flotante (`.mp-fs-ficha`) de citas directas.
+   - Rediseño total del **Códice de lugares** (`.mp-cod-caja` / `.mp-cod-libro`) como folio encuadernado de museo con lomo, cantos apilados, esquinas doradas, encabezados en numerales romanos (`FOLIO I · VI`) e índice limpio sin cajas pesadas.
+10. **Cierre de armonización tipográfica global (`app.css` y `juego.js`):**
+    - Equilibrados los rótulos pequeños restantes en tablas morfológicas (`.tf th`, `.tf-f small`), chips de formación/léxico (`.lx-chip small`, `.chip`), pronunciación (`.fp-pron`), palabras del analizador (`.pal .mo`) y estadísticas/habilidades del Coloso.
+
+### 2. Comprobaciones pasadas (Entrada #19)
+- `node --check app.js juego.js`, llaves balanceadas en `app.css` (`3328 / 3328`), `0` reglas `html.desplazando.*paused`, auditoría editorial (`0` palabras prohibidas, `0` posesivos ante «poder»): **CLEAN**.
+- Suite Playwright 3× HD (`verificar_pr19.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core` WCAG 2.1 AA: **`0` fallos funcionales, `0` `pageerror`, `0` violaciones `axe-core` en todas las vistas, `0 px` de desborde lateral en `280 / 390 / 1280 px`**, todas las capturas 3× HD y 2× HD inspeccionadas visualmente.
+- `python3 wix/sellar.py`: **al día**.
