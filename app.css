@@ -310,24 +310,24 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
 .encab .s { font-family: var(--f-ui); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tenue); }
 .nota-base { margin: 6px clamp(14px, 3vw, 38px) 4px; padding: 11px 16px; border-left: 2px solid var(--oro-2); background: var(--hoja-2); border-radius: 0 10px 10px 0; font-family: var(--f-ui); font-size: .82rem; color: var(--tenue); line-height: 1.5; }
 
-/* lectura: métricas idénticas entre por versos (.vl .vt) y perícopa (.continuo p) para coincidencia exacta línea por línea */
+/* lectura: métricas armonizadas entre por versos (.vl .vt) y perícopa (.continuo p) para máxima coincidencia línea por línea */
 .lectura { padding: 14px clamp(14px, 3.4vw, 46px) 10px; max-width: 880px; margin: 0 auto; }
-.vl { display: grid; grid-template-columns: 2.65rem minmax(0, 1fr); gap: 0 14px; padding: 8px 10px 8px 0; border-radius: 10px; cursor: pointer; scroll-margin-top: 140px; transition: background-color .15s; }
+.vl { display: grid; grid-template-columns: 2.35rem minmax(0, 1fr); gap: 0 11px; padding: 3px 8px 3px 0; border-radius: 10px; cursor: pointer; scroll-margin-top: 140px; transition: background-color .15s; }
 /* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .vl:hover { background: var(--oro-suave); } }
 .vl .vn { font-family: var(--f-display); font-size: 1.18rem; line-height: 1.55; text-align: right; color: var(--oro); font-variant-numeric: lining-nums; position: relative; }
-.vl .vn::after { content: ""; position: absolute; right: -9px; top: .55em; width: 3px; height: 1.05em; border-radius: 2px; background: var(--e); }
+.vl .vn::after { content: ""; position: absolute; right: -7px; top: .55em; width: 3px; height: 1.05em; border-radius: 2px; background: var(--e); }
 .vl .vt { font-size: var(--t-verso); line-height: calc(1.76 * var(--lh)); overflow-wrap: anywhere; }
-.vl.p { margin-top: 16px; }
+.vl.p { margin-top: 12px; }
 .vl.p:first-child { margin-top: 0; }
 .vl .vn .par-v { color: var(--oro); opacity: .85; font-size: .96rem; font-weight: 500; margin-right: .16em; letter-spacing: 0; }
 .vl.n-base .vt { color: var(--tinta-2); }
 .vl.marcado { background: var(--oro-suave); }
 .vl.marcado .vn::after { background: var(--oro-vivo); }
-.continuo { padding: 22px clamp(14px, 3.4vw, 46px) 10px; max-width: 880px; margin: 0 auto; }
+.continuo { padding: 16px clamp(14px, 3.4vw, 46px) 10px; max-width: 880px; margin: 0 auto; }
 /* Y1 (BiEx, 13-nov-2026): el § mide lo mismo en las dos vistas */
 .continuo .par { font-family: var(--f-display); color: var(--oro); opacity: .85; font-size: .96rem; font-weight: 500; margin-right: .3em; }
-.continuo p + p { margin-top: 1.45em; }
-.continuo p { margin: 0 0 1.05em; font-size: var(--t-verso); line-height: calc(1.76 * var(--lh)); text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.continuo p + p { margin-top: 1.15em; }
+.continuo p { margin: 0 0 .92em; font-size: var(--t-verso); line-height: calc(1.76 * var(--lh)); text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
 .continuo p:last-child { margin-bottom: 0; }
 .vs { cursor: pointer; border-radius: 6px; transition: background-color .15s; scroll-margin-top: 140px; }
 /* (14-nov-2026) solo con puntero real: en las pantallas táctiles el «hover» se quedaba pegado en el verso tocado al desplazar */ @media (hover: hover) and (pointer: fine) { .vs:hover { background: var(--oro-suave); } }
@@ -575,11 +575,11 @@ html[data-paso="ant"] #vista .hoja > :not(.barra-hoja) { animation: entraIzq .32
   .encab { padding: 18px 8px 4px; gap: 6px; }
   .encab .btn-icono { width: 34px; height: 34px; }
   .nota-base { margin: 4px 14px 6px; padding: 10px 12px; font-size: .8rem; }
-  .lectura { padding: 6px 14px 8px 8px; }
-  .vl { grid-template-columns: 1.9rem minmax(0, 1fr); gap: 0 12px; padding: 7px 4px 7px 0; }
+  .lectura { padding: 8px 14px 8px 6px; }
+  .vl { grid-template-columns: 1.85rem minmax(0, 1fr); gap: 0 9px; padding: 2px 4px 2px 0; }
   .vl .vn { font-size: calc(var(--t-verso) * .78); line-height: 1.2; }
-  .vl .vn::after { right: -8px; }
-  .continuo { padding: 13px 16px 8px; }
+  .vl .vn::after { right: -6px; }
+  .continuo { padding: 10px 15px 8px; }
   .analisis { padding: 2px 12px 10px; }
   .lentes { padding: 10px 12px; }
   .banda .in { padding-top: 18px; padding-bottom: 16px; gap: 12px 22px; }
@@ -3200,9 +3200,9 @@ html[data-letra="dislexia"] :is(.hero-tit h1, .seccion-cab h2, .panel h1, .panel
   .libs-acc-btn { justify-content: center; padding: 8px 9px; font-size: .74rem; }
 }
 
-/* Faro pulsante discreto de pendientes (PR #14 + PR #15: 29×29 px · cristal líquido · 15 % transparencia) */
+/* Faro pulsante discreto de pendientes (PR #20: centrado exacto en eje x = 35 px sobre .jg-med sin sesgo del contador .faro-cnt) */
 .faro-btn {
-  position: fixed; z-index: 62; left: max(17px, env(safe-area-inset-left, 0px)); bottom: var(--faro-b, calc(16px + env(safe-area-inset-bottom, 0px)));
+  position: fixed; z-index: 62; left: calc(20.5px + env(safe-area-inset-left, 0px)); bottom: var(--faro-b, calc(16px + env(safe-area-inset-bottom, 0px)));
   appearance: none; width: 29px; height: 29px; padding: 0; border-radius: 50%; cursor: pointer;
   display: grid; place-items: center;
   opacity: .85;
@@ -3678,9 +3678,56 @@ html.con-modal .hero .acciones > .btn,
 .fp-aud-btn.sonando { border-color: var(--oro-vivo); box-shadow: 0 0 16px -4px color-mix(in srgb, var(--oro-vivo) 72%, transparent); }
 .fp-aud-btn.lento { padding: 5px 10px; font-size: .78rem; color: var(--tinta-2); background: color-mix(in srgb, var(--hoja-2) 86%, transparent); border-color: var(--linea); }
 .fp-aud-btn.lento:hover, .fp-aud-btn.lento.sonando { color: var(--oro-vivo); border-color: var(--oro-vivo); }
-.pr-sil .pr-s { display: inline-block; padding: 0 1px; border-radius: 4px; transition: color .12s, background-color .12s, text-shadow .12s; }
-.pr-sil .pr-s.sonando { color: var(--oro-vivo) !important; background: color-mix(in srgb, var(--oro-vivo) 22%, transparent); text-shadow: 0 0 10px color-mix(in srgb, var(--oro-vivo) 70%, transparent); }
+.pr-sil { transition: color .18s, text-shadow .18s; border-radius: 6px; padding: 0 3px; }
+.pr-sil.sonando, .fp-g.sonando, .rr-gr.sonando { color: var(--oro-vivo) !important; text-shadow: 0 0 16px color-mix(in srgb, var(--oro-vivo) 72%, transparent); }
+.pr-sil.sonando { background: color-mix(in srgb, var(--oro-vivo) 14%, transparent); }
 .rr-aud-fila { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 2px; }
+/* PR #20 · Mini botón de audio Koiné s. I en Formas y Raíz y formación + cajón plegable */
+.aud-mini {
+  appearance: none; flex: none; display: inline-grid; place-items: center;
+  width: 28px; height: 28px; padding: 0; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--oro) 38%, var(--linea-2));
+  background: color-mix(in srgb, var(--oro) 10%, var(--hoja-2));
+  color: var(--oro-vivo); cursor: pointer; vertical-align: middle;
+  transition: border-color .16s, background-color .16s, transform .14s, box-shadow .16s;
+}
+.aud-mini svg { width: 13px; height: 13px; display: block; }
+.aud-mini:hover, .aud-mini:focus-visible { border-color: var(--oro-vivo); background: color-mix(in srgb, var(--oro) 22%, var(--hoja-2)); outline: none; }
+.aud-mini:active { transform: scale(.92); }
+.aud-mini.sonando { border-color: var(--oro-vivo); box-shadow: 0 0 12px -2px color-mix(in srgb, var(--oro-vivo) 82%, transparent); background: color-mix(in srgb, var(--oro) 28%, var(--hoja-2)); }
+.fl-it-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px; }
+.fl-it-fila .fl-b { width: 100%; }
+.fl-aud-det {
+  margin-top: 10px; border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--oro) 30%, var(--linea-2));
+  background: color-mix(in srgb, var(--hoja-2) 72%, transparent);
+  overflow: hidden;
+}
+.fl-aud-det > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px; font: 500 .8rem/1.25 var(--f-ui); color: var(--oro-vivo);
+}
+.fl-aud-det > summary::-webkit-details-marker { display: none; }
+.fl-aud-det > summary svg { width: 15px; height: 15px; flex: none; }
+.fl-aud-det > summary small { margin-left: auto; color: var(--tenue); font: 400 .74rem/1 var(--f-ui); }
+.fl-aud-grid {
+  display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 12px 12px;
+  border-top: 1px solid var(--linea-2);
+}
+.fl-aud-chip {
+  appearance: none; display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--linea-2); background: color-mix(in srgb, var(--hoja) 88%, transparent);
+  color: var(--tinta); cursor: pointer; font: 400 .8rem/1.2 var(--f-ui);
+  transition: border-color .16s, color .16s, box-shadow .16s;
+}
+.fl-aud-chip svg { width: 13px; height: 13px; color: var(--oro); flex: none; }
+.fl-aud-chip b { font-family: var(--f-griego); font-weight: 500; color: var(--oro-vivo); }
+.fl-aud-chip:hover, .fl-aud-chip:focus-visible, .fl-aud-chip.sonando { border-color: var(--oro-vivo); box-shadow: 0 0 12px -4px color-mix(in srgb, var(--oro-vivo) 65%, transparent); outline: none; }
+.lx-aud-par { display: inline-flex; align-items: center; gap: 6px; vertical-align: middle; }
+.lx-fam .lx-chip-w { display: inline-flex; align-items: center; gap: 4px; }
+.tf-f.tf-aud { cursor: pointer; transition: border-color .15s, background-color .15s; border-radius: 7px; padding: 2px 5px; }
+.tf-f.tf-aud:hover, .tf-f.tf-aud.sonando { background: color-mix(in srgb, var(--oro) 16%, transparent); }
 
 /* PR #19 · Constelación 3D profunda: barra de órbita/giroscopio + pantalla completa (.cn-hud-izq, .cn-fs) */
 .cn-hud-izq { position: absolute; top: 10px; left: 10px; z-index: 3; display: inline-flex; flex-wrap: wrap; gap: 5px; pointer-events: auto; max-width: calc(100% - 146px); }
@@ -3703,11 +3750,11 @@ html.con-modal .hero .acciones > .btn,
 .cn-escena.cn-fs .cn-campo { height: 100%; min-height: 0; }
 .cn-escena.cn-fs .cn-lienzo { height: 100% !important; }
 html.cn-fs-on { overflow: hidden; }
-html.cn-fs-on header.barra, html.cn-fs-on .faro-btn, html.cn-fs-on .saltos-rap, html.cn-fs-on .adelante { opacity: 0 !important; pointer-events: none !important; }
+html.cn-fs-on header.barra, html.cn-fs-on .faro-btn, html.cn-fs-on .saltos-rap, html.cn-fs-on .adelante, html.cn-fs-on .jg-pres-pill { opacity: 0 !important; pointer-events: none !important; }
 
-/* PR #19 · Atlas Bíblico a pantalla completa (.mp-marco.mp-fs) + Ficha rápida flotante */
+/* PR #19 + PR #20 · Atlas Bíblico a pantalla completa (.mp-marco.mp-fs) + Ficha completa desplazable y ocultable */
 html.mp-fs-on { overflow: hidden; }
-html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, html.mp-fs-on .adelante { opacity: 0 !important; pointer-events: none !important; }
+html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, html.mp-fs-on .adelante, html.mp-fs-on .jg-pres-pill { opacity: 0 !important; pointer-events: none !important; }
 .mp-marco.mp-fs {
   position: fixed !important; inset: 0 !important; z-index: 126 !important;
   width: 100vw !important; height: 100dvh !important; max-width: none !important;
@@ -3724,20 +3771,42 @@ html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, 
 .mp-marco.mp-fs .mp-pie-hud { bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
 .mp-fs-ficha {
   position: absolute; left: 12px; right: 12px; bottom: max(48px, calc(46px + env(safe-area-inset-bottom, 0px))); z-index: 4;
-  max-width: 560px; margin: 0 auto; padding: 11px 14px; border-radius: 15px;
-  border: 1px solid color-mix(in srgb, var(--oro) 50%, var(--linea));
-  background: color-mix(in srgb, var(--hoja) 94%, transparent);
-  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .86);
-  display: grid; gap: 7px;
+  max-width: 560px; max-height: min(40dvh, 320px); margin: 0 auto; padding: 12px 14px; border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--oro) 52%, var(--linea));
+  background: color-mix(in srgb, var(--hoja) 96%, transparent);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .88);
+  display: grid; gap: 8px;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
 }
 .mp-fs-ficha[hidden] { display: none !important; }
-.mp-fs-f-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.mp-fs-f-cab b { font: 500 1.08rem/1.15 var(--f-display); color: var(--oro-vivo); }
-.mp-fs-f-cab small { font: 500 .74rem/1.2 var(--f-ui); color: var(--tenue); }
+.mp-fs-f-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.mp-fs-f-tit { display: grid; gap: 2px; min-width: 0; }
+.mp-fs-f-cab b { font: 500 1.12rem/1.15 var(--f-display); color: var(--oro-vivo); }
+.mp-fs-f-cab small { font: 500 .76rem/1.25 var(--f-ui); color: var(--tenue); }
+.mp-fs-oc {
+  appearance: none; flex: none; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--oro) 40%, var(--linea));
+  background: color-mix(in srgb, var(--hoja-2) 92%, transparent);
+  color: var(--tinta-2); font: 500 .74rem/1.1 var(--f-ui); cursor: pointer;
+}
+.mp-fs-oc:hover, .mp-fs-oc:focus-visible { border-color: var(--oro-vivo); color: var(--oro-vivo); outline: none; }
+.mp-fs-ficha .mp-desc { font-size: .88rem; line-height: 1.52; }
 .mp-fs-ficha .mp-cita-l { gap: 6px; }
 .mp-fs-ficha .mp-cita { padding: 5px 10px; font-size: .78rem; }
+.mp-fs-pill {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: max(48px, calc(46px + env(safe-area-inset-bottom, 0px))); z-index: 4;
+  appearance: none; display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--oro) 58%, var(--linea));
+  background: color-mix(in srgb, var(--hoja) 94%, transparent);
+  color: var(--oro-vivo); font: 500 .78rem/1.15 var(--f-ui); cursor: pointer;
+  box-shadow: 0 12px 26px -12px rgba(0, 0, 0, .82);
+}
+.mp-fs-pill[hidden] { display: none !important; }
+.mp-fs-pill:hover, .mp-fs-pill:focus-visible { border-color: var(--oro-vivo); outline: none; }
 
-/* PR #19 · Códice de lugares de museo (folio encuadernado iluminado con lomo, canto de páginas e índice dorado) */
+/* PR #19 + PR #20 · Códice de lugares de museo con hojas opacas para giro 3D real de página */
 .mp-cod-caja {
   position: relative; display: grid; gap: 14px; min-width: 0;
   padding: clamp(16px, 3vw, 24px); border-radius: 18px;
@@ -3770,7 +3839,16 @@ html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, 
 }
 .mp-cod-libro .lp-hoja {
   position: relative; padding: 16px 16px 16px 24px;
-  background: transparent;
+  background-color: var(--hoja);
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--oro) 11%, var(--hoja)) 0%, var(--hoja) 6%, var(--hoja) 95%, color-mix(in srgb, var(--oro) 9%, var(--hoja-2)) 100%);
+  backface-visibility: hidden;
+}
+:root[data-theme="light"] .mp-cod-libro .lp-hoja {
+  background-color: #fcf8ee;
+  background-image: linear-gradient(90deg, #e8dabe 0%, #fcf8ee 6%, #fbf5e7 95%, #ecdfc4 100%);
+}
+.mp-cod-libro .lp-hoja.lp-giro {
+  box-shadow: 12px 0 28px -12px rgba(0, 0, 0, .78), inset -1px 0 0 color-mix(in srgb, var(--oro) 35%, transparent);
 }
 .mp-cod-libro .lp-hoja::before, .mp-cod-libro .lp-hoja::after {
   content: ""; position: absolute; width: 16px; height: 16px;
@@ -3783,7 +3861,7 @@ html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, 
   padding-bottom: 9px; margin-bottom: 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--oro) 34%, var(--linea-2));
 }
-.mp-cod-folio-cab b { font: 600 .72rem/1.2 var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--oro); }
+.mp-cod-folio-cab b { font: 600 .76rem/1.2 var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--oro); }
 .mp-cod-folio-cab small { font: italic 400 .84rem/1.2 var(--f-texto); color: var(--tenue); }
 .mp-cod-libro .lp-lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
 @media (min-width: 760px) { .mp-cod-libro .lp-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; } }
@@ -3805,10 +3883,59 @@ html.mp-fs-on header.barra, html.mp-fs-on .faro-btn, html.mp-fs-on .saltos-rap, 
 .mp-cod-txt b { font: 500 1.04rem/1.2 var(--f-display); color: var(--tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mp-cod-fila[aria-current="true"] .mp-cod-txt b { color: var(--oro-vivo); }
 .mp-cod-txt small { font: 400 .8rem/1.3 var(--f-ui); color: var(--tenue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mp-cod-meta { display: inline-flex; align-items: center; gap: 5px; font: 500 .76rem/1 var(--f-ui); color: var(--oro); white-space: nowrap; }
+.mp-cod-meta { display: inline-flex; align-items: center; gap: 5px; font: 500 .78rem/1 var(--f-ui); color: var(--oro); white-space: nowrap; }
 .mp-cod-fila.leido .mp-cod-meta { color: #6fc08f; }
 :root[data-theme="light"] .mp-cod-fila.leido .mp-cod-meta { color: #1f6f42; }
-.mp-cod-libro .lp-pie {
-  margin-top: 2px; padding-top: 4px; gap: 6px;
-}
+.mp-cod-pie-acc { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding-top: 8px; border-top: 1px solid var(--linea-2); }
+.mp-cod-pie-acc small { font: 400 .78rem/1.3 var(--f-ui); color: var(--tenue); }
+.mp-cod-libro .lp-pie { margin-top: 2px; padding-top: 4px; gap: 6px; }
 .mp-cod-libro .lp-n { font-family: var(--f-display); font-size: .9rem; font-weight: 500; min-width: 2.1rem; height: 2.1rem; }
+
+/* PR #20 · Píldora discreta de presencia viva durante la lectura de la Escritura (solo visible si hay otros lectores o salas) */
+.jg-pres-pill {
+  position: fixed; z-index: 61; right: calc(54px + env(safe-area-inset-right, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  appearance: none; display: inline-flex; align-items: center; gap: 5px;
+  height: 30px; padding: 0 9px 0 8px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #6fc08f 48%, var(--linea));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hoja-2) 92%, transparent), color-mix(in srgb, var(--hoja) 96%, transparent));
+  color: var(--tinta); font: 600 .76rem/1 var(--f-ui); font-variant-numeric: tabular-nums;
+  cursor: pointer; opacity: .9;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, .72), inset 0 1px 0 rgba(255, 255, 255, .14);
+  transition: opacity .2s, transform .18s, border-color .18s;
+}
+.jg-pres-pill[hidden] { display: none !important; }
+.jg-pres-pill:hover, .jg-pres-pill:focus-visible { opacity: 1; border-color: #6fc08f; transform: translateY(-1px); outline: none; }
+.jg-pres-pill .p-dot { width: 7px; height: 7px; border-radius: 50%; background: #6fc08f; box-shadow: 0 0 8px rgba(111, 192, 143, .82); flex: none; }
+.jg-pres-pill svg { width: 14px; height: 14px; color: var(--oro-vivo); flex: none; }
+.jg-pres-pill.en-pie, html:not(.en-cap) .jg-pres-pill, html.contemplar .jg-pres-pill, html.con-modal .jg-pres-pill, html.jg-col-inm .jg-pres-pill { opacity: 0 !important; pointer-events: none !important; }
+@media (max-width: 340px) { .jg-pres-pill { bottom: calc(58px + env(safe-area-inset-bottom, 0px)); right: calc(52px + env(safe-area-inset-right, 0px)); } }
+.jg-pres-mod { display: grid; gap: 12px; }
+.jg-pres-mod h4 { margin: 2px 0 4px; font: 600 .76rem/1.2 var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--oro); }
+.jg-pres-mod-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.jg-pres-mod-l li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 12px; border: 1px solid var(--linea-2); background: color-mix(in srgb, var(--hoja-2) 78%, transparent); }
+.jg-pres-mod-l b { display: block; font: 600 .86rem/1.25 var(--f-ui); color: var(--tinta); }
+.jg-pres-mod-l small { display: block; font: 400 .76rem/1.3 var(--f-ui); color: var(--tenue); }
+
+/* PR #20 · Congelado universal de animaciones fuera del viewport para ahorro máximo de batería */
+.anim-fuera,
+.anim-fuera *,
+.anim-fuera::before,
+.anim-fuera::after,
+.anim-fuera *::before,
+.anim-fuera *::after { animation-play-state: paused !important; }
+
+/* PR #20 · Armonización tipográfica global (eleva etiquetas .58rem–.68rem restantes a proporciones equilibradas, respetando créditos legales) */
+.cc-et, .fp-tr small, .mv-tipo, .tl-k, .gf-burbuja small, .gb-r small, .gm-eje em,
+.go-chips span, .go-lista b i, .gc-seg span, html.contemplar .cont-lib,
+.q-orden-et, #q-hip > .q-chips .q-chip .q-hip-n, .q-tramo i, .bh-tit .es,
+.mk-sig-nota, .mk-ref small, .mk-temas-sep, .mk-cp-hex-et, .mk-cp-pal-tit,
+.apl-t small, .est-tabla a small, .sr-min, .rx-cat h5, .libs-gt, .fv-rap-et,
+.sr-mk-tit small, .nav-sin-leer, .rc-lema small, .rc-inter > small,
+.pl-pasos li em, .pl-dato-et, .pl-rk-pct small, .cn-insp-tipo, .ps-sum-r,
+.ps-blk h4, .ps-rara small, .faro-tip-et, .mp-ley, .mp-escala,
+.mp-ruta-info small, .mp-ficha-cab small, .mp-coords, .mp-citas h4, .mp-item em,
+.rr-stat small, .rr-caja-chip { font-size: .74rem; }
+.te-m, .banda-g .bc, .banda-ani p { font-size: .74rem; }
+@media (max-width: 390px) { .encab-cifras.dos .cc-et { font-size: .68rem; } }
+

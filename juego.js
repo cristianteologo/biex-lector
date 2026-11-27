@@ -2577,6 +2577,103 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
 .aj-ley-it div{display:grid;gap:1px;min-width:0}
 .aj-ley-it b{font:600 .8rem/1.2 var(--f-display);color:var(--tinta)}
 .aj-ley-it small{font:400 .68rem/1.25 var(--f-ui);color:var(--tenue)}
+
+/* PR #20 · Armonía de rejillas, botones equilibrados, foco de insignia, profundidad 2.5D/holográfica, Coloso 3–5 ataques, perfil compacto en 1 pantalla y tipografía armonizada */
+.jg-cifras.cuatro{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:640px){.jg-cifras.cuatro{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.jg-acciones{justify-content:center}
+.jg-acciones .btn{flex:0 1 auto}
+.jg-conf-c .jg-acciones{justify-content:flex-end}
+.jg-mm-cta{display:inline-flex;width:auto;justify-self:center;margin:10px auto 6px}
+.jg-mm-bl{margin:12px 0 0!important}
+.jg-mis-z{display:grid}
+.jg-aviso-foco{display:inline-flex;align-items:center;gap:6px;width:fit-content;margin:-2px 0 2px;padding:4px 11px;border-radius:999px;font:600 .72rem/1.15 var(--f-ui);letter-spacing:.03em;color:var(--oro-vivo);border:1px solid color-mix(in srgb,var(--oro-vivo) 58%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--oro) 22%,var(--hoja-2)),color-mix(in srgb,var(--oro) 9%,var(--hoja)));box-shadow:0 0 18px -6px color-mix(in srgb,var(--oro-vivo) 72%,transparent)}
+.jg-aviso-foco i{width:6px;height:6px;border-radius:50%;background:var(--oro-vivo);box-shadow:0 0 8px var(--oro-vivo);flex:none}
+:root[data-theme="light"] .jg-aviso-foco{color:#78530c;border-color:rgba(154,112,26,.55);background:linear-gradient(180deg,rgba(232,188,82,.24),rgba(232,188,82,.09))}
+.jg-fila.jg-fila-jug{cursor:pointer;transition:background-color .16s ease,box-shadow .16s ease}
+.jg-fila.jg-fila-jug:hover{background:color-mix(in srgb,var(--oro) 10%,var(--hoja-2))}
+.jg-fila.jg-fila-jug.yo:hover{background:color-mix(in srgb,var(--oro) 18%,var(--hoja-2))}
+
+/* Cosecha post-recolección: profundidad 2.5D elegante en pedestal con reflejo de bisel */
+.co-medidor{width:min(312px,82vw);aspect-ratio:240/144;border-radius:20px;border:1px solid color-mix(in srgb,var(--oro) 44%,var(--linea-2));background:radial-gradient(110% 88% at 50% 8%,color-mix(in srgb,var(--oro) 18%,transparent),transparent 66%),linear-gradient(175deg,color-mix(in srgb,var(--hoja-2) 94%,transparent),color-mix(in srgb,var(--hoja) 98%,transparent));box-shadow:inset 0 1px 0 rgba(255,248,224,.32),inset 0 -12px 22px -14px rgba(0,0,0,.64),0 24px 40px -22px rgba(0,0,0,.86);transform:perspective(660px) rotateY(calc(var(--px25,0)*6.5deg)) rotateX(calc(var(--py25,0)*-5deg));transition:transform .16s ease-out;transform-style:preserve-3d;filter:none;overflow:hidden}
+.co-medidor::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(124deg,rgba(255,248,224,.18) 0%,transparent 34%,transparent 64%,color-mix(in srgb,var(--oro) 16%,transparent) 100%);transform:translate3d(calc(var(--px25,0)*10px),calc(var(--py25,0)*6px),0)}
+:root[data-theme="light"] .co-medidor{box-shadow:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -10px 18px -12px rgba(80,58,20,.22),0 20px 36px -22px rgba(60,42,14,.38)}
+
+/* Fruto del espíritu holográfico + profundidad + 3× giroscopio (copa del Árbol y tarjeta del fruto) */
+.ap-gr-b{width:17.8%;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;transform:translate(-50%,-50%) perspective(480px) rotateY(calc(var(--px25,0)*16.5deg)) rotateX(calc(var(--py25,0)*-14.5deg)) translate3d(calc(var(--px25,0)*5px),calc(var(--py25,0)*4px),0);transition:transform .14s ease-out;transform-style:preserve-3d;overflow:visible}
+.ap-gr-b svg{position:relative;z-index:1;width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.62))}
+.ap-gr-som{position:absolute;inset:12%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.7),transparent 74%);transform:translate3d(calc(var(--px25,0)*-7px),calc(6px + var(--py25,0)*-5px),0);z-index:0}
+.ap-gr-holo,.fr-holo{position:absolute;inset:5%;border-radius:50%;pointer-events:none;z-index:2;mix-blend-mode:screen;opacity:.64;background:conic-gradient(from calc(125deg + var(--px25,0)*110deg),rgba(255,104,136,.14),rgba(255,236,158,.54),rgba(116,226,255,.46),rgba(226,148,255,.44),rgba(255,222,126,.52),rgba(255,104,136,.14)),linear-gradient(calc(128deg + var(--px25,0)*38deg),transparent 22%,rgba(255,252,240,.52) calc(45% + var(--px25,0)*16%),rgba(148,232,255,.32) calc(52% + var(--px25,0)*16%),transparent 74%),radial-gradient(circle at calc(36% + var(--px25,0)*28%) calc(28% + var(--py25,0)*26%),rgba(255,252,240,.72),rgba(255,214,142,.22) 38%,transparent 68%);-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 78%);mask-image:radial-gradient(circle,#000 58%,transparent 78%);transition:opacity .2s}
+.fr-gr{perspective:560px;transform:perspective(560px) rotateY(calc(var(--px25,0)*16.5deg)) rotateX(calc(var(--py25,0)*-14.5deg)) translate3d(calc(var(--px25,0)*6px),calc(var(--py25,0)*4px),0);transition:transform .14s ease-out;transform-style:preserve-3d}
+.fr-gr-som{position:absolute;left:14%;right:14%;bottom:-4%;height:18%;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(closest-side,rgba(0,0,0,.64),rgba(0,0,0,.16) 60%,transparent);transform:translate3d(calc(var(--px25,0)*-10px),calc(var(--py25,0)*-6px),0)}
+:root[data-theme="light"] .fr-gr-som{background:radial-gradient(closest-side,rgba(56,22,28,.32),transparent)}
+.fr-gr svg{z-index:1;filter:drop-shadow(0 12px 18px rgba(0,0,0,.44))}
+.fr-holo{inset:3%;opacity:.6}
+:root[data-theme="light"] .fr-holo,:root[data-theme="light"] .ap-gr-holo{opacity:.44;mix-blend-mode:soft-light}
+html[data-mov="no"] .ap-gr-b,html[data-mov="no"] .fr-gr,html[data-mov="no"] .co-medidor{transform:none!important}
+html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
+@media (prefers-reduced-motion:reduce){.fr-gr,.co-medidor{transform:none!important}.ap-gr-b{transform:translate(-50%,-50%)!important}}
+
+/* Progreso por libro: destello holográfico perlado sutil */
+.lk-lib-a{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,248,224,.1)}
+.lk-lib-a::after{content:"";position:absolute;inset:-10% -35%;pointer-events:none;opacity:.34;background:linear-gradient(112deg,transparent 30%,rgba(255,238,184,.22) 45%,rgba(164,218,255,.16) 52%,rgba(255,220,168,.18) 58%,transparent 72%);transform:translate3d(calc(var(--px25,0)*26%),0,0);transition:transform .22s ease-out}
+.lk-lib-l li.hecho .lk-lib-a{box-shadow:inset 0 1px 0 rgba(255,248,224,.28),0 8px 20px -14px color-mix(in srgb,var(--oro) 60%,transparent)}
+.lk-lib-l li.hecho .lk-lib-a::after{opacity:.52}
+.lk-lib-bar i{background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo) 65%,#fff4cc)}
+
+/* El Coloso: profundidad 2.5D holográfica sutil, encuadre UHD 1024×1024 y rejilla adaptable de 3 a 5 habilidades en modo inmersivo */
+.jg-col-25d{transform:perspective(920px) translate3d(calc(var(--px25,0)*-5.5px),calc(var(--py25,0)*-4px),0) rotateY(calc(var(--px25,0)*4deg)) rotateX(calc(var(--py25,0)*-3deg))}
+.jg-col-art{object-position:50% 28%}
+.jg-col-holo{position:absolute;inset:-6%;pointer-events:none;z-index:1;mix-blend-mode:screen;opacity:.24;background:linear-gradient(calc(118deg + var(--px25,0)*28deg),transparent 22%,rgba(255,214,126,.22) 42%,rgba(138,198,255,.16) 52%,rgba(255,180,120,.18) 60%,transparent 78%);transform:translate3d(calc(var(--px25,0)*14px),calc(var(--py25,0)*8px),0);transition:transform .18s ease-out}
+.jg-col-escena.inm .jg-col-habs.mas-de-3{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3>:last-child:nth-child(odd){grid-column:1/-1}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab{padding:5px 8px;gap:3px;border-radius:11px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-top{grid-template-columns:26px minmax(0,1fr) auto;gap:6px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-sig{width:26px;height:26px;border-radius:8px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-sig svg{width:15px;height:15px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-id b{font-size:.82rem}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-dmg{font-size:.92rem}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-go{padding-top:3px;font-size:.66rem}
+
+/* Perfil público compacto en 1 sola pantalla móvil sin desplazamiento vertical */
+.jg-jp{gap:9px;padding:0}
+.jg-jp-hero{gap:7px;padding:12px 13px 10px;border-radius:16px;justify-items:stretch;text-align:left}
+.jg-jp-top{position:relative;z-index:1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:11px}
+.jg-jp-emb-wrap{width:64px;height:64px}
+.jg-jp-aro.b{inset:5px}
+.jg-jp-emb{width:50px;height:50px}
+.jg-jp-emb .jg-e{width:48px;height:48px;font-size:1.4rem}
+.jg-jp-id{gap:2px}
+.jg-jp-id h3{font-size:1.22rem;line-height:1.12}
+.jg-jp-id .jg-mini{font-size:.76rem;line-height:1.28}
+.jg-jp-hero .jg-chips{justify-content:flex-start;gap:4px;margin-top:4px}
+.jg-jp-hero .jg-chip{font-size:.7rem;padding:3px 7px}
+.jg-jp-track{gap:4px;margin-top:2px;padding-top:7px}
+.jg-jp-bar{height:6px}
+.jg-jp-vivo,.jg-jp-ult{padding:7px 10px;font-size:.76rem;border-radius:11px}
+.jg-jp-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+@media (max-width:300px){.jg-jp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.jg-jp-grid li{gap:2px;padding:8px 5px 7px;border-radius:12px}
+.jg-jp-ico{width:18px;height:18px;margin-bottom:1px}
+.jg-jp-ico svg{width:11px;height:11px}
+.jg-jp-grid b{font-size:.98rem}
+.jg-jp-gemas{grid-template-columns:repeat(6,5px);gap:3.5px;margin-top:2px}
+.jg-jp-gemas i{width:5px;height:5px}
+.jg-jp .jg-ben{gap:7px;padding:9px 11px;border-radius:13px}
+.jg-jp .jg-ben-fila{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+@media (min-width:440px){.jg-jp .jg-ben-fila{grid-template-columns:1.35fr repeat(3,minmax(0,1fr))}}
+.jg-jp .jg-ben-fila .btn{width:100%;justify-content:center;padding:6px 8px;font-size:.74rem;min-height:32px}
+.jg-jp .jg-ben-est{font-size:.74rem;line-height:1.32}
+.jg-jp-pie{padding:7px 11px;border-radius:11px;font-size:.74rem;gap:4px 10px}
+
+/* Armonización tipográfica en Escudriña (eleva etiquetas .54rem–.68rem a proporciones legibles) */
+.jg-fila .x small,.jg-mm-meta,.jg-mm-est,.jg-col-imp-tag,.jg-col-post-br,.jg-col-brecha-tag,
+.jg-col-badge,.jg-col-fase,.jg-col-cg-tit span,.jg-col-mult,.jg-col-racha,.jg-col-ult small,
+.jg-pp-prox-t small,.ap-vp-3c small,.ap-vp-3c span,.ap-vp-hchip,.aj-ent-ey,.aj-ent-chip,
+.aj-fig-n,.aj-fig-elo,.aj-sello,.jg-jp-pasos,.jg-jp-grid span,.jg-jp-grid small,
+.lk-lib-c,.lk-lib-ir,.lk-proy-tit,.lk-proy-corte,.lk-proy-hero-izq small,.lk-proy-cel small,
+.av-tit,.av-badge,.av-meta-r,.jg-vl-rot,.jg-qz-dif,.jg-ben-cab b{font-size:.72rem}
+.jg-piedra b{font-size:.72rem}
 `;
 
   // ------------------------------------------------------------------ vistas
@@ -3417,54 +3514,92 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   const TIT = { hoy: ["Hoy", "Tu lectura y tus misiones"], tesoro: ["Tesoro", "Lo que has hallado leyendo"], mundo: ["Mundo", "Liga, misión mundial y clasificaciones"],
     juntos: ["Juntos", "Tu compañía y las salas de lectura"], mas: ["Más", "Tu cuenta, tu avance y tus ideas"], arbol: ["Tu Árbol", "Un centro de poder: raíces, corazón, copa y su fruto"], guia: ["Cómo se juega", "Paso a paso y a tu ritmo"] };
   let MU = null;
+  let FOCO_INSIG = null;
   function muelle(sec) {
     const raiz = document.documentElement;
     if (sec == null) { if (MU) { MU.remove(); MU = null; } raiz.classList.remove("jg-con-muelle"); return; }
     if (!MU) {
       MU = h("nav", { class: "jg-muelle", "aria-label": "Secciones de Escudriña" }, h("span", { class: "luz", "aria-hidden": "true" }),
-        SECC.map(([k, t, ic]) => h("a", { href: "#/escudrina" + (k === "hoy" ? "" : "/" + k), "data-s": k, onclick: () => vibrar(8), onpointerdown: k === "arbol" ? () => { if (S.token) cargarPoder("previo").catch(() => {}); } : null }, ico(ic), h("span", { text: t }))));
+        SECC.map(([k, t, ic]) => h("a", {
+          href: "#/escudrina" + (k === "hoy" ? "" : "/" + k),
+          "data-s": k,
+          onclick: (e) => {
+            vibrar(8);
+            const el = e.currentTarget;
+            if (el.hasAttribute("data-n")) FOCO_INSIG = { sec: k, txt: el.getAttribute("data-foco") || el.title || "" };
+          },
+          onpointerdown: k === "arbol" ? () => { if (S.token) cargarPoder("previo").catch(() => {}); } : null,
+        }, ico(ic), h("span", { text: t }))));
       document.body.append(MU);
     }
     raiz.classList.add("jg-con-muelle");
     MU.style.setProperty("--i", String(Math.max(0, SECC.findIndex((s) => s[0] === sec))));
     for (const a of MU.querySelectorAll("a")) { const on = a.getAttribute("data-s") === sec; a.classList.toggle("act", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
-    // Insignias (BiEx, 12-nov-2026): al entrar en la sección, su zona se ilumina y la insignia se apaga; vuelve solo
-    // cuando cambia lo que avisa (misiones de un día nuevo; el recordatorio de asegurar la cuenta, una vez por día)
+    // Insignias (BiEx, 12-nov-2026 + PR #20): al entrar en la sección, su tarjeta destino se ilumina y muestra un aviso discreto del origen del número
     const y = S.yo, dia = (y && y.hoy && y.hoy.f) || "", faltan = y && Array.isArray(y.mis) ? y.mis.filter((m) => !m.hecha).length : 0;
     const visto = A.store.get("jg:insig", null) || {};
-    const insignia = (k, firma, val, titulo) => {
+    const clicTxt = FOCO_INSIG && FOCO_INSIG.sec === sec ? FOCO_INSIG.txt : "";
+    if (FOCO_INSIG && FOCO_INSIG.sec === sec) FOCO_INSIG = null;
+    const insignia = (k, firma, val, titulo, focoTxt) => {
       const a = MU.querySelector('a[data-s="' + k + '"]'); if (!a) return;
-      if (!firma) { a.removeAttribute("data-n"); a.removeAttribute("title"); return; }
-      if (sec === k) { a.removeAttribute("data-n"); if (visto[k] !== firma) { visto[k] = firma; A.store.set("jg:insig", visto); resaltarZona(k); } return; }
-      if (visto[k] === firma) { a.removeAttribute("data-n"); return; }
-      a.setAttribute("data-n", val); a.title = titulo;
+      if (!firma) { a.removeAttribute("data-n"); a.removeAttribute("title"); a.removeAttribute("data-foco"); return; }
+      if (sec === k) {
+        a.removeAttribute("data-n"); a.removeAttribute("data-foco");
+        if (visto[k] !== firma || clicTxt) {
+          visto[k] = firma; A.store.set("jg:insig", visto);
+          resaltarZona(k, clicTxt || focoTxt || titulo);
+        }
+        return;
+      }
+      if (visto[k] === firma) { a.removeAttribute("data-n"); a.removeAttribute("data-foco"); return; }
+      a.setAttribute("data-n", val); a.title = titulo; a.setAttribute("data-foco", focoTxt || titulo);
     };
-    insignia("hoy", faltan ? "m:" + dia : "", String(faltan), "Misiones por cumplir");
-    insignia("mas", y && !y.asegurado ? "a:" + dia : "", "!", "Asegura tu avance");
-    insigniaMundo(sec);
-    insigniaSalas();
+    const txtMis = faltan === 1 ? "1 misión pendiente hoy" : faltan + " misiones pendientes hoy";
+    insignia("hoy", faltan ? "m:" + dia : "", String(faltan), "Misiones por cumplir", txtMis);
+    insignia("mas", y && !y.asegurado ? "a:" + dia : "", "!", "Asegura tu avance", "Pendiente · asegura tu cuenta");
+    insigniaMundo(sec, clicTxt);
+    insigniaSalas(sec, clicTxt);
   }
-  function insigniaMundo(secAct) {
+  function insigniaMundo(secAct, clicTxt) {
     const a = MU && MU.querySelector('a[data-s="mundo"]'); if (!a) return;
     const snap = COLOSO_CACHE.d || (A && A.store && A.store.get("jg:coloso_snap", null));
     const colActivo = !!(snap && snap.estado === "activo" && (snap.vida | 0) > 0);
     const cg = colActivo ? Math.max(0, snap.cargas | 0) : 0;
     const enMundo = secAct ? secAct === "mundo" : a.classList.contains("act");
-    if (enMundo || !colActivo || cg <= 0) {
-      a.removeAttribute("data-n"); a.removeAttribute("title");
+    const focoTxt = cg > 0 ? plural(cg, "carga lista contra El Coloso", "cargas listas contra El Coloso") : "";
+    if (enMundo) {
+      const tenia = a.hasAttribute("data-n");
+      a.removeAttribute("data-n"); a.removeAttribute("title"); a.removeAttribute("data-foco");
+      if (colActivo && cg > 0 && (tenia || clicTxt)) resaltarZona("mundo", clicTxt || focoTxt);
+      return;
+    }
+    if (!colActivo || cg <= 0) {
+      a.removeAttribute("data-n"); a.removeAttribute("title"); a.removeAttribute("data-foco");
       return;
     }
     a.setAttribute("data-n", String(cg));
     a.title = "El Coloso de la Tradición activo · " + plural(cg, "carga lista", "cargas listas");
+    a.setAttribute("data-foco", focoTxt);
   }
-  function resaltarZona(k) {
+  function resaltarZona(k, texto) {
     setTimeout(() => {
-      const zonas = [...document.querySelectorAll(".jg .jg-tarjeta")];
-      const z = k === "hoy" ? zonas.find((t) => /Misiones de hoy/.test((t.querySelector("h2") || {}).textContent || "")) : zonas.find((t) => t.classList.contains("jg-asegurar") || /Asegura/.test((t.querySelector("h2") || {}).textContent || ""));
+      const zonas = [...document.querySelectorAll(".jg .jg-coloso, .jg .jg-tarjeta")];
+      const titDe = (t) => ((t.querySelector("h2") || {}).textContent || "");
+      const z = k === "hoy" ? zonas.find((t) => /Misiones de hoy/i.test(titDe(t)))
+        : k === "mundo" ? (zonas.find((t) => t.classList.contains("jg-coloso") || /Coloso/i.test(titDe(t))) || zonas.find((t) => /Misión mundial/i.test(titDe(t))))
+        : k === "juntos" ? zonas.find((t) => /Salas abiertas/i.test(titDe(t)))
+        : zonas.find((t) => t.classList.contains("jg-asegurar") || /Asegura/i.test(titDe(t)));
       if (!z) return;
+      for (const prev of document.querySelectorAll(".jg .jg-aviso-foco")) prev.remove();
+      if (texto) {
+        const pill = h("span", { class: "jg-aviso-foco", role: "status" }, h("i", { "aria-hidden": "true" }), h("span", { text: texto }));
+        const h2 = z.querySelector("h2");
+        if (h2 && h2.parentNode === z) h2.after(pill);
+        else z.prepend(pill);
+      }
       const r = z.getBoundingClientRect(); if (r.top > innerHeight * 0.8 || r.bottom < 80) z.scrollIntoView({ block: "center", behavior: sinAnim() ? "auto" : "smooth" });
       z.classList.add("jg-resalta"); setTimeout(() => z.classList.remove("jg-resalta"), 2600);
-    }, 420);
+    }, 360);
   }
   window.addEventListener("hashchange", () => { if (!/^#\/escudrina\/coloso(\/|$)/.test(location.hash)) document.documentElement.classList.remove("jg-col-inm"); if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; terminarVista(); } });
   function cabeceraJuego(sec) {
@@ -3496,7 +3631,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (y.dob > 0) extra.push("Experiencia doble: " + horas(y.dob) + " de lectura (no vence).");
     if (y.imp && y.imp.ms > 0) extra.push("Impulso ×" + String(y.imp.f).replace(".", ",") + ": " + horas(y.imp.ms) + " de lectura.");
     extra.push("Tu mejor marca de perseverancia: " + plural(y.persMejor || 0, "día", "días") + ". Cada 7 días seguidos ganas un descanso que cubre un día sin lectura y media pieza de Renuevo (con dos medias, el Renuevo sale sin dracmas).");
-    return tarjeta("Tus reservas", ico("llama"), h("div", { class: "jg-cifras" },
+    return tarjeta("Tus reservas", ico("llama"), h("div", { class: "jg-cifras cuatro" },
       h("div", {}, cifra(y.dr), h("span", { text: "dracmas" })),
       h("div", {}, cifra(y.pers), h("span", { text: y.pers === 1 ? "día de perseverancia" : "días de perseverancia" })),
       h("div", {}, h("b", { text: String(y.desc || 0) + " de 3" }), h("span", { text: "descansos guardados" })),
@@ -3511,7 +3646,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const lugar = y.lugar || {}, zona = h("div", { class: "jg-cl2-z", "aria-live": "polite" }, h("p", { class: "cargando", text: "Cargando…" }));
     let vista = A.store.get("jg:clVista", "clas") === "pres" ? "pres" : "clas", alto = 0;
     const icoCiu = () => h("span", { class: "jg-ciu", "aria-hidden": "true" }, A.svg('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.4" fill="currentColor"/>'));
-    const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+    const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila jg-fila-jug" + (x.yo ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
       h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x" }, fmt(x.xp), h("small", { text: "exp." }))); };
     const filaC = (x) => h("li", { class: "jg-fila" + (x.ciudad === lugar.ciudad && x.pais === lugar.pais ? " yo" : "") + (x.p <= 3 ? " p" + x.p : "") }, h("span", { class: "p", text: String(x.p) }), icoCiu(),
       h("span", { class: "n" }, h("b", { text: x.ciudad }), h("small", { text: [nombrePais(x.pais), x.top ? "n.º 1: " + x.top : ""].filter(Boolean).join(" · ") })), h("span", { class: "x" }, fmt(x.pr), h("small", { text: "pts." })));
@@ -3566,11 +3701,11 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     else if (sec === "juntos") partes = [A.guiaSeccion ? A.guiaSeccion("juntos") : null, salaInv, tarjetaSalasAbiertas(), h("div", { class: "jg-dos" }, tarjetaSala(y), tarjetaCompania(y)), tarjetaCampana(y)];
     else if (sec === "mas") partes = [y.asegurado ? null : tarjetaAsegurar(false),
       tarjeta("Tu cuenta", ico("persona"), h("p", { text: "Tu emblema, tu apodo, tus formas de entrar y tus preferencias." }),
-        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
+        h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/cuenta" }, ico("persona"), h("span", { text: "Cuenta, emblema y preferencias" })))),
       tarjetaOpinion(true), notaConstruccion()];
     else partes = [tarjetaPerfil(y), y.apodoProvisional ? tarjetaApodo(true) : null, botonSeguir(), A.guiaSeccion ? A.guiaSeccion("escudrina") : null, pend,
       A.store.get("jg:guia", 0) ? null : h("div", { class: "jg-aviso" }, h("b", { text: "¿Primera vez aquí? " }), "Conoce cómo se juega en un minuto, paso a paso. ", h("a", { href: "#/escudrina/guia", text: "Ver cómo se juega" })),
-      h("div", { class: "jg-dos" }, h("div", { class: "jg" }, tarjetaMisiones(y), tarjetaAjedrez(true)), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
+      h("div", { class: "jg-dos" }, h("div", { class: "jg" }, tarjetaMisiones(y)), h("div", { class: "jg" }, tarjetaHoy(y), tarjetaNovedades(y))),
       salaInv,
       y.practica ? h("div", { class: "jg-aviso" }, h("b", { text: "Práctica antes del lanzamiento. " }),
         "Todo funciona de verdad. El " + fechaDia(y.lanzamiento) + " empieza el juego oficial y nada se pierde del todo: conservarás, de forma aleatoria, " + textoConserva() + " de tu experiencia, tus dracmas y tus hallazgos de práctica (los porcentajes altos son los más difíciles de alcanzar). Se conservan enteros tu cuenta, tu apodo, tu número de Primicia, tu escalera, tu árbol de la siembra, tu perseverancia y tus horas de experiencia doble; y por inscribirte antes recibirás 3 horas más.") : null];
@@ -3750,7 +3885,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     ["fuerza", "Fuerza plena", 4, 620, "+55 % por carga · descarga decisiva amplificada por tu Árbol."],
   ];
   // Sigilos vectoriales de reliquia (cero cruces, cero estrellas de cinco puntas, cero rayos solares)
-  function colosoSigilo(id) {
+  function colosoSigilo(id, idx) {
     if (id === "palabra") {
       return A.svg(
         '<path d="M12 2.5C15.6 6.8 17.5 11.4 17.5 15.6c0 2.6-1.9 4.9-5.5 5.9-3.6-1-5.5-3.3-5.5-5.9 0-4.2 1.9-8.8 5.5-13.1Z" fill="currentColor" fill-opacity=".16" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' +
@@ -3763,6 +3898,22 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         '<polygon points="12,2.2 19,5.1 21.8,12 19,18.9 12,21.8 5,18.9 2.2,12 5,5.1" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>' +
         '<polygon points="12,6.2 16.8,12 12,17.8 7.2,12" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>' +
         '<circle cx="12" cy="12" r="1.9" fill="currentColor"/>',
+        "0 0 24 24"
+      );
+    }
+    if (idx === 3 || id === "eco" || id === "testigo") {
+      return A.svg(
+        '<polygon points="12,2.8 19.8,7.3 19.8,16.7 12,21.2 4.2,16.7 4.2,7.3" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>' +
+        '<circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.4"/>' +
+        '<circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+        "0 0 24 24"
+      );
+    }
+    if (idx >= 4 || id === "verdad" || id === "sello") {
+      return A.svg(
+        '<path d="M4.2 12a7.8 7.8 0 0 1 15.6 0M7.2 12a4.8 4.8 0 0 1 9.6 0" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/>' +
+        '<path d="M5.5 16.4h13M8.2 19.4h7.6" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/>' +
+        '<circle cx="12" cy="12.2" r="2" fill="currentColor"/>',
         "0 0 24 24"
       );
     }
@@ -4151,7 +4302,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     const filasTop = (lista) => lista.slice(0, 15).map((x, idx) => {
       const ap = x.apodo || x.a || "Lector", [l, col] = embDe(x.emb || x.e);
       const pts = x.aporte != null ? x.aporte : (x.dano != null ? x.dano : (x.pts | 0));
-      return h("li", { class: "jg-fila" + (x.yo || (S.yo && ap === S.yo.apodo) ? " yo" : "") },
+      return h("li", { class: "jg-fila jg-fila-jug" + (x.yo || (S.yo && ap === S.yo.apodo) ? " yo" : "") },
         h("span", { class: "p", text: String(idx + 1) }),
         emblema(l, col, x.marco || x.m || 0, x.foto || x.f),
         h("span", { class: "n" }, nombreClicable(ap), h("small", { text: x.nivel ? "nivel " + x.nivel + (x.poder != null ? " · poder " + fmt(x.poder) : "") : "participante" })),
@@ -4186,7 +4337,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         h("div", { class: "jg-col-25d" },
           h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
           h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
-          h("div", { class: "jg-col-velo b", "aria-hidden": "true" })));
+          h("div", { class: "jg-col-velo b", "aria-hidden": "true" }),
+          h("div", { class: "jg-col-holo", "aria-hidden": "true" })));
       const premioTxt = premioColosoTxt(c.premio);
       let escenaRef = null;
       const btnInm = h("button", { type: "button", class: "jg-col-inm-btn", "aria-pressed": "false", hidden: derrotado || cargas <= 0, text: "✕ Salir de arena", onclick: (e) => { e.stopPropagation(); const ahoraOn = document.documentElement.classList.contains("jg-col-inm"); inmManualOff = ahoraOn; aplicarInm(escenaRef, btnInm, !ahoraOn); } });
@@ -4518,7 +4670,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         ultBar,
         postBar,
         resCaja,
-        (habsWrap = h("div", { class: "jg-col-habs" }, habsFuente.map(([id, nom, cost, base], idx) => {
+        (habsWrap = h("div", { class: "jg-col-habs" + (habsFuente.length >= 4 ? " mas-de-3" : "") }, habsFuente.map(([id, nom, cost, base], idx) => {
           const est = Math.round(base * mult);
           const lista = cargas >= cost;
           const faltaCg = Math.max(0, cost - cargas);
@@ -4527,9 +4679,22 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
           const dots = h("span", { class: "jg-col-hab-dots", "aria-hidden": "true" }, Array.from({ length: Math.min(6, cost) }, () => h("i", {})));
           const tagBr = h("span", { class: "jg-col-brecha-tag", hidden: !esBrecha, text: "Brecha" });
           const goTxt = h("span", { text: lista ? "Enfocar ataque" : "Faltan " + plural(faltaCg, "carga", "cargas") });
-          const bt = h("button", { class: "jg-col-hab " + tier + (lista ? " listo" : "") + (esBrecha ? " brecha" : ""), type: "button", disabled: !lista, onclick: () => iniciarResonancia(id, nom, bt.classList.contains("brecha")) },
+          const bt = h("button", {
+            class: "jg-col-hab " + tier + (lista ? " listo" : "") + (esBrecha ? " brecha" : ""),
+            type: "button",
+            disabled: !lista,
+            onclick: () => {
+              if (!document.documentElement.classList.contains("jg-col-inm")) {
+                inmManualOff = false;
+                aplicarInm(escenaRef, btnInm, true);
+                A.avisar("Modo inmersivo activado · toca tu ataque");
+                return;
+              }
+              iniciarResonancia(id, nom, bt.classList.contains("brecha"));
+            },
+          },
             h("div", { class: "jg-col-hab-top" },
-              h("span", { class: "jg-col-sig", "aria-hidden": "true" }, colosoSigilo(id)),
+              h("span", { class: "jg-col-sig", "aria-hidden": "true" }, colosoSigilo(id, idx)),
               h("span", { class: "jg-col-hab-id" },
                 h("b", { text: nom }),
                 h("span", { class: "jg-col-hab-cost" }, dots, h("span", { text: plural(cost, "carga", "cargas") }))),
@@ -5896,7 +6061,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       '<path d="M558 266C564 278 576 280 583 271C574 265 566 264 558 266Z" fill="#d6a540" stroke="#4a3210" stroke-opacity=".62" stroke-width=".9"/>' +
       '</g>';
     vida.append(h("i", { class: "ap-gr-v", style: pc(GR_X, GR_Y) + ";--o:" + Math.min(1, 0.35 + gr.tot / 40).toFixed(2) }));
-    const el = A.svg('<defs>' + gr.defs + '<radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
+    const el = A.svg('<defs><radialGradient id="ap-halo" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#f5c64e" stop-opacity=".34"/><stop offset=".55" stop-color="#b9862f" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>' +
       '<radialGradient id="ap-halo2"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#f5c64e" stop-opacity="0"/></radialGradient>' +
       '<linearGradient id="ap-tronco" x1="0" x2="1"><stop offset="0" stop-color="#4a3415"/><stop offset=".45" stop-color="#b8873a"/><stop offset=".6" stop-color="#e2b55a"/><stop offset="1" stop-color="#3b2a10"/></linearGradient>' +
       '<linearGradient id="ap-oro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2c4"/><stop offset=".5" stop-color="#f2c14e"/><stop offset="1" stop-color="#a8701a"/></linearGradient>' +
@@ -5908,7 +6073,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       '<path d="M488 790C476 700 478 600 490 500M512 792C524 700 522 600 510 500M500 800V520" fill="none" stroke="#2a1d0a" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>' +
       '<path d="M430 818C462 796 478 786 500 776 522 786 538 796 570 818Z" fill="#3b2a10"/><ellipse cx="500" cy="818" rx="300" ry="26" fill="url(#ap-halo2)" opacity=".55"/>' +
       '<g class="ap-ramas" fill="none" stroke="url(#ap-tronco)" stroke-linecap="round">' + ramas + "</g>" + '<g class="ap-hojas" fill="#f7d77c">' + luces + "</g>" + frut +
-      ramita + '<g class="ap-granada" transform="translate(' + GR_X + " " + GR_Y + ')">' + gr.cuerpo + "</g>" + ramasFrente +
+      ramita + ramasFrente +
       '<line x1="40" y1="812" x2="960" y2="812" stroke="url(#ap-oro)" stroke-opacity=".35" stroke-width="2"/>' + raices + med + corazon, "0 0 1000 1110");
     el.setAttribute("class", "ap-svg"); el.setAttribute("role", "img");
     el.setAttribute("aria-label", "Tu árbol: poder " + txtPoder + ", nivel " + nivel + ", " + Math.round(p * 100) + " % hacia el siguiente; " + claves.map((k) => nombres[k] + " " + (ef[k] || 0)).join(", ") + (frutos ? "; " + plural(frutos, "fruto de tu siembra", "frutos de tu siembra") : "") + "; en la copa, la granada del fruto del espíritu con " + plural(gr.tot, "nivel", "niveles"));
@@ -5939,7 +6104,13 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       sv.remove();
     } catch (e) { /* sin savia */ }
     savia.append(h("b", { class: "ap-bebe" }));
-    const verFruto = h("button", { class: "ap-gr-b", type: "button", style: pc(GR_X, GR_Y), "aria-label": "Ver el fruto del espíritu", onclick: () => { const t = document.getElementById("jg-fruto"); if (t) t.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" }); } });
+    // PR #20 · Granada viva holográfica 3D en la copa con respuesta 3× al giroscopio
+    const grSvg = A.svg("<defs>" + gr.defs + "</defs>" + gr.cuerpo, "-90 -90 180 180");
+    grSvg.setAttribute("aria-hidden", "true");
+    const verFruto = h("button", { class: "ap-gr-b", type: "button", style: pc(GR_X, GR_Y), "aria-label": "Ver el fruto del espíritu", onclick: () => { if (window.BiEx25D && window.BiEx25D.pedirPermiso) window.BiEx25D.pedirPermiso(); const t = document.getElementById("jg-fruto"); if (t) t.scrollIntoView({ behavior: sinAnim() ? "auto" : "smooth", block: "start" }); } },
+      h("span", { class: "ap-gr-som", "aria-hidden": "true" }),
+      grSvg,
+      h("span", { class: "ap-gr-holo", "aria-hidden": "true" }));
     const caja = h("div", { class: "ap-arbol" }, el, vida, savia, verFruto);
     if (window.ResizeObserver) { const ro = new ResizeObserver(() => { const w = caja.clientWidth; if (w) savia.style.setProperty("--k", (w / 1000).toFixed(4)); }); ro.observe(caja); }
     caja._anims = saviaA;
@@ -6277,8 +6448,17 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
   function tarjetaFruto(y, P) {
     const defs = P.def && P.def.fruto, fr = (P.av && P.av.fr) || {}; if (!Array.isArray(defs)) return null;
     const caja = h("div", { class: "fr-gr" }), desc = h("p", { class: "fr-desc", "aria-live": "polite" });
-    const pintar = (sel) => { const g = granadaSVG(fr, 80, sel), el = A.svg("<defs>" + g.defs + "</defs>" + g.cuerpo, "-108 -108 216 216"); el.setAttribute("role", "img");
-      el.setAttribute("aria-label", "La granada del fruto del espíritu: " + defs.map((d) => d[1] + " nivel " + ((fr[d[0]] || {}).n | 0)).join(", ")); caja.classList.toggle("elige", !!sel); caja.replaceChildren(el); };
+    const pintar = (sel) => {
+      const g = granadaSVG(fr, 80, sel), el = A.svg("<defs>" + g.defs + "</defs>" + g.cuerpo, "-108 -108 216 216");
+      el.setAttribute("role", "img");
+      el.setAttribute("aria-label", "La granada del fruto del espíritu: " + defs.map((d) => d[1] + " nivel " + ((fr[d[0]] || {}).n | 0)).join(", "));
+      caja.classList.toggle("elige", !!sel);
+      caja.replaceChildren(
+        h("span", { class: "fr-gr-som", "aria-hidden": "true" }),
+        el,
+        h("span", { class: "fr-holo", "aria-hidden": "true" }));
+    };
+    caja.addEventListener("pointerdown", () => { if (window.BiEx25D && window.BiEx25D.pedirPermiso) window.BiEx25D.pedirPermiso(); }, { passive: true });
     const rej = h("ul", { class: "fr-rej" });
     const ver = (d, li) => {
       const [k, n, crece, efecto, c] = d, x = fr[k] || { p: 0, n: 0, a: 0, b: 10 }, falta = Math.max(0, x.b - x.p), atr = k === "pl" || k === "cf";
@@ -7706,6 +7886,8 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     FIG_PREV = suave ? zona.querySelector(".ser-in") : null;
     const lienzo = (lienzoV && lienzoV.dataset.sig === sigA) ? lienzoV : (CACHE_ARBOL.sig === sigA && CACHE_ARBOL.el && !CACHE_ARBOL.el.isConnected) ? CACHE_ARBOL.el : (CACHE_ARBOL = { sig: sigA, el: h("div", { class: "ap-lienzo", "data-sig": sigA }, arbolPoder(yy, av, frutos)) }).el;
     const heroe = h("section", { class: "ap-heroe" }, lienzo, datos);
+    heroe.addEventListener("pointerdown", () => { if (window.BiEx25D && window.BiEx25D.pedirPermiso) window.BiEx25D.pedirPermiso(); }, { passive: true });
+    if (window.BiEx25D && window.BiEx25D.refrescar) window.BiEx25D.refrescar();
     const tarjetas = [heroe, ...[tarjetaCosecha(yy, rehacer), tarjetaFruto(yy, P), tarjetaAvance(yy, P)].filter(Boolean), tarjetaAtributos(yy, P, rehacer), h("div", { class: "jg-dos ap-dos" }, tarjetaArmadura(yy, P, rehacer), tarjetaTienda(yy, P, rehacer))];
     FIG_PREV = null;
     if (suave) {
@@ -7746,7 +7928,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
         animarCifras(zona);
       });
     }
-    return tarjeta("Árbol de la siembra", ico("arbol"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/arbol" }, ico("arbol"), h("span", { text: "Ver mi árbol" }))));
+    return tarjeta("Árbol de la siembra", ico("arbol"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/arbol" }, ico("arbol"), h("span", { text: "Ver mi árbol" }))));
   }
   async function pintarArbol(cont, raiz) {
     document.title = "Árbol de la siembra · Escudriña · BiEx";
@@ -8215,12 +8397,12 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
       comprobarAdelantamientos("clas:" + q.ambito + ":" + q.periodo + ":" + r.rango, r.lista, ambTxt, "#/escudrina/clasificacion", r.yo);
       const titulo = h("p", { class: "jg-mini", text: (q.periodo === "semana" ? "Esta semana (" + textoSemana() + ")" : "Desde el comienzo") + " · " + RANGOS[r.rango] + " · " + ((r.lugar && lugarDe(q.ambito)) || (q.ambito === "mundo" ? "el mundo" : "sin datos de tu lugar")) });
       if (!r.lista.length) return zona.replaceChildren(titulo, h("p", { text: "Todavía nadie de este rango suma experiencia aquí. ¡Puedes ser la primera persona!" }));
-      const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+      const fila = (x) => { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila jg-fila-jug" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
         h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); };
       zona.replaceChildren(...[titulo, h("ol", { class: "jg-lista" }, r.lista.map(fila)),
         r.yo && !r.lista.some((x) => x.yo) ? h("p", { class: "jg-mini", text: "Tu puesto: " + fmt(r.yo.p) + " · " + fmt(r.yo.xp) + " de experiencia." }) : null].filter(Boolean));
     }
-    function filaDe(x) { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+    function filaDe(x) { const [l, c] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila jg-fila-jug" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
       h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") + (q.ambito !== "ciudad" && x.ciudad ? " · " + x.ciudad : "") })), h("span", { class: "x", text: fmt(x.xp) })); }
     async function cargarTodos() {
       // Opus (23-nov-2026): /clasificacion acepta rango=todos en una sola consulta con caché de borde
@@ -8522,13 +8704,16 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     if (!S.token) S.token = A.store.get("jg:t", null);
     const lc = lib && cap ? lib + "." + cap : "";
     if (!S.token || modo !== "l") {
-      salir(!!(S.token && lc));
-      if (S.token && lc) {
+      salir(!!lc);
+      if (lc) {
         estilos();
-        medidor(true);
-        SL.lcAct = lc;
-        retomarSala();
-        if (SL.cod) setTimeout(() => posSala(true), 250);
+        if (S.token) {
+          medidor(true);
+          SL.lcAct = lc;
+          retomarSala();
+          if (SL.cod) setTimeout(() => posSala(true), 250);
+        }
+        iniciarPresenciaLectura();
       }
       return;
     }
@@ -8545,6 +8730,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     }
     observar();
     retomarSala(); if (SL.cod) setTimeout(() => { pintarMarcas(); posSala(true); }, 400);
+    iniciarPresenciaLectura();
     actividad(); R.ultTick = performance.now();
     if (!R.reloj && !document.hidden) R.reloj = setInterval(tick, 250);
   }
@@ -8577,7 +8763,7 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
     guardarCola(true);
     soltar(); medidor(false);
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
-    if (!conservarCap) SL.lcAct = "";
+    if (!conservarCap) { SL.lcAct = ""; detenerPresenciaLectura(); }
     guardarDw(true);
     Object.assign(R, { lib: null, cap: 0, pal: [], acc: new Map(), accA: new Map(), pend: new Map(), hechos: new Set(), prueba: false, dw: new Map(), focoCita: null });
     // fuera de los capítulos, lo pendiente sale pronto si no se ha enviado aún en esta lectura (mantiene la presencia al día)
@@ -10074,7 +10260,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
   }
   function filaLiga(x, suben) {
     const [l, c] = embDe(x.emb), ex = resumenStatsPub(x);
-    return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") + (x.p <= suben && x.xp > 0 ? " sube" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
+    return h("li", { class: "jg-fila jg-fila-jug" + (x.yo ? " yo" : "") + (x.p <= suben && x.xp > 0 ? " sube" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, c, x.marco, x.foto),
       h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: "nivel " + x.nivel + (ex ? " · " + ex : "") + (x.n ? " · Primicia n.º " + x.n : "") })), h("span", { class: "x", text: fmt(x.xp) }));
   }
   function resumenLiga(r, mini) {
@@ -10106,7 +10292,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (r.error) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Tu liga de la semana se verá aquí en un momento." }));
       zona.replaceChildren(resumenLiga(r, true)); animarCifras(zona);
     });
-    return tarjeta("Tu liga de la semana", ico("liga"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/liga" }, ico("liga"), h("span", { text: "Ver mi liga" }))));
+    return tarjeta("Tu liga de la semana", ico("liga"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/liga" }, ico("liga"), h("span", { text: "Ver mi liga" }))));
   }
   async function pintarLiga(cont) {
     document.title = "Liga de la semana · Escudriña · BiEx";
@@ -10185,8 +10371,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (Array.isArray(r.miembros) && r.miembros.length) comprobarAdelantamientos("comp:" + r.comp.cod, r.miembros, "tu compañía «" + nomR + "»", "#/escudrina/compania");
       zona.replaceChildren(metaCompania(r)); animarCifras(zona);
     });
-    return tarjeta("Compañía · " + nomComp, ico("compania"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/compania" }, ico("compania"), h("span", { text: "Ver mi compañía" })),
-      h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
+    return tarjeta("Compañía · " + nomComp, ico("compania"), zona, h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/compania" }, ico("compania"), h("span", { text: "Ver mi compañía" })),
+      h("a", { class: "btn chico", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
   }
   async function pintarCompania(cont) {
     document.title = "Compañía · Escudriña · BiEx";
@@ -10198,7 +10384,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const pista = h("p", { class: "jg-pista", role: "status" });
     if (!r.comp) {
       zona.replaceChildren(tarjeta("Crear o unirte", ico("compania"), h("p", { text: "Crea una compañía y comparte su código, o únete con el código que te dieron." }), formCompania(pista)),
-        h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
+        h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" }))));
       return animarCifras(zona);
     }
     const c = r.comp;
@@ -10226,7 +10412,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       h("div", { class: "jg-sala-nom-cab" }, h("span", { text: "Nombre de la compañía" }), h("small", { text: ren.ok ? "Se puede cambiar 1 vez al día" : "Próximo cambio en " + restaTexto(Date.now() + ren.faltaMs) })),
       h("div", { class: "jg-form" }, renIn, h("button", { class: "btn chico", type: "button", disabled: !ren.ok, onclick: renombrarComp }, h("span", { text: "Guardar" }))),
       renPista) : null;
-    const salir = h("button", { class: "btn", type: "button", onclick: async (e) => {
+    const salir = h("button", { class: "btn chico", type: "button", onclick: async (e) => {
       if (!e.currentTarget.dataset.seguro) { e.currentTarget.dataset.seguro = "1"; e.currentTarget.querySelector("span").textContent = "Toca otra vez para salir"; return; }
       const x = await pedir("/compania/salir", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x));
       actualizarYo(x.yo); A.avisar("Saliste de «" + nomComp + "»"); repintar();
@@ -10234,13 +10420,13 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     zona.replaceChildren(
       h("section", { class: "jg-tarjeta jg-heroe" }, h("p", { class: "jg-tit", text: nomComp }), h("p", { class: "jg-mini", text: plural(c.n, "persona", "personas") + " de " + ((S.cfg && S.cfg.comp && S.cfg.comp.max) || 24) + (c.mia ? " · la cuidas tú" : "") }), metaCompania(r), cajaNomComp),
       tarjeta("Invitar", ico("compartir"), h("div", { class: "jg-codigo", text: c.cod }),
-        h("div", { class: "jg-acciones" }, h("button", { class: "btn", type: "button", onclick: () => copiar(c.cod, "Código copiado") }, ico("copiar"), h("span", { text: "Copiar el código" })),
-          h("button", { class: "btn oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + nomComp + "»", "Únete a mi compañía «" + nomComp + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
+        h("div", { class: "jg-acciones" }, h("button", { class: "btn chico", type: "button", onclick: () => copiar(c.cod, "Código copiado") }, ico("copiar"), h("span", { text: "Copiar el código" })),
+          h("button", { class: "btn chico oro", type: "button", onclick: () => compartir("Escudriña · compañía «" + nomComp + "»", "Únete a mi compañía «" + nomComp + "» en Escudriña: leemos juntos la Nueva Voluntad traducida palabra por palabra del griego.", enlaceCompania(c.cod)) }, ico("compartir"), h("span", { text: "Compartir el enlace" }))),
         c.mia ? h("button", { class: "btn chico jg-cod-nuevo", type: "button", onclick: async () => { const x = await pedir("/compania/codigo", { metodo: "POST", cuerpo: {} }); if (x.error) return A.avisar(mensaje(x)); actualizarYo(x.yo); A.avisar("Código nuevo: el anterior ya no sirve"); repintar(); } }, "Cambiar el código") : null),
-      tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
+      tarjeta("Esta semana", null, h("ol", { class: "jg-lista" }, r.miembros.map((x) => { const [l, cc] = embDe(x.emb), ex = resumenStatsPub(x); return h("li", { class: "jg-fila jg-fila-jug" + (x.yo ? " yo" : "") }, h("span", { class: "p", text: String(x.p) }), emblema(l, cc, x.marco, x.foto),
         h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: plural(x.v, "verso", "versos") + " · nivel " + x.nivel + (ex ? " · " + ex : "") })), h("span", { class: "x", text: fmt(x.x) })); })),
         h("p", { class: "jg-mini", text: "Se actualiza cada media hora mientras leen, y al cerrar la lectura." })),
-      h("div", { class: "jg-acciones" }, h("a", { class: "btn", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" })), salir));
+      h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/companias" }, h("span", { text: "Clasificación de compañías" })), salir));
     animarCifras(zona);
   }
   async function pintarCompanias(cont) {
@@ -10331,7 +10517,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     return caja;
   }
   function tarjetaMision(y) {
-    const zona = h("div", {}, h("p", { class: "jg-mini", text: "Cargando la misión…" }));
+    const zona = h("div", { class: "jg-mis-z" }, h("p", { class: "jg-mini", text: "Cargando la misión…" }));
     const card = tarjeta("Misión mundial", ico("mundo"), zona);
     let firma = "";
     const pintarM = (v) => {
@@ -10345,7 +10531,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       const aviso = !m.ok ? h("div", { class: "jg-mm-aviso" + (yaPart ? " ya" : ""), role: "status" },
         h("span", { class: "jg-mm-est" }, h("i", { class: "jg-mm-dot", "aria-hidden": "true" }), yaPart ? "¡Ya participas en la misión!" : mio > 0 ? "Misión activa · en marcha" : "Misión activa · participa hoy"),
         h("span", { class: "jg-mm-meta", text: yaPart ? "Aporte: " + fmt(mio) : mio > 0 ? "Faltan " + fmt(min - mio) : "Mínimo " + min + " versos" })) : null;
-      const cta = !m.ok ? h("a", { class: "btn oro jg-mm-cta", href: enlaceMisionMundial(m) }, h("span", { text: yaPart ? "Seguir aportando versos" : "Participar leyendo ahora" }), A.svg(A.ICO.der)) : null;
+      const cta = !m.ok ? h("div", { class: "jg-acciones" }, h("a", { class: "btn chico oro jg-mm-cta", href: enlaceMisionMundial(m) }, h("span", { text: yaPart ? "Seguir aportando versos" : "Participar leyendo ahora" }), A.svg(A.ICO.der))) : null;
       // relevos (BiEx, 10-nov-2026): lograda antes de tiempo, la siguiente abre a los 20 min y corre hasta el final de la franja
       zona.replaceChildren(aviso,
         m.e ? h("p", { class: "jg-chip jg-relevo", text: "Relevo " + (m.e + 1) + " de " + ((m.relevos || 3) + 1) }) : null,
@@ -10354,10 +10540,10 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         m.ok && m.relevo ? h("p", { class: "jg-aviso" }, h("b", { text: "¡Lograda antes de tiempo! " }), "El relevo " + (m.e + 2) + " abre en ", (() => { const el = h("b", { class: "jg-rel-t", text: restaTexto(m.relevo) }); const t = setInterval(() => { if (!el.isConnected) return clearInterval(t); if (document.hidden) return; el.textContent = m.relevo > Date.now() ? restaTexto(m.relevo) : "un momento"; }, 15000); return el; })(), ": una misión nueva hasta el final de esta franja.") : null,
         h("div", { class: "jg-barra oro", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(m.meta), "aria-valuenow": String(m.total), "aria-label": "Avance de la misión mundial" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })),
         cta,
-        h("p", { class: "jg-mini" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
-        h("p", { class: "jg-mini" }, relojCiudades(m.fin, "Termina el")),
-        h("p", { class: "jg-mini", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble y 4 dracmas en cuanto se logra, y 15 min y 1 dracma si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
-        v.proxMision ? h("p", { class: "jg-mini" }, relojCiudades(v.proxMision, "La siguiente empieza el")) : "");
+        h("p", { class: "jg-mini jg-mm-bl" }, plural(m.part, "persona aporta", "personas aportan") + " · termina en " + restaTexto(m.fin) + (mio ? " · tu aporte: " + fmt(mio) : "")),
+        h("p", { class: "jg-mini jg-mm-bl" }, relojCiudades(m.fin, "Termina el")),
+        h("p", { class: "jg-mini jg-mm-bl", text: "Quien aporte " + min + " versos o más recibe 1 h de experiencia doble y 4 dracmas en cuanto se logra, y 15 min y 1 dracma si no se alcanza. Hay una misión nueva cada dos días; su hora de comienzo se alterna para que a cada región del mundo le toque una cómoda. Si se logra antes de tiempo, a los 20 min abre un relevo (hasta " + (m.relevos || 3) + ") con su propia meta y su propio premio." }),
+        v.proxMision ? h("p", { class: "jg-mini jg-mm-bl" }, relojCiudades(v.proxMision, "La siguiente empieza el")) : "");
       animarCifras(zona);
     };
     pedir("/vivo", { sin: true, guardable: true }).then(pintarM);
@@ -10631,7 +10817,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const vistaS = () => {
       const anf = SL.miembros.find((x) => x.anf);
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
-        return h("li", { class: "jg-fila" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
+        return h("li", { class: "jg-fila jg-fila-jug" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
           x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = !anf || anf.j === SL.yo6;
       const nomAct = nombreSalaDe(SL.cod, SL.nombre);
@@ -10706,16 +10892,28 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     insigniaSalas();
     return VIVO.salas;
   }
-  // AL16 (BiEx, 22-nov-2026, 19:02): el número de «Juntos» son las salas abiertas de otras personas (la propia no cuenta). Se apaga al
-  // entrar en Juntos, donde «Salas abiertas» dice cuántas hay, y vuelve solo si se abre una sala nueva (como las demás insignias)
-  function insigniaSalas() {
+  // AL16 (BiEx, 22-nov-2026, 19:02) + PR #20: el número de «Juntos» son las salas abiertas de otras personas (la propia no cuenta). Se apaga al
+  // entrar en Juntos, ilumina «Salas abiertas» indicando el motivo y vuelve solo si se abre una sala nueva (como las demás insignias)
+  function insigniaSalas(secAct, clicTxt) {
     const j = MU && MU.querySelector('a[data-s="juntos"]'); if (!j) return;
     const otras = (VIVO.salas || []).filter((x) => x.c !== SL.cod), firma = otras.map((x) => x.c).sort().join(",");
     const visto = A.store.get("jg:insig", null) || {};
-    if (!otras.length) { j.removeAttribute("data-n"); j.removeAttribute("title"); return; }
-    if (j.classList.contains("act")) { j.removeAttribute("data-n"); if (visto.juntos !== firma) { visto.juntos = firma; A.store.set("jg:insig", visto); } return; }
-    if (visto.juntos === firma) { j.removeAttribute("data-n"); j.removeAttribute("title"); return; }
-    j.setAttribute("data-n", String(otras.length)); j.title = otras.length === 1 ? "Hay 1 sala abierta para leer en compañía" : "Hay " + otras.length + " salas abiertas para leer en compañía";
+    const enJuntos = secAct ? secAct === "juntos" : j.classList.contains("act");
+    const focoTxt = otras.length === 1 ? "1 sala abierta ahora" : otras.length + " salas abiertas ahora";
+    if (!otras.length) { j.removeAttribute("data-n"); j.removeAttribute("title"); j.removeAttribute("data-foco"); return; }
+    if (enJuntos) {
+      const tenia = j.hasAttribute("data-n");
+      j.removeAttribute("data-n"); j.removeAttribute("data-foco");
+      if (visto.juntos !== firma || tenia || clicTxt) {
+        visto.juntos = firma; A.store.set("jg:insig", visto);
+        resaltarZona("juntos", clicTxt || focoTxt);
+      }
+      return;
+    }
+    if (visto.juntos === firma) { j.removeAttribute("data-n"); j.removeAttribute("title"); j.removeAttribute("data-foco"); return; }
+    j.setAttribute("data-n", String(otras.length));
+    j.title = otras.length === 1 ? "Hay 1 sala abierta para leer en compañía" : "Hay " + otras.length + " salas abiertas para leer en compañía";
+    j.setAttribute("data-foco", focoTxt);
   }
   async function presentes(lib) {
     const k = lib || "", c = VIVO.pres.get(k); if (c && Date.now() - c.t < 30e3) return c.r;
@@ -10967,6 +11165,100 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       });
     }
   }
+  // PR #20 · Píldora discreta de presencia viva durante la lectura (solo visible si hay otros lectores o salas abiertas)
+  const PRES_P = { el: null, iv: 0, p: null, salas: [] };
+  function pintarPildoraPresencia(p, salas) {
+    PRES_P.p = p || { total: 0, caps: {}, lectores: [] };
+    PRES_P.salas = Array.isArray(salas) ? salas : [];
+    const enCap = document.documentElement.classList.contains("en-cap");
+    const yoAp = S.yo && S.yo.apodo ? S.yo.apodo : "";
+    const rawL = Array.isArray(PRES_P.p.lectores) ? PRES_P.p.lectores : [];
+    const otrosL = yoAp ? rawL.filter((x) => x.a !== yoAp) : (S.token ? rawL.slice(1) : rawL);
+    const totSrv = Math.max(0, (PRES_P.p.total | 0) || 0);
+    const otros = S.token ? Math.max(0, totSrv - 1) : Math.max(otrosL.length, totSrv);
+    const salasO = PRES_P.salas.filter((x) => x.c !== SL.cod);
+    const n = Math.max(otros, salasO.length);
+    if (!enCap || n <= 0) {
+      if (PRES_P.el) PRES_P.el.hidden = true;
+      return;
+    }
+    if (!PRES_P.el) {
+      PRES_P.el = h("button", { type: "button", class: "jg-pres-pill", onclick: abrirModalPresenciaLectura });
+      document.body.append(PRES_P.el);
+    }
+    const ep = (A && A.enPieActual ? !!A.enPieActual() : false) || enPieJg;
+    PRES_P.el.classList.toggle("en-pie", ep);
+    PRES_P.el.hidden = false;
+    const partes = [];
+    if (otros > 0) partes.push(plural(otros, "persona leyendo ahora", "personas leyendo ahora"));
+    if (salasO.length > 0) partes.push(plural(salasO.length, "sala abierta", "salas abiertas"));
+    const desc = partes.join(" · ");
+    PRES_P.el.title = desc + " · tocar para ver";
+    PRES_P.el.setAttribute("aria-label", desc + ". Tocar para acompañar o abrir sala");
+    PRES_P.el.replaceChildren(h("i", { class: "p-dot", "aria-hidden": "true" }), ico("compania"), h("span", { text: fmt(n) }));
+  }
+  async function actualizarPresenciaLectura() {
+    if (!document.documentElement.classList.contains("en-cap")) { detenerPresenciaLectura(); return; }
+    try {
+      const [p, s] = await Promise.all([presentes("").catch(() => null), salasAbiertas(false).catch(() => [])]);
+      pintarPildoraPresencia(p && !p.error ? p : null, Array.isArray(s) ? s : []);
+    } catch (e) { /* silencioso */ }
+  }
+  function iniciarPresenciaLectura() {
+    actualizarPresenciaLectura();
+    if (!PRES_P.iv) PRES_P.iv = setInterval(() => { if (!document.hidden) actualizarPresenciaLectura(); }, 60e3);
+  }
+  function detenerPresenciaLectura() {
+    if (PRES_P.iv) { clearInterval(PRES_P.iv); PRES_P.iv = 0; }
+    if (PRES_P.el) PRES_P.el.hidden = true;
+  }
+  function abrirModalPresenciaLectura() {
+    const p = PRES_P.p || { total: 0, caps: {}, lectores: [] };
+    const salasO = (PRES_P.salas || []).filter((x) => x.c !== SL.cod);
+    const yoAp = S.yo && S.yo.apodo ? S.yo.apodo : "";
+    const caps = Object.entries(p.caps || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const lectores = (p.lectores || []).filter((x) => !yoAp || x.a !== yoAp).slice(0, 8);
+    const bloques = [];
+    if (salasO.length) {
+      bloques.push(h("div", {},
+        h("h4", { text: "Salas abiertas ahora" }),
+        h("ul", { class: "jg-pres-mod-l" }, salasO.slice(0, 6).map((x) => {
+          const nom = nombreSalaDe(x.c, x.nombre) || ("Sala " + x.c);
+          return h("li", {},
+            h("div", {},
+              h("b", { text: nom }),
+              h("small", { text: [x.anf ? "Anfitrión: " + x.anf : "", x.lc ? nombreLC(x.lc) : "", plural(x.n | 0 || 1, "persona", "personas")].filter(Boolean).join(" · ") })),
+            h("button", { type: "button", class: "btn chico oro", onclick: () => { A.cerrarModal(); if (S.token) entrarSala(x.c); else A.irA("#/escudrina/sala/" + x.c); } }, h("span", { text: "Entrar" })));
+        }))));
+    }
+    if (caps.length) {
+      bloques.push(h("div", {},
+        h("h4", { text: "Capítulos en lectura ahora" }),
+        h("ul", { class: "jg-pres-mod-l" }, caps.map(([lc, cnt]) => {
+          const [lib, cap] = String(lc).split(".");
+          return h("li", {},
+            h("div", {},
+              h("b", { text: nombreLC(lc) }),
+              h("small", { text: plural(cnt, "persona lee aquí", "personas leen aquí") })),
+            h("div", { style: "display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end" },
+              lib && cap ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap, onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null,
+              S.token ? h("button", { type: "button", class: "btn chico oro", onclick: (e) => { A.cerrarModal(); acompanar(lc, e.currentTarget); } }, h("span", { text: "Acompañar" })) : null));
+        }))));
+    }
+    if (lectores.length) {
+      bloques.push(h("div", {},
+        h("h4", { text: "Lectores en línea" }),
+        h("ul", { class: "jg-pres-mod-l" }, lectores.map((x) => h("li", {},
+          h("div", {},
+            nombreClicable(x.a || "Lector"),
+            h("small", { text: [x.nv ? "nivel " + x.nv : "", x.l ? nombreLC(x.l) : (x.act || "Leyendo")].filter(Boolean).join(" · ") })),
+          x.l ? h("a", { class: "btn chico", href: "#/" + String(x.l).replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null)))));
+    }
+    if (!bloques.length) bloques.push(h("p", { class: "jg-mini", text: "En este instante no hay otros lectores ni salas abiertas." }));
+    bloques.push(h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/mundo", onclick: () => A.cerrarModal() }, ico("mundo"), h("span", { text: "Ver comunidad en Mundo" }))));
+    A.abrirModal(() => A.cajaModal(A.cabModal("Leyendo en este momento", "Presencia en vivo · BiEx"), h("div", { class: "jg-pres-mod" }, ...bloques)));
+  }
+
   const CACHE_JUG = new Map();
   const ET_PUB = [[1, "I", "Semilla", "#c9813f", "#8a4c14"], [2, "II", "Brote", "#c3ccd8", "#425062"], [3, "III", "Raíz honda", "#f0c04a", "#7f5c0f"], [4, "IV", "Copa", "#ffe39a", "#6b4b09"], [5, "V", "Fruto", "#ff7d93", "#9c1d38"]];
   function nombreClicable(apodo) {
@@ -10974,6 +11266,15 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     if (!ap || /^lector\b/i.test(ap) || /^tú$/i.test(ap)) return h("b", { text: ap || "Lector" });
     return h("button", { class: "jg-jug-btn", type: "button", title: "Ver perfil público de " + ap, onclick: (e) => { e.stopPropagation(); abrirJugadorPublico(ap); } }, ap);
   }
+  // PR #20 · Fila completa clicable en tablas de lectores (clasificación, liga, compañía, Coloso y salas)
+  document.addEventListener("click", (e) => {
+    const fila = e.target && e.target.closest ? e.target.closest(".jg-fila, .jg-salas-l.quien > li") : null;
+    if (!fila) return;
+    if (e.target.closest("a, button:not(.jg-jug-btn), .emb-foto, input, summary")) return;
+    const bt = fila.querySelector(".jg-jug-btn");
+    if (!bt || e.target === bt) return;
+    bt.click();
+  });
   const ET_UMBRAL = [0, 250, 600, 1200, 2400];
   function abrirJugadorPublico(apodo) {
     const ap = String(apodo || "").trim();
@@ -10998,14 +11299,15 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
       if (j.fundador && j.n) chips.push(h("span", { class: "jg-chip", text: "Primicia n.º " + fmt(j.n) }));
       if (j.marco && marcos()[j.marco - 1]) chips.push(h("span", { class: "jg-chip tenue", text: marcos()[j.marco - 1][1] }));
       const hero = h("section", { class: "jg-jp-hero", style: "--et:" + et[3] + ";--et-l:" + et[4] },
-        h("div", { class: "jg-jp-emb-wrap" },
-          h("span", { class: "jg-jp-aro", "aria-hidden": "true" }),
-          h("span", { class: "jg-jp-aro b", "aria-hidden": "true" }),
-          h("span", { class: "jg-jp-emb" }, emblema(l, c, j.marco, j.foto))),
-        h("div", { class: "jg-jp-id" },
-          h("h3", { text: j.apodo || ap }),
-          h("p", { class: "jg-mini", text: (j.rangoNombre || "Lector") + " · nivel " + fmt(j.nivel | 0) + (lugar ? " · " + lugar : "") })),
-        h("div", { class: "jg-chips" }, chips),
+        h("div", { class: "jg-jp-top" },
+          h("div", { class: "jg-jp-emb-wrap" },
+            h("span", { class: "jg-jp-aro", "aria-hidden": "true" }),
+            h("span", { class: "jg-jp-aro b", "aria-hidden": "true" }),
+            h("span", { class: "jg-jp-emb" }, emblema(l, c, j.marco, j.foto))),
+          h("div", { class: "jg-jp-id" },
+            h("h3", { text: j.apodo || ap }),
+            h("p", { class: "jg-mini", text: (j.rangoNombre || "Lector") + " · nivel " + fmt(j.nivel | 0) + (lugar ? " · " + lugar : "") }),
+            h("div", { class: "jg-chips" }, chips))),
         h("div", { class: "jg-jp-track" },
           h("div", { class: "jg-jp-tr-cab" },
             h("span", { text: sigEt ? "Camino a Etapa " + ET_PUB[etN][1] + " (" + fmt(sigEt) + ")" : "Etapa cumbre alcanzada" }),
@@ -11083,7 +11385,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, ajedrez: { AJ_ENG, AJ_FIGURAS, AJ_ENIGMAS }, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, resaltarZona, presenciaPill: (p, s) => pintarPildoraPresencia(p, s), ajedrez: { AJ_ENG, AJ_FIGURAS, AJ_ENIGMAS }, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); enPieJg = !!(A && A.enPieActual && A.enPieActual()); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
@@ -11096,6 +11398,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     enPie(si) {
       enPieJg = !!si;
       if (MED.el) MED.el.classList.toggle("en-pie", enPieJg);
+      if (PRES_P.el) PRES_P.el.classList.toggle("en-pie", enPieJg);
       const sp = document.querySelector(".jg-sala-p");
       if (sp) sp.classList.toggle("en-pie", enPieJg);
       if (LB.el) { LB.el.classList.toggle("en-pie", enPieJg); if (enPieJg) LB.el.tabIndex = -1; }

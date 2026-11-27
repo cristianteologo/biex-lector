@@ -152,10 +152,59 @@
     window.addEventListener("scroll", () => {
       if (!tD) { raiz.classList.add("desplazando"); document.dispatchEvent(new CustomEvent("biex:desplaza", { detail: true })); } else clearTimeout(tD);
       tD = setTimeout(fin, 180);
-    }, { passive: true, capture: true }); }
-  // Lo que se anima solo y de forma continua se detiene fuera de la pantalla (clase .anim-fuera; 15-nov-2026)
-  const IO_FUERA = "IntersectionObserver" in window ? new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle("anim-fuera", !e.isIntersecting); }) : null;
-  const pausarFuera = (raiz) => { if (!IO_FUERA || !raiz) return; IO_FUERA.disconnect(); for (const el of raiz.querySelectorAll('.encab .h [lang="he"], .banda')) IO_FUERA.observe(el); };
+    }, { passive: true, capture: true });
+    // PR #20 · Rescate de toque inmediato durante inercia de desplazamiento: en Android/iOS el primer toque sobre un botón o
+    // pestaña fija mientras dura la inercia suele detener el scroll y tragarse el click; si fue un toque limpio (<10 px, <340 ms)
+    // y no llega click nativo en 45 ms, lo disparamos sin esperar a que el desplazamiento se detenga (sin duplicar jamás).
+    const SEL_TAP = ".jg-muelle a, header.barra a, header.barra button, .barra-hoja button, .faro-btn, .jg-med, .jg-pres-pill, .btn, .jg-fila, .libs-acc-btn, .ap-gr-b";
+    let tap = null, ultClickT = 0, ultClickEl = null;
+    document.addEventListener("click", (e) => { ultClickT = performance.now(); ultClickEl = e.target; }, true);
+    document.addEventListener("pointerdown", (e) => {
+      if (e.isPrimary === false || (e.pointerType === "mouse" && e.button !== 0)) return;
+      const el = e.target && e.target.closest && e.target.closest(SEL_TAP);
+      if (!el || el.disabled) { tap = null; return; }
+      tap = { el, x: e.clientX, y: e.clientY, t: performance.now(), desl: raiz.classList.contains("desplazando") };
+    }, { passive: true, capture: true });
+    document.addEventListener("pointermove", (e) => {
+      if (!tap) return;
+      if (raiz.classList.contains("desplazando")) tap.desl = true;
+      if (Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) tap = null;
+    }, { passive: true, capture: true });
+    document.addEventListener("pointerup", (e) => {
+      const g = tap; tap = null;
+      if (!g || !g.desl || !g.el.isConnected) return;
+      const dt = performance.now() - g.t;
+      if (dt > 340 || Math.hypot(e.clientX - g.x, e.clientY - g.y) > 10) return;
+      const tUp = performance.now();
+      setTimeout(() => {
+        if (!g.el.isConnected || g.el.disabled) return;
+        if (ultClickT >= tUp - 12 && ultClickEl && (g.el === ultClickEl || g.el.contains(ultClickEl))) return;
+        try { g.el.click(); } catch (er) {}
+      }, 45);
+    }, { passive: true, capture: true });
+    document.addEventListener("pointercancel", () => { tap = null; }, { passive: true, capture: true });
+  }
+  // PR #20 · Congelado universal de animaciones fuera del viewport (.anim-fuera) para máximo ahorro de batería en toda la web
+  const SEL_FUERA = '.encab .h [lang="he"], .banda, .hero .acciones > .btn, .jg-coloso, .jg-col-escena, .jg-col-prev, .fr-gr, .ap-gr-v, .ap-gr-b, .co-medidor, .co-cesta, .lk-libs, .aj-card-ent, .jg-yo, .jg-llave, .jg-lz.on, .ap-poder, .jg-pp-escena, .jg-piedras, .holo-ef';
+  const OBS_FUERA = new WeakSet();
+  const IO_FUERA = "IntersectionObserver" in window ? new IntersectionObserver((es) => {
+    for (const e of es) e.target.classList.toggle("anim-fuera", !e.isIntersecting);
+  }, { rootMargin: "48px 0px", threshold: 0.01 }) : null;
+  const observarAnim = (nodo) => {
+    if (!IO_FUERA || !nodo || nodo.nodeType !== 1) return;
+    if (nodo.matches && nodo.matches(SEL_FUERA) && !OBS_FUERA.has(nodo)) { OBS_FUERA.add(nodo); IO_FUERA.observe(nodo); }
+    if (nodo.querySelectorAll) for (const el of nodo.querySelectorAll(SEL_FUERA)) if (!OBS_FUERA.has(el)) { OBS_FUERA.add(el); IO_FUERA.observe(el); }
+  };
+  const pausarFuera = (raiz) => { if (!IO_FUERA || !raiz) return; observarAnim(raiz); };
+  window.BiExPausaFuera = observarAnim;
+  if (IO_FUERA && window.MutationObserver) {
+    let pendObs = []; let rafObs = 0;
+    const vaciarObs = () => { rafObs = 0; const l = pendObs; pendObs = []; for (const n of l) if (n && n.isConnected) observarAnim(n); };
+    new MutationObserver((ms) => {
+      for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) pendObs.push(n);
+      if (pendObs.length && !rafObs) rafObs = requestAnimationFrame(vaciarObs);
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  }
   // Historial: las últimas 24 citas consultadas (capítulos y versos), la más reciente primero (biex:historial)
   function historial(c, cap, v, m) {
     if (!c || !cap) return;
@@ -1309,8 +1358,10 @@
   // exacta actual y reemplaza EN SU LUGAR la entrada temporal de la ventana con la ruta nueva (sin hacer history.go(-1) + hashchange
   // que competía en Chrome Android y en marcos incrustados). Así la entrada inmediatamente anterior queda intacta y el gesto «Atrás»
   // regresa siempre al píxel exacto de la vista previa.
+  let ultHrefEnrutado = "";
   function irDesdeModal(accion) {
     anotarPos();
+    M.sinRuta = null; M.cortar = false;
     const navegarEnSitio = (dest) => {
       const hh = String(dest || "");
       const actualH = location.hash || "#/";
@@ -1319,11 +1370,12 @@
         return;
       }
       try {
-        history.replaceState({}, "", urlHash(hh));
+        history.replaceState({ bx: nuevaClave() }, "", urlHash(hh));
       } catch (e) {
         location.hash = hh;
         return;
       }
+      ultHrefEnrutado = location.href;
       pasosApp++;
       resolverSeguir();
       prepararPos();
@@ -1341,12 +1393,12 @@
       return;
     }
     const n = M.estados;
-    M.porRuta = true; M.noGuardar = true; M.alCerrar = null; M.estados = 0;
+    M.porRuta = true; M.noGuardar = true; M.alCerrar = null; M.estados = 0; M.fwd = [];
     modal.classList.add("sin-entrada");
     cerrarModal();
     setTimeout(() => modal.classList.remove("sin-entrada"), 80);
     // Caso principal (Biblioteca, Verso, Tu faro: n === 1): reemplazar la propia entrada de la ventana in-situ.
-    // La entrada [0] (vista previa exacta con su clave bx y desplazamiento guardado) jamás se toca ni dispara popstate/hashchange.
+    // La entrada [0] (vista previa exacta con su clave bx y desplazamiento guardado) jamás se toca.
     if (n === 1 && typeof accion === "string") {
       navegarEnSitio(accion);
       return;
@@ -1466,7 +1518,24 @@
         return;
       }
       try { history.back(); } catch (er) { /* ignorar */ }
+      return;
     }
+    // PR #20 · Respaldo infalible de «Atrás» en móviles (Chrome/Vivaldi Android e iOS): si popstate llega tras pushState+replaceState
+    // (p. ej. al volver desde Mesa sinóptica, Constelación, Atlas o Repaso abiertos desde Biblioteca) y el navegador no dispara hashchange,
+    // sincronizamos la ruta en el siguiente tick sin duplicar nunca un hashchange normal.
+    const hrefPop = location.href;
+    document.documentElement.classList.remove("mp-fs-on", "cn-fs-on");
+    setTimeout(() => {
+      if (M.saltando || modal.open || location.href !== hrefPop || ultHrefEnrutado === hrefPop) return;
+      const rutaNorm = "#/" + decodificar((location.hash || "").replace(/^#\/?/, "")).slice(0, 400).split("/").filter(Boolean).join("/");
+      if (rutaNorm !== (rutaVista || "#/")) {
+        ultHrefEnrutado = hrefPop;
+        pasosApp++;
+        resolverSeguir();
+        prepararPos();
+        enrutar();
+      }
+    }, 0);
   });
   // deslizar hacia abajo la cabecera de la ventana la cierra (móvil)
   let toqueCab = null;
@@ -3839,13 +3908,15 @@
         });
         requestAnimationFrame(() => lugares.scrollIntoView({ block: "nearest", behavior: document.documentElement.getAttribute("data-mov") === "no" ? "auto" : "smooth" }));
       };
-      const formaEl = (r) => h("li", { class: "fl-it" + (r[0] === t[0] && r[1] === t[2] ? " esta" : ""), "data-k": r[0] + "|" + r[1] },
+      const formaEl = (r) => h("li", { class: "fl-it fl-it-fila" + (r[0] === t[0] && r[1] === t[2] ? " esta" : ""), "data-k": r[0] + "|" + r[1] },
         h("button", { type: "button", class: "fl-b", onclick: () => abrirForma(r), "aria-label": "Lugares de " + T.F[r[0]] },
           h("span", { class: "fl-g" }, spanGk(T.F[r[0]]), h("small", { class: "fl-tl", text: T.FT[r[0]] || "" })),
           h("span", { class: "fl-n", text: fmt(r[2]) }),
-          h("span", { class: "fl-m", text: (abreviar(T.P[r[1]], T.MC[r[1]], 0, r[4]) || T.MD[r[1]] || "") + (r[3] ? " · " + T.TR[r[3]] : "") })));
+          h("span", { class: "fl-m", text: (abreviar(T.P[r[1]], T.MC[r[1]], 0, r[4]) || T.MD[r[1]] || "") + (r[3] ? " · " + T.TR[r[3]] : "") })),
+        botonAudioMini(T.F[r[0]]));
       const pagIni = Math.max(0, Math.floor(par.findIndex((r) => r[0] === t[0] && r[1] === t[2]) / 6));
-      const tabla = h("div", {}, libroPaginas(par, 6, formaEl, { clase: "fl-libro", etiqueta: "Páginas de las formas", pag: pagIni, pagina: (nodos) => h("ol", { class: "fl-lista" }, nodos) }), lugares);
+      const cajonF = par.length > 1 ? cajonAudioFormas(par.map((r) => ({ f: T.F[r[0]], tl: T.FT[r[0]] || "" })), "Escuchar pronunciación de sus formas") : null;
+      const tabla = h("div", {}, libroPaginas(par, 6, formaEl, { clase: "fl-libro", etiqueta: "Páginas de las formas", pag: pagIni, pagina: (nodos) => h("ol", { class: "fl-lista" }, nodos) }), cajonF, lugares);
       const lb = T.LB[li] || [];
       const pares = []; for (let k = 0; k < lb.length; k += 2) pares.push([lb[k], lb[k + 1]]);
       pares.sort((a, x) => x[1] - a[1]);
@@ -4624,7 +4695,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "f0e9d90158", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "1016783e51", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -5191,14 +5262,20 @@
     if (s) fila("Código Strong", h("span", { class: "lx-strong", text: strongN(s) }), strongX(s) !== strongN(s) ? h("small", { class: "lx-ext", text: " · extendido " + strongX(s) }) : null);
     if (ORIGEN[o]) fila("Origen", ORIGEN[o], LX.H[li] ? [" · ", h("bdi", { class: "he lx-he", lang: "he", dir: "rtl", text: LX.H[li][0] })] : null);
     const b = LX.B[li], pre = LX.P[li] || [];
-    if (b != null) fila("Composición", pre.map((p) => [h("span", { class: "fm-g", lang: "grc", text: p + "-" }), " + "]), h("a", { class: "fm-l", href: "#/lema/" + b, lang: "grc", text: lemaCorto(b) }));
+    if (b != null) fila("Composición", pre.map((p) => [h("span", { class: "fm-g", lang: "grc", text: p + "-" }), " + "]), h("span", { class: "lx-aud-par" }, h("a", { class: "fm-l", href: "#/lema/" + b, lang: "grc", text: lemaCorto(b) }), botonAudioMini(lemaCorto(b))));
     if (LX.D[li]) fila("Formación", ...textoFormacion(LX.D[li]));
     else if (LX.R[li]) fila("Relacionada con", ...LX.R[li].map((x, k) => [k ? ", " : null, h("a", { class: "fm-l", href: "#/lema/" + x, lang: "grc", text: lemaCorto(x) })]));
-    if (modo !== "raiz") fila("Raíz", h("a", { class: "fm-l", href: "#/raiz/" + r, lang: "grc", text: lemaCorto(r) }), fam.length > 1 ? " · familia de " + fmt(fam.length) + " palabras" : " · única de su familia en la Nueva Voluntad");
+    if (modo !== "raiz") fila("Raíz", h("span", { class: "lx-aud-par" }, h("a", { class: "fm-l", href: "#/raiz/" + r, lang: "grc", text: lemaCorto(r) }), botonAudioMini(lemaCorto(r))), fam.length > 1 ? " · familia de " + fmt(fam.length) + " palabras" : " · única de su familia en la Nueva Voluntad");
     const otros = modo === "raiz" ? [] : fam.filter((x) => x !== li).slice(0, modo === "lema" ? 24 : 8);
+    const vocFam = [];
+    if (modo !== "raiz" && r != null) vocFam.push({ f: lemaCorto(r), tl: tlCorta(r) });
+    if (b != null && b !== r) vocFam.push({ f: lemaCorto(b), tl: tlCorta(b) });
+    for (const x of otros) vocFam.push({ f: lemaCorto(x), tl: tlCorta(x) });
+    const cajonFam = vocFam.length > 1 ? cajonAudioFormas(vocFam, "Escuchar pronunciación de la raíz y su familia") : null;
     return [h("dl", { class: "dl" }, filas),
       otros.length ? h("div", { class: "chips lx-fam" }, otros.map((x) => { const g = glosaBreve(x); return h("a", { class: "chip lx-chip", href: "#/lema/" + x, title: g }, h("span", { lang: "grc", text: lemaCorto(x) }), g ? h("small", { text: g }) : null); }),
         fam.length - 1 > otros.length ? h("a", { class: "chip lx-mas", href: "#/raiz/" + r, text: "+" + fmt(fam.length - 1 - otros.length) }) : null) : null,
+      cajonFam,
       h("p", { class: "nota-ui lx-fuente", text: "Formación según el diccionario de Strong (1890): algunas derivaciones antiguas son discutidas." }),
       credPleg("Códigos Strong extendidos: ", h("a", { href: "https://github.com/STEPBible/STEPBible-Data", target: "_blank", rel: "noopener", text: "TAGNT de STEPBible.org" }), " (Tyndale House, Cambridge; CC BY 4.0). Formación: Strong's Exhaustive Concordance [Concordancia Exhaustiva de Strong] (James Strong, 1890; datos de Open Scriptures [Escrituras Abiertas], CC BY-SA).")];
   }
@@ -5256,7 +5333,24 @@
   const ORD_T = "PIFARL", ORD_M = "ISOMNPR";
   function tablaFormas(li) {
     const rows = (T.LP[li] || []).map((r) => ({ f: r[0], mi: r[1], n: r[2], tr: r[3], m: T.P[r[1]] || {} }));
-    const celda = (xs) => xs.length ? xs.sort((a, b) => b.n - a.n).map((x) => h("span", { class: "tf-f", title: (x.tr ? T.TR[x.tr] + " · " : "") + fmt(x.n) + (x.n === 1 ? " vez" : " veces") }, spanGk(T.F[x.f]), h("small", { text: fmt(x.n) }))) : h("span", { class: "tf-no", text: "·" });
+    const celda = (xs) => xs.length ? xs.sort((a, b) => b.n - a.n).map((x) => {
+      const fTxt = T.F[x.f];
+      const sp = h("span", {
+        class: "tf-f tf-aud", role: "button", tabindex: "0",
+        title: (x.tr ? T.TR[x.tr] + " · " : "") + fmt(x.n) + (x.n === 1 ? " vez" : " veces") + " · toca para escuchar en koiné s. I",
+        "aria-label": "Escuchar " + fTxt + " en griego koiné s. I",
+        onclick: (e) => {
+          e.stopPropagation();
+          const ya = sp.classList.contains("sonando");
+          KOINE_S1.parar();
+          if (ya) return;
+          sp.classList.add("sonando");
+          KOINE_S1.hablar(fTxt, { alFin: () => sp.classList.remove("sonando") });
+        },
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sp.click(); } },
+      }, spanGk(fTxt), h("small", { text: fmt(x.n) }));
+      return sp;
+    }) : h("span", { class: "tf-no", text: "·" });
     const nominal = (xs) => {
       const gens = ["M", "F", "N"].filter((g) => xs.some((x) => x.m.gender === g));
       const cols = [];
@@ -5291,6 +5385,8 @@
     if (N.length) secs.push(h("section", { class: "tf-sec" }, V.length ? h("h3", { text: "Formas declinadas" }) : null, nominal(N)));
     const O = rows.filter((x) => x.m.pos !== "V" && !x.m.case);
     if (O.length) secs.push(h("section", { class: "tf-sec" }, (V.length || N.length) ? h("h3", { text: "Formas invariables" }) : null, h("div", { class: "tf-lista" }, celda(O))));
+    const cajon = cajonAudioFormas(rows.map((x) => ({ f: T.F[x.f], tl: T.FT[x.f] || "" })), "Escuchar pronunciación de sus formas");
+    if (cajon) secs.push(cajon);
     return secs;
   }
   // Pronunciación (AFI): koiné del siglo I, reconstruida, y erasmiana (la de la enseñanza académica en español);
@@ -5569,15 +5665,20 @@
       if (ac.state === "suspended") ac.resume().catch(() => {});
       return ac;
     };
+    let sesionId = 0, ultInfo = null;
     const parar = () => {
+      sesionId++;
       for (const id of timersAct) clearTimeout(id);
       timersAct = [];
-      if (fuenteAct) { try { fuenteAct.stop(); fuenteAct.disconnect(); } catch (e) {} fuenteAct = null; }
+      if (fuenteAct) { try { fuenteAct.onended = null; fuenteAct.stop(); fuenteAct.disconnect(); } catch (e) {} fuenteAct = null; }
       if (finAct) { const fn = finAct; finAct = null; try { fn(); } catch (e) {} }
     };
-    // Sintetizador Klatt en PCM puro (4 formantes resonantes + fuente glotal Rosenberg-LF + fricativas/oclusivas/vibrante)
+    const esSonoro = (sp) => !!sp && (sp.tipo === "v" || sp.tipo === "s" || sp.tipo === "n" || sp.tipo === "r" || sp.tipo === "rh" || (sp.tipo === "f" && !!sp.voz));
+    const LOCUS_P = { p: [280, 780, 2150, 3250], t: [320, 1780, 2650, 3480], k: [300, 2080, 2480, 3380] };
+    // PR #20 · Sintetizador acústico continuo de palabra completa en griego koiné s. I:
+    // coarticulación cúbica sin cortes entre fonemas sonoros, fuente glotal LF cálida con micro-aliento y filtro labial natural.
     const sintetizar = (ctx, forma, lento) => {
-      const clave = String(forma || "") + (lento ? "|0" : "|1");
+      const clave = String(forma || "") + (lento ? "|0v2" : "|1v2");
       if (cache.has(clave)) {
         const hit = cache.get(clave);
         cache.delete(clave); cache.set(clave, hit);
@@ -5585,10 +5686,10 @@
       }
       const an = analizar(forma);
       const sr = ctx ? ctx.sampleRate : 24000;
-      const esc = lento ? 1.42 : 1.0;
+      const esc = lento ? 1.38 : 0.96;
       const segs = [];
       const marcas = [];
-      let tAcc = 0.03;
+      let tAcc = 0.025;
       const nSil = an.silabas.length;
       const idxTon = Math.max(0, an.silabas.findIndex((s) => s.ton));
       for (let si = 0; si < nSil; si++) {
@@ -5599,72 +5700,103 @@
           const spec = F_TAB[item.ph] || F_TAB.a;
           let d = spec.dur * esc;
           if (spec.tipo === "v") {
-            if (sil.ton) d *= 1.28;
-            if (si === nSil - 1) d *= 1.14;
+            if (sil.ton) d *= 1.24;
+            if (si === nSil - 1) d *= 1.15;
           } else if (item.gem) {
-            d *= 1.55;
+            d *= 1.5;
+          } else if (spec.tipo === "p") {
+            d *= 0.88;
           }
-          segs.push({ ph: item.ph, spec, t0: tAcc, dur: d, ton: sil.ton, si, gem: !!item.gem });
+          segs.push({ ph: item.ph, spec, t0: tAcc, dur: d, ton: sil.ton, si, gem: !!item.gem, son: esSonoro(spec) });
           tAcc += d;
         }
         marcas.push({ si, t0: tIniSil, t1: tAcc });
       }
-      const durTot = Math.max(0.24, tAcc + 0.14);
+      const durTot = Math.max(0.24, tAcc + 0.13);
       const nM = Math.ceil(durTot * sr);
       const pcm = new Float32Array(nM);
-      // Estado de 4 filtros resonadores de 2.º orden (formantes vocales) + 1 pasabanda de ruido
       const y1 = [0, 0, 0, 0], y2 = [0, 0, 0, 0];
       let ny1 = 0, ny2 = 0, nx1 = 0, nx2 = 0, glotPrev = 0, fase = 0, seed = 2463534242;
+      let lpVoz = 0, pechoY1 = 0, pechoY2 = 0, curAmp = 0;
       const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return ((seed >>> 0) / 4294967296) * 2 - 1; };
-      const fBase = 132; // tenor-barítono cálido y claro
+      const fBase = 128; // barítono cálido, natural y cercano
+      const defF = [490, 1420, 2480, 3420], defBw = [92, 125, 175, 245];
+      const primerF = (segs.find((s) => s.spec.f) || {}).spec;
+      let curF = (primerF && primerF.f ? primerF.f : defF).slice();
+      let curBw = (primerF && primerF.bw ? primerF.bw : defBw).slice();
+      const sStep = (x) => { const c = Math.max(0, Math.min(1, x)); return c * c * (3 - 2 * c); };
+      const kF = 1 - Math.exp(-1 / (sr * 0.016)); // seguimiento formántico orgánico (~16 ms)
+      const kA = 1 - Math.exp(-1 / (sr * 0.012)); // envolvente vocal ligada (~12 ms)
+      const kLp = 1 - Math.exp(-2 * Math.PI * 3900 / sr); // calidez labial suave (evita timbre metálico)
       let segIdx = 0;
-      const defF = [500, 1450, 2500, 3450], defBw = [85, 115, 160, 220];
-      let curF = defF.slice(), curBw = defBw.slice();
       for (let i = 0; i < nM; i++) {
         const t = i / sr;
         while (segIdx < segs.length - 1 && t >= segs[segIdx].t0 + segs[segIdx].dur) segIdx++;
         const sg = segs[segIdx];
-        if (!sg || t < sg.t0 || t >= sg.t0 + sg.dur) continue;
+        if (!sg || t < sg.t0 || t >= sg.t0 + sg.dur) {
+          curAmp *= 0.992;
+          continue;
+        }
         const u = (t - sg.t0) / Math.max(0.001, sg.dur);
         const sp = sg.spec;
-        // Contorno natural de frecuencia fundamental F0 (pico suave en la tónica y cadencia serena al final)
-        const progW = Math.max(0, Math.min(1, t / Math.max(0.15, tAcc)));
-        const centroTon = nSil > 1 ? (idxTon + 0.5) / nSil : 0.42;
-        const picoTon = Math.exp(-Math.pow((progW - centroTon) / 0.28, 2));
-        const f0 = fBase * (1.02 + 0.17 * picoTon - 0.14 * progW) * (1 + 0.006 * Math.sin(2 * Math.PI * 5.2 * t));
+        const prv = segs[segIdx - 1] || null;
+        const nxt = segs[segIdx + 1] || null;
+        // Prosodia orgánica de palabra completa con micro-jitter natural (<0,35 %)
+        const progW = Math.max(0, Math.min(1, (t - 0.025) / Math.max(0.14, tAcc - 0.025)));
+        const centroTon = nSil > 1 ? (idxTon + 0.48) / nSil : 0.38;
+        const picoTon = Math.exp(-Math.pow((progW - centroTon) / 0.31, 2));
+        const vibr = 1 + 0.0045 * Math.sin(2 * Math.PI * 4.8 * t) + 0.0022 * rnd();
+        const f0 = fBase * (1.03 + 0.16 * picoTon - 0.15 * progW) * vibr;
         fase += f0 / sr;
         if (fase >= 1) fase -= 1;
-        // Pulso glotal Rosenberg-LF derivado (timbre natural cálido, nunca onda sierra chillona)
-        const gRaw = fase < 0.42 ? 0.5 * (1 - Math.cos(Math.PI * (fase / 0.42)))
-          : fase < 0.58 ? Math.cos(Math.PI * 0.5 * ((fase - 0.42) / 0.16)) : 0;
-        const glot = (gRaw - glotPrev) * 14.5 + rnd() * 0.028;
+        // Pulso glotal LF suavizado con aspiración fisiológica leve
+        const oq = 0.56;
+        const gRaw = fase < oq * 0.72 ? 0.5 * (1 - Math.cos(Math.PI * (fase / (oq * 0.72))))
+          : fase < oq ? Math.cos(Math.PI * 0.5 * ((fase - oq * 0.72) / (oq * 0.28))) : 0;
+        const dGlot = (gRaw - glotPrev) * 12.6;
         glotPrev = gRaw;
+        const glot = dGlot + rnd() * (0.018 + 0.018 * gRaw);
 
-        // Coarticulación suave hacia el siguiente segmento con formantes definidos
-        const nxt = segs[segIdx + 1];
-        const tarF = sp.f || (nxt && nxt.spec.f) || defF;
-        const tarBw = sp.bw || defBw;
-        const coef = u > 0.72 && nxt && nxt.spec.f ? (u - 0.72) / 0.28 : 0;
+        // Coarticulación bidireccional suave (anticipatoria y regresiva) + locus de oclusivas
+        const baseF = sp.f || LOCUS_P[sg.ph] || (nxt && nxt.spec.f) || (prv && prv.spec.f) || defF;
+        const prevF = prv ? (prv.spec.f || LOCUS_P[prv.ph] || baseF) : baseF;
+        const nextF = nxt ? (nxt.spec.f || LOCUS_P[nxt.ph] || baseF) : baseF;
+        const baseBw = sp.bw || defBw;
+        const wPrev = u < 0.24 ? (1 - sStep(u / 0.24)) * 0.42 : 0;
+        const wNext = u > 0.66 ? sStep((u - 0.66) / 0.34) * 0.48 : 0;
+        const wBase = 1 - wPrev - wNext;
         for (let k = 0; k < 4; k++) {
-          const mF = coef > 0 ? tarF[k] * (1 - coef) + nxt.spec.f[k] * coef : tarF[k];
-          curF[k] += (mF - curF[k]) * 0.045;
-          curBw[k] += (tarBw[k] - curBw[k]) * 0.045;
+          const mF = prevF[k] * wPrev + baseF[k] * wBase + nextF[k] * wNext;
+          curF[k] += (mF - curF[k]) * kF;
+          curBw[k] += (baseBw[k] * 1.08 - curBw[k]) * kF;
         }
 
-        let env = 1;
-        if (u < 0.12) env = u / 0.12;
-        else if (u > 0.86) env = (1 - u) / 0.14;
-        if (sg.ton && sp.tipo === "v") env *= 1.18;
+        // Envolvente de voz LIGADA entre segmentos sonoros (cero cortes entre sílabas ni letras sonoras)
+        const conVoz = sp.tipo === "v" || sp.tipo === "s" || sp.tipo === "n" || sp.tipo === "r" || (sp.tipo === "rh" && u > 0.30) || (sp.tipo === "f" && sp.voz);
+        let tarAmp = 0;
+        if (conVoz) {
+          tarAmp = sp.amp * (sg.ton && sp.tipo === "v" ? 1.14 : 1.0);
+          if (!prv || !prv.son) {
+            const tIn = Math.min(0.024, sg.dur * 0.35);
+            if (t - sg.t0 < tIn) tarAmp *= sStep((t - sg.t0) / Math.max(0.004, tIn));
+          }
+          if (!nxt || !nxt.son) {
+            const tOut = Math.min(0.044, sg.dur * 0.42);
+            const rem = (sg.t0 + sg.dur) - t;
+            if (rem < tOut) tarAmp *= sStep(rem / Math.max(0.005, tOut));
+          }
+          // Decaimiento prosódico sereno en el cierre de la palabra
+          if (progW > 0.84) tarAmp *= 1 - 0.28 * sStep((progW - 0.84) / 0.16);
+        }
+        curAmp += (tarAmp - curAmp) * kA;
 
         let vozOut = 0;
-        const conVoz = sp.tipo === "v" || sp.tipo === "s" || sp.tipo === "n" || sp.tipo === "r" || (sp.tipo === "rh" && u > 0.32) || (sp.tipo === "f" && sp.voz);
-        if (conVoz) {
+        if (curAmp > 0.001) {
           let srcV = glot;
           if (sp.tipo === "r" || sp.tipo === "rh") {
-            // Vibrante alveolar /r/ con 2–3 golpes rápidos (~27 Hz)
-            srcV *= 0.45 + 0.55 * Math.max(0, Math.sin(2 * Math.PI * 27 * (t - sg.t0)));
+            srcV *= 0.52 + 0.48 * Math.max(0, Math.sin(2 * Math.PI * 26 * (t - sg.t0)));
           }
-          const pesos = sp.tipo === "n" ? [1.15, 0.34, 0.22, 0.12] : [1.0, 0.72, 0.46, 0.26];
+          const pesos = sp.tipo === "n" ? [1.22, 0.32, 0.20, 0.10] : [1.05, 0.70, 0.42, 0.22];
           for (let k = 0; k < 4; k++) {
             const rad = Math.exp(-Math.PI * curBw[k] / sr);
             const a1 = 2 * rad * Math.cos(2 * Math.PI * curF[k] / sr);
@@ -5674,21 +5806,25 @@
             y2[k] = y1[k]; y1[k] = y;
             vozOut += y * pesos[k];
           }
-          vozOut *= sp.amp * env;
+          // Resonancia de pecho cálida (~270 Hz) + suavizado labial
+          const rP = Math.exp(-Math.PI * 160 / sr), a1P = 2 * rP * Math.cos(2 * Math.PI * 270 / sr), a2P = -rP * rP;
+          const pY = (1 - a1P - a2P) * srcV + a1P * pechoY1 + a2P * pechoY2;
+          pechoY2 = pechoY1; pechoY1 = pY;
+          lpVoz += (vozOut + pY * 0.22 - lpVoz) * kLp;
+          vozOut = lpVoz * curAmp;
         }
 
         let ruiOut = 0;
-        const conRuido = sp.tipo === "f" || sp.tipo === "p" || (sp.tipo === "rh" && u <= 0.45);
+        const conRuido = sp.tipo === "f" || sp.tipo === "p" || (sp.tipo === "rh" && u <= 0.42);
         if (conRuido) {
           let rEnv = 0;
           if (sp.tipo === "p") {
-            // Oclusiva griega sorda no aspirada: silencio de cierre (0..0.64) + breve explosión nítida (0.64..1)
-            const burst = (t - sg.t0) - sg.dur * 0.64;
-            if (burst >= 0 && burst <= (sp.vot || 0.018)) {
-              rEnv = Math.exp(-burst / 0.0065) * 1.35;
-            }
+            const burst = (t - sg.t0) - sg.dur * 0.62;
+            if (burst >= 0 && burst <= (sp.vot || 0.018)) rEnv = Math.exp(-burst / 0.0068) * 1.18;
           } else {
-            rEnv = env * (sp.tipo === "rh" ? 0.65 : 1);
+            const eIn = u < 0.16 ? sStep(u / 0.16) : 1;
+            const eOut = u > 0.82 ? sStep((1 - u) / 0.18) : 1;
+            rEnv = Math.min(eIn, eOut) * (sp.tipo === "rh" ? 0.58 : 0.86);
           }
           if (rEnv > 0.002) {
             const w0 = 2 * Math.PI * Math.min(sr * 0.44, sp.fn || 2400) / sr;
@@ -5697,23 +5833,23 @@
             const xIn = rnd();
             const ny = (b0 * xIn + b2 * nx2 - a1 * ny1 - a2 * ny2) / a0;
             nx2 = nx1; nx1 = xIn; ny2 = ny1; ny1 = ny;
-            ruiOut = ny * sp.amp * rEnv * 1.9;
+            ruiOut = ny * sp.amp * rEnv * 1.68;
           }
         }
-        pcm[i] = Math.tanh((vozOut + ruiOut) * 1.18) * 0.86;
+        pcm[i] = Math.tanh((vozOut + ruiOut) * 1.12) * 0.88;
       }
-      // Micro-sala cálida de estudio (eco corto de 24 ms al 11 %) y normalización limpia sin clipping
-      const dly = Math.round(sr * 0.024);
+      // Micro-sala cálida natural (reflexiones tempranas 19 ms y 33 ms muy suaves) + normalización limpia
+      const d1 = Math.round(sr * 0.019), d2 = Math.round(sr * 0.033);
+      for (let i = d2; i < nM; i++) pcm[i] += pcm[i - d1] * 0.08 + pcm[i - d2] * 0.045;
       let pico = 0.001;
-      for (let i = dly; i < nM; i++) pcm[i] += pcm[i - dly] * 0.11;
       for (let i = 0; i < nM; i++) { const a = Math.abs(pcm[i]); if (a > pico) pico = a; }
-      const gan = Math.min(1.4, 0.88 / pico);
+      const gan = Math.min(1.45, 0.88 / pico);
       for (let i = 0; i < nM; i++) pcm[i] *= gan;
       const buf = ctx ? ctx.createBuffer(1, nM, sr) : null;
       if (buf) buf.getChannelData(0).set(pcm);
       const res = { buf, pcm, sr, dur: durTot, marcas, afi: an.afi, silabas: an.silabas };
       cache.set(clave, res);
-      if (cache.size > 40) cache.delete(cache.keys().next().value);
+      if (cache.size > 48) cache.delete(cache.keys().next().value);
       return res;
     };
     const hablar = (forma, op = {}) => {
@@ -5722,70 +5858,132 @@
       if (!ctx) return null;
       const s = sintetizar(ctx, forma, !!op.lento);
       if (!s || !s.buf) return s;
-      const src = ctx.createBufferSource();
-      src.buffer = s.buf;
-      const g = ctx.createGain();
-      g.gain.value = 0.92;
-      src.connect(g); g.connect(ctx.destination);
-      fuenteAct = src;
+      const miSes = sesionId;
+      const repetir = op.repetir === false ? 1 : (op.repetir > 0 ? op.repetir : 2);
+      const pausaMs = op.pausaMs != null ? Math.max(0, +op.pausaMs) : 1500;
+      ultInfo = { forma, lento: !!op.lento, repetir, pausaMs, dur: s.dur, vecesIniciadas: 0 };
       finAct = () => { if (op.alFin) op.alFin(); };
-      if (op.alSilaba) {
-        s.marcas.forEach((m) => {
-          timersAct.push(setTimeout(() => { try { op.alSilaba(m.si); } catch (e) {} }, Math.max(0, Math.round(m.t0 * 1000))));
-        });
-      }
-      src.onended = () => {
-        if (fuenteAct === src) fuenteAct = null;
-        for (const id of timersAct) clearTimeout(id);
-        timersAct = [];
-        const fn = finAct; finAct = null;
-        if (fn) try { fn(); } catch (e) {}
+      const tocarVez = (vez) => {
+        if (miSes !== sesionId) return;
+        ultInfo.vecesIniciadas = vez;
+        if (op.alInicio) try { op.alInicio(vez, repetir); } catch (e) {}
+        const src = ctx.createBufferSource();
+        src.buffer = s.buf;
+        const g = ctx.createGain();
+        g.gain.value = 0.92;
+        src.connect(g); g.connect(ctx.destination);
+        fuenteAct = src;
+        src.onended = () => {
+          if (fuenteAct === src) fuenteAct = null;
+          if (miSes !== sesionId) return;
+          if (vez < repetir) {
+            if (op.alPausa) try { op.alPausa(vez, repetir); } catch (e) {}
+            timersAct.push(setTimeout(() => tocarVez(vez + 1), pausaMs));
+          } else {
+            const fn = finAct; finAct = null;
+            if (fn) try { fn(); } catch (e) {}
+          }
+        };
+        try { src.start(0); } catch (e) { parar(); }
       };
-      try { src.start(0); } catch (e) { parar(); }
+      tocarVez(1);
       return s;
     };
-    const api = { analizar, sintetizar, hablar, parar, tamCache: () => cache.size };
+    const api = { analizar, sintetizar, hablar, parar, tamCache: () => cache.size, ultimo: () => ultInfo };
     window.BiExKoine = api;
     return api;
   })();
 
-  const TXT_PRON = "El audio koiné del siglo I sintetiza localmente cada fonema reconstruido del griego bíblico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Junto a las transcripciones académicas (Koiné y Erasmiana), la lectura BiEx presenta la palabra en sílabas para hispanohablantes con la tónica resaltada.";
+  const botonAudioMini = (forma, etiqueta) => {
+    const f = String(forma || "").split(/[,·;()[\]]/)[0].trim();
+    if (!f || !/[α-ωΑ-Ωἀ-῿]/.test(f)) return null;
+    const bt = h("button", {
+      type: "button", class: "aud-mini",
+      title: "Escuchar " + f + " en griego koiné s. I (2 veces)",
+      "aria-label": etiqueta || ("Escuchar " + f + " en griego koiné del siglo I"),
+      onclick: (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const ya = bt.classList.contains("sonando");
+        KOINE_S1.parar();
+        if (ya) return;
+        bt.classList.add("sonando");
+        KOINE_S1.hablar(f, { alFin: () => bt.classList.remove("sonando") });
+      },
+    }, svg(ICO.voz));
+    return bt;
+  };
+  const cajonAudioFormas = (formas, titulo) => {
+    const unicas = [];
+    const vistas = new Set();
+    for (const item of formas || []) {
+      const f = String(typeof item === "string" ? item : item.f || "").split(/[,·;()[\]]/)[0].trim();
+      const k = claveGr(f);
+      if (!f || !k || vistas.has(k) || !/[α-ωΑ-Ωἀ-῿]/.test(f)) continue;
+      vistas.add(k);
+      unicas.push({ f, tl: typeof item === "object" ? (item.tl || tlDe(f)) : tlDe(f) });
+      if (unicas.length >= 24) break;
+    }
+    if (!unicas.length) return null;
+    return h("details", { class: "fl-aud-det" },
+      h("summary", {}, svg(ICO.voz), h("span", { text: titulo || "Escuchar pronunciación de sus formas" }), h("small", { text: unicas.length + (unicas.length === 1 ? " forma" : " formas") })),
+      h("div", { class: "fl-aud-grid" }, unicas.map(({ f, tl }) => {
+        const ch = h("button", {
+          type: "button", class: "fl-aud-chip",
+          "aria-label": "Escuchar " + f + " en griego koiné s. I",
+          onclick: (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const ya = ch.classList.contains("sonando");
+            KOINE_S1.parar();
+            if (ya) return;
+            ch.classList.add("sonando");
+            KOINE_S1.hablar(f, { alFin: () => ch.classList.remove("sonando") });
+          },
+        }, svg(ICO.voz), h("b", { lang: "grc", text: f }), tl ? h("small", { text: tl }) : null);
+        return ch;
+      })));
+  };
+
+  const TXT_PRON = "El audio koiné del siglo I sintetiza localmente la palabra completa con coarticulación fluida según el consenso histórico-filológico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Cada reproducción suena 2 veces con 1,5 s de pausa para facilitar su escucha.";
   const lineaPron = (forma, tl) => {
     const p = pronunciar(forma), sil = (() => { try { const x = tl || tlDe(forma); return x ? silabasBiEx(x) : null; } catch (e) { return null; } })();
     const info = h("p", { class: "fp-pron-info", hidden: true, text: TXT_PRON });
     const bInfo = h("button", { type: "button", class: "fp-pron-i", "aria-label": "De dónde vienen estas pronunciaciones", "aria-expanded": "false", title: "De dónde vienen estas pronunciaciones",
       onclick: (e) => { e.stopPropagation(); info.hidden = !info.hidden; bInfo.setAttribute("aria-expanded", String(!info.hidden)); if (!info.hidden && info.animate && document.documentElement.getAttribute("data-mov") !== "no") info.animate([{ opacity: 0, transform: "translateY(-4px)" }, { opacity: 1, transform: "none" }], { duration: 240, easing: "ease-out" }); } }, "i");
-    const silEls = [];
-    const silNodo = sil ? h("b", { class: "pr-sil" }, sil.flatMap((x, i) => {
-      const sp = h("span", { class: "pr-s" }, x.ton ? h("em", { text: x.t }) : x.t);
-      silEls.push(sp);
-      return [i ? h("i", { text: "·" }) : null, sp];
-    }).filter(Boolean)) : null;
-    const limpiarSils = () => silEls.forEach((el) => el.classList.remove("sonando"));
-    const bEsc = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar pronunciación histórica en griego koiné del siglo I", "aria-label": "Escuchar " + forma + " en griego koiné del siglo I" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
-    const bLen = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar más despacio (0,7×) para estudiar cada sílaba", "aria-label": "Escuchar " + forma + " más despacio en griego koiné del siglo I", text: "0,7×" });
+    const silNodo = sil ? h("b", { class: "pr-sil" }, sil.flatMap((x, i) => [i ? h("i", { text: "·" }) : null, h("span", { class: "pr-s" }, x.ton ? h("em", { text: x.t }) : x.t)]).filter(Boolean)) : null;
+    const bEsc = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar palabra completa en griego koiné s. I (2 veces)", "aria-label": "Escuchar " + forma + " en griego koiné del siglo I (2 veces)" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
+    const bLen = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar más despacio (0,7× · 2 veces)", "aria-label": "Escuchar " + forma + " más despacio en griego koiné del siglo I", text: "0,7×" });
+    const caja = h("div", { class: "fp-pron-caja" });
+    const iluminarPalabra = (on) => {
+      if (silNodo) silNodo.classList.toggle("sonando", on);
+      const pal = caja.parentElement && caja.parentElement.querySelector(".fp-g, .rr-gr, h1[lang='grc']");
+      if (pal) pal.classList.toggle("sonando", on);
+    };
     const disparar = (lento, btn) => (e) => {
       e.stopPropagation();
-      bEsc.classList.remove("sonando"); bLen.classList.remove("sonando"); limpiarSils();
+      const ya = btn.classList.contains("sonando");
+      KOINE_S1.parar();
+      if (ya) return;
+      bEsc.classList.remove("sonando"); bLen.classList.remove("sonando");
       btn.classList.add("sonando");
       KOINE_S1.hablar(forma, {
         lento,
-        alSilaba: (idx) => {
-          limpiarSils();
-          if (silEls.length) silEls[Math.min(idx, silEls.length - 1)].classList.add("sonando");
-        },
-        alFin: () => { btn.classList.remove("sonando"); limpiarSils(); },
+        repetir: 2,
+        pausaMs: 1500,
+        alInicio: () => iluminarPalabra(true),
+        alPausa: () => iluminarPalabra(false),
+        alFin: () => { btn.classList.remove("sonando"); iluminarPalabra(false); },
       });
     };
     bEsc.onclick = disparar(false, bEsc);
     bLen.onclick = disparar(true, bLen);
-    return h("div", { class: "fp-pron-caja" },
+    caja.append(
       h("p", { class: "fp-pron" },
         silNodo ? h("span", { class: "pr-biex", title: "Lectura BiEx para hispanohablantes: la transliteración de BiEx en sílabas, con la tónica resaltada" }, "BiEx ", silNodo) : null,
         h("span", { title: "Pronunciación histórica del griego koiné del siglo I en el alfabeto fonético internacional" }, "Koiné s. I ", h("b", { text: "[" + p.k + "]" })),
         h("span", { class: "pr-ult" }, h("span", { title: "Pronunciación académica erasmiana en el alfabeto fonético internacional" }, "Erasmiana ", h("b", { text: "[" + p.e + "]" })), bInfo)),
       h("div", { class: "fp-pron-aud" }, bEsc, bLen),
       info);
+    return caja;
   };
   // búsqueda de lemas compartida (concordancia y diccionario de raíces): griego, letras latinas, traducción o código Strong
   function buscadorLemas(X) {
@@ -8621,6 +8819,9 @@
   document.addEventListener("visibilitychange", () => latirCuenta());
   function enrutar() {
     if (!D) return;
+    ultHrefEnrutado = location.href;
+    document.documentElement.classList.remove("mp-fs-on", "cn-fs-on");
+    if (!/^#\/escudrina\/coloso(\/|$)/.test(location.hash || "")) document.documentElement.classList.remove("jg-col-inm");
     // (BiEx, 21-nov-2026, AF32) si la ventana de una palabra se cierra por un enlace, su palabra no queda marcada en el análisis
     for (const x of document.querySelectorAll('.analisis .pal[aria-pressed="true"]')) x.setAttribute("aria-pressed", "false");
     M.alCerrar = null;
@@ -8960,7 +9161,7 @@
     const sinMov25 = () => ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
     const escenaCss = () => {
       const hh = location.hash || "#/";
-      return hh === "#/" || hh === "" || /^#\/(mapa|escudrina\/coloso)(\/|\?|$)/.test(hh);
+      return hh === "#/" || hh === "" || /^#\/(mapa|escudrina\/(coloso|arbol|tesoro))(\/|\?|$)/.test(hh);
     };
     const bloqueado = () => document.hidden || sinMov25() || document.documentElement.classList.contains("con-modal");
     const escribirCss = (x, y) => {
@@ -11380,6 +11581,7 @@
           sEl("text", { y: "-8", "text-anchor": "middle" }, l.n));
         const elegir = () => {
           sel = l;
+          if (mapaFs) fsFichaOculta = false;
           const rt = rutaActiva();
           if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
           try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
@@ -11400,15 +11602,29 @@
     };
     const fsFicha = h("div", { class: "mp-fs-ficha", hidden: true });
     let mapaFs = false;
+    let fsFichaOculta = false;
+    const actFsFicha = () => {
+      const hay = mapaFs && !!sel;
+      fsFicha.hidden = !hay || fsFichaOculta;
+      fsPill.hidden = !hay || !fsFichaOculta;
+    };
+    const fsPill = h("button", {
+      type: "button",
+      class: "mp-fs-pill",
+      hidden: true,
+      onclick: () => { fsFichaOculta = false; actFsFicha(); },
+    });
+    const codPieLbl = h("small", {});
     const ponerMapaFs = (on) => {
       mapaFs = !!on;
+      if (mapaFs) fsFichaOculta = false;
       marco.classList.toggle("mp-fs", mapaFs);
       document.documentElement.classList.toggle("mp-fs-on", mapaFs);
       bMapaFs.setAttribute("aria-pressed", String(mapaFs));
       bMapaFs.textContent = mapaFs ? "✕" : "⛶";
       bMapaFs.title = mapaFs ? "Salir de pantalla completa" : "Mapa a pantalla completa";
       bMapaFs.setAttribute("aria-label", bMapaFs.title);
-      fsFicha.hidden = !mapaFs || !sel;
+      actFsFicha();
       requestAnimationFrame(() => { vb = presetDe(capa); aplicarVb(); });
     };
     const limpiarMapaFs = () => {
@@ -11419,6 +11635,15 @@
     const onKeyMapa = (e) => { if (e.key === "Escape" && mapaFs) ponerMapaFs(false); };
     window.addEventListener("keydown", onKeyMapa);
     window.addEventListener("hashchange", limpiarMapaFs);
+
+    const irAlMapa = () => {
+      if (!sel) return;
+      const w = sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 132 : 210;
+      centrarEn(sel, w, true);
+      if (!mapaFs) {
+        try { marco.scrollIntoView({ behavior: sinMovimiento() ? "auto" : "smooth", block: "center" }); } catch (e) {}
+      }
+    };
 
     const pintarFicha = () => {
       if (!sel) return;
@@ -11441,10 +11666,11 @@
           h("h4", { text: "Pasajes clave en BiEx" }),
           h("div", { class: "mp-cita-l" }, citas)),
         h("div", { style: "display:flex;flex-wrap:wrap;gap:8px;margin-top:2px" },
-          h("button", { type: "button", class: "btn chico", onclick: () => centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") || sel.reg.includes("Yardḗn") ? 132 : 210, true) }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
+          h("button", { type: "button", class: "btn chico", onclick: irAlMapa }, svg(ICO.lupa), h("span", { text: "Acercar aquí" })),
           h("a", { class: "btn chico", href: "#/cronologia" }, svg(ICO.tiempo), h("span", { text: "Línea del tiempo" }))));
-      // Ficha compacta flotante para navegación en mapa a pantalla completa
-      const citasFs = sel.citas.slice(0, 3).map(([c, cap, v]) => {
+      codPieLbl.textContent = `Seleccionado: ${sel.n} (${sel.tr})`;
+      // PR #20 · Ficha completa desplazable en mapa a pantalla completa con botón Ocultar / Ver ficha
+      const citasFs = sel.citas.map(([c, cap, v]) => {
         const lb = libroDe(c);
         const et = lb ? (lb.t || lb.n) + " " + cap + ":" + v : c + " " + cap + ":" + v;
         return h("a", { class: "mp-cita" + (LEI.es(c, cap, v) ? " leido" : ""), href: "#/" + c + "/" + cap + "/l/" + v, onclick: () => ponerMapaFs(false) },
@@ -11452,13 +11678,17 @@
       });
       fsFicha.replaceChildren(
         h("div", { class: "mp-fs-f-cab" },
-          h("b", { text: sel.n }),
-          h("small", { text: sel.tr + " · " + sel.reg })),
+          h("div", { class: "mp-fs-f-tit" },
+            h("b", { text: sel.n }),
+            h("small", { text: sel.tr + " · " + sel.reg + (coordTxt ? " · " + coordTxt : "") + (leido ? " · Visitado ✓" : "") })),
+          h("button", { type: "button", class: "mp-fs-oc", onclick: () => { fsFichaOculta = true; actFsFicha(); } }, "Ocultar")),
+        h("p", { class: "mp-desc", text: sel.desc }),
         h("div", { class: "mp-cita-l" }, citasFs));
-      fsFicha.hidden = !mapaFs;
+      fsPill.textContent = "Ver ficha · " + sel.n;
+      actFsFicha();
     };
 
-    // PR #19 · Códice de lugares iluminado de museo con folios romanos, lomo encuadernado, efecto hoja de libro y gesto deslizar
+    // PR #19 + PR #20 · Códice de lugares iluminado de museo con folios romanos, giro 3D opaco y posición anclada sin saltos
     const pintarLista = () => {
       const q = sinMarcas(busq.value || "").toLowerCase().trim();
       const vis = visibles().filter((l) => !q || sinMarcas(l.n + " " + l.tr + " " + l.reg).toLowerCase().includes(q));
@@ -11482,13 +11712,17 @@
           class: "mp-cod-fila" + (lei ? " leido" : ""),
           "data-id": l.id,
           "aria-current": sel && l.id === sel.id ? "true" : "false",
-          onclick: () => {
+          onclick: (ev) => {
+            const btnRef = ev.currentTarget;
+            const y0 = btnRef.getBoundingClientRect().top;
             sel = l;
             const rt = rutaActiva();
             if (rt) { const k = rt.ids.indexOf(l.id); if (k >= 0) etapaIdx = k; }
             try { history.replaceState(history.state, "", urlHash("#/mapa/" + l.id)); } catch (e) {}
-            centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 148 : 260, true);
+            centrarEn(l, l.reg.includes("Yehudā́h") || l.reg.includes("Gālī́l") || l.reg.includes("Yardḗn") ? 148 : 260, false);
             pintarMapa(); pintarFicha(); sincronizarPaginaLibro(); pintarRutaBar();
+            const dy = btnRef.getBoundingClientRect().top - y0;
+            if (Math.abs(dy) > 0.5) window.scrollBy({ top: dy, left: 0, behavior: "instant" });
           },
         },
           h("i", { class: "mp-cod-dot", "aria-hidden": "true" }),
@@ -11567,7 +11801,7 @@
       h("span", {}, h("i", { style: "background:#6fc08f" }), "Visitado"),
       h("span", {}, h("i", { style: "background:#7fb2f5" }), "Rutas"));
     const pieHud = h("div", { class: "mp-pie-hud" }, leyenda, escalaHud);
-    const marco = h("div", { class: "mp-marco" }, rosaAstrolabioSVG(sEl), svgEl, ctrls, fsFicha, pieHud);
+    const marco = h("div", { class: "mp-marco" }, rosaAstrolabioSVG(sEl), svgEl, ctrls, fsFicha, fsPill, pieHud);
     const colMapa = h("div", { class: "mp-col-mapa" }, marco, rutaBar);
 
     const leidosTot = ATLAS_LUGARES.filter(lugarLeido).length;
@@ -11585,7 +11819,10 @@
           h("h2", { style: "font:500 1.16rem/1.2 var(--f-display)", text: "Códice de lugares" }),
           dirSub),
         h("label", { class: "libs-lupa-c" }, svg(ICO.buscar), busq),
-        dirCont))));
+        dirCont,
+        h("div", { class: "mp-cod-pie-acc" },
+          codPieLbl,
+          h("button", { type: "button", class: "btn chico oro", onclick: irAlMapa }, svg(ICO.lupa), h("span", { text: "Ver en el mapa" })))))));
 
     if (lugarId && porId.has(String(lugarId).toLowerCase())) {
       centrarEn(sel, sel.reg.includes("Yehudā́h") || sel.reg.includes("Gālī́l") ? 148 : 250, false);
@@ -11745,18 +11982,27 @@
         .map(([bi, n]) => D && D.libros[bi] ? (D.libros[bi].t || D.libros[bi].n) + " (" + n + ")" : "").filter(Boolean);
 
       const formaRaiz = lemaCorto(item.r);
-      const bAudR = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar pronunciación histórica en griego koiné del siglo I", "aria-label": "Escuchar " + formaRaiz + " en griego koiné del siglo I" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
-      const bAudL = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar despacio (0,7×)", "aria-label": "Escuchar " + formaRaiz + " más despacio", text: "0,7×" });
+      const grEl = h("p", { class: "rr-gr", lang: "grc", text: formaRaiz });
+      const bAudR = h("button", { type: "button", class: "fp-aud-btn", title: "Escuchar pronunciación histórica en griego koiné del siglo I (2 veces)", "aria-label": "Escuchar " + formaRaiz + " en griego koiné del siglo I" }, svg(ICO.voz), h("span", { text: "Escuchar koiné s. I" }));
+      const bAudL = h("button", { type: "button", class: "fp-aud-btn lento", title: "Escuchar despacio (0,7× · 2 veces)", "aria-label": "Escuchar " + formaRaiz + " más despacio", text: "0,7×" });
       const sonarRaiz = (lento, bt) => () => {
+        if (bt.classList.contains("sonando")) { KOINE_S1.parar(); return; }
         bAudR.classList.remove("sonando"); bAudL.classList.remove("sonando");
         bt.classList.add("sonando");
-        KOINE_S1.hablar(formaRaiz, { lento, alFin: () => bt.classList.remove("sonando") });
+        KOINE_S1.hablar(formaRaiz, {
+          lento,
+          repetir: 2,
+          pausaMs: 1500,
+          alInicio: () => grEl.classList.add("sonando"),
+          alPausa: () => grEl.classList.remove("sonando"),
+          alFin: () => { bt.classList.remove("sonando"); grEl.classList.remove("sonando"); },
+        });
       };
       bAudR.onclick = sonarRaiz(false, bAudR);
       bAudL.onclick = sonarRaiz(true, bAudL);
       const carta = h("article", { class: "rr-carta" },
         h("span", { class: "rr-caja-chip", text: badge }),
-        h("p", { class: "rr-gr", lang: "grc", text: formaRaiz }),
+        grEl,
         h("p", { class: "rr-tl", text: tlCorta(item.r) }),
         h("div", { class: "rr-aud-fila" }, bAudR, bAudL),
         h("p", { class: "rr-frec", text: `${fmt(item.total)} apariciones · ${item.fam.length === 1 ? "1 palabra" : "familia de " + fmt(item.fam.length) + " palabras"}` }),
@@ -12044,6 +12290,8 @@
       if (M.saltando) return;
       const sr = M.sinRuta; M.sinRuta = null;
       if (sr && performance.now() < sr.hasta && (sr.cualquiera || location.href === sr.url)) return;
+      if (typeof KOINE_S1 !== "undefined" && KOINE_S1.parar) KOINE_S1.parar();
+      ultHrefEnrutado = location.href;
       pasosApp++; resolverSeguir(); prepararPos(); enrutar();
     });
     if (enApp() && !EMBED && !(location.hash || "").replace(/^#\/?/, "")) { const u = store.get("ultimo", null), V = store.get("vista", null); if ((u && u.c && (!u.t || Date.now() - u.t < 60 * 864e5)) || (V && V.h && Date.now() - (+V.t || 0) < 60 * 864e5)) ponerHash("#/seguir"); }

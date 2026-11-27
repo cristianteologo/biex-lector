@@ -1051,3 +1051,65 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
 - `node --check app.js juego.js`, llaves balanceadas en `app.css` (`3328 / 3328`), `0` reglas `html.desplazando.*paused`, auditoría editorial (`0` palabras prohibidas, `0` posesivos ante «poder»): **CLEAN**.
 - Suite Playwright 3× HD (`verificar_pr19.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core` WCAG 2.1 AA: **`0` fallos funcionales, `0` `pageerror`, `0` violaciones `axe-core` en todas las vistas, `0 px` de desborde lateral en `280 / 390 / 1280 px`**, todas las capturas 3× HD y 2× HD inspeccionadas visualmente.
 - `python3 wix/sellar.py`: **al día**.
+
+
+---
+
+## Entrada #20 · PR #20 · Coloso Ultra HD 1024×1024, Fruto holográfico 3× giroscopio, Koiné s. I coarticulado 2×, Atlas opaco y ficha completa, perfil público en 1 pantalla, presencia lectora viva y armonía total (2026-11-27)
+
+### 0. Régimen operativo acordado con BiEx (Opción B)
+- BiEx aprobó la **Opción B**: fusión directa (`squash merge`) tras verificación completa en navegador real a 3× HD + Deque `axe-core` WCAG 2.1 AA + CI en verde (`revision` + `Cloudflare Pages`), dejando **registro técnico exhaustivo de cada cambio en las tres bitácoras** (`BITACORA_NEON.md`, `/home/antigravity/upload/bitacora_neon.md` y artefacto `APRENDIZAJES_NEON.md`) para la revisión eventual de Opus.
+
+### 1. Cambios entregados en PR #20 (16 mejoras verificadas)
+1. **El Coloso Ultra HD `1024 × 1024` + capa holográfica + 5 habilidades en `100dvh` + ataque exclusivo en inmersivo (`img/coloso-velo.webp`, `juego.js`):**
+   - Regenerada `img/coloso-velo.webp` (`1024 × 1024` WebP, `91 KB`, sin cruces, estrellas de 5 puntas ni rayos solares) con detalle de tela pétrea, capucha velada y grietas doradas incandescentes en el pecho (`object-position: 50% 28%`).
+   - Añadida capa `.jg-col-holo` con paralaje 2.5D y dos sigilos geométricos adicionales en `colosoSigilo(id, idx)` para las habilidades 4.ª y 5.ª.
+   - Rejilla compacta automática `.jg-col-habs.mas-de-3` en modo inmersivo (`100dvh`): enmarca limpiamente hasta **5 habilidades** en pantalla móvil (`bottom: 832 px` en `844 px`) sin desbordar ni requerir scroll.
+   - Regla estricta de ataque: pulsar cualquier botón de ataque **fuera del modo inmersivo** activa de inmediato el modo inmersivo **sin ejecutar el ataque ni abrir Resonancia** (verificado `POSTs: 0`, `inmNow: True`, `resHidden: True`).
+2. **Faro centrado exactamente en el eje del Escudo (`app.css`):**
+   - Ajustado `.faro-btn` a `left: calc(20.5px + env(safe-area-inset-left, 0px))` sin contar el tamaño del globo numérico `.faro-cnt`, logrando alineación matemática exacta con el centro del Escudo `.jg-med` (`faroCx = 35 px`, `medCx = 35 px`, `diff = 0 px`).
+3. **Píldora discreta de presencia lectora en vivo + modal comunitario (`app.css`, `juego.js`):**
+   - Creada `.jg-pres-pill` en el riel inferior de lectura (`right: 54px; bottom: 20px;`, `8 px` despejada de `.saltos-rap` y `26 px` despejada de «Leído», atenuada con `.en-pie`).
+   - Oculta por completo cuando no hay otros lectores ni salas abiertas (`hidden: True` si solo está el propio lector o `0` personas); al tocarla abre `abrirModalPresenciaLectura()` (`.jg-pres-mod`) listando lectores en vivo (con salto directo a su capítulo y perfil) y salas abiertas.
+4. **Rescate global de toques durante desplazamiento por inercia + pausa universal de animaciones fuera de pantalla (`app.js`, `app.css`):**
+   - `SEL_TAP` en `pointerdown`/`pointermove`/`pointerup` dispara `.click()` a `45 ms` cuando un toque limpio (`< 10 px`, `< 340 ms`) durante `html.desplazando` es absorbido por el navegador móvil al frenar el desplazamiento.
+   - `IntersectionObserver` universal (`IO_FUERA`, `window.BiExPausaFuera` + `MutationObserver` con throttle) congela con `.anim-fuera { animation-play-state: paused !important }` cualquier elemento animado fuera del área visible (`5` elementos pausados al bajar en portada).
+5. **Gesto `Atrás` blindado desde Biblioteca y limpieza total de pantallas completas (`app.js`, `juego.js`):**
+   - `irDesdeModal`, `popstate`, `enrutar()` y `hashchange` aseguran regreso limpio desde Biblioteca hacia las 4 herramientas (`Sinopsis`, `Constelación`, `Atlas bíblico`, `Repaso de raíces`) al capítulo previo, retirando siempre `mp-fs-on`, `cn-fs-on`, `jg-col-inm` y deteniendo audio `KOINE_S1` activo.
+6. **Audio histórico Koiné siglo I coarticulado continuo + 2× con pausa de `1,5 s` + iluminación de palabra completa + Formas/Raíz (`app.js`, `app.css`):**
+   - Eliminados los cortes a cero entre fonemas en `KOINE_S1`: ahora las transiciones vocal↔consonante fluyen por coarticulación continua (`silentRuns: 0` en `ἀγάπη`, `afi: aˈɣape̝`), reproduciendo automáticamente **2 veces con pausa exacta de `1500 ms`** (`repetir: 2`, `pausaMs: 1500`) e iluminando la palabra completa (`.pr-sil.sonando`, `.fp-g.sonando`, `.rr-gr.sonando`).
+   - Añadido `botonAudioMini()` y cajón plegable `cajonAudioFormas()` en `vistaPalabra`, `bloqueRaiz`, `tablaFormas` (`.tf-f.tf-aud`) y `vistaRepasoRaices`.
+7. **Atlas Bíblico: hojas 3D opacas en Códice, 0 px de salto al tocar lugar, botón «Ver en el mapa» y ficha completa en pantalla completa (`app.js`, `app.css`):**
+   - Base opaca explícita (`background-color: var(--hoja)` / `#fcf8ee`, `rgb(14, 14, 16)`) en `.mp-cod-libro .lp-hoja` para doblado 3D real sin transparencias.
+   - Tocar una fila del Códice de lugares mantiene la pantalla quieta (`window.scrollBy({ top: dy, behavior: "instant" })`, verificado `diff = 0,25 px`) y ofrece el botón explícito **«Ver en el mapa»** (`.mp-cod-pie-acc`) en el pie de ficha.
+   - En pantalla completa (`⛶`), `.mp-fs-ficha` muestra la ficha completa desplazable con botón **«Ocultar»** (`.mp-fs-oc`) que la repliega en la píldora **«Ver ficha · …»** (`.mp-fs-pill`).
+8. **Escudriña `Hoy`, `Mundo`, `Tesoro` y navegación de insignias (`juego.js`):**
+   - Retirado `tarjetaAjedrez(true)` de `Hoy` (Ajedrez bíblico queda exclusivamente en `Mundo`).
+   - Rejilla simétrica **2 × 2 en móvil / 4 en fila en escritorio (`≥ 640 px`)** en `Tus reservas` (`.jg-cifras.cuatro`).
+   - **Misión mundial:** separación con salto de línea (`.jg-mm-bl`, `margin-top: 12px`) entre personas/tiempo restante, fecha/hora local y condiciones de premio.
+   - **Botones armonizados y centrados:** `.jg-acciones { justify-content: center }`, `.jg-acciones .btn { flex: 0 1 auto }` y tamaño equilibrado `btn chico` en `Ver mi liga` (`34 px`), `Participar leyendo ahora` (`34 px`), `Ver mi compañía`, `Clasificación de compañías`, `Ver mi árbol` y `Cuenta, emblema y preferencias`.
+   - **Indicador visual de insignia pendiente:** `FOCO_INSIG`, `insigniaMundo`, `insigniaSalas` y `resaltarZona` (incluyendo `.jg .jg-coloso`) adjuntan la píldora discreta `.jg-aviso-foco` directamente en la tarjeta origen (`2 misiones pendientes hoy` en *Misiones de hoy*, `5 cargas listas contra El Coloso` en *El Coloso de la Tradición*, salas abiertas en *Juntos* o *Asegura tu cuenta* en *Más*).
+9. **Fruto del espíritu holográfico + profundidad + giroscopio 3× y Cosecha 2.5D (`juego.js`, `app.js`):**
+   - Habilitado `INMERSION_25D.escenaCss()` también para `#/escudrina/arbol` y `#/escudrina/tesoro` (mantiene **0 % CPU** en capítulos de lectura).
+   - Granada viva holográfica 3D con prisma iridiscente, sombra flotante y respuesta **3× al giroscopio (`±16,5° Y / ±14,5° X`)** tanto en la copa del Árbol (`.ap-gr-b` con `<svg>` vivo + `.ap-gr-som` + `.ap-gr-holo`, retirado el `<g class="ap-granada">` estático para evitar doble trazado) como en la tarjeta inferior (`.fr-gr` + `.fr-gr-som` + `.fr-holo`), verificado con `matrix3d` activo.
+   - Pedestal 2.5D con reflejo biselado y profundidad en `.co-medidor` tras recoger la cosecha (conservando el pivote exacto `50% 85,7%` de `.co-aguja`), y destello perlado sutil en *Progreso por libro* (`.lk-lib-a::after`).
+10. **Fila completa clicable en listas de jugadores + Perfil público compacto en 1 sola pantalla móvil (`juego.js`):**
+    - Delegación global en `.jg-fila-jug` (respetando fotos `.emb-foto`, enlaces y otros botones) que abre el perfil público rediseñado (`.jg-jp`): cabecera horizontal `.jg-jp-top`, rejilla compacta `3 × 2` de métricas, `Gesto de compañía` en rejilla simétrica `2 × 2` móvil (`4` columnas en `≥ 440 px`) y pie comparativo, todo dentro de **1 sola pantalla móvil sin desplazamiento** (`scrollH = clientH = 781 px`, `jpH = 626 px`).
+11. **Ajuste de espaciado vertical de versos y armonización tipográfica global (`app.css`, `juego.js`):**
+    - Espaciado vertical afinado en `.vl` y `.continuo` (`lh = 24,01 px`, `vlPadB = 24,10 px`) y elevación de ~48 micro-etiquetas `.54rem–.68rem` a `.72rem–.74rem` en lector y Escudriña (respetando créditos legales).
+
+### 2. Comprobaciones pasadas (Entrada #20)
+- `node --check app.js juego.js`, llaves balanceadas (`app.css`: `3383 / 3383`; `juego.js`: `2310 / 2310`), `0` nuevas reglas `:has()`, `0` reglas `desplazando.*paused`, `img/coloso-velo.webp` `1024 × 1024` WebP, auditoría editorial (`0` palabras prohibidas, `0` posesivos ante «poder»): **CLEAN**.
+- Suite Playwright 3× HD (`verificar_pr20.py`, Oscuro y Pergamino, `280 / 390 / 1280 px`) + Deque `axe-core` WCAG 2.1 AA: **`0` errores JS, `0` fallos funcionales, `0` violaciones `axe-core` en todas las vistas, `0 px` de desborde en `280 / 390 / 1280 px`**, y todas las capturas 3× HD / 2× HD inspeccionadas visualmente.
+- `python3 wix/sellar.py`: **al día**.
+
+### 3. Hoja de ruta aprobada por BiEx (PRs #21+) y notas pendientes
+- **6 ideas de alto impacto aprobadas para hoja de ruta:**
+  1. **Lupa Interlineal de Manuscritos:** comparación en paralelo de testigos antiguos (`𝔓⁴⁶/𝔓⁶⁶/𝔓⁷⁵, א, B, A`) con deslizador cronológico de siglos.
+  2. **Hilos de Oro:** recorridos cronológicos curados por raíz griega a lo largo de la Nueva Voluntad.
+  3. **Banco de Voz Humana / Neural Real en caché:** grabaciones o modelos neurales calibrados al koiné s. I (Allen/Buth/Horrocks/Gignac) para las 300–500 palabras más frecuentes en Opus/MP3 ligero (`audio/koine/` o R2 + caché SW), manteniendo `KOINE_S1` local como respaldo instantáneo offline para las ~5.400 palabras.
+  4. **Modo Estudio en Pantalla Dividida** para tableta/escritorio (`≥ 1080 px`).
+  5. **Diario de Estudio Exportable a PDF / Libro Imprimible** (notas, marcados, glosas y citas).
+  6. **Constelación 3D «Viaje por la Red»:** camino dorado más corto entre dos conceptos léxicos.
+- **Nota sobre DigiVatLib (`Vat. gr. 1209`) e INTF Münster (`app.js:3999–4007`):** actualmente operan como enlaces externos compactos en dos renglones introducidos por Opus (`commit 128724c`, 13-nov-2026); ni en `peticiones-pagina-web-biex.md` ni en el historial git existe un diseño aparte de carga/visor embebido (y ambas instituciones restringen `iframe` por `X-Frame-Options`/`CSP`). Pendiente confirmación de BiEx sobre el diseño específico de tarjeta/carga deseado para implementarlo en PR #21.
+- **Pausados / Diferidos:** `B8` y `A3` siguen en pausa; la revisión de definiciones Strong en español se tratará en conversación dedicada.
