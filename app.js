@@ -89,7 +89,8 @@
     tiempo: '<path d="M4 12h16" ' + L1 + '/><circle cx="7" cy="12" r="1.6" fill="currentColor"/><circle cx="12.5" cy="12" r="1.6" fill="currentColor"/><circle cx="18" cy="12" r="2.4" ' + L1 + '/><path d="M7 8.5V6M12.5 15.5V18M18 8V5.5" ' + L1 + '/>',
     filtro: '<path d="M4.5 5.5h15l-5.8 7v5.3l-3.4 1.7v-7z" ' + L1 + '/>',
     voz: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" ' + L1 + '/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" ' + L1 + '/>',
-    contemplar: '<path d="M2.6 12s3.6-6 9.4-6 9.4 6 9.4 6-3.6 6-9.4 6-9.4-6-9.4-6z" ' + L1 + '/><circle cx="12" cy="12" r="2.7" ' + L1 + '/>',
+    contemplar: '<path d="M4 8.2V6.2A2.2 2.2 0 0 1 6.2 4h2M15.8 4h2A2.2 2.2 0 0 1 20 6.2v2M20 15.8v2a2.2 2.2 0 0 1-2.2 2.2h-2M8.2 20h-2A2.2 2.2 0 0 1 4 17.8v-2" ' + L1 + '/><path d="M7.8 9.6c1.4-.8 2.9-.8 4.2.2 1.3-1 2.8-1 4.2-.2v5.6c-1.4-.8-2.9-.8-4.2.2-1.3-1-2.8-1-4.2-.2z M12 9.8v5.6" ' + L1 + '/>',
+    ojo: '<path d="M2.6 12s3.6-6 9.4-6 9.4 6 9.4 6-3.6 6-9.4 6-9.4-6-9.4-6z" ' + L1 + '/><circle cx="12" cy="12" r="2.7" ' + L1 + '/>',
     constelacion: '<circle cx="12" cy="11.5" r="2.3" fill="currentColor"/><circle cx="5.2" cy="6.8" r="1.7" ' + L1 + '/><circle cx="19" cy="6.2" r="1.7" ' + L1 + '/><circle cx="6.2" cy="18" r="1.7" ' + L1 + '/><circle cx="18.2" cy="17.5" r="1.7" ' + L1 + '/><path d="M6.8 7.8l3.3 2.3M17.4 7.2l-3.6 2.9M7.6 16.8l3-3.6M16.7 16.3l-3.1-3.2M6.9 6.6l10.4-.4" ' + L1 + ' opacity=".82"/>',
     tarjeta: '<rect x="4" y="3.5" width="16" height="17" rx="2.4" ' + L1 + '/><path d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5.2" ' + L1 + '/><circle cx="16.2" cy="15.5" r="1.15" fill="currentColor"/>',
     pausa: '<path d="M9 6v12M15 6v12" ' + L1 + '/>',
@@ -827,7 +828,7 @@
   }
   const esLista = (hh) => /^#\/(libros)?$/.test(hh || "");
   function anotarPos() {
-    if (!RP.guardar || !RP.clave) return;
+    if (!RP.guardar || !RP.clave || (typeof modal !== "undefined" && modal && modal.open)) return;
     const y = Math.round(window.scrollY);
     const a = document.querySelector("#vista .vl, #vista .vs, #vista .av") ? capturarAncla(true) : null;
     const inm = document.documentElement.classList.contains("inmersivo");
@@ -1354,13 +1355,25 @@
     if (pend && !porRuta && pend !== rutaVista) mostrarRuta(pend);
     repintarAdelante();
   });
-  // Neon (23, 24 y 25-nov-2026): al salir de una ventana (Biblioteca, Verso, Tu faro) hacia otra ruta, guarda primero la posición
-  // exacta actual y reemplaza EN SU LUGAR la entrada temporal de la ventana con la ruta nueva (sin hacer history.go(-1) + hashchange
-  // que competía en Chrome Android y en marcos incrustados). Así la entrada inmediatamente anterior queda intacta y el gesto «Atrás»
-  // regresa siempre al píxel exacto de la vista previa.
-  let ultHrefEnrutado = "";
+  // Neon (23, 24, 25 y 27-nov-2026): al salir de una ventana (Biblioteca, Verso, Tu faro, Atributos, Hallazgos…) hacia otra ruta,
+  // guarda primero la posición exacta actual (tanto del lector como de Escudriña) y reemplaza EN SU LUGAR la entrada temporal de
+  // la ventana con un estado limpio {} (sin sobrescribir RP.clave ni POS[origen]). Así prepararPos() crea una clave fresca,
+  // citaDirecta y pasoAdelante(true) funcionan siempre, y «Atrás» vuelve al píxel exacto de la vista previa incluso en Wix EMBED.
+  let ultHrefEnrutado = "", ultPopEnrutadoEn = 0, ORIGEN_MODAL = null;
   function irDesdeModal(accion) {
-    anotarPos();
+    if (!modal.open) anotarPos();
+    const mf = modal.open && M.fondo && M.fondo.clave === RP.clave ? M.fondo : null;
+    const yOrig = mf ? mf.y : Math.round(window.scrollY);
+    const aOrig = mf ? mf.a : (document.querySelector("#vista .vl, #vista .vs, #vista .av") ? capturarAncla(true) : null);
+    const iOrig = mf ? mf.i : (document.documentElement.classList.contains("inmersivo") ? 1 : 0);
+    const hOrig = mf ? mf.h : (location.hash || "#/");
+    if (RP.clave && (yOrig > 0 || (aOrig && !aOrig.tope))) {
+      POS[RP.clave] = aOrig && !aOrig.tope ? { y: yOrig, a: aOrig, f: firmaVista(), i: iOrig } : iOrig ? { y: yOrig, i: 1 } : yOrig;
+      persistirPos();
+    }
+    ORIGEN_MODAL = { h: hOrig, y: yOrig, a: aOrig && !aOrig.tope ? aOrig : null, i: iOrig, clave: RP.clave };
+    M.fondo = null;
+    try { if (window.BiExJuego && window.BiExJuego.guardarVista) window.BiExJuego.guardarVista(); } catch (e) {}
     M.sinRuta = null; M.cortar = false;
     const navegarEnSitio = (dest) => {
       const hh = String(dest || "");
@@ -1369,13 +1382,17 @@
         try { history.replaceState({ bx: RP.clave }, "", location.href); } catch (e) {}
         return;
       }
+      RP.guardar = false;
+      clearTimeout(RP.tg); RP.tg = 0;
       try {
-        history.replaceState({ bx: nuevaClave() }, "", urlHash(hh));
+        history.replaceState({}, "", urlHash(hh));
       } catch (e) {
+        RP.guardar = true;
         location.hash = hh;
         return;
       }
       ultHrefEnrutado = location.href;
+      try { window.dispatchEvent(new Event("biex:ruta")); } catch (e) {}
       pasosApp++;
       resolverSeguir();
       prepararPos();
@@ -1397,7 +1414,7 @@
     modal.classList.add("sin-entrada");
     cerrarModal();
     setTimeout(() => modal.classList.remove("sin-entrada"), 80);
-    // Caso principal (Biblioteca, Verso, Tu faro: n === 1): reemplazar la propia entrada de la ventana in-situ.
+    // Caso principal (Biblioteca, Verso, Tu faro, Atributos: n === 1): reemplazar la propia entrada de la ventana in-situ.
     // La entrada [0] (vista previa exacta con su clave bx y desplazamiento guardado) jamás se toca.
     if (n === 1 && typeof accion === "string") {
       navegarEnSitio(accion);
@@ -1520,16 +1537,24 @@
       try { history.back(); } catch (er) { /* ignorar */ }
       return;
     }
-    // PR #20 · Respaldo infalible de «Atrás» en móviles (Chrome/Vivaldi Android e iOS): si popstate llega tras pushState+replaceState
-    // (p. ej. al volver desde Mesa sinóptica, Constelación, Atlas o Repaso abiertos desde Biblioteca) y el navegador no dispara hashchange,
-    // sincronizamos la ruta en el siguiente tick sin duplicar nunca un hashchange normal.
+    // PR #20/#21 · Respaldo infalible de «Atrás» en móviles (Chrome/Vivaldi Android, iOS y Wix EMBED): si popstate llega tras
+    // pushState+replaceState (p. ej. al volver desde Mesa sinóptica, Constelación, Atlas, Repaso o una cita desde Atributos) y el
+    // navegador no dispara hashchange, sincronizamos la ruta en el siguiente tick sin duplicar jamás un hashchange normal.
     const hrefPop = location.href;
     document.documentElement.classList.remove("mp-fs-on", "cn-fs-on");
     setTimeout(() => {
       if (M.saltando || modal.open || location.href !== hrefPop || ultHrefEnrutado === hrefPop) return;
       const rutaNorm = "#/" + decodificar((location.hash || "").replace(/^#\/?/, "")).slice(0, 400).split("/").filter(Boolean).join("/");
       if (rutaNorm !== (rutaVista || "#/")) {
+        const stPop = history.state || {};
+        if (ORIGEN_MODAL && (location.hash || "#/") === ORIGEN_MODAL.h && !(stPop.bx && POS[stPop.bx] != null)) {
+          if (ORIGEN_MODAL.a) RP.anclaSig = ORIGEN_MODAL.a;
+          else if (ORIGEN_MODAL.y > 0) RP.forzar = ORIGEN_MODAL.y;
+          ORIGEN_MODAL = null;
+        }
         ultHrefEnrutado = hrefPop;
+        ultPopEnrutadoEn = performance.now();
+        try { window.dispatchEvent(new Event("biex:ruta")); } catch (e) {}
         pasosApp++;
         resolverSeguir();
         prepararPos();
@@ -1611,6 +1636,9 @@
     M.pila = [fn]; M.fwd = []; M.alCerrar = alCerrar || null;
     const abrir = !modal.open;
     if (abrir) {
+      anotarPos();
+      const aF = document.querySelector("#vista .vl, #vista .vs, #vista .av") ? capturarAncla(true) : null;
+      M.fondo = { clave: RP.clave, h: location.hash || "#/", y: Math.round(window.scrollY), a: aF && !aF.tope ? aF : null, i: document.documentElement.classList.contains("inmersivo") ? 1 : 0 };
       try { modal.showModal(); } catch (e) { modal.setAttribute("open", ""); }
       M.abiertaEn = performance.now();
       document.documentElement.classList.add("con-modal");
@@ -1733,7 +1761,7 @@
           if (on && (!esc.libro || esc.modo === "a")) {
             const u = store.get("ultimo", null);
             const dest = u && u.c && u.cap ? "#/" + u.c + "/" + u.cap : "#/MAT/1";
-            cerrarModal(); location.hash = dest; setTimeout(() => ponerContemplar(true), 220);
+            irDesdeModal(dest); setTimeout(() => ponerContemplar(true), 220);
             return;
           }
           ponerContemplar(on);
@@ -2829,14 +2857,14 @@
     "MAT 18:11": "el Codex [Códice] Sinaiticus ni el Codex [Códice] Vaticanus",
     "MAT 23:14": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus ni el Codex [Códice] Bezae Cantabrigiensis",
     "MRK 7:16": "el Codex [Códice] Sinaiticus ni el Codex [Códice] Vaticanus",
-    "MRK 9:44": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [reescrito] ni el Codex [Códice] Washingtonianus",
-    "MRK 9:46": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [reescrito] ni el Codex [Códice] Washingtonianus",
+    "MRK 9:44": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [Reescrito] ni el Codex [Códice] Washingtonianus",
+    "MRK 9:46": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [Reescrito] ni el Codex [Códice] Washingtonianus",
     "MRK 11:26": "el Codex [Códice] Sinaiticus, el Codex [Códice] Vaticanus ni el Codex [Códice] Washingtonianus",
-    "MRK 15:28": "el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [reescrito] ni el Codex [Códice] Bezae Cantabrigiensis",
+    "MRK 15:28": "el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus, el Codex [Códice] Vaticanus, el Codex [Códice] Ephraemi Rescriptus [Reescrito] ni el Codex [Códice] Bezae Cantabrigiensis",
     "LUK 17:36": "𝔓⁷⁵, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus, el Codex [Códice] Vaticanus ni el Codex [Códice] Washingtonianus",
     "LUK 23:17": "𝔓⁷⁵, el Codex [Códice] Alexandrinus ni el Codex [Códice] Vaticanus",
     "JHN 5:4": "𝔓⁶⁶, 𝔓⁷⁵, el Codex [Códice] Sinaiticus ni el Codex [Códice] Vaticanus",
-    "ACT 8:37": "𝔓⁴⁵, 𝔓⁷⁴, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus, el Codex [Códice] Vaticanus ni el Codex [Códice] Ephraemi Rescriptus [reescrito]",
+    "ACT 8:37": "𝔓⁴⁵, 𝔓⁷⁴, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus, el Codex [Códice] Vaticanus ni el Codex [Códice] Ephraemi Rescriptus [Reescrito]",
     "ACT 15:34": "𝔓⁷⁴, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus ni el Codex [Códice] Vaticanus",
     "ACT 24:7": "𝔓⁷⁴, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus ni el Codex [Códice] Vaticanus",
     "ACT 28:29": "𝔓⁷⁴, el Codex [Códice] Sinaiticus, el Codex [Códice] Alexandrinus ni el Codex [Códice] Vaticanus" };
@@ -3772,8 +3800,13 @@
       // lomo, baja hacia quien lee y se asienta encima. Antes giraba hacia el fondo (se veía como si la hoja se hundiera).
       const capa = h("div", { class: "lp-hoja lp-giro", "aria-hidden": "true" }, dir > 0 ? vieja : nueva, h("i", { class: "lp-sombra" }));
       hoja.replaceChildren(dir > 0 ? nueva : vieja); marco.append(capa);
-      const kf = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-98deg)" }], sh = [{ opacity: 0 }, { opacity: 0.6 }];
-      const t = { duration: 620, easing: "cubic-bezier(.33,.72,.24,1)", fill: "both" };
+      const kf = [
+        { transform: "translate3d(0,0,2px) rotateY(0deg)" },
+        { transform: "translate3d(0,0,4px) rotateY(-46deg)", offset: 0.44 },
+        { transform: "translate3d(0,0,2px) rotateY(-104deg)" },
+      ];
+      const sh = [{ opacity: 0 }, { opacity: 0.46, offset: 0.44 }, { opacity: 0.68 }];
+      const t = { duration: 600, easing: "cubic-bezier(.32,.72,.22,1)", fill: "both" };
       const a = capa.animate(dir > 0 ? kf : kf.slice().reverse(), t);
       capa.lastChild.animate(dir > 0 ? sh : sh.slice().reverse(), t);
       const fin = () => { if (dir < 0) hoja.replaceChildren(nueva); capa.remove(); girando = false; requestAnimationFrame(fijarAlto); };
@@ -4695,7 +4728,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "1016783e51", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "16869df0a8", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -4754,7 +4787,7 @@
   function cargarJuego() {
     if (!JGX) JGX = cargarScript("juego").then(() => {
       const J = window.BiExJuego; if (!J) throw new Error("juego");
-      J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, reemplazarModal: (fn) => reemplazar(fn), nube: NUBE_DAT,
+      J.iniciar({ h, svg, ICO, avisar, store, abrirModal, cajaModal, cabModal, cerrarModal, irDesdeModal, reemplazarModal: (fn) => reemplazar(fn), nube: NUBE_DAT,
         fechaHoraJerusalen,
         notificar: (tag, tit, cue, ruta, cat) => BIEX_NOTIF.enviar(tag, tit, cue, ruta, cat),
         ubicarFaro: () => FARO.ubicar(),
@@ -4766,6 +4799,7 @@
         irA: (hh) => { location.hash = hh; },
         volver: (dest) => { if (pasosApp > 0) history.back(); else location.hash = dest || "#/"; },
         restaurando: () => RP.objetivo != null,
+        intentarRestaurar: () => intentarRestaurar(),
         marcarLeido: (c, cap, vs) => { const n = vs.filter((v) => !LEI.es(c, cap, v)); if (!n.length) return; LEI.marcar(c, cap, n, true); marcarLeidoDom(c, cap, n, true); },
         apartarLeidos: (desde) => { const n = LEI.apartar(desde); if (n) for (const el of $$(".hoja .vl.leido, .hoja .vs.leido")) if (!LEI.es(esc.libro, esc.cap, +el.id.slice(1))) el.classList.remove("leido"); return n; },
         sinDescargas: () => SIN_DESCARGAS, sinAnimaciones: () => ap.mov === "no",
@@ -4811,12 +4845,14 @@
     if (window.BiExJuego && JGX) {
       if (!restaurando()) saltarA(0);
       Promise.resolve(window.BiExJuego.vista(vista(), sub))
+        .then(() => { if (rutaVista === ruta && restaurando()) intentarRestaurar(); })
         .catch(() => { if (rutaVista === ruta) vista().replaceChildren(fallo("No se pudo abrir Escudriña.")); });
       return;
     }
     vista().replaceChildren(cargando("Abriendo Escudriña…"));
     if (!restaurando()) saltarA(0);
     cargarJuego().then((J) => { if (rutaVista === ruta) return J.vista(vista(), sub); })
+      .then(() => { if (rutaVista === ruta && restaurando()) intentarRestaurar(); })
       .catch(() => { if (rutaVista === ruta) vista().replaceChildren(fallo("No se pudo abrir Escudriña.")); });
   }
   // Con sesión de Escudriña, el juego observa la lectura del capítulo (sin sesión no se carga nada)
@@ -5833,7 +5869,7 @@
             const xIn = rnd();
             const ny = (b0 * xIn + b2 * nx2 - a1 * ny1 - a2 * ny2) / a0;
             nx2 = nx1; nx1 = xIn; ny2 = ny1; ny1 = ny;
-            ruiOut = ny * sp.amp * rEnv * 1.68;
+            ruiOut = ny * sp.amp * rEnv * 1.45;
           }
         }
         pcm[i] = Math.tanh((vozOut + ruiOut) * 1.12) * 0.88;
@@ -5852,44 +5888,97 @@
       if (cache.size > 48) cache.delete(cache.keys().next().value);
       return res;
     };
+    // PR #21 · Carga híbrida opcional de banco neural precalculado (datos/koine-audio.json -> datos/audio/*.opus|mp3).
+    // Se intenta una sola vez de forma silenciosa; si aún no existe en el sitio, usa al instante la síntesis local koiné s. I.
+    let manifNeural = undefined, manifProm = null, neuralDisponible = false;
+    const cacheNeural = new Map();
+    const cargarManifiestoNeural = () => {
+      if (manifNeural !== undefined) return Promise.resolve(manifNeural);
+      const urlM = window.__biexKoineAudioUrl || (neuralDisponible ? "datos/koine-audio.json" : "");
+      if (!urlM) { manifNeural = null; return Promise.resolve(null); }
+      if (manifProm) return manifProm;
+      manifProm = fetch(urlM, { cache: "force-cache" })
+        .then((r) => (r && r.ok ? r.json() : null))
+        .then((j) => { manifNeural = j && typeof j === "object" && j.clips ? j : null; return manifNeural; })
+        .catch(() => { manifNeural = null; return null; });
+      return manifProm;
+    };
+    const claveClipNeural = (forma) => {
+      if (!manifNeural || !manifNeural.clips) return null;
+      const k = claveGr(forma);
+      const base = manifNeural.base || "datos/audio/";
+      const rel = manifNeural.clips[forma] || manifNeural.clips[k];
+      return rel ? (/^https?:|\//.test(rel) ? rel : base + rel) : null;
+    };
+    const decodificarNeural = async (ctx, url) => {
+      if (cacheNeural.has(url)) return cacheNeural.get(url);
+      const r = await fetch(url, { cache: "force-cache" });
+      if (!r || !r.ok) return null;
+      const ab = await r.arrayBuffer();
+      const buf = await ctx.decodeAudioData(ab.slice(0));
+      cacheNeural.set(url, buf);
+      if (cacheNeural.size > 48) cacheNeural.delete(cacheNeural.keys().next().value);
+      return buf;
+    };
     const hablar = (forma, op = {}) => {
       parar();
       const ctx = asegurarCtx();
       if (!ctx) return null;
-      const s = sintetizar(ctx, forma, !!op.lento);
-      if (!s || !s.buf) return s;
       const miSes = sesionId;
       const repetir = op.repetir === false ? 1 : (op.repetir > 0 ? op.repetir : 2);
-      const pausaMs = op.pausaMs != null ? Math.max(0, +op.pausaMs) : 1500;
-      ultInfo = { forma, lento: !!op.lento, repetir, pausaMs, dur: s.dur, vecesIniciadas: 0 };
+      const pausaMs = op.pausaMs != null ? Math.max(0, +op.pausaMs) : 1000;
+      const lento = !!op.lento;
       finAct = () => { if (op.alFin) op.alFin(); };
-      const tocarVez = (vez) => {
-        if (miSes !== sesionId) return;
-        ultInfo.vecesIniciadas = vez;
-        if (op.alInicio) try { op.alInicio(vez, repetir); } catch (e) {}
-        const src = ctx.createBufferSource();
-        src.buffer = s.buf;
-        const g = ctx.createGain();
-        g.gain.value = 0.92;
-        src.connect(g); g.connect(ctx.destination);
-        fuenteAct = src;
-        src.onended = () => {
-          if (fuenteAct === src) fuenteAct = null;
+      const reproducirBuffer = (buf, dur, modo, tasa) => {
+        if (miSes !== sesionId || !buf) return;
+        ultInfo = { forma, lento, repetir, pausaMs, dur, modo, vecesIniciadas: 0 };
+        const tocarVez = (vez) => {
           if (miSes !== sesionId) return;
-          if (vez < repetir) {
-            if (op.alPausa) try { op.alPausa(vez, repetir); } catch (e) {}
-            timersAct.push(setTimeout(() => tocarVez(vez + 1), pausaMs));
-          } else {
-            const fn = finAct; finAct = null;
-            if (fn) try { fn(); } catch (e) {}
-          }
+          ultInfo.vecesIniciadas = vez;
+          if (op.alInicio) try { op.alInicio(vez, repetir); } catch (e) {}
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          if (tasa && tasa !== 1) src.playbackRate.value = tasa;
+          const g = ctx.createGain();
+          g.gain.value = 0.92;
+          src.connect(g); g.connect(ctx.destination);
+          fuenteAct = src;
+          src.onended = () => {
+            if (fuenteAct === src) fuenteAct = null;
+            if (miSes !== sesionId) return;
+            if (vez < repetir) {
+              if (op.alPausa) try { op.alPausa(vez, repetir); } catch (e) {}
+              timersAct.push(setTimeout(() => tocarVez(vez + 1), pausaMs));
+            } else {
+              const fn = finAct; finAct = null;
+              if (fn) try { fn(); } catch (e) {}
+            }
+          };
+          try { src.start(0); } catch (e) { parar(); }
         };
-        try { src.start(0); } catch (e) { parar(); }
+        tocarVez(1);
       };
-      tocarVez(1);
+      const urlYa = claveClipNeural(forma);
+      if (urlYa) {
+        ultInfo = { forma, lento, repetir, pausaMs, dur: 0, modo: "neural", vecesIniciadas: 0 };
+        decodificarNeural(ctx, urlYa).then((buf) => {
+          if (miSes !== sesionId) return;
+          if (buf) reproducirBuffer(buf, buf.duration / (lento ? 0.72 : 1), "neural", lento ? 0.72 : 1);
+          else { const s = sintetizar(ctx, forma, lento); if (s && s.buf) reproducirBuffer(s.buf, s.dur, "sintesis", 1); }
+        }).catch(() => {
+          if (miSes !== sesionId) return;
+          const s = sintetizar(ctx, forma, lento);
+          if (s && s.buf) reproducirBuffer(s.buf, s.dur, "sintesis", 1);
+        });
+        return { afi: analizar(forma).afi, modo: "neural" };
+      }
+      if (manifNeural === undefined) cargarManifiestoNeural();
+      const s = sintetizar(ctx, forma, lento);
+      if (!s || !s.buf) return s;
+      reproducirBuffer(s.buf, s.dur, "sintesis", 1);
       return s;
     };
-    const api = { analizar, sintetizar, hablar, parar, tamCache: () => cache.size, ultimo: () => ultInfo };
+    const api = { analizar, sintetizar, hablar, parar, tamCache: () => cache.size + cacheNeural.size, ultimo: () => ultInfo, tieneNeural: () => !!(manifNeural && manifNeural.clips), activarNeural: () => { neuralDisponible = true; manifNeural = undefined; cargarManifiestoNeural(); } };
     window.BiExKoine = api;
     return api;
   })();
@@ -5943,7 +6032,7 @@
       })));
   };
 
-  const TXT_PRON = "El audio koiné del siglo I sintetiza localmente la palabra completa con coarticulación fluida según el consenso histórico-filológico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Cada reproducción suena 2 veces con 1,5 s de pausa para facilitar su escucha.";
+  const TXT_PRON = "El audio koiné del siglo I reproduce la palabra completa según el consenso histórico-filológico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Cada reproducción suena 2 veces con 1 s de pausa para facilitar su escucha.";
   const lineaPron = (forma, tl) => {
     const p = pronunciar(forma), sil = (() => { try { const x = tl || tlDe(forma); return x ? silabasBiEx(x) : null; } catch (e) { return null; } })();
     const info = h("p", { class: "fp-pron-info", hidden: true, text: TXT_PRON });
@@ -5968,7 +6057,7 @@
       KOINE_S1.hablar(forma, {
         lento,
         repetir: 2,
-        pausaMs: 1500,
+        pausaMs: 1000,
         alInicio: () => iluminarPalabra(true),
         alPausa: () => iluminarPalabra(false),
         alFin: () => { btn.classList.remove("sonando"); iluminarPalabra(false); },
@@ -8255,7 +8344,10 @@
       h("span", { text: "Adelante" }), svg(ICO.der));
     document.body.append(btn);
     const puede = () => !modal.open && P.i >= 0 && P.i < P.k.length - 1 && (!nav || nav.canGoForward);
-    const pintar = () => { btn.classList.toggle("vis", !!puede()); if (typeof FARO !== "undefined" && FARO.ubicar) FARO.ubicar(); };
+    const pintar = () => {
+      btn.classList.toggle("vis", !!puede());
+      if (typeof FARO !== "undefined" && FARO.ubicar) { FARO.ubicar(); setTimeout(() => FARO.ubicar(), 280); }
+    };
     repintarAdelante = () => requestAnimationFrame(pintar);
     pasoAdelante = (nuevo) => {
       const k = clave(); if (!k) return;
@@ -10516,7 +10608,7 @@
     { sec: "escudrina", t: "Misiones diarias sencillas", d: "Cada día tienes metas breves (leer unos versos o responder una prueba). Si un día no puedes entrar, tu avance y tu cuenta permanecen intactos." },
     // Escudriña › Tu Árbol
     { sec: "arbol", t: "Tu ser interior y la cosecha", d: "Reparte tus puntos de atributo libres para subir poder y recoge tu cesta de la cosecha cuando se llene: trae experiencia y un verso especial." },
-    { sec: "arbol", t: "Las ramas de tu árbol", d: "En «Las ramas» puedes pellizcar con dos dedos o usar + y − para acercarte a quienes llegaron gracias a tu enlace, sin cambiar el tamaño de la página." },
+    { sec: "arbol", t: "Las ramas de tu árbol", d: "En «Las ramas» puedes pellizcar con dos dedos o usar + y − para acercarte a quienes llegaron gracias a tu enlace." },
     // Escudriña › El Coloso
     { sec: "coloso", t: "Lee la postura del Coloso", d: "Antes de atacar, mira la brecha que anuncia arriba: usar una habilidad alineada y acertar la zona dorada del Pulso multiplica tu aporte." },
     { sec: "coloso", t: "Un esfuerzo en comunidad", d: "Todos los lectores debilitan juntos al mismo Coloso durante la incursión. Tus cargas se recargan leyendo y cada golpe queda registrado." },
@@ -10592,7 +10684,7 @@
     };
     pintar();
     const caja = h("details", { class: "guia-ctx" },
-      h("summary", { "aria-label": "Desplegar consejo útil de esta sección" },
+      h("summary", {},
         h("i", { "aria-hidden": "true" }),
         sumTit,
         h("span", { class: "guia-ctx-chev", "aria-hidden": "true" }, "Leer ", h("b", { text: "▾" }))),
@@ -10792,50 +10884,105 @@
       return out.slice(0, 5);
     },
     ubicar() {
-      if (!this.btn || this.btn.hidden || !this.btn.isConnected) return;
       const vh = window.innerHeight || 800;
-      let minTop = vh - 16;
-      const sels = [".jg-med", ".jg-bonos", ".jg-bonos > *", ".adelante.vis", ".jg-muelle", ".jg-sala-p"];
-      for (const q of sels) {
-        for (const el of document.querySelectorAll(q)) {
-          if (!el.isConnected || el.hidden) continue;
-          const r = el.getBoundingClientRect();
-          if (r.width < 2 || r.height < 2 || r.bottom < vh * 0.4) continue;
-          const cs = getComputedStyle(el);
-          if (cs.display === "none" || cs.visibility === "hidden") continue;
-          // No omitir .jg-med/.jg-bonos/.jg-muelle durante su transición de entrada (evita solapamiento con el Faro)
-          const siempreReserva = el.matches(".jg-med, .jg-bonos, .jg-bonos > *, .jg-muelle, .jg-sala-p");
-          if (!siempreReserva && parseFloat(cs.opacity) < 0.05) continue;
-          if (r.left < 110) minTop = Math.min(minTop, r.top);
+      const medirBase = (sels) => {
+        let minTop = vh - 16;
+        for (const q of sels) {
+          for (const el of document.querySelectorAll(q)) {
+            if (!el.isConnected || el.hidden) continue;
+            const r = el.getBoundingClientRect();
+            if (r.width < 2 || r.height < 2 || r.bottom < vh * 0.4) continue;
+            const cs = getComputedStyle(el);
+            if (cs.display === "none" || cs.visibility === "hidden") continue;
+            const siempreReserva = el.matches(".adelante.vis, .jg-med, .jg-bonos, .jg-bonos > *, .jg-muelle, .jg-sala-p");
+            if (!siempreReserva && parseFloat(cs.opacity) < 0.05) continue;
+            if (r.left < 110) minTop = Math.min(minTop, r.top);
+          }
         }
+        return minTop;
+      };
+      const baseSels = [".jg-med", ".jg-bonos", ".jg-bonos > *", ".jg-muelle", ".jg-sala-p"];
+      const baseTop = medirBase(baseSels);
+      const ad = document.querySelector("body > .adelante:not(.m-adelante)");
+      if (ad && ad.classList.contains("vis")) {
+        const adPx = Math.max(18, Math.min(vh - 130, Math.round(vh - baseTop + 10)));
+        ad.style.bottom = "calc(" + adPx + "px + env(safe-area-inset-bottom, 0px))";
+      } else if (ad && ad.style.bottom) {
+        ad.style.removeProperty("bottom");
       }
+      if (!this.btn || this.btn.hidden || !this.btn.isConnected) return;
+      const minTop = Math.min(baseTop, medirBase([".adelante.vis"]));
       const bPx = Math.max(16, Math.min(vh - 96, Math.round(vh - minTop + 14)));
       this.btn.style.setProperty("--faro-b", "calc(" + bPx + "px + env(safe-area-inset-bottom, 0px))");
     },
-    enfocar(selector) {
+    enfocar(selector, mismaRuta) {
       if (!selector) return;
       clearTimeout(this.focoTimer);
+      clearTimeout(this.focoTimer2);
+      try { if (window.BiExJuego && window.BiExJuego.cancelarRestauracion) window.BiExJuego.cancelarRestauracion(); } catch (e) {}
+      if (RP.objetivo != null) terminarRestauracion();
       let intentos = 0;
+      let tocado = false;
+      const marcarToque = () => { tocado = true; limpiar(); };
+      const limpiar = () => {
+        window.removeEventListener("touchstart", marcarToque, true);
+        window.removeEventListener("wheel", marcarToque, true);
+        window.removeEventListener("pointerdown", marcarToque, true);
+      };
+      window.addEventListener("touchstart", marcarToque, { passive: true, capture: true });
+      window.addEventListener("wheel", marcarToque, { passive: true, capture: true });
+      window.addEventListener("pointerdown", marcarToque, { passive: true, capture: true });
+      const calcularY = (el) => {
+        const vh = window.innerHeight || 800;
+        const hb = document.querySelector("header.barra");
+        const rHb = hb ? hb.getBoundingClientRect() : null;
+        const topBar = (rHb && rHb.height && rHb.bottom > 0 && rHb.top <= 4) ? rHb.bottom : 0;
+        const mu = document.querySelector(".jg-muelle");
+        const rMu = mu && getComputedStyle(mu).display !== "none" ? mu.getBoundingClientRect() : null;
+        const botBar = (rMu && rMu.height > 10 && rMu.top > vh * 0.5) ? rMu.top : vh;
+        const altoUtil = Math.max(200, botBar - topBar);
+        const r = el.getBoundingClientRect();
+        const margenSup = r.height <= altoUtil * 0.84
+          ? Math.max(18, Math.round((altoUtil - r.height) / 2))
+          : 18;
+        return Math.max(0, Math.round(window.scrollY + r.top - (topBar + margenSup)));
+      };
+      const posicionar = (el, suave) => {
+        const y = calcularY(el);
+        const sinA = !suave || ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+        try { window.scrollTo({ top: y, left: 0, behavior: sinA ? "instant" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
+      };
       const buscar = () => {
+        if (tocado) return;
         const el = document.querySelector(selector);
         if (el && el.isConnected && el.getBoundingClientRect().height > 10) {
-          const sinA = ap.mov === "no" || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-          const y = Math.max(0, window.scrollY + el.getBoundingClientRect().top - Math.max(76, window.innerHeight * 0.14));
-          try { window.scrollTo({ top: y, behavior: sinA ? "instant" : "smooth" }); } catch (e) { window.scrollTo(0, y); }
+          // En salto entre rutas: aterrizaje instantáneo exacto (evita que un scrollTo instant posterior sume inercia sobre un smooth en Chromium)
+          posicionar(el, !!mismaRuta);
           el.classList.remove("faro-resaltar");
           void el.offsetWidth;
           el.classList.add("faro-resaltar");
-          setTimeout(() => el.classList.remove("faro-resaltar"), 2300);
+          const espera = mismaRuta ? 650 : 380;
+          this.focoTimer2 = setTimeout(() => {
+            limpiar();
+            if (tocado || !el.isConnected) return;
+            const yObj = calcularY(el);
+            if (Math.abs(yObj - window.scrollY) > 10) {
+              try { window.scrollTo({ top: yObj, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, yObj); }
+            }
+          }, espera);
+          setTimeout(() => el.classList.remove("faro-resaltar"), 2400);
           return;
         }
-        if (++intentos < 18) this.focoTimer = setTimeout(buscar, 140);
+        if (++intentos < 22) this.focoTimer = setTimeout(buscar, 140);
+        else limpiar();
       };
-      this.focoTimer = setTimeout(buscar, 120);
+      this.focoTimer = setTimeout(buscar, 110);
     },
     irA(it) {
       if (!it) return;
+      const mismaRuta = (location.hash || "#/") === it.href;
       irDesdeModal(it.href);
-      if (it.foco) this.enfocar(it.foco);
+      if (it.foco) this.enfocar(it.foco, mismaRuta);
     },
     elegirTip(siguiente) {
       const hh = location.hash || "#/";
@@ -10930,9 +11077,10 @@
         h("div", { class: "faro-mod" },
           h("p", { class: "faro-calm", text: "Un paso a la vez: elige solo lo que quieras hacer ahora. Nada se pierde si avanzas con calma." }),
           h("ul", { class: "faro-list" }, lista.map((it) => h("li", { class: "faro-it", style: "--fc:" + (it.col || "#e8cf94") },
-            h("i", { "aria-hidden": "true" }),
-            h("div", { class: "faro-it-t" }, h("b", { text: it.t }), h("small", { text: it.d })),
-            h("button", { type: "button", class: "btn chico oro faro-go", onclick: () => this.irA(it) }, h("span", { text: it.accion }), svg(ICO.der))))),
+            h("button", { type: "button", class: "faro-it-btn", onclick: () => this.irA(it) },
+              h("i", { "aria-hidden": "true" }),
+              h("div", { class: "faro-it-t" }, h("b", { text: it.t }), h("small", { text: it.d })),
+              h("span", { class: "btn chico oro faro-go", "aria-hidden": "true" }, h("span", { text: it.accion }), svg(ICO.der)))))),
           tipCaja,
           notifPie)));
     },
@@ -11992,7 +12140,7 @@
         KOINE_S1.hablar(formaRaiz, {
           lento,
           repetir: 2,
-          pausaMs: 1500,
+          pausaMs: 1000,
           alInicio: () => grEl.classList.add("sonando"),
           alPausa: () => grEl.classList.remove("sonando"),
           alFin: () => { bt.classList.remove("sonando"); grEl.classList.remove("sonando"); },
@@ -12008,7 +12156,7 @@
         h("p", { class: "rr-frec", text: `${fmt(item.total)} apariciones · ${item.fam.length === 1 ? "1 palabra" : "familia de " + fmt(item.fam.length) + " palabras"}` }),
         !revelada
           ? h("div", { style: "margin-top:6px" },
-              h("button", { type: "button", class: "btn oro", onclick: () => { revelada = true; pintarCarta(); } }, svg(ICO.contemplar), h("span", { text: "Ver significado y familia" })))
+              h("button", { type: "button", class: "btn oro", onclick: () => { revelada = true; pintarCarta(); } }, svg(ICO.ojo), h("span", { text: "Ver significado y familia" })))
           : h("div", { class: "rr-rev" },
               h("p", { class: "rr-glosa", text: glTexto }),
               derivados.length ? h("div", { class: "rr-der", "aria-label": "Palabras de la misma familia" }, derivados.map((li) =>
@@ -12283,14 +12431,28 @@
     ponerFechaJer();
     document.addEventListener("visibilitychange", () => { if (!document.hidden) ponerFechaJer(); });
     setInterval(() => { if (!document.hidden) ponerFechaJer(); }, 60e3);
-    cargar("datos/archivos.json").then((ar) => { const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0; if (f > msAct) { msAct = f; ponerFechaAct(msAct); } }).catch(() => {});
+    cargar("datos/archivos.json").then((ar) => {
+      const f = ar && ar.fecha ? Date.parse(ar.fecha) : 0;
+      if (f > msAct) { msAct = f; ponerFechaAct(msAct); }
+      const lista = ar && (ar.archivos || ar.lista);
+      if (Array.isArray(lista) && lista.some((x) => (Array.isArray(x) ? x[0] : x) === "datos/koine-audio.json") && typeof KOINE_S1 !== "undefined" && KOINE_S1.activarNeural) KOINE_S1.activarNeural();
+    }).catch(() => {});
     botonAdelante();
     window.addEventListener("hashchange", () => {
       // la vuelta de los pasos de una ventana cerrada o desenrollada (irDesdeModal): la vista no cambia aún
       if (M.saltando) return;
       const sr = M.sinRuta; M.sinRuta = null;
       if (sr && performance.now() < sr.hasta && (sr.cualquiera || location.href === sr.url)) return;
+      // Si el respaldo de popstate ya enrutó exactamente este destino hace < 260 ms, no duplicar ni resetear la restauración
+      if (location.href === ultHrefEnrutado && performance.now() - ultPopEnrutadoEn < 260) return;
+      ultHrefEnrutado = location.href;
       if (typeof KOINE_S1 !== "undefined" && KOINE_S1.parar) KOINE_S1.parar();
+      const stH = history.state || {};
+      if (ORIGEN_MODAL && (location.hash || "#/") === ORIGEN_MODAL.h && !(stH.bx && POS[stH.bx] != null)) {
+        if (ORIGEN_MODAL.a) RP.anclaSig = ORIGEN_MODAL.a;
+        else if (ORIGEN_MODAL.y > 0) RP.forzar = ORIGEN_MODAL.y;
+        ORIGEN_MODAL = null;
+      }
       ultHrefEnrutado = location.href;
       pasosApp++; resolverSeguir(); prepararPos(); enrutar();
     });

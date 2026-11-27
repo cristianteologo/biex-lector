@@ -1113,3 +1113,68 @@ Registro vivo de cambios, decisiones de diseño, correcciones y aprendizajes té
   6. **Constelación 3D «Viaje por la Red»:** camino dorado más corto entre dos conceptos léxicos.
 - **Nota sobre DigiVatLib (`Vat. gr. 1209`) e INTF Münster (`app.js:3999–4007`):** actualmente operan como enlaces externos compactos en dos renglones introducidos por Opus (`commit 128724c`, 13-nov-2026); ni en `peticiones-pagina-web-biex.md` ni en el historial git existe un diseño aparte de carga/visor embebido (y ambas instituciones restringen `iframe` por `X-Frame-Options`/`CSP`). Pendiente confirmación de BiEx sobre el diseño específico de tarjeta/carga deseado para implementarlo en PR #21.
 - **Pausados / Diferidos:** `B8` y `A3` siguen en pausa; la revisión de definiciones Strong en español se tratará en conversación dedicada.
+
+
+---
+
+## Entrada #21 · PR #21 · Perfección HD, holografía nítida sin velo, Atrás blindado (Wix), Atlas 3D, Lauro épico, última conexión diaria, Koiné híbrido cero-404 y Guía de Continuación (2026-11-27)
+
+**Rama:** `neon/pr21-perfeccion-hd-holografia-atras-atlas-handoff` (desde `main` `0dd0d85`)
+**Archivos modificados / creados:** `app.css`, `app.js`, `juego.js`, `CONTINUACION_NEON.md`, `BITACORA_NEON.md` (+ sellos automáticos vía `python3 wix/sellar.py` en `index.html`, `datos/archivos.json`).
+
+### 1. Cambios implementados y verificados a 3× HD (19 puntos)
+
+1. **Portada · 4 pinceladas diagonales orgánicas distintas (`app.css:3363–3426`):**
+   - Sustituidos los trazos horizontales/espejados en los 4 botones secundarios (`.hero .acciones > .btn:nth-child(2..5)`) por **4 SVGs diagonales irregulares independientes** (`--br-1`..`--br-4`, versiones oscura y Pergamino con `#` escapado `%23`), sin espejado `scaleX(-1)` y con extensión más contenida (`inset: -10px -8px` / `-9px -6px`).
+2. **Icono rediseñado de «Modo Contemplar» (`app.js:92`):**
+   - Creado `ICO.contemplar` (marco sereno de lectura con códice abierto minimalista; cero ojo, cero cruces/estrellas/rayos), conservando `ICO.ojo` exclusivamente para *«Ver significado y familia»*.
+3. **Riel flotante izquierdo sin solapes (`FARO.ubicar()` en `app.js:8337–8342, 10878–10909`):**
+   - `FARO.ubicar()` despeja dinámicamente `.adelante.vis` `+10 px` por encima de `.jg-bonos` (`×2`, `×1,5`, `+25 %`) y eleva `#btn-faro` `+14 px` por encima de `.adelante.vis` (`Escudo → Bonos → Adelante → Faro`, verificado a 3× HD con `gap: 14 px` y `0 px` de solape).
+4. **Faro · Fila completa clicable + centrado simétrico sin rebote (`app.css:3257–3276`, `app.js:10899–10955, 11038–11043`):**
+   - Cada opción del Faro (`.faro-it-btn`) es clicable en toda la fila (cero botones anidados).
+   - `FARO.enfocar(selector, mismaRuta)` usa aterrizaje instantáneo en saltos entre rutas (eliminando el bug del compositor Chromium al encadenar `behavior: "smooth"` + `behavior: "instant"`, que causaba un exceso de `+1336 px`) y cancela cualquier reajuste en cuanto el lector toca la pantalla. Verificado simétricamente centrado (`elTop: 68–72 px`, `elBot: 744–748 px` entre `topBar: 57` y `botBar: 767`).
+5. **Gesto `Atrás` blindado en modo independiente y Wix `?incrustado=1` + reparación de los 10 enlaces de citas en modales (`app.js:831, 1362–1438, 1538–1564, 1638–1646, 4802, 4848–4855, 12447–12456`, `juego.js:2792, 3716` + 10 llamadas `irCitaModal`):**
+   - Añadida captura pre-modal `M.fondo` en `abrirModal()` (antes de `showModal()`/`html.con-modal`), guarda `modal.open` en `anotarPos()`, `A.intentarRestaurar()` invocado desde `vistaJuego()` y `juego.js marco()`, limpieza `S.marcoK = null` al salir de Escudriña y sincronización de `ultHrefEnrutado` en `hashchange`.
+   - Verificadas **16/16 transiciones `Atrás` al píxel exacto** (`independiente` + `?incrustado=1` Wix × `#/LUK/5` + `#/escudrina/arbol` × las 4 herramientas de Biblioteca: `720→720` y `620→620`, **`0 px` de deriva**).
+   - Reparados los **10 enlaces de citas dentro de modales** (*Atributos*, *Novedades*, *Ventana de Poder*, *Cantos*, *Lauro*, *Presencia*, *Perfil público* y *Salas*) mediante `irCitaModal` → `A.irDesdeModal`, garantizando salto exacto con iluminación `.vn-foco` del número de verso y regreso limpio con `Atrás` al punto previo (`y: 620`).
+6. **Atlas Bíblico · Giro 3D de hoja del Códice restaurado (`app.css:3867–3880`, `app.js:3798–3810`):**
+   - Añadido `.mp-cod-libro .lp-hoja.lp-giro { position: absolute; inset: 0; z-index: 4; }` para resolver la colisión de especificidad con `.mp-cod-libro .lp-hoja { position: relative }`. Verificado en cuadro intermedio (`+110 ms`): la hoja opaca `FOLIO I · VI` se dobla en perspectiva 3D sobre `FOLIO II · VI`.
+7. **Tu Avance · Margen izquierdo de eje Y ampliado (`juego.js:725–728, 771`):**
+   - Ensanchado el relleno izquierdo de `.av-graf` (`54 px` escritorio / `48 px` ≤420 px) y `.av-ln` (`46 px` / `40 px`) para alojar cifras de 5 dígitos (`24.980`, `12.490`) limpiamente dentro del borde (`margen ≥ 11 px` a 3× HD).
+8. **Progreso por libro plegado · Destello perlado + insignia en 1 línea (`juego.js:700, 2694–2697`):**
+   - Añadido barrido perlado reactivo en `.lk-libs > summary::after` (visible aun estando plegado) y `white-space: nowrap; flex-shrink: 0` en `.lk-libs summary small` (`0 de 27 iniciados` en 1 sola línea limpia).
+9. **Fruto del espíritu · Holografía rubí cristalina sin velo lechoso (`juego.js:2677–2692`):**
+   - Migrado el brillo holográfico de `mix-blend-mode: screen` con blanco opaco a prisma estrecho `mix-blend-mode: color-dodge` + halo cromático exterior `::after`, devolviendo nitidez cristalina a las semillas rubí a 3× HD mientras conserva el giroscopio 3×.
+10. **El Coloso · Nitidez Ultra HD real + holografía visible + aura viva de Brecha + `4 CARGAS` en 1 línea (`juego.js:2356–2388, 2701–2723, 4450–4458, 4615, 4850`):**
+    - Despejada la bruma central sobre el pecho para preservar la resolución `1024 × 1024`, elevada `.jg-col-holo` (`z-index: 3`, `color-dodge`), añadida aura viva `.jg-col-brecha-fx` (`b-muro` / `b-velo` / `b-grieta`) y compactado `.jg-col-hab-cost` para que `♦♦♦♦ 4 CARGAS` quepa en 1 sola línea en la rejilla inmersiva de 5 habilidades.
+11. **Hallazgos · 12 Cantos `[Bloques]` y Lauro Trenzado holográficos 3D + celebración épica escalada por rareza (`juego.js:26–27, 520, 2137–2205, 3357–3408, 9956–10052`):**
+    - **Regla permanente de mayúsculas en corchetes aplicada:** `Cantos [Bloques]`, `[Jaspe]`..`[Amatista]`, `Rescriptus [Reescrito]`.
+    - Los 12 **Cantos [Bloques]** (vista general + modal de detalle) y el **Lauro Trenzado** (botón interactivo + modal de detalle) lucen holografía prismática `color-dodge`, profundidad 3D y flotación GPU `jg-flota`.
+    - **Regla permanente de impacto escalado por rareza aplicada:** celebración exclusiva `.jg-fan.epico` (`2,6 s`, velo obsidiana-oro profundo con `backdrop-filter: blur(4px)`, 3 ondas doradas concéntricas, doble corona giratoria de filigrana, escudo `HALLAZGO EXCEPCIONAL`, lauro holográfico, doble ráfaga de chispas) + fanfarria armónica de 9 notas `sonar("lauro")`.
+12. **Última conexión diaria (solo día y fecha, nunca horas ni minutos) (`juego.js:215–292, 11394, 11535`):**
+    - `ultimaConexionTexto()` muestra únicamente día y fecha (`"Última conexión: Jueves 26 de noviembre"` / `"jue 26 nov"`), respaldado por caché diaria `jg:ultDia` actualizada una vez al día.
+13. **Perfil público dinámico en pantallas Android altas (`juego.js:2720–2750`):**
+    - `.m-cuerpo:has(.jg-jp)` adapta su distribución en pantallas altas (`412 × 915`, Oscuro y Pergamino) logrando `fillRatio: 0,95` y `scrollDiff: 0 px` sin franja vacía inferior.
+14. **Audio Koiné siglo I · Pausa `1000 ms`, fricativas suaves y cargador híbrido neural cero-404 (`app.js:5864–5998, 12102, 12430`):**
+    - Pausa 2× ajustada de `1500 ms` a **`1000 ms`** (`-0,5 s`), fricativas suavizadas (`1.45`) y activación automática de `datos/koine-audio.json` leyendo correctamente las tuplas `[ruta, bytes, sha1]` de `datos/archivos.json` (**`0` respuestas HTTP 404** mientras no exista el banco neural).
+15. **Consejos y accesibilidad WCAG 2.1 AA (`app.js:10601, 10687`, `juego.js:576, 7457`):**
+    - Eliminado `", sin cambiar el tamaño de la página."` en *Las ramas de tu árbol*.
+    - Retirado `aria-label` discordante en `guia-ctx <summary>`, elevado el contraste de `.jg-cifras span` a `var(--tinta-2)` y retirado `role="group"` en `ul.av-cif`.
+16. **Guía de Continuación (`CONTINUACION_NEON.md`) y prototipo de generador neural AFI (`scratch/generar_koine_neural.py`):**
+    - Creada `CONTINUACION_NEON.md` en la raíz del repositorio para permitir retomar en un chat limpio con 100 % de contexto, reglas permanentes, protocolo de QA y hoja de ruta.
+    - Probado en seco `generar_koine_neural.py` contra `datos/tablas.json` (`L`/`LN`, 5.386 lemas) generando AFI koiné s. I exacto (Buth/Allen/Horrocks/Gignac) para **Kokoro-82M** (Apache 2.0), **Piper TTS** (MIT) y **Azure Speech F0** (gratuito, 500k car./mes), produciendo clips Opus 24 kbps (`~1,2 MB` para 500 palabras).
+
+### 2. Autopsia honesta de PR #20 y guardas permanentes añadidas
+1. **Especificidad CSS en Atlas 3D:** `.mp-cod-libro .lp-hoja { position: relative }` sobreescribió `.lp-hoja.lp-giro { position: absolute }`. *Guarda:* capturar siempre el cuadro intermedio de animaciones 3D (`+110–200 ms`).
+2. **Holografía `screen` blanca sobre arte oscuro:** apagó el contraste rubí de la granada. *Guarda:* usar siempre `color-dodge` prismático + halo exterior `::after`.
+3. **Scroll encadenado `smooth` + `instant` en Chromium Android:** causaba exceso `+1336 px` en Faro. *Guarda:* aterrizaje `instant` en saltos entre rutas, cancelable por toque.
+4. **Regreso `Atrás` en Wix `?incrustado=1` y enlaces de citas en modales:** `cerrarModal()` (`history.back()`) cancelaba enlaces y `anotarPos()` sobrescribía scroll con el modal abierto. *Guarda:* probar siempre standalone + `?incrustado=1` Wix y usar `irCitaModal` / `A.irDesdeModal`.
+5. **Alto real de teléfonos Android (`412 × 915`):** un modal medido solo a `390 × 844` dejaba hueco inferior en pantallas altas. *Guarda:* incluir `412 × 915 @ 3×` junto a `280 / 390 / 1280 px`.
+
+### 3. Nota de 1 línea para Opus (backend `biex-juego`)
+- Exponer opcionalmente **`ultDia: "YYYY-MM-DD"`** (actualizado 1 vez al día, sin hora ni minuto) en `GET /jugador`, `GET /liga`, `GET /clasificacion` y `GET /coloso`; el cliente de PR #21 ya lo lee y muestra automáticamente como `"Última conexión: Jueves 26 de noviembre"`.
+
+### 4. Comprobaciones pasadas (Entrada #21)
+- `node --check app.js juego.js`, llaves balanceadas (`app.css`: `3389 / 3389`; CSS interno de `juego.js`: `2356 / 2356`), auditoría editorial (`0` palabras prohibidas en interfaz, `0` posesivos ante «poder», mayúsculas en corchetes verificadas): **CLEAN**.
+- **Suite Playwright 3× HD + Deque `axe-core` WCAG 2.0/2.1 AA (`12` auditorías = `6` rutas × Oscuro y Pergamino):** **`0` violaciones `axe-core`, `0` errores JS, `0` respuestas HTTP 404, `0 px` de desborde lateral en `280 / 390 / 412 / 1280 px`, `16/16` transiciones `Atrás` al píxel exacto (standalone + `?incrustado=1` Wix) y `18/18` capturas 3×/2× HD inspeccionadas visualmente**.
+- `python3 wix/sellar.py`: **al día**.
