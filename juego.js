@@ -23,7 +23,8 @@
   const PUBLICO = "https://bibliaexacta.pages.dev";
   // [griego, nombre tradicional, color, transliteración BiEx (Prompt B, híbrida mixta; BiEx, 9-nov-2026: «más exclusividad y novedad»)]
   const PIEDRAS = [["ἴασπις", "jaspe", "#5f9f72", "Ἴαspις"], ["σάπφειρος", "zafiro", "#3f72d8", "Sάpfειrος"], ["χαλκηδών", "calcedonia", "#93a9c2", "Χαlκēδṓn"], ["σμάραγδος", "esmeralda", "#22a876", "Smάrαgδος"], ["σαρδόνυξ", "sardónice", "#c2643f", "Sαrδόnυc̅ṣ"], ["σάρδιον", "cornalina", "#cc452f", "Sάrδιοn"], ["χρυσόλιθος", "crisólito", "#c3c23c", "Χrυsόlιdsος"], ["βήρυλλος", "berilo", "#4db9ae", "Βḗrυllος"], ["τοπάζιον", "topacio", "#e4a92f", "Τοpάζιοn"], ["χρυσόπρασος", "crisopraso", "#86d070", "Χrυsόprαsος"], ["ὑάκινθος", "jacinto", "#e57b3d", "῾Hυάκιndsος"], ["ἀμέθυστος", "amatista", "#9663d0", "Ἀmέdsυsτος"]];
-  const piedraNombre = (i) => PIEDRAS[i][3] + " [" + PIEDRAS[i][1] + "]";
+  const cap1 = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
+  const piedraNombre = (i) => PIEDRAS[i][3] + " [" + cap1(PIEDRAS[i][1]) + "]";
   const ORDINAL = ["primer", "segundo", "tercer", "cuarto", "quinto", "sexto", "séptimo", "octavo", "noveno", "décimo", "undécimo", "duodécimo"];
 
   // ------------------------------------------------------------------ utilidades
@@ -211,39 +212,79 @@
     IO_FLOT.observe(el);
     return el;
   }
-  // Hora aproximada de última conexión del lector (acepta sello numérico en ms/s o fecha ISO; redondea a tramos amables)
-  function ultimaConexionTexto(x, corto) {
-    if (!x) return "";
-    if (x.enLinea || x.vivo || x.act) return corto ? "en línea" : "En línea ahora";
-    let ts = Number(x.ultTs || x.vistoEn || x.ultVisto || x.ultimoEn || x.visto || 0);
-    if (ts > 0 && ts < 1e11) ts *= 1000;
-    if (ts > 1e12) {
-      const dif = Math.max(0, Date.now() - ts);
-      const min = Math.round(dif / 60000);
-      if (min < 5) return corto ? "ahora" : "Hace unos instantes";
-      if (min < 60) {
-        const mA = Math.max(5, Math.round(min / 5) * 5);
-        return corto ? "hace ~" + mA + " min" : "Hace ~" + mA + " min";
-      }
-      const d = new Date(ts), hoy = new Date();
-      const hh = String(d.getHours()).padStart(2, "0") + ":" + String(Math.floor(d.getMinutes() / 5) * 5).padStart(2, "0");
-      if (d.toDateString() === hoy.toDateString()) return corto ? "hoy ~" + hh : "Hoy cerca de las " + hh;
-      const ayer = new Date(hoy.getTime() - 864e5);
-      if (d.toDateString() === ayer.toDateString()) return corto ? "ayer ~" + hh : "Ayer cerca de las " + hh;
-      const dias = Math.max(2, Math.round(dif / 864e5));
-      return corto ? "hace " + dias + " d" : "Hace " + dias + " días (~" + hh + ")";
-    }
-    const dia = String(x.ultDia || x.ultimoDia || x.dia || "").slice(0, 10);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dia)) {
-      const hoy = new Date().toISOString().slice(0, 10);
-      if (dia === hoy) return corto ? "hoy" : "Conectado hoy";
-      const difD = Math.max(1, Math.round((Date.parse(hoy + "T00:00:00Z") - Date.parse(dia + "T00:00:00Z")) / 864e5));
-      if (difD === 1) return corto ? "ayer" : "Última actividad ayer";
-      return corto ? "hace " + difD + " d" : "Última actividad hace " + difD + " días";
-    }
-    return "";
+  // PR #21 · Fecha diaria de última conexión del lector (solo día y fecha, nunca hora ni tiempo real; se actualiza a lo sumo 1 vez al día)
+  const hoyISO = () => {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  };
+  const isoDesdeTs = (ts) => {
+    let n = Number(ts || 0);
+    if (n > 0 && n < 1e11) n *= 1000;
+    if (!(n > 1e12)) return "";
+    const d = new Date(n);
+    return isNaN(d.getTime()) ? "" : d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  };
+  let ULT_DIA_CACHE = null;
+  function leerUltDias() {
+    if (ULT_DIA_CACHE) return ULT_DIA_CACHE;
+    try { ULT_DIA_CACHE = (A && A.store && A.store.get("jg:ultDia", null)) || {}; } catch (e) { ULT_DIA_CACHE = {}; }
+    if (!ULT_DIA_CACHE || typeof ULT_DIA_CACHE !== "object") ULT_DIA_CACHE = {};
+    return ULT_DIA_CACHE;
   }
-  // Estadísticas públicas de jugadores (se muestran automáticamente en clasificaciones, ligas, compañías y salas en cuanto el servidor exponga poder/pers/vc/ultTs)
+  function registrarUltDia(apodo, iso) {
+    const ap = String(apodo || "").trim();
+    const dia = /^\d{4}-\d{2}-\d{2}$/.test(String(iso || "")) ? String(iso) : hoyISO();
+    if (!ap || /^lector\b/i.test(ap) || /^tú$/i.test(ap)) return;
+    const m = leerUltDias();
+    if (m[ap] && m[ap] >= dia) return;
+    m[ap] = dia;
+    const ks = Object.keys(m);
+    if (ks.length > 160) delete m[ks[0]];
+    try { if (A && A.store) A.store.set("jg:ultDia", m); } catch (e) {}
+  }
+  function diaConexionDe(x) {
+    if (!x) return "";
+    const ap = x.apodo || x.a || "";
+    const raw = String(x.ultDia || x.ultimoDia || x.dia || x.ultimaConexion || "").slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) { registrarUltDia(ap, raw); return raw; }
+    const tsIso = isoDesdeTs(x.ultTs || x.vistoEn || x.ultVisto || x.ultimoEn || x.visto || 0);
+    if (tsIso) { registrarUltDia(ap, tsIso); return tsIso; }
+    if (x.enLinea || x.vivo || x.act || x.lc || (S.yo && S.yo.apodo && ap && ap === S.yo.apodo)) {
+      const h = hoyISO();
+      registrarUltDia(ap, h);
+      return h;
+    }
+    const g = ap ? leerUltDias()[ap] : "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(g || "")) ? g : "";
+  }
+  function formatearDiaFecha(iso, corto) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ""))) return "";
+    const [yy, mm, dd] = iso.split("-").map(Number);
+    const d = new Date(yy, mm - 1, dd, 12, 0, 0);
+    if (isNaN(d.getTime())) return iso;
+    const anioAct = new Date().getFullYear();
+    try {
+      if (corto) {
+        return d.toLocaleDateString("es", { weekday: "short", day: "numeric", month: "short" }).replace(/\./g, "").replace(/,/g, "");
+      }
+      const ops = { weekday: "long", day: "numeric", month: "long" };
+      if (yy !== anioAct) ops.year = "numeric";
+      const s = d.toLocaleDateString("es", ops).replace(/,/g, "");
+      return cap1(s);
+    } catch (e) { return iso; }
+  }
+  function ultimaConexionTexto(x, corto) {
+    const iso = diaConexionDe(x);
+    return iso ? formatearDiaFecha(iso, corto) : "";
+  }
+  // Navegación segura desde cualquier ventana modal hacia una ruta interna (#/...) conservando «Atrás» intacto
+  const irCitaModal = (hh) => (e) => {
+    if (document.documentElement.classList.contains("con-modal") && A && A.irDesdeModal) {
+      e.preventDefault();
+      A.irDesdeModal(hh);
+    }
+  };
+  // Estadísticas públicas de jugadores (se muestran automáticamente en clasificaciones, ligas, compañías y salas)
   function resumenStatsPub(x) {
     if (!x) return "";
     const p = [];
@@ -251,7 +292,7 @@
     if (x.pers > 0) p.push(fmt(x.pers | 0) + " d");
     if (x.vc > 0) p.push(fmt(x.vc | 0) + " v.");
     const uc = !x.yo && ultimaConexionTexto(x, true);
-    if (uc && uc !== "en línea") p.push(uc);
+    if (uc) p.push(uc);
     return p.join(" · ");
   }
   // AD2: una sola vez por cuenta, las marcas dobles guardadas en este dispositivo (jg:rp) pasan a la cuenta del servidor
@@ -476,6 +517,8 @@
     try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume().catch(() => {}); } catch (e) { return; }
     if (AC.state !== "running") return;
     const N = { chispa: [[1046.5, 0, 0.16], [1568, 0.07, 0.22]], nivel: [[659.3, 0, 0.3], [880, 0.11, 0.3], [1318.5, 0.22, 0.55]], hallazgo: [[784, 0, 1.1], [1174.7, 0.06, 1.2], [1568, 0.12, 1.4], [2349.3, 0.18, 0.9]],
+      // PR #21 · Fanfarria exclusiva para el Lauro Trenzado Incorruptible (acorde áureo ascendente de máxima rareza)
+      lauro: [[392, 0, 1.6], [523.25, 0.09, 1.6], [659.25, 0.18, 1.7], [783.99, 0.28, 1.8], [1046.5, 0.42, 2.0], [1318.5, 0.56, 2.1], [1567.98, 0.72, 2.2], [2093, 0.9, 1.9], [2637, 1.08, 1.5]],
       bienvenida: [[392, 0, 1.9], [523.25, 0.22, 1.9], [659.25, 0.44, 2.1], [783.99, 0.66, 2.3], [1046.5, 1.0, 2.6], [1318.5, 1.4, 2.4]],
       // AC12 (BiEx, 15-nov-2026): un sonido propio para cada premio
       cosecha: [[392, 0, 0.9], [587.3, 0.1, 0.9], [784, 0.2, 1.1], [987.8, 0.34, 1.2], [1174.7, 0.5, 1.5]],
@@ -530,7 +573,7 @@
 .jg-cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .jg-cifras div{text-align:center;padding:10px 6px;border-radius:12px;background:var(--hoja-2)}
 .jg-cifras b{display:block;font:500 1.45rem/1.1 var(--f-display);color:var(--oro-vivo)}
-.jg-cifras span{font:400 .74rem/1.3 var(--f-ui);color:var(--tenue)}
+.jg-cifras span{font:400 .74rem/1.3 var(--f-ui);color:var(--tinta-2)}
 .jg-misiones{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .jg-mision{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--hoja-2)}
 .jg-mision .jg-ok{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--linea);display:grid;place-items:center;color:var(--sobre-oro)}
@@ -654,7 +697,7 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 @media (max-width:420px){.lk-z{flex-direction:column;text-align:center}}
 @media (max-width:350px){.jg-av-cab{grid-template-columns:1fr}.jg-av-izq{padding-right:0;padding-bottom:8px;border-right:0;border-bottom:1px solid color-mix(in srgb,var(--oro) 18%,var(--linea-2))}.jg-av-der{justify-items:start;text-align:left}}
 .lk-libs{margin-top:10px}
-.lk-libs summary small{padding:3px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo)!important;font:600 .7rem/1.1 var(--f-ui)!important;font-variant-numeric:tabular-nums}
+.lk-libs summary small{padding:3px 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--oro) 30%,var(--linea-2));background:color-mix(in srgb,var(--oro) 9%,transparent);color:var(--oro-vivo)!important;font:600 .7rem/1.1 var(--f-ui)!important;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
 .lk-libs-nota{margin:0 10px 4px!important;padding:9px 12px;border-radius:10px;border:1px solid var(--linea-2);background:color-mix(in srgb,var(--hoja-2) 60%,transparent);text-align:center;text-wrap:balance}
 .lk-lib-l{list-style:none;margin:0;padding:8px 10px 10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .lk-lib-l>li:last-child:nth-child(odd){grid-column:1/-1}
@@ -679,10 +722,10 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .av-cif small{font:500 .64rem/1.2 var(--f-ui);color:var(--tinta-2)}
 .av-sube{font:600 .64rem/1 var(--f-ui);color:#9fe0b4}
 .av-antes{font-size:.6rem;color:var(--tenue)}
-.av-graf{position:relative;padding:18px 10px 8px 26px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
-.av-rej{position:absolute;left:6px;right:8px;top:18px;bottom:38px;pointer-events:none}
-.av-ln{position:absolute;left:20px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
-.av-ln em{position:absolute;right:calc(100% + 5px);top:-6px;font:500 .56rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
+.av-graf{position:relative;padding:18px 10px 8px 54px;border-radius:16px;border:1px solid color-mix(in srgb,var(--oro) 20%,var(--linea-2));background:radial-gradient(95% 80% at 50% 100%,color-mix(in srgb,var(--oro) 10%,transparent),transparent 72%),color-mix(in srgb,var(--hoja-2) 66%,transparent)}
+.av-rej{position:absolute;left:8px;right:10px;top:18px;bottom:38px;pointer-events:none}
+.av-ln{position:absolute;left:46px;right:0;border-top:1px solid color-mix(in srgb,var(--tinta) 9%,transparent)}
+.av-ln em{position:absolute;right:calc(100% + 6px);top:-6px;font:500 .6rem/1 var(--f-ui);font-style:normal;color:var(--tenue);font-variant-numeric:tabular-nums;white-space:nowrap}
 .av-ln-max{top:0}.av-ln-mid{top:50%}
 .av-ln-med{border-top:1px dashed color-mix(in srgb,var(--oro-vivo) 44%,transparent)}
 .av-bar{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:6px;height:146px;padding:0 2px}
@@ -725,7 +768,7 @@ html[data-mov="no"] .jg-rp-m{transition:none}
 .lk-proy-pie{margin:0;font:400 .72rem/1.4 var(--f-ui);color:var(--tenue);text-align:center}
 .jg-hoy-jer{margin:6px 0 0;padding-top:7px;border-top:1px solid var(--linea-2);font:400 .72rem/1.35 var(--f-ui);color:var(--tenue)}
 @media (max-width:480px){.av-bar.denso .av-et-l{display:none}.av-bar.denso .av-et-c{display:inline}}
-@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 6px 8px 22px}.av-ln{left:16px}.av-bar.denso{gap:2px}.av-et-a{font-size:.5rem}.av-et-b{font-size:.55rem}}
+@media (max-width:420px){.av-cif{gap:4px}.av-cif-b,.av-cif.lk-h li{padding:8px 2px}.av-cif b{font-size:1.02rem}.av-cif small{font-size:.53rem}.av-graf{padding:16px 8px 8px 48px}.av-ln{left:40px}.av-bar.denso{gap:2px}.av-et-a{font-size:.5rem}.av-et-b{font-size:.55rem}}
 @media (prefers-reduced-motion:reduce){.av-pozo i{animation:none}}
 html[data-mov="no"] .av-pozo i{animation:none}
 .fr-c{display:grid;gap:14px;justify-items:center}
@@ -2091,11 +2134,20 @@ html[data-mov="no"] .jg-mm-dot::after{animation:none;display:none}
 .cf-m{border:2.4px solid var(--c);box-shadow:0 0 8px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 0 3px rgba(0,0,0,.12)}
 .cf-m::after{content:"";position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px;border-radius:50%;background:var(--c)}
 .cf-g{width:12px;height:10px;border-radius:40%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 45%,color-mix(in srgb,var(--c) 70%,#000));box-shadow:0 0 10px var(--c)}
-.jg-fan{position:fixed;inset:0;z-index:84;pointer-events:none;display:grid;place-items:center;align-content:center;gap:14px;perspective:600px}
-.jg-fan-v{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--c) 34%,transparent),rgba(5,4,3,.72) 58%,rgba(5,4,3,.82));opacity:0;will-change:opacity}
-.jg-fan-l{position:absolute;left:50%;top:46%;width:min(70vw,340px);aspect-ratio:1;margin:calc(min(70vw,340px) / -2) 0 0 calc(min(70vw,340px) / -2);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 70%,#fff) 0,color-mix(in srgb,var(--c) 32%,transparent) 38%,transparent 70%);opacity:0;will-change:opacity}
-.jg-fan-g{position:relative;width:min(34vw,148px);will-change:transform,opacity}.jg-fan-g svg{display:block;width:100%;height:auto}
-.jg-fan-t{position:relative;margin:0;font:500 clamp(1.6rem,7vw,2.2rem)/1.1 var(--f-display);color:#fff4d2;letter-spacing:.04em;text-shadow:0 2px 14px rgba(0,0,0,.6);will-change:transform,opacity}
+.jg-fan{position:fixed;inset:0;z-index:84;pointer-events:none;display:grid;place-items:center;align-content:center;gap:12px;perspective:760px}
+.jg-fan-v{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--c) 34%,transparent),rgba(5,4,3,.74) 58%,rgba(5,4,3,.86));opacity:0;will-change:opacity}
+.jg-fan.epico .jg-fan-v{background:radial-gradient(circle at 50% 44%,rgba(54,36,8,.84),rgba(14,10,4,.92) 46%,rgba(4,3,3,.96) 78%);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.jg-fan-l{position:absolute;left:50%;top:45%;width:min(74vw,360px);aspect-ratio:1;margin:calc(min(74vw,360px) / -2) 0 0 calc(min(74vw,360px) / -2);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 72%,#fff) 0,color-mix(in srgb,var(--c) 34%,transparent) 38%,transparent 72%);opacity:0;will-change:opacity}
+.jg-fan.epico .jg-fan-l{width:min(88vw,460px);margin:calc(min(88vw,460px) / -2) 0 0 calc(min(88vw,460px) / -2);background:radial-gradient(closest-side,#fff6d2 0,rgba(255,212,96,.68) 26%,rgba(232,164,52,.28) 54%,transparent 76%)}
+.jg-fan-onda{position:absolute;left:50%;top:45%;width:min(54vw,240px);aspect-ratio:1;margin:calc(min(54vw,240px) / -2) 0 0 calc(min(54vw,240px) / -2);border-radius:50%;border:2px solid color-mix(in srgb,var(--c) 82%,#fff4d0);box-shadow:0 0 24px color-mix(in srgb,var(--c) 68%,transparent),inset 0 0 18px color-mix(in srgb,var(--c) 40%,transparent);opacity:0;pointer-events:none;will-change:transform,opacity}
+.jg-fan-corona{position:absolute;left:50%;top:45%;width:min(66vw,300px);aspect-ratio:1;margin:calc(min(66vw,300px) / -2) 0 0 calc(min(66vw,300px) / -2);border-radius:50%;border:1.5px dashed rgba(255,232,158,.62);box-shadow:0 0 28px -6px rgba(245,198,78,.58);opacity:0;pointer-events:none;will-change:transform,opacity}
+.jg-fan-corona.b{width:min(50vw,224px);margin:calc(min(50vw,224px) / -2) 0 0 calc(min(50vw,224px) / -2);border-style:solid;border-color:rgba(255,244,204,.46) transparent rgba(164,224,255,.46) transparent}
+.jg-fan-crest{position:relative;z-index:2;padding:5px 14px;border-radius:999px;font:700 .68rem/1 var(--f-ui);letter-spacing:.22em;text-transform:uppercase;color:#fff6d6;background:linear-gradient(90deg,rgba(20,14,5,.86),rgba(138,94,18,.52),rgba(20,14,5,.86));border:1px solid rgba(255,226,136,.72);box-shadow:0 0 22px -4px rgba(245,198,78,.72);will-change:transform,opacity}
+.jg-fan-g{position:relative;z-index:2;width:min(36vw,156px);will-change:transform,opacity;transform-style:preserve-3d}.jg-fan-g svg{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 24px rgba(0,0,0,.62))}
+.jg-fan.epico .jg-fan-g{width:min(44vw,186px)}
+.jg-fan-g .jg-pd-holo,.jg-fan-g .jg-lauro-holo{inset:4%;opacity:.82}
+.jg-fan-t{position:relative;z-index:2;margin:0;padding:0 16px;text-align:center;font:500 clamp(1.55rem,6.6vw,2.25rem)/1.12 var(--f-display);color:#fff6d8;letter-spacing:.035em;text-shadow:0 2px 18px rgba(0,0,0,.78),0 0 28px color-mix(in srgb,var(--c) 65%,transparent);will-change:transform,opacity}
+.jg-fan-sub{position:relative;z-index:2;margin:-4px 0 0;padding:0 18px;text-align:center;font:500 .82rem/1.35 var(--f-ui);color:#f3e1b2;letter-spacing:.04em;text-shadow:0 2px 10px rgba(0,0,0,.85);will-change:transform,opacity}
 .ap-savia{position:absolute;left:0;top:0;width:1000px;height:1110px;transform-origin:0 0;transform:scale(var(--k,.38));pointer-events:none}
 .ap-sv{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,#fffdf3 0 22%,var(--c) 40%,color-mix(in srgb,var(--c) 0%,transparent) 72%);opacity:0;will-change:transform,opacity}
 @keyframes ap-savia{0%{offset-distance:100%;opacity:0}12%{opacity:var(--o)}82%{opacity:var(--o)}100%{offset-distance:0%;opacity:0}}
@@ -2108,7 +2160,7 @@ html[data-mov="no"] .ap-savia{display:none!important}
 .jg-cerrar:hover{border-color:color-mix(in srgb,var(--oro-vivo) 50%,transparent)}.jg-cerrar:active{transform:scale(.94)}
 .jg-cerrar svg{width:18px;height:18px}
 .jg-cerrar::after{content:"";position:absolute;inset:-6px}
-/* Neon (23-nov-2026): bloques flotantes en Hallazgos, cantos en Liga y Papiro épico (100 % compositor transform+opacity, pausa fuera de vista/modal) */
+/* Neon (23 y 27-nov-2026): Cantos [Bloques] y Lauro Trenzado holográficos 3D con profundidad y flotación nítida (100 % compositor) */
 @keyframes jg-flota{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5px,0)}}
 @keyframes jg-sombra{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.74);opacity:.22}}
 @keyframes jg-pp-flota{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-5.5px,0)}}
@@ -2117,22 +2169,45 @@ html[data-mov="no"] .ap-savia{display:none!important}
 @media (max-width:330px){.jg-piedras{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .jg-piedra{position:relative;gap:4px;padding:7px 2px 6px;border-radius:14px;border:1px solid transparent;min-width:0;transition:border-color .22s ease,background-color .22s ease}
 .jg-piedra>span:not(.jg-pd-esc){max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:clamp(.62rem,2.6vw,.73rem);line-height:1.2;letter-spacing:-.01em;white-space:nowrap}
-.jg-piedra.tiene{background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 14%,transparent),transparent 72%);border-color:color-mix(in srgb,var(--pg,var(--oro)) 22%,transparent)}
-.jg-piedra.tiene:hover{border-color:color-mix(in srgb,var(--pg,var(--oro)) 54%,transparent);background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 22%,transparent),transparent 74%)}
+.jg-piedra.tiene{background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 16%,transparent),transparent 72%);border-color:color-mix(in srgb,var(--pg,var(--oro)) 28%,transparent);box-shadow:inset 0 1px 0 rgba(255,248,224,.12)}
+.jg-piedra.tiene:hover{border-color:color-mix(in srgb,var(--pg,var(--oro)) 62%,transparent);background:radial-gradient(110% 85% at 50% 18%,color-mix(in srgb,var(--pg,var(--oro)) 24%,transparent),transparent 74%)}
 .jg-piedra:not(.tiene){opacity:.68}
-.jg-pd-esc{position:relative;width:50px;height:54px;display:grid;place-items:center;margin-bottom:2px}
-.jg-pd-halo{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;opacity:.55;background:radial-gradient(closest-side,color-mix(in srgb,var(--pg,var(--oro)) 38%,transparent),color-mix(in srgb,var(--pg,var(--oro)) 10%,transparent) 58%,transparent 100%)}
+.jg-pd-esc{position:relative;width:52px;height:56px;display:grid;place-items:center;margin-bottom:2px;perspective:440px}
+.jg-pd-halo{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;opacity:.58;background:radial-gradient(closest-side,color-mix(in srgb,var(--pg,var(--oro)) 40%,transparent),color-mix(in srgb,var(--pg,var(--oro)) 10%,transparent) 58%,transparent 100%)}
+.jg-pd-tilt{position:relative;z-index:1;display:grid;place-items:center;transform-style:preserve-3d;transform:rotateY(calc(var(--px25,0)*11.5deg)) rotateX(calc(var(--py25,0)*-9.5deg));transition:transform .16s ease-out}
 .jg-pd-gema{position:relative;z-index:1;width:44px;height:44px;display:grid;place-items:center;will-change:transform}
 .jg-piedra.tiene .jg-pd-gema{animation:jg-flota var(--ft,5.1s) ease-in-out var(--fd,0s) infinite}
 .jg-piedra.tiene:hover .jg-pd-gema{animation-play-state:paused;transform:translate3d(0,-6px,0) scale(1.06)}
-.jg-pd-gema svg{width:100%;height:100%;max-width:44px;display:block}
+.jg-pd-gema svg{position:relative;z-index:1;width:100%;height:100%;max-width:44px;display:block;filter:drop-shadow(0 5px 8px rgba(0,0,0,.46))}
+/* Destello holográfico cristalino sin velo lechoso (color-dodge diagonal + bisel prismático) */
+.jg-pd-holo,.jg-lauro-holo{position:absolute;inset:2%;border-radius:50%;pointer-events:none;z-index:2;mix-blend-mode:color-dodge;opacity:.76;background:linear-gradient(calc(124deg + var(--px25,0)*36deg),transparent 34%,rgba(255,244,200,.42) calc(47% + var(--px25,0)*16%),rgba(146,232,255,.42) calc(52% + var(--px25,0)*16%),rgba(244,174,255,.32) calc(57% + var(--px25,0)*16%),transparent 70%);-webkit-mask-image:radial-gradient(circle,#000 54%,transparent 76%);mask-image:radial-gradient(circle,#000 54%,transparent 76%)}
+.jg-pd-holo::after,.jg-lauro-holo::after{content:"";position:absolute;inset:-4%;border-radius:50%;background:conic-gradient(from calc(90deg + var(--px25,0)*120deg),transparent,rgba(255,232,148,.46) 14%,rgba(130,224,255,.4) 30%,transparent 48%,rgba(232,164,255,.36) 68%,rgba(255,232,148,.44) 84%,transparent);-webkit-mask-image:radial-gradient(circle,transparent 58%,#000 69%,transparent 79%);mask-image:radial-gradient(circle,transparent 58%,#000 69%,transparent 79%)}
+:root[data-theme="light"] .jg-pd-holo,:root[data-theme="light"] .jg-lauro-holo{mix-blend-mode:overlay;opacity:.62}
 .jg-pd-sombra{position:absolute;left:50%;bottom:0;width:30px;height:7px;margin-left:-15px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.62),transparent);will-change:transform,opacity;animation:jg-sombra var(--ft,5.1s) ease-in-out var(--fd,0s) infinite}
 :root[data-theme="light"] .jg-pd-sombra{background:radial-gradient(closest-side,rgba(45,30,10,.34),transparent)}
-.jg-cel .arte.jg-pd-modal{position:relative;display:grid;place-items:center;width:108px;height:114px;margin:0 auto}
-.jg-cel .arte.jg-pd-modal .jg-pd-halo{inset:-14px;opacity:.72}
-.jg-cel .arte.jg-pd-modal .jg-pd-gema{width:84px;height:84px;animation:jg-flota 4.9s ease-in-out infinite}
-.jg-cel .arte.jg-pd-modal .jg-pd-gema svg{max-width:84px}
-.jg-cel .arte.jg-pd-modal .jg-pd-sombra{width:54px;height:11px;margin-left:-27px;animation:jg-sombra 4.9s ease-in-out infinite}
+.jg-cel .arte.jg-pd-modal{position:relative;display:grid;place-items:center;width:118px;height:122px;margin:0 auto;perspective:520px}
+.jg-cel .arte.jg-pd-modal .jg-pd-halo{inset:-14px;opacity:.76}
+.jg-cel .arte.jg-pd-modal .jg-pd-tilt{transform:rotateY(calc(var(--px25,0)*15deg)) rotateX(calc(var(--py25,0)*-12deg))}
+.jg-cel .arte.jg-pd-modal .jg-pd-gema{width:90px;height:90px;animation:jg-flota 4.9s ease-in-out infinite}
+.jg-cel .arte.jg-pd-modal .jg-pd-gema svg{max-width:90px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.52))}
+.jg-cel .arte.jg-pd-modal .jg-pd-sombra{width:56px;height:11px;margin-left:-28px;animation:jg-sombra 4.9s ease-in-out infinite}
+/* Lauro Trenzado Incorruptible holográfico 3D en Hallazgos y modal */
+.jg-tesoro-btn{appearance:none;background:radial-gradient(120% 95% at 18% 50%,rgba(245,198,78,.16),transparent 62%),color-mix(in srgb,var(--hoja-2) 78%,transparent);border:1px solid color-mix(in srgb,var(--oro) 38%,var(--linea-2));border-radius:14px;padding:7px 12px 7px 8px;color:inherit;font:inherit;cursor:pointer;text-align:left;transition:border-color .2s,transform .18s,box-shadow .2s}
+.jg-tesoro-btn:hover,.jg-tesoro-btn:focus-visible{border-color:color-mix(in srgb,var(--oro-vivo) 72%,transparent);box-shadow:0 10px 24px -14px rgba(245,198,78,.65);transform:translateY(-1px);outline:none}
+.jg-lauro-esc{position:relative;width:44px;height:46px;display:grid;place-items:center;flex:none;perspective:420px}
+.jg-lauro-halo{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,214,96,.44),rgba(232,168,48,.12) 60%,transparent)}
+.jg-lauro-tilt{position:relative;z-index:1;display:grid;place-items:center;transform-style:preserve-3d;transform:rotateY(calc(var(--px25,0)*14deg)) rotateX(calc(var(--py25,0)*-12deg));transition:transform .16s ease-out}
+.jg-lauro-gema{position:relative;width:36px;height:36px;display:grid;place-items:center;animation:jg-flota 4.6s ease-in-out infinite;will-change:transform}
+.jg-lauro-gema svg{position:relative;z-index:1;width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
+.jg-lauro-sombra{position:absolute;left:50%;bottom:0;width:24px;height:6px;margin-left:-12px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);animation:jg-sombra 4.6s ease-in-out infinite}
+.jg-cel .arte.jg-lauro-modal{position:relative;display:grid;place-items:center;width:128px;height:132px;margin:0 auto;perspective:560px}
+.jg-cel .arte.jg-lauro-modal .jg-lauro-halo{inset:-18px;opacity:.86}
+.jg-cel .arte.jg-lauro-modal .jg-lauro-tilt{transform:rotateY(calc(var(--px25,0)*17deg)) rotateX(calc(var(--py25,0)*-14deg))}
+.jg-cel .arte.jg-lauro-modal .jg-lauro-gema{width:96px;height:96px;animation:jg-flota 4.5s ease-in-out infinite}
+.jg-cel .arte.jg-lauro-modal .jg-lauro-gema svg{filter:drop-shadow(0 12px 20px rgba(0,0,0,.58))}
+.jg-cel .arte.jg-lauro-modal .jg-lauro-sombra{width:62px;height:12px;margin-left:-31px;animation:jg-sombra 4.5s ease-in-out infinite}
+html[data-mov="no"] .jg-pd-tilt,html[data-mov="no"] .jg-lauro-tilt{transform:none!important}
+@media (prefers-reduced-motion:reduce){.jg-pd-tilt,.jg-lauro-tilt{transform:none!important}}
 /* Cantos en Liga de la semana: piedra protagonista flotante y peldaños con profundidad */
 .jg-gema-viva{position:relative;width:68px;height:74px;display:grid;place-items:center;filter:none}
 .jg-gv-halo{position:absolute;inset:-8px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--g,var(--oro)) 46%,transparent),color-mix(in srgb,var(--g,var(--oro)) 12%,transparent) 60%,transparent 100%);animation:ap-respira 4.6s ease-in-out infinite}
@@ -2278,12 +2353,12 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-art-w.sacude-2{animation:col-sacude-2 .48s cubic-bezier(.18,.82,.22,1)}
 .jg-col-art-w.sacude-3{animation:col-sacude-3 .62s cubic-bezier(.16,.84,.2,1)}
 .jg-col-art-w.caido .jg-col-art{animation:none;opacity:.52;filter:saturate(.28) brightness(.72)}
-.jg-col-art{position:absolute;inset:-4% -3%;width:106%;height:108%;object-fit:cover;object-position:50% 22%;display:block;pointer-events:none;user-select:none;animation:col-respira 9.5s ease-in-out infinite;will-change:transform,opacity}
-.jg-col-velo{position:absolute;inset:-12% -24%;pointer-events:none;will-change:transform,opacity}
-.jg-col-velo.a{background:radial-gradient(44% 58% at 24% 64%,rgba(5,5,6,.82) 0%,rgba(8,7,6,.44) 48%,transparent 76%),radial-gradient(40% 52% at 78% 54%,rgba(5,5,6,.76) 0%,rgba(8,7,6,.36) 46%,transparent 74%);animation:col-bruma-a 16s ease-in-out infinite}
-.jg-col-velo.b{background:radial-gradient(48% 50% at 58% 72%,rgba(4,4,5,.72) 0%,rgba(9,8,7,.28) 46%,transparent 74%),radial-gradient(34% 44% at 38% 42%,rgba(218,162,74,.11) 0%,transparent 70%);animation:col-bruma-b 21s ease-in-out infinite}
+.jg-col-art{position:absolute;inset:-4% -3%;width:106%;height:108%;object-fit:cover;object-position:50% 24%;display:block;pointer-events:none;user-select:none;opacity:1;animation:col-respira 9.5s ease-in-out infinite;will-change:transform}
+.jg-col-velo{position:absolute;inset:-8% -14%;pointer-events:none;will-change:transform,opacity}
+.jg-col-velo.a{background:radial-gradient(32% 48% at 6% 78%,rgba(5,5,6,.44) 0%,transparent 72%),radial-gradient(32% 48% at 94% 72%,rgba(5,5,6,.42) 0%,transparent 72%);animation:col-bruma-a 16s ease-in-out infinite}
+.jg-col-velo.b{background:radial-gradient(28% 36% at 88% 24%,rgba(218,162,74,.08) 0%,transparent 70%);animation:col-bruma-b 21s ease-in-out infinite}
 .jg-col-fx{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
-.jg-col-vig{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(76% 68% at 50% 40%,transparent 32%,rgba(5,5,6,.68) 100%),linear-gradient(180deg,rgba(5,5,6,.68) 0%,rgba(5,5,6,.1) 24%,transparent 48%,rgba(8,7,6,.56) 78%,#0b0a09 100%)}
+.jg-col-vig{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(88% 78% at 50% 38%,transparent 52%,rgba(5,5,6,.44) 100%),linear-gradient(180deg,rgba(5,5,6,.42) 0%,transparent 20%,transparent 72%,rgba(8,7,6,.68) 89%,#0b0a09 100%)}
 .jg-col-top{position:absolute;top:10px;left:10px;right:10px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px}
 .jg-col-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;font:600 .6rem/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:#f6e2ac;background:rgba(10,9,8,.78);border:1px solid rgba(212,175,105,.48)}
 .jg-col-badge.tenue{color:#d8d0c0;border-color:rgba(240,234,222,.22)}
@@ -2308,9 +2383,9 @@ html[data-mov="no"] .jg-pd-gema,html[data-mov="no"] .jg-pd-sombra,html[data-mov=
 .jg-col-dano{position:absolute;top:38%;left:50%;transform:translate3d(-50%,0,0);display:grid;justify-items:center;gap:4px;font:700 clamp(1.85rem,6.2vw,2.55rem)/1 var(--f-display);color:#fff0bd;text-shadow:0 0 26px rgba(245,188,78,.98),0 4px 18px rgba(0,0,0,.98);pointer-events:none;z-index:6;animation:col-dano 3.6s cubic-bezier(.18,.82,.24,1) forwards;will-change:transform,opacity}
 .jg-col-dano small{font:700 .68rem/1.1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:#ffe69b;padding:4px 11px;border-radius:999px;background:rgba(12,10,8,.9);border:1px solid rgba(255,222,130,.72);box-shadow:0 6px 18px rgba(0,0,0,.72)}
 .jg-col-dano.crit{color:#ffffff;text-shadow:0 0 32px rgba(255,214,102,1),0 0 12px rgba(126,184,240,.85),0 4px 18px rgba(0,0,0,.98)}
-@keyframes col-respira{0%,100%{transform:scale(1.01) translate3d(0,0,0);opacity:.9}50%{transform:scale(1.055) translate3d(0,-4px,0);opacity:1}}
-@keyframes col-bruma-a{0%,100%{transform:translate3d(-3%,1%,0) scale(1);opacity:.82}50%{transform:translate3d(4%,-2%,0) scale(1.06);opacity:.54}}
-@keyframes col-bruma-b{0%,100%{transform:translate3d(4%,0,0) scale(1.04);opacity:.56}50%{transform:translate3d(-4%,2%,0) scale(.98);opacity:.84}}
+@keyframes col-respira{0%,100%{transform:scale(1.01) translate3d(0,0,0)}50%{transform:scale(1.045) translate3d(0,-3px,0)}}
+@keyframes col-bruma-a{0%,100%{transform:translate3d(-2%,1%,0);opacity:.45}50%{transform:translate3d(2%,-1%,0);opacity:.26}}
+@keyframes col-bruma-b{0%,100%{transform:translate3d(2%,0,0);opacity:.38}50%{transform:translate3d(-2%,1%,0);opacity:.56}}
 @keyframes col-sacude-1{0%{transform:translate3d(0,0,0)}22%{transform:translate3d(-7px,-3px,0) scale(1.015)}55%{transform:translate3d(6px,2px,0) scale(.995)}100%{transform:translate3d(0,0,0)}}
 @keyframes col-sacude-2{0%{transform:translate3d(0,0,0)}18%{transform:translate3d(-11px,-5px,0) scale(1.028)}40%{transform:translate3d(10px,4px,0) scale(.985)}68%{transform:translate3d(-6px,-2px,0)}100%{transform:translate3d(0,0,0)}}
 @keyframes col-sacude-3{0%{transform:translate3d(0,0,0)}12%{transform:translate3d(-14px,-7px,0) scale(1.04)}28%{transform:translate3d(13px,6px,0) scale(.98)}48%{transform:translate3d(-10px,4px,0) scale(1.02)}70%{transform:translate3d(7px,-3px,0)}100%{transform:translate3d(0,0,0)}}
@@ -2599,32 +2674,41 @@ html[data-mov="no"] .jg-jp-hero::before,html[data-mov="no"] .jg-jp-hero::after,h
 .co-medidor::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(124deg,rgba(255,248,224,.18) 0%,transparent 34%,transparent 64%,color-mix(in srgb,var(--oro) 16%,transparent) 100%);transform:translate3d(calc(var(--px25,0)*10px),calc(var(--py25,0)*6px),0)}
 :root[data-theme="light"] .co-medidor{box-shadow:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -10px 18px -12px rgba(80,58,20,.22),0 20px 36px -22px rgba(60,42,14,.38)}
 
-/* Fruto del espíritu holográfico + profundidad + 3× giroscopio (copa del Árbol y tarjeta del fruto) */
+/* Fruto del espíritu holográfico nítido (cero velo lechoso) + profundidad + 3× giroscopio */
 .ap-gr-b{width:17.8%;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;transform:translate(-50%,-50%) perspective(480px) rotateY(calc(var(--px25,0)*16.5deg)) rotateX(calc(var(--py25,0)*-14.5deg)) translate3d(calc(var(--px25,0)*5px),calc(var(--py25,0)*4px),0);transition:transform .14s ease-out;transform-style:preserve-3d;overflow:visible}
 .ap-gr-b svg{position:relative;z-index:1;width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.62))}
 .ap-gr-som{position:absolute;inset:12%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.7),transparent 74%);transform:translate3d(calc(var(--px25,0)*-7px),calc(6px + var(--py25,0)*-5px),0);z-index:0}
-.ap-gr-holo,.fr-holo{position:absolute;inset:5%;border-radius:50%;pointer-events:none;z-index:2;mix-blend-mode:screen;opacity:.64;background:conic-gradient(from calc(125deg + var(--px25,0)*110deg),rgba(255,104,136,.14),rgba(255,236,158,.54),rgba(116,226,255,.46),rgba(226,148,255,.44),rgba(255,222,126,.52),rgba(255,104,136,.14)),linear-gradient(calc(128deg + var(--px25,0)*38deg),transparent 22%,rgba(255,252,240,.52) calc(45% + var(--px25,0)*16%),rgba(148,232,255,.32) calc(52% + var(--px25,0)*16%),transparent 74%),radial-gradient(circle at calc(36% + var(--px25,0)*28%) calc(28% + var(--py25,0)*26%),rgba(255,252,240,.72),rgba(255,214,142,.22) 38%,transparent 68%);-webkit-mask-image:radial-gradient(circle,#000 58%,transparent 78%);mask-image:radial-gradient(circle,#000 58%,transparent 78%);transition:opacity .2s}
+.ap-gr-holo,.fr-holo{position:absolute;inset:4%;border-radius:50%;pointer-events:none;z-index:2;mix-blend-mode:color-dodge;opacity:.76;background:linear-gradient(calc(126deg + var(--px25,0)*44deg),transparent 34%,rgba(255,214,132,.36) calc(46% + var(--px25,0)*18%),rgba(146,232,255,.38) calc(50.5% + var(--px25,0)*18%),rgba(255,154,220,.34) calc(55% + var(--px25,0)*18%),transparent 67%);-webkit-mask-image:radial-gradient(circle,#000 54%,transparent 76%);mask-image:radial-gradient(circle,#000 54%,transparent 76%);transition:opacity .2s}
+.ap-gr-holo::after,.fr-holo::after{content:"";position:absolute;inset:-3%;border-radius:50%;background:conic-gradient(from calc(110deg + var(--px25,0)*135deg),transparent,rgba(255,226,138,.48) 14%,rgba(120,226,255,.42) 30%,rgba(232,148,255,.38) 46%,transparent 62%,rgba(255,134,162,.36) 78%,rgba(255,226,138,.44) 90%,transparent);-webkit-mask-image:radial-gradient(circle,transparent 59%,#000 69%,transparent 78%);mask-image:radial-gradient(circle,transparent 59%,#000 69%,transparent 78%)}
 .fr-gr{perspective:560px;transform:perspective(560px) rotateY(calc(var(--px25,0)*16.5deg)) rotateX(calc(var(--py25,0)*-14.5deg)) translate3d(calc(var(--px25,0)*6px),calc(var(--py25,0)*4px),0);transition:transform .14s ease-out;transform-style:preserve-3d}
 .fr-gr-som{position:absolute;left:14%;right:14%;bottom:-4%;height:18%;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(closest-side,rgba(0,0,0,.64),rgba(0,0,0,.16) 60%,transparent);transform:translate3d(calc(var(--px25,0)*-10px),calc(var(--py25,0)*-6px),0)}
 :root[data-theme="light"] .fr-gr-som{background:radial-gradient(closest-side,rgba(56,22,28,.32),transparent)}
 .fr-gr svg{z-index:1;filter:drop-shadow(0 12px 18px rgba(0,0,0,.44))}
-.fr-holo{inset:3%;opacity:.6}
-:root[data-theme="light"] .fr-holo,:root[data-theme="light"] .ap-gr-holo{opacity:.44;mix-blend-mode:soft-light}
+.fr-holo{inset:2%;opacity:.78}
+:root[data-theme="light"] .fr-holo,:root[data-theme="light"] .ap-gr-holo{opacity:.58;mix-blend-mode:overlay}
 html[data-mov="no"] .ap-gr-b,html[data-mov="no"] .fr-gr,html[data-mov="no"] .co-medidor{transform:none!important}
 html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
 @media (prefers-reduced-motion:reduce){.fr-gr,.co-medidor{transform:none!important}.ap-gr-b{transform:translate(-50%,-50%)!important}}
 
-/* Progreso por libro: destello holográfico perlado sutil */
+/* Progreso por libro: destello holográfico perlado sutil también en el botón plegado */
+.lk-libs>summary{position:relative;overflow:hidden;isolation:isolate;box-shadow:inset 0 1px 0 rgba(255,248,224,.14)}
+.lk-libs>summary::after{content:"";position:absolute;inset:-10% -35%;pointer-events:none;z-index:0;opacity:.42;background:linear-gradient(112deg,transparent 28%,rgba(255,238,184,.24) 44%,rgba(164,218,255,.18) 51%,rgba(255,220,168,.2) 58%,transparent 74%);transform:translate3d(calc(var(--px25,0)*26%),0,0);transition:transform .22s ease-out}
+.lk-libs>summary>*{position:relative;z-index:1}
 .lk-lib-a{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,248,224,.1)}
 .lk-lib-a::after{content:"";position:absolute;inset:-10% -35%;pointer-events:none;opacity:.34;background:linear-gradient(112deg,transparent 30%,rgba(255,238,184,.22) 45%,rgba(164,218,255,.16) 52%,rgba(255,220,168,.18) 58%,transparent 72%);transform:translate3d(calc(var(--px25,0)*26%),0,0);transition:transform .22s ease-out}
 .lk-lib-l li.hecho .lk-lib-a{box-shadow:inset 0 1px 0 rgba(255,248,224,.28),0 8px 20px -14px color-mix(in srgb,var(--oro) 60%,transparent)}
 .lk-lib-l li.hecho .lk-lib-a::after{opacity:.52}
 .lk-lib-bar i{background:linear-gradient(90deg,var(--oro-2),var(--oro-vivo) 65%,#fff4cc)}
 
-/* El Coloso: profundidad 2.5D holográfica sutil, encuadre UHD 1024×1024 y rejilla adaptable de 3 a 5 habilidades en modo inmersivo */
+/* El Coloso: nitidez UHD 1024×1024, holografía prismática visible y aura viva de Brecha activa */
 .jg-col-25d{transform:perspective(920px) translate3d(calc(var(--px25,0)*-5.5px),calc(var(--py25,0)*-4px),0) rotateY(calc(var(--px25,0)*4deg)) rotateX(calc(var(--py25,0)*-3deg))}
-.jg-col-art{object-position:50% 28%}
-.jg-col-holo{position:absolute;inset:-6%;pointer-events:none;z-index:1;mix-blend-mode:screen;opacity:.24;background:linear-gradient(calc(118deg + var(--px25,0)*28deg),transparent 22%,rgba(255,214,126,.22) 42%,rgba(138,198,255,.16) 52%,rgba(255,180,120,.18) 60%,transparent 78%);transform:translate3d(calc(var(--px25,0)*14px),calc(var(--py25,0)*8px),0);transition:transform .18s ease-out}
+.jg-col-art{object-position:50% 24%}
+.jg-col-holo{position:absolute;inset:-6%;pointer-events:none;z-index:3;mix-blend-mode:color-dodge;opacity:.54;background:linear-gradient(calc(118deg + var(--px25,0)*34deg),transparent 28%,rgba(255,224,132,.32) calc(43% + var(--px25,0)*14%),rgba(138,214,255,.26) calc(50% + var(--px25,0)*14%),rgba(255,196,122,.28) calc(57% + var(--px25,0)*14%),transparent 72%);transform:translate3d(calc(var(--px25,0)*16px),calc(var(--py25,0)*10px),0);transition:transform .16s ease-out}
+@keyframes col-brecha-lat{0%,100%{opacity:.52;transform:scale(1)}50%{opacity:.88;transform:scale(1.06)}}
+.jg-col-brecha-fx{position:absolute;inset:0;pointer-events:none;z-index:2;mix-blend-mode:screen;transition:opacity .45s ease;animation:col-brecha-lat 3.6s ease-in-out infinite;will-change:transform,opacity}
+.jg-col-brecha-fx.b-muro{background:radial-gradient(36% 42% at 50% 56%,color-mix(in srgb,var(--bc,#d79b5b) 36%,transparent),transparent 72%),radial-gradient(64% 34% at 50% 68%,rgba(215,155,91,.2),transparent 76%)}
+.jg-col-brecha-fx.b-velo{background:radial-gradient(48% 54% at 50% 34%,color-mix(in srgb,var(--bc,#8cc4fa) 28%,transparent),transparent 72%),linear-gradient(118deg,transparent 24%,rgba(140,196,250,.22) 50%,transparent 76%)}
+.jg-col-brecha-fx.b-grieta{background:radial-gradient(32% 40% at 50% 54%,color-mix(in srgb,var(--bc,#ffe292) 48%,transparent),color-mix(in srgb,var(--bc,#ffe292) 18%,transparent) 48%,transparent 76%)}
 .jg-col-escena.inm .jg-col-habs.mas-de-3{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .jg-col-escena.inm .jg-col-habs.mas-de-3>:last-child:nth-child(odd){grid-column:1/-1}
 .jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab{padding:5px 8px;gap:3px;border-radius:11px}
@@ -2634,37 +2718,41 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
 .jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-id b{font-size:.82rem}
 .jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-dmg{font-size:.92rem}
 .jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-go{padding-top:3px;font-size:.66rem}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-cost{white-space:nowrap;gap:3px;font-size:.63rem;letter-spacing:.03em}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-dots{gap:2px}
+.jg-col-escena.inm .jg-col-habs.mas-de-3 .jg-col-hab-dots i{width:4px;height:4px}
 
-/* Perfil público compacto en 1 sola pantalla móvil sin desplazamiento vertical */
-.jg-jp{gap:9px;padding:0}
-.jg-jp-hero{gap:7px;padding:12px 13px 10px;border-radius:16px;justify-items:stretch;text-align:left}
-.jg-jp-top{position:relative;z-index:1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:11px}
+/* Perfil público adaptable a toda la altura del dispositivo (cero vacío negro en teléfonos altos y compacto en pantallas cortas) */
+.m-cuerpo:has(.jg-jp){display:flex;flex-direction:column}
+.jg-jp{display:flex;flex-direction:column;justify-content:space-between;flex:1 1 auto;min-height:100%;gap:clamp(8px,1.5dvh,16px);padding:0}
+.jg-jp-hero{gap:clamp(6px,1dvh,10px);padding:clamp(11px,1.7dvh,16px) 14px clamp(10px,1.5dvh,14px);border-radius:16px;justify-items:stretch;text-align:left}
+.jg-jp-top{position:relative;z-index:1;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px}
 .jg-jp-emb-wrap{width:64px;height:64px}
 .jg-jp-aro.b{inset:5px}
 .jg-jp-emb{width:50px;height:50px}
 .jg-jp-emb .jg-e{width:48px;height:48px;font-size:1.4rem}
 .jg-jp-id{gap:2px}
-.jg-jp-id h3{font-size:1.22rem;line-height:1.12}
+.jg-jp-id h3{font-size:1.24rem;line-height:1.12}
 .jg-jp-id .jg-mini{font-size:.76rem;line-height:1.28}
 .jg-jp-hero .jg-chips{justify-content:flex-start;gap:4px;margin-top:4px}
 .jg-jp-hero .jg-chip{font-size:.7rem;padding:3px 7px}
 .jg-jp-track{gap:4px;margin-top:2px;padding-top:7px}
 .jg-jp-bar{height:6px}
-.jg-jp-vivo,.jg-jp-ult{padding:7px 10px;font-size:.76rem;border-radius:11px}
-.jg-jp-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.jg-jp-vivo,.jg-jp-ult{padding:clamp(7px,1.1dvh,11px) 11px;font-size:.76rem;border-radius:11px}
+.jg-jp-grid{flex:1 0 auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,1.1dvh,10px);align-content:stretch}
 @media (max-width:300px){.jg-jp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.jg-jp-grid li{gap:2px;padding:8px 5px 7px;border-radius:12px}
-.jg-jp-ico{width:18px;height:18px;margin-bottom:1px}
-.jg-jp-ico svg{width:11px;height:11px}
-.jg-jp-grid b{font-size:.98rem}
+.jg-jp-grid li{gap:3px;padding:clamp(8px,1.6dvh,15px) 6px;border-radius:12px;align-content:center}
+.jg-jp-ico{width:20px;height:20px;margin-bottom:2px}
+.jg-jp-ico svg{width:12px;height:12px}
+.jg-jp-grid b{font-size:1.02rem}
 .jg-jp-gemas{grid-template-columns:repeat(6,5px);gap:3.5px;margin-top:2px}
 .jg-jp-gemas i{width:5px;height:5px}
-.jg-jp .jg-ben{gap:7px;padding:9px 11px;border-radius:13px}
+.jg-jp .jg-ben{gap:clamp(7px,1.1dvh,11px);padding:clamp(9px,1.4dvh,14px) 12px;border-radius:13px}
 .jg-jp .jg-ben-fila{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 @media (min-width:440px){.jg-jp .jg-ben-fila{grid-template-columns:1.35fr repeat(3,minmax(0,1fr))}}
-.jg-jp .jg-ben-fila .btn{width:100%;justify-content:center;padding:6px 8px;font-size:.74rem;min-height:32px}
+.jg-jp .jg-ben-fila .btn{width:100%;justify-content:center;padding:6px 8px;font-size:.74rem;min-height:34px}
 .jg-jp .jg-ben-est{font-size:.74rem;line-height:1.32}
-.jg-jp-pie{padding:7px 11px;border-radius:11px;font-size:.74rem;gap:4px 10px}
+.jg-jp-pie{padding:clamp(8px,1.2dvh,12px) 12px;border-radius:11px;font-size:.74rem;gap:4px 10px}
 
 /* Armonización tipográfica en Escudriña (eleva etiquetas .54rem–.68rem a proporciones legibles) */
 .jg-fila .x small,.jg-mm-meta,.jg-mm-est,.jg-col-imp-tag,.jg-col-post-br,.jg-col-brecha-tag,
@@ -2701,6 +2789,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
     }
     if (cambia && ant && !sinAnim() && nueva.animate) nueva.animate([{ opacity: 0.001 }, { opacity: 1 }], { duration: 200, easing: "cubic-bezier(.2,.7,.2,1)" });
     if (MV.pend) requestAnimationFrame(restituirVista);
+    else if (A.restaurando && A.restaurando() && A.intentarRestaurar) requestAnimationFrame(() => A.intentarRestaurar());
     const k = (S.sub || []).join("/") + "|" + (S.token ? 1 : 0);
     if (S.vistaAnim !== k) { S.vistaAnim = k; requestAnimationFrame(() => animarCifras(cont)); }
   }
@@ -3272,19 +3361,28 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   const FT_PD = [4.3, 4.9, 5.3, 5.7, 6.1, 4.7, 5.5, 6.3, 5.1, 5.9, 6.5, 4.6];
   function tarjetaHallazgos(y) {
     const p = y.piedras || [], n = p.filter((x) => x > 0).length;
+    const nLauros = (y.lauros && y.lauros.trenzado) | 0;
     const rejilla = observarFlotantes(h("div", { class: "jg-piedras" }, PIEDRAS.map((pd, i) => {
       const tiene = (p[i] | 0) > 0;
       const esc = h("span", { class: "jg-pd-esc", "aria-hidden": "true" },
         tiene ? h("span", { class: "jg-pd-halo" }) : null,
-        h("span", { class: "jg-pd-gema" }, gema(i, tiene)),
+        h("span", { class: "jg-pd-tilt" },
+          h("span", { class: "jg-pd-gema" }, gema(i, tiene), tiene ? h("span", { class: "jg-pd-holo" }) : null)),
         tiene ? h("span", { class: "jg-pd-sombra" }) : null);
       return h("button", { class: "jg-piedra" + (tiene ? " tiene" : ""), type: "button", style: "--pg:" + pd[2] + ";--ft:" + FT_PD[i] + "s;--fd:-" + (i * 0.47).toFixed(2) + "s",
-        "aria-label": pd[3] + " [" + pd[1] + "]" + (p[i] ? ", hallada " + p[i] + (p[i] === 1 ? " vez" : " veces") : ", aún no hallada"),
+        "aria-label": piedraNombre(i) + (p[i] ? ", hallado " + p[i] + (p[i] === 1 ? " vez" : " veces") : ", aún no hallado"),
         onclick: () => verPiedra(i, p[i] || 0) }, esc, h("span", { text: pd[3] }), p[i] > 1 ? h("b", { text: "×" + p[i] }) : null);
     })));
+    const lauroEsc = h("span", { class: "jg-lauro-esc", "aria-hidden": "true" },
+      h("span", { class: "jg-lauro-halo" }),
+      h("span", { class: "jg-lauro-tilt" },
+        h("span", { class: "jg-lauro-gema" }, lauro(), h("span", { class: "jg-lauro-holo" }))),
+      h("span", { class: "jg-lauro-sombra" }));
     return tarjeta("Hallazgos", null, rejilla,
       h("div", { class: "jg-tesoros" },
-        h("span", { class: "jg-tesoro" }, lauro(), h("span", { text: (y.lauros && y.lauros.trenzado ? plural(y.lauros.trenzado, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía") })),
+        h("button", { class: "jg-tesoro jg-tesoro-btn", type: "button", onclick: () => verLauro(nLauros),
+          "aria-label": (nLauros ? plural(nLauros, "lauro trenzado", "lauros trenzados") : "Lauro trenzado incorruptible") + ": ver detalle" },
+          lauroEsc, h("span", { text: nLauros ? plural(nLauros, "lauro trenzado", "lauros trenzados") : "Ningún lauro trenzado todavía" })),
         h("span", { class: "jg-tesoro" }, dracma(), h("span", { text: plural(y.dr, "dracma", "dracmas") }))),
       y.lauroP != null ? h("div", { class: "jg-lauro-p", title: "Es una estimación: cada hallazgo se decide aleatoriamente en el servidor" },
         // (BiEx, 14-nov-2026: «no parece variar») con dos decimales; no es una falla: la probabilidad cambia con cada hallazgo
@@ -3292,18 +3390,33 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
         h("div", { class: "jg-lauro-p-t" }, h("span", { text: "Lauro trenzado en tu próximo hallazgo" }), h("b", { text: "≈\u00a0" + (y.lauroP * 100).toFixed(2).replace(".", ",") + "\u00a0%" })),
         h("div", { class: "jg-barra", "aria-hidden": "true" }, h("i", { style: "width:" + Math.min(100, (y.lauroP / 0.6) * 100).toFixed(2) + "%" })),
         h("p", { class: "jg-mini", text: (() => { const k = Math.max(0, Math.round((y.lauroP - 0.03) / 0.015)); return "Sube un 1,50 % con cada canto que hallas" + (k ? " (llevas " + plural(k, "hallazgo", "hallazgos") + " sin lauro)" : "") + " y vuelve a empezar al conseguir un lauro. Cambia con cada hallazgo, no con cada verso."; })() })) : null,
-      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste los doce cantos: tu experiencia vale un 5 % más para siempre." : "Cantos [bloques] del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar uno, muy de vez en cuando." }));
+      h("p", { class: "jg-mini", text: n === 12 ? "Reuniste los doce cantos: tu experiencia vale un 5 % más para siempre." : "Cantos [Bloques] del fundamento: " + n + " de 12 (Ἀpοκάlυpsις 21:19-20). Cada verso leído puede revelar uno, muy de vez en cuando." }));
   }
   function verPiedra(i, veces) {
     const pd = PIEDRAS[i];
+    const dest = "#/REV/21/l/" + (i < 4 ? 19 : 20);
     A.abrirModal(() => A.cajaModal(A.cabModal("Los doce cantos [bloques]", "Ἀpοκάlυpsις 21:19-20"), h("div", { class: "jg-cel" },
       h("div", { class: "arte jg-pd-modal", style: "--pg:" + pd[2] },
         veces > 0 ? h("span", { class: "jg-pd-halo", "aria-hidden": "true" }) : null,
-        h("span", { class: "jg-pd-gema" }, gema(i, veces > 0)),
+        h("span", { class: "jg-pd-tilt" },
+          h("span", { class: "jg-pd-gema" }, gema(i, veces > 0), h("span", { class: "jg-pd-holo", "aria-hidden": "true" }))),
         h("span", { class: "jg-pd-sombra", "aria-hidden": "true" })),
       h("h3", { text: piedraNombre(i) }), h("p", { class: "jg-mini", lang: "grc", text: pd[0] }),
       h("p", { text: "El " + ORDINAL[i] + " canto [bloque] del fundamento de la muralla de la ciudad. " + (veces ? "Lo hallaste " + plural(veces, "vez", "veces") + "." : "Aún no lo hallas: sigue leyendo.") }),
-      h("a", { class: "btn chico", href: "#/REV/21/l/" + (i < 4 ? 19 : 20) }, h("span", { text: "Leer el verso" })))));
+      h("a", { class: "btn chico", href: dest, onclick: irCitaModal(dest) }, h("span", { text: "Leer el verso" })))));
+  }
+  function verLauro(veces) {
+    const dest = "#/1CO/9/l/25";
+    A.abrirModal(() => A.cajaModal(A.cabModal("Lauro trenzado incorruptible", "Hallazgo excepcional · Escudriña"), h("div", { class: "jg-cel" },
+      h("div", { class: "arte jg-lauro-modal" },
+        h("span", { class: "jg-lauro-halo", "aria-hidden": "true" }),
+        h("span", { class: "jg-lauro-tilt" },
+          h("span", { class: "jg-lauro-gema" }, lauro(), h("span", { class: "jg-lauro-holo", "aria-hidden": "true" }))),
+        h("span", { class: "jg-lauro-sombra", "aria-hidden": "true" })),
+      h("h3", { text: "Lauro trenzado incorruptible" }),
+      h("p", { class: "jg-mini", lang: "grc", text: "ἄφθαρτος στέφανος" }),
+      h("p", { text: "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Τιmόdsεος 2:5). Al hallarlo, tus próximos 30 minutos de lectura valen el doble de experiencia (el tiempo solo corre mientras lees). " + (veces ? "Lo hallaste " + plural(veces, "vez", "veces") + "." : "Sigue leyendo: cada canto que hallas eleva la probabilidad de encontrarlo.") }),
+      h("a", { class: "btn chico oro", href: dest, onclick: irCitaModal(dest) }, h("span", { text: "Leer 1 Κοrίndsιοι 9:25" })))));
   }
   const NOVEDAD = { frag: (a) => (a.n === 1 ? "Hallaste un fragmento de papiro" : "Hallaste " + a.n + " fragmentos de papiro") + (a.c ? " · " + a.c + " de " + (a.meta || 70) + " en tu rollo (Tesoro)" : "") + ".", drl: (a) => "Hallaste " + a.dr + " dracmas al marcar «Leído».",
     piedra: (a) => "Hallaste " + piedraNombre(a.i) + ".", lauro: () => "Hallaste un lauro trenzado incorruptible.", unido: (a) => a.a + " llegó con tu invitación.", leyo: (a) => a.a + " leyó sus primeros 20 versos: +" + a.xp + ".",
@@ -3447,10 +3560,11 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
     if (t && horas) horas.push([t, a.t]);
     const esComp = a.k === "adelantado" || a.k === "cerca_puesto" || a.k === "interaccion";
     const esSub = a.k === "adelantaste";
-    const alIr = cierraModal ? () => { if (A.cerrarModal) A.cerrarModal(); } : null;
+    const alIr = (dest) => (cierraModal ? irCitaModal(dest) : null);
+    const destImp = a.ruta || seguir;
     const acc = a.k === "adelantado" || a.k === "cerca_puesto"
-      ? h("a", { class: "jg-nov-acc", href: seguir, onclick: alIr, text: a.k === "adelantado" ? "Leer para recuperar tu puesto ›" : "Leer para adelantarlo ›" })
-      : (a.k === "interaccion" ? h("a", { class: "jg-nov-acc", href: a.ruta || seguir, onclick: alIr, text: "Ir a leer ›" }) : a.ruta && esSub ? h("a", { class: "jg-nov-acc", href: a.ruta, onclick: alIr, text: "Ver puestos ›" }) : null);
+      ? h("a", { class: "jg-nov-acc", href: seguir, onclick: alIr(seguir), text: a.k === "adelantado" ? "Leer para recuperar tu puesto ›" : "Leer para adelantarlo ›" })
+      : (a.k === "interaccion" ? h("a", { class: "jg-nov-acc", href: destImp, onclick: alIr(destImp), text: "Ir a leer ›" }) : a.ruta && esSub ? h("a", { class: "jg-nov-acc", href: a.ruta, onclick: alIr(a.ruta), text: "Ver puestos ›" }) : null);
     return h("li", { class: esComp ? "comp" : esSub ? "subio" : "" }, t, h("span", { class: "jg-nov-x", text: NOVEDAD[a.k](a) }), acc);
   }
   function abrirHistorialNovedades(hist, seguir) {
@@ -3601,7 +3715,12 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
       z.classList.add("jg-resalta"); setTimeout(() => z.classList.remove("jg-resalta"), 2600);
     }, 360);
   }
-  window.addEventListener("hashchange", () => { if (!/^#\/escudrina\/coloso(\/|$)/.test(location.hash)) document.documentElement.classList.remove("jg-col-inm"); if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; terminarVista(); } });
+  const alSalirRuta = () => {
+    if (!/^#\/escudrina\/coloso(\/|$)/.test(location.hash)) document.documentElement.classList.remove("jg-col-inm");
+    if (!/^#\/escudrina(\/|$)/.test(location.hash)) { muelle(null); MV.k = null; S.marcoK = null; terminarVista(); }
+  };
+  window.addEventListener("hashchange", alSalirRuta);
+  window.addEventListener("biex:ruta", alSalirRuta);
   function cabeceraJuego(sec) {
     const t = TIT[sec] || TIT.hoy;
     const ayuda = sec === "hoy" ? h("a", { class: "jg-ayuda", href: "#/escudrina/guia", title: "Cómo se juega", "aria-label": "Cómo se juega: paso a paso y a tu ritmo", onclick: () => { S.guiaPaso = 0; vibrar(8); } }, ico("jugar"), h("span", { text: "Cómo se juega" })) : null;
@@ -4333,11 +4452,14 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
       let postAct = COLOSO_POSTURAS[idxPost % COLOSO_POSTURAS.length];
       const lienzoFx = h("canvas", { class: "jg-col-fx", "aria-hidden": "true" });
       const sacudeCl = infoGolpe ? (infoGolpe.hab === "fuerza" || infoGolpe.crit ? " sacude-3" : infoGolpe.hab === "palabra" || infoGolpe.brecha ? " sacude-2" : " sacude-1") : "";
+      const brechaFxEl = h("div", { class: "jg-col-brecha-fx b-" + postAct.id, style: "--bc:" + postAct.col, hidden: derrotado, "aria-hidden": "true" });
+      const syncBrechaFx = (p) => { if (!brechaFxEl || !p) return; brechaFxEl.className = "jg-col-brecha-fx b-" + p.id; brechaFxEl.style.setProperty("--bc", p.col); };
       const artWrap = h("div", { class: "jg-col-art-w" + (derrotado ? " caido" : "") + sacudeCl },
         h("div", { class: "jg-col-25d" },
           h("img", { class: "jg-col-art", src: COLOSO_IMG, alt: "Presencia velada y monumental de El Coloso de la Tradición entre bruma oscura y grietas doradas", decoding: "async" }),
           h("div", { class: "jg-col-velo a", "aria-hidden": "true" }),
           h("div", { class: "jg-col-velo b", "aria-hidden": "true" }),
+          brechaFxEl,
           h("div", { class: "jg-col-holo", "aria-hidden": "true" })));
       const premioTxt = premioColosoTxt(c.premio);
       let escenaRef = null;
@@ -4495,6 +4617,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
           postBar.style.setProperty("--pc", postAct.col);
           postNomEl.textContent = postAct.nom;
           postBrEl.textContent = postAct.et;
+          syncBrechaFx(postAct);
         }
         for (const hb of habBtns) {
           const lista = ncargas >= hb.cost;
@@ -4729,6 +4852,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
           postBar.style.setProperty("--pc", postAct.col);
           postNomEl.textContent = postAct.nom;
           postBrEl.textContent = postAct.et;
+          syncBrechaFx(postAct);
           for (const hb of habBtns) { const on = hb.id === postAct.debil; hb.bt.classList.toggle("brecha", on); hb.tagBr.hidden = !on; }
         }, 14000);
       }
@@ -6783,8 +6907,9 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
         if (falta > 1200) A.avisar("Léelo con calma unos segundos: se marcará como leído al cumplir su tiempo.");
         paso();
       };
+      const destV = "#/" + x.c + "/" + x.cap + "/l/" + x.v;
       pie.replaceChildren(btn,
-        h("a", { class: "jg-vl-ref", href: "#/" + x.c + "/" + x.cap + "/l/" + x.v, onclick: () => { if (document.documentElement.classList.contains("con-modal")) A.cerrarModal(); } }, nombreLibro(x.c) + " " + x.cap + ":" + x.v, A.svg(A.ICO.der)));
+        h("a", { class: "jg-vl-ref", href: destV, onclick: irCitaModal(destV) }, nombreLibro(x.c) + " " + x.cap + ":" + x.v, A.svg(A.ICO.der)));
       el.classList.add("listo");
     });
     return el;
@@ -7167,8 +7292,9 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
         panelV.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
         try {
           const l = await A.versos(cod, cap, v, v);
+          const destC = "#/" + cod + "/" + cap + "/l/" + v;
           panelV.replaceChildren(...l.map(([vv, nodo]) => h("p", {}, nodo)),
-            h("a", { class: "jg-vl-ref", href: "#/" + cod + "/" + cap + "/l/" + v, onclick: () => A.cerrarModal() }, "Leer en el capítulo", A.svg(A.ICO.der)));
+            h("a", { class: "jg-vl-ref", href: destC, onclick: irCitaModal(destC) }, "Leer en el capítulo", A.svg(A.ICO.der)));
         } catch (e) { panelV.replaceChildren(h("p", { class: "jg-mini", text: "No se pudo cargar el verso." })); }
       } }, h("i", { class: "ap-lumbre", "aria-hidden": "true" }), ref, h("span", { class: "ap-cita-fl", "aria-hidden": "true", text: "▾" }));
       return bt;
@@ -7331,7 +7457,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
       const tarjetasMet = [];
       const initIdx = selIdx;
       let tocoUsuario = false;
-      const cifras = h("ul", { class: "av-cif", role: "group", "aria-label": "Elegir magnitud del gráfico" }, MET.map(([k, nom, tit]) => {
+      const cifras = h("ul", { class: "av-cif", "aria-label": "Elegir magnitud del gráfico" }, MET.map(([k, nom, tit]) => {
         const a = cur[k] | 0;
         const num = h("b", { text: soloGraf ? fmt(a) : "0" });
         const cmp = h("span", { class: "av-antes" });
@@ -7638,8 +7764,9 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   }
   function verCita(c, cap, v1, v2) {
     const ref = A.nombreLibro(c) + " " + cap + ":" + v1 + (v2 && v2 !== v1 ? "-" + v2 : ""), cuerpo = h("div", { class: "jg-cita-v" }, h("p", { class: "cargando", text: "Cargando…" }));
+    const dest = "#/" + c + "/" + cap + "/l/" + v1;
     A.abrirModal(() => A.cajaModal(A.cabModal(ref, "Escudriña"), cuerpo,
-      h("div", { class: "jg-acciones" }, h("a", { class: "btn chico oro", href: "#/" + c + "/" + cap + "/l/" + v1, onclick: () => A.cerrarModal() }, A.svg(A.ICO.libro || A.ICO.seguir), h("span", { text: "Leer en el capítulo" })))));
+      h("div", { class: "jg-acciones" }, h("a", { class: "btn chico oro", href: dest, onclick: irCitaModal(dest) }, A.svg(A.ICO.libro || A.ICO.seguir), h("span", { text: "Leer en el capítulo" })))));
     (A.versos ? A.versos(c, cap, v1, v2 || v1) : Promise.reject(new Error("sin versos"))).then((l) => {
       cuerpo.replaceChildren(...l.map(([v, nodo]) => h("p", {}, h("sup", { text: String(v) }), " ", nodo)));
     }).catch(() => { cuerpo.replaceChildren(h("p", { text: "No se pudo cargar el texto. Ábrelo en el capítulo." })); });
@@ -8762,6 +8889,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   function salir(conservarCap) {
     guardarCola(true);
     soltar(); medidor(false);
+    if (!/^#\/escudrina(\/|$)/.test(location.hash || "")) { muelle(null); MV.k = null; terminarVista(); }
     if (R.reloj) { clearInterval(R.reloj); R.reloj = 0; }
     if (!conservarCap) { SL.lcAct = ""; detenerPresenciaLectura(); }
     guardarDw(true);
@@ -9829,26 +9957,85 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
       REC.el.firstChild.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, delay: 380, fill: "forwards" });
     };
   }
-  // Hallazgo a la vista (BiEx, 10-nov-2026: «que no pase desapercibido mientras se leen los versos»): antes de la ventana,
-  // un velo con la luz del color de la piedra, la gema que sube girando como una moneda (sin ampliarse: nítida), un aro de
-  // luz, gemas y polvo de oro, y el rótulo «¡Hallazgo!». Unos 1,5 s; con «menos movimiento», directo a la ventana.
+  // Hallazgo a la vista (Regla permanente de rareza, BiEx 27-nov-2026): la espectacularidad escala según el grado de rareza.
+  // Cantos [Bloques] (raro): destello prismático + 1,6 s; Accesorio raro (muy raro): doble onda + 1,9 s;
+  // Lauro Trenzado Incorruptible (EXCEPCIONAL): revelación cinematográfica de 2,6 s con 3 ondas expansivas áureas, doble corona
+  // filigrana giratoria (cero cruces/estrellas/rayos), emblema 3D holográfico levitante, emblema «HALLAZGO EXCEPCIONAL» y doble salva de chispas.
   function fanfarria(x) {
     return new Promise((listo) => {
       if (sinAnim() || document.hidden || !document.body.animate || (x.tipo !== "piedra" && x.tipo !== "lauro" && x.tipo !== "raro")) return listo();
-      const dr = x.tipo === "raro" ? ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) : null;
+      const esLauro = x.tipo === "lauro";
+      const esRaro = x.tipo === "raro";
+      const dr = esRaro ? ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) : null;
       const col = x.tipo === "piedra" ? PIEDRAS[x.i][2] : dr && dr[1] === "aura" ? AURA_C[dr[0]] || "#f5c64e" : dr && dr[1] === "manto" ? (MANTO_C[dr[0]] || ["#f5c64e"])[0] : "#f5c64e";
-      const arte = x.tipo === "piedra" ? gema(x.i, true) : dr ? A.svg(muestraAcc(dr[0], dr[1]), "0 0 48 48") : lauro();
-      const fig = h("div", { class: "jg-fan-g" }, arte), rot = h("p", { class: "jg-fan-t", text: x.tipo === "lauro" ? "¡Un lauro incorruptible!" : x.tipo === "raro" ? "¡Accesorio raro!" : "¡Hallazgo!" });
-      const capa = h("div", { class: "jg-fan", "aria-hidden": "true", style: "--c:" + col }, h("i", { class: "jg-fan-v" }), h("i", { class: "jg-fan-l" }), fig, rot);
-      document.body.append(capa); vibrar([30, 60, 30, 60, 90]);
-      const fx = { duration: 1500, easing: "ease-in-out", fill: "both" };
-      capa.querySelector(".jg-fan-v").animate([{ opacity: 0 }, { opacity: 1, offset: 0.18 }, { opacity: 1, offset: 0.78 }, { opacity: 0 }], fx);
-      capa.querySelector(".jg-fan-l").animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 0.7, offset: 0.7 }, { opacity: 0 }], fx);
-      fig.animate([{ transform: "translate3d(0,46px,0) rotateY(0turn)", opacity: 0 }, { transform: "translate3d(0,0,0) rotateY(1turn)", opacity: 1, offset: 0.42 }, { transform: "translate3d(0,-4px,0) rotateY(1turn)", opacity: 1, offset: 0.8 }, { transform: "translate3d(0,-10px,0) rotateY(1turn)", opacity: 0 }],
-        { duration: 1500, easing: "cubic-bezier(.2,.75,.3,1)", fill: "both" });
-      rot.animate([{ transform: "translate3d(0,10px,0)", opacity: 0 }, { transform: "translate3d(0,0,0)", opacity: 1, offset: 0.4 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: 1500, easing: "ease-out", fill: "both" });
-      setTimeout(() => { chispas(18, fig, ["aro", "gemas"], x.tipo === "piedra" ? col : null); chispas(14, fig, ["polvo"]); }, 560);
-      setTimeout(() => { capa.remove(); listo(); }, 1450);
+      const dur = esLauro ? 2600 : esRaro ? 1900 : 1600;
+      const arte = x.tipo === "piedra"
+        ? h("span", { style: "position:relative;display:block" }, gema(x.i, true), h("span", { class: "jg-pd-holo" }))
+        : dr
+          ? A.svg(muestraAcc(dr[0], dr[1]), "0 0 48 48")
+          : h("span", { style: "position:relative;display:block" }, lauro(), h("span", { class: "jg-lauro-holo" }));
+      const fig = h("div", { class: "jg-fan-g" }, arte);
+      const crest = esLauro ? h("span", { class: "jg-fan-crest", text: "Hallazgo excepcional" }) : esRaro ? h("span", { class: "jg-fan-crest", text: "Accesorio raro" }) : null;
+      const rot = h("p", { class: "jg-fan-t", text: esLauro ? "¡Un lauro trenzado incorruptible!" : esRaro ? (dr ? dr[2] : "¡Accesorio raro!") : piedraNombre(x.i) });
+      const sub = esLauro ? h("p", { class: "jg-fan-sub", text: "El tesoro más raro de Escudriña · ×2 durante 30 min" }) : null;
+      const ondas = [];
+      const nOndas = esLauro ? 3 : esRaro ? 2 : 1;
+      for (let k = 0; k < nOndas; k++) ondas.push(h("i", { class: "jg-fan-onda" }));
+      const corA = esLauro ? h("i", { class: "jg-fan-corona" }) : null;
+      const corB = esLauro ? h("i", { class: "jg-fan-corona b" }) : null;
+      const capa = h("div", { class: "jg-fan" + (esLauro ? " epico" : ""), "aria-hidden": "true", style: "--c:" + col },
+        h("i", { class: "jg-fan-v" }), h("i", { class: "jg-fan-l" }), ...ondas, corA, corB, crest, fig, rot, sub);
+      document.body.append(capa);
+      vibrar(esLauro ? [24, 48, 36, 56, 48, 64, 120] : [30, 60, 30, 60, 90]);
+      const fx = { duration: dur, easing: "ease-in-out", fill: "both" };
+      capa.querySelector(".jg-fan-v").animate([{ opacity: 0 }, { opacity: 1, offset: 0.14 }, { opacity: 1, offset: 0.84 }, { opacity: 0 }], fx);
+      capa.querySelector(".jg-fan-l").animate([{ opacity: 0, transform: "scale(.55)" }, { opacity: 1, transform: "scale(1.08)", offset: 0.28 }, { opacity: 0.82, transform: "scale(.98)", offset: 0.78 }, { opacity: 0, transform: "scale(1.2)" }], fx);
+      ondas.forEach((od, k) => {
+        od.animate([
+          { opacity: 0, transform: "scale(.22)" },
+          { opacity: esLauro ? 0.92 : 0.72, transform: "scale(.75)", offset: 0.25 },
+          { opacity: 0, transform: esLauro ? "scale(2.55)" : "scale(1.9)" },
+        ], { duration: esLauro ? 1280 : 960, delay: 140 + k * 270, easing: "cubic-bezier(.16,.84,.28,1)", fill: "both" });
+      });
+      if (corA) corA.animate([
+        { opacity: 0, transform: "scale(.45) rotate(0deg)" },
+        { opacity: 0.85, transform: "scale(1) rotate(55deg)", offset: 0.26 },
+        { opacity: 0.72, transform: "scale(1.06) rotate(145deg)", offset: 0.82 },
+        { opacity: 0, transform: "scale(1.22) rotate(185deg)" },
+      ], { duration: dur, easing: "cubic-bezier(.22,.78,.28,1)", fill: "both" });
+      if (corB) corB.animate([
+        { opacity: 0, transform: "scale(.55) rotate(0deg)" },
+        { opacity: 0.78, transform: "scale(1) rotate(-70deg)", offset: 0.28 },
+        { opacity: 0.65, transform: "scale(1.04) rotate(-175deg)", offset: 0.82 },
+        { opacity: 0, transform: "scale(1.18) rotate(-220deg)" },
+      ], { duration: dur, easing: "cubic-bezier(.22,.78,.28,1)", fill: "both" });
+      if (crest) crest.animate([
+        { opacity: 0, transform: "translate3d(0,-14px,0) scale(.86)" },
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", offset: 0.26 },
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", offset: 0.82 },
+        { opacity: 0, transform: "translate3d(0,-10px,0) scale(.96)" },
+      ], { duration: dur, easing: "ease-out", fill: "both" });
+      fig.animate(esLauro ? [
+        { transform: "translate3d(0,56px,0) rotateY(0turn) scale(.62)", opacity: 0 },
+        { transform: "translate3d(0,-6px,0) rotateY(1turn) scale(1.12)", opacity: 1, offset: 0.34 },
+        { transform: "translate3d(0,2px,0) rotateY(1.06turn) scale(1.02)", opacity: 1, offset: 0.54 },
+        { transform: "translate3d(0,-8px,0) rotateY(.96turn) scale(1.05)", opacity: 1, offset: 0.8 },
+        { transform: "translate3d(0,-18px,0) rotateY(1turn) scale(.94)", opacity: 0 },
+      ] : [
+        { transform: "translate3d(0,46px,0) rotateY(0turn)", opacity: 0 },
+        { transform: "translate3d(0,0,0) rotateY(1turn)", opacity: 1, offset: 0.42 },
+        { transform: "translate3d(0,-4px,0) rotateY(1turn)", opacity: 1, offset: 0.8 },
+        { transform: "translate3d(0,-10px,0) rotateY(1turn)", opacity: 0 },
+      ], { duration: dur, easing: "cubic-bezier(.2,.75,.3,1)", fill: "both" });
+      rot.animate([{ transform: "translate3d(0,12px,0)", opacity: 0 }, { transform: "translate3d(0,0,0)", opacity: 1, offset: 0.34 }, { opacity: 1, offset: 0.82 }, { opacity: 0 }], { duration: dur, easing: "ease-out", fill: "both" });
+      if (sub) sub.animate([{ transform: "translate3d(0,10px,0)", opacity: 0 }, { transform: "translate3d(0,0,0)", opacity: 1, offset: 0.4 }, { opacity: 1, offset: 0.82 }, { opacity: 0 }], { duration: dur, easing: "ease-out", fill: "both" });
+      if (esLauro) {
+        setTimeout(() => { chispas(26, fig, ["aro", "gemas"], "#f5c64e"); chispas(22, fig, ["polvo"]); }, 460);
+        setTimeout(() => { chispas(22, fig, ["aro", "gemas"], "#fff2bd"); chispas(18, fig, ["polvo"]); }, 1080);
+      } else {
+        setTimeout(() => { chispas(18, fig, ["aro", "gemas"], x.tipo === "piedra" ? col : null); chispas(14, fig, ["polvo"]); }, 540);
+      }
+      setTimeout(() => { capa.remove(); listo(); }, dur - 40);
     });
   }
   // AC6 (BiEx, 15-nov-2026): al repartir, una presentación breve y perceptible: los medallones que subieron se encienden con
@@ -9872,16 +10059,50 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   }
   function celebracion(x) {
     if (document.documentElement.classList.contains("con-modal")) { A.avisar(x.tipo === "rango" ? "Nuevo rango: " + x.rango : "¡Hallazgo! Lo encuentras en Escudriña"); return; }
-    if ((x.tipo === "piedra" || x.tipo === "lauro" || x.tipo === "raro") && !x._fan) { x._fan = true; sonar("hallazgo"); return fanfarria(x).then(() => celebracion(Object.assign(x, { _sin: true }))); }
-    if (!x._sin) sonar("hallazgo");
-    let arte, titulo, texto, compartirT;
-    if (x.tipo === "lauro") { arte = lauro(); titulo = h("h3", { text: "¡Un lauro trenzado incorruptible!" }); texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Timoteo 2:5). Durante tus próximos 30 minutos de lectura tu experiencia vale el doble: el tiempo solo corre mientras lees y no vence."; compartirT = "¡Hallé un lauro trenzado incorruptible en Escudriña, el juego de Biblia Exacta!"; }
-    else if (x.tipo === "piedra") { arte = gema(x.i, true); titulo = h("h3", { text: piedraNombre(x.i) }); texto = "Hallaste el " + ORDINAL[x.i] + " canto [bloque] del fundamento (Ἀpοκάlυpsις 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste los doce: tu experiencia vale un 5 % más para siempre!" : ""); compartirT = "Hallé " + PIEDRAS[x.i][1] + ", uno de los doce cantos [bloques] del fundamento, en Escudriña, el juego de Biblia Exacta."; }
-    else if (x.tipo === "liga") { arte = gema(x.nvNuevo - 1, true); titulo = h("h3", { text: "¡Subiste a la liga " + ligaNombre(x.nvNuevo) + "!" }); texto = "Quedaste en el puesto " + x.pos + " de " + x.n + " de tu grupo" + (x.h ? ": +" + horas(x.h * 3600e3) + " de experiencia doble y " + x.dr + " dracmas" : "") + ". Esta semana lees en el " + ORDF[x.nvNuevo - 1] + " fundamento."; compartirT = "¡Subí a la liga " + ligaNombre(x.nvNuevo) + " en Escudriña!"; }
-    else if (x.tipo === "raro") { const d = ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) || [x.id, "aura", "Accesorio raro", ""]; arte = A.svg(muestraAcc(d[0], d[1]), "0 0 48 48"); titulo = h("h3", { text: d[2] }); texto = "Reuniste 70 fragmentos de papiro marcando «Leído»: se abrió un accesorio raro" + (d[3] ? " (" + d[3] + ")" : "") + ". Ya está en tu Árbol, en la tienda, para llevarlo puesto. Solo se consigue leyendo."; compartirT = "Reuní 70 fragmentos de papiro leyendo la Nueva Voluntad y se abrió «" + d[2] + "» en Escudriña, el juego de Biblia Exacta."; }
-    else { arte = emblema(S.yo && S.yo.emb ? S.yo.emb.l : "α", S.yo && S.yo.emb ? S.yo.emb.c : 0, S.yo && S.yo.marco); titulo = h("h3", { text: "Nuevo rango: " + x.rango }); texto = "Llegaste al nivel " + x.nivel + ". Desde ahora compites en la clasificación de " + x.rango + "."; compartirT = "Llegué al rango de " + x.rango + " en Escudriña, el juego de Biblia Exacta."; }
-    A.abrirModal(() => A.cajaModal(A.cabModal(x.tipo === "rango" ? "Nuevo rango" : x.tipo === "liga" ? "Liga de la semana" : x.tipo === "raro" ? "Accesorio raro" : "Hallazgo", "Escudriña"), h("div", { class: "jg-cel" },
-      h("div", { class: "arte" + (sinAnim() ? "" : " anim") }, arte), titulo, h("p", { text: texto }),
+    if ((x.tipo === "piedra" || x.tipo === "lauro" || x.tipo === "raro") && !x._fan) {
+      x._fan = true;
+      sonar(x.tipo === "lauro" ? "lauro" : "hallazgo");
+      return fanfarria(x).then(() => celebracion(Object.assign(x, { _sin: true })));
+    }
+    if (!x._sin) sonar(x.tipo === "lauro" ? "lauro" : "hallazgo");
+    let arteNodo, titulo, texto, compartirT;
+    if (x.tipo === "lauro") {
+      arteNodo = h("div", { class: "arte jg-lauro-modal" },
+        h("span", { class: "jg-lauro-halo", "aria-hidden": "true" }),
+        h("span", { class: "jg-lauro-tilt" },
+          h("span", { class: "jg-lauro-gema" }, lauro(), h("span", { class: "jg-lauro-holo", "aria-hidden": "true" }))),
+        h("span", { class: "jg-lauro-sombra", "aria-hidden": "true" }));
+      titulo = h("h3", { text: "¡Un lauro trenzado incorruptible!" });
+      texto = "El hallazgo más raro de Escudriña (1 Κοrίndsιοι 9:25; 2 Τιmόdsεος 2:5). Durante tus próximos 30 minutos de lectura tu experiencia vale el doble: el tiempo solo corre mientras lees y no vence.";
+      compartirT = "¡Hallé un lauro trenzado incorruptible en Escudriña, el juego de Biblia Exacta!";
+    } else if (x.tipo === "piedra") {
+      arteNodo = h("div", { class: "arte jg-pd-modal", style: "--pg:" + PIEDRAS[x.i][2] },
+        h("span", { class: "jg-pd-halo", "aria-hidden": "true" }),
+        h("span", { class: "jg-pd-tilt" },
+          h("span", { class: "jg-pd-gema" }, gema(x.i, true), h("span", { class: "jg-pd-holo", "aria-hidden": "true" }))),
+        h("span", { class: "jg-pd-sombra", "aria-hidden": "true" }));
+      titulo = h("h3", { text: piedraNombre(x.i) });
+      texto = "Hallaste el " + ORDINAL[x.i] + " canto [bloque] del fundamento (Ἀpοκάlυpsις 21:19-20). Durante tus próximos 15 minutos de lectura tu experiencia vale ×1,5 (solo corre mientras lees)." + (x.doce ? " ¡Y reuniste los doce: tu experiencia vale un 5 % más para siempre!" : "");
+      compartirT = "Hallé " + PIEDRAS[x.i][1] + ", uno de los doce cantos [bloques] del fundamento, en Escudriña, el juego de Biblia Exacta.";
+    } else if (x.tipo === "liga") {
+      arteNodo = h("div", { class: "arte" + (sinAnim() ? "" : " anim") }, gema(x.nvNuevo - 1, true));
+      titulo = h("h3", { text: "¡Subiste a la liga " + ligaNombre(x.nvNuevo) + "!" });
+      texto = "Quedaste en el puesto " + x.pos + " de " + x.n + " de tu grupo" + (x.h ? ": +" + horas(x.h * 3600e3) + " de experiencia doble y " + x.dr + " dracmas" : "") + ". Esta semana lees en el " + ORDF[x.nvNuevo - 1] + " fundamento.";
+      compartirT = "¡Subí a la liga " + ligaNombre(x.nvNuevo) + " en Escudriña!";
+    } else if (x.tipo === "raro") {
+      const d = ((S.cfg && S.cfg.raros) || RAROS_C).find((z) => z[0] === x.id) || [x.id, "aura", "Accesorio raro", ""];
+      arteNodo = h("div", { class: "arte" + (sinAnim() ? "" : " anim") }, A.svg(muestraAcc(d[0], d[1]), "0 0 48 48"));
+      titulo = h("h3", { text: d[2] });
+      texto = "Reuniste 70 fragmentos de papiro marcando «Leído»: se abrió un accesorio raro" + (d[3] ? " (" + d[3] + ")" : "") + ". Ya está en tu Árbol, en la tienda, para llevarlo puesto. Solo se consigue leyendo.";
+      compartirT = "Reuní 70 fragmentos de papiro leyendo la Nueva Voluntad y se abrió «" + d[2] + "» en Escudriña, el juego de Biblia Exacta.";
+    } else {
+      arteNodo = h("div", { class: "arte" + (sinAnim() ? "" : " anim") }, emblema(S.yo && S.yo.emb ? S.yo.emb.l : "α", S.yo && S.yo.emb ? S.yo.emb.c : 0, S.yo && S.yo.marco));
+      titulo = h("h3", { text: "Nuevo rango: " + x.rango });
+      texto = "Llegaste al nivel " + x.nivel + ". Desde ahora compites en la clasificación de " + x.rango + ".";
+      compartirT = "Llegué al rango de " + x.rango + " en Escudriña, el juego de Biblia Exacta.";
+    }
+    A.abrirModal(() => A.cajaModal(A.cabModal(x.tipo === "rango" ? "Nuevo rango" : x.tipo === "liga" ? "Liga de la semana" : x.tipo === "raro" ? "Accesorio raro" : x.tipo === "lauro" ? "Hallazgo excepcional" : "Hallazgo", "Escudriña"), h("div", { class: "jg-cel" },
+      arteNodo, titulo, h("p", { text: texto }),
       h("div", { class: "jg-acciones" }, h("button", { class: "btn oro", type: "button", onclick: () => A.cerrarModal() }, h("span", { text: "Seguir leyendo" })),
         h("button", { class: "btn", type: "button", onclick: () => compartir("Escudriña · Biblia Exacta", compartirT + " Entra con mi enlace: tus primeras 3 horas de lectura cuentan doble.", enlaceInvitacion()) }, ico("compartir"), h("span", { text: "Compartir" })),
         h("button", { class: "btn", type: "button", onclick: () => verTarjetaImagen({ tipo: x.tipo, x }) }, ico("imagen"), h("span", { text: "Imagen" }))))));
@@ -10817,8 +11038,9 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const vistaS = () => {
       const anf = SL.miembros.find((x) => x.anf);
       const lista = h("ul", { class: "jg-lista mini sala" }, SL.miembros.map((x) => { const [l, c] = embDe(x.emb); const [lib, cap] = (x.lc || "").split(".");
+        const destS = x.lc ? "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : "") : "";
         return h("li", { class: "jg-fila jg-fila-jug" + (x.j === SL.yo6 ? " yo" : "") }, emblema(l, c, x.marco, x.foto), h("span", { class: "n" }, nombreClicable(x.apodo), h("small", { text: [x.anf ? "anfitrión" : "", resumenStatsPub(x), x.pais ? nombrePais(x.pais) : "", x.lc ? nombreLibro(lib) + " " + cap + (x.v ? ":" + x.v : "") + (x.guia ? " · guía la lectura" : "") : "todavía no abre un capítulo"].filter(Boolean).join(" · ") })),
-          x.lc && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap + "/l" + (x.v ? "/" + x.v : ""), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null); }));
+          destS && x.j !== SL.yo6 ? h("a", { class: "btn chico", href: destS, onclick: irCitaModal(destS) }, h("span", { text: "Ir" })) : null); }));
       const soyAnf = !anf || anf.j === SL.yo6;
       const nomAct = nombreSalaDe(SL.cod, SL.nombre);
       const ren = puedeRenombrarSala(SL.cod);
@@ -11173,6 +11395,8 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
     const enCap = document.documentElement.classList.contains("en-cap");
     const yoAp = S.yo && S.yo.apodo ? S.yo.apodo : "";
     const rawL = Array.isArray(PRES_P.p.lectores) ? PRES_P.p.lectores : [];
+    const hoyD = hoyISO();
+    for (const x of rawL) if (x && x.a) registrarUltDia(x.a, hoyD);
     const otrosL = yoAp ? rawL.filter((x) => x.a !== yoAp) : (S.token ? rawL.slice(1) : rawL);
     const totSrv = Math.max(0, (PRES_P.p.total | 0) || 0);
     const otros = S.token ? Math.max(0, totSrv - 1) : Math.max(otrosL.length, totSrv);
@@ -11228,7 +11452,7 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
             h("div", {},
               h("b", { text: nom }),
               h("small", { text: [x.anf ? "Anfitrión: " + x.anf : "", x.lc ? nombreLC(x.lc) : "", plural(x.n | 0 || 1, "persona", "personas")].filter(Boolean).join(" · ") })),
-            h("button", { type: "button", class: "btn chico oro", onclick: () => { A.cerrarModal(); if (S.token) entrarSala(x.c); else A.irA("#/escudrina/sala/" + x.c); } }, h("span", { text: "Entrar" })));
+            h("button", { type: "button", class: "btn chico oro", onclick: () => { if (S.token) { A.cerrarModal(); entrarSala(x.c); } else if (A.irDesdeModal) A.irDesdeModal("#/escudrina/sala/" + x.c); else { A.cerrarModal(); A.irA("#/escudrina/sala/" + x.c); } } }, h("span", { text: "Entrar" })));
         }))));
     }
     if (caps.length) {
@@ -11236,26 +11460,30 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
         h("h4", { text: "Capítulos en lectura ahora" }),
         h("ul", { class: "jg-pres-mod-l" }, caps.map(([lc, cnt]) => {
           const [lib, cap] = String(lc).split(".");
+          const destC = lib && cap ? "#/" + lib + "/" + cap : "";
           return h("li", {},
             h("div", {},
               h("b", { text: nombreLC(lc) }),
               h("small", { text: plural(cnt, "persona lee aquí", "personas leen aquí") })),
             h("div", { style: "display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end" },
-              lib && cap ? h("a", { class: "btn chico", href: "#/" + lib + "/" + cap, onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null,
+              destC ? h("a", { class: "btn chico", href: destC, onclick: irCitaModal(destC) }, h("span", { text: "Ir" })) : null,
               S.token ? h("button", { type: "button", class: "btn chico oro", onclick: (e) => { A.cerrarModal(); acompanar(lc, e.currentTarget); } }, h("span", { text: "Acompañar" })) : null));
         }))));
     }
     if (lectores.length) {
       bloques.push(h("div", {},
         h("h4", { text: "Lectores en línea" }),
-        h("ul", { class: "jg-pres-mod-l" }, lectores.map((x) => h("li", {},
-          h("div", {},
-            nombreClicable(x.a || "Lector"),
-            h("small", { text: [x.nv ? "nivel " + x.nv : "", x.l ? nombreLC(x.l) : (x.act || "Leyendo")].filter(Boolean).join(" · ") })),
-          x.l ? h("a", { class: "btn chico", href: "#/" + String(x.l).replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null)))));
+        h("ul", { class: "jg-pres-mod-l" }, lectores.map((x) => {
+          const destL = x.l ? "#/" + String(x.l).replace(".", "/") : "";
+          return h("li", {},
+            h("div", {},
+              nombreClicable(x.a || "Lector"),
+              h("small", { text: [x.nv ? "nivel " + x.nv : "", x.l ? nombreLC(x.l) : (x.act || "Leyendo")].filter(Boolean).join(" · ") })),
+            destL ? h("a", { class: "btn chico", href: destL, onclick: irCitaModal(destL) }, h("span", { text: "Ir" })) : null);
+        }))));
     }
     if (!bloques.length) bloques.push(h("p", { class: "jg-mini", text: "En este instante no hay otros lectores ni salas abiertas." }));
-    bloques.push(h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/mundo", onclick: () => A.cerrarModal() }, ico("mundo"), h("span", { text: "Ver comunidad en Mundo" }))));
+    bloques.push(h("div", { class: "jg-acciones" }, h("a", { class: "btn chico", href: "#/escudrina/mundo", onclick: irCitaModal("#/escudrina/mundo") }, ico("mundo"), h("span", { text: "Ver comunidad en Mundo" }))));
     A.abrirModal(() => A.cajaModal(A.cabModal("Leyendo en este momento", "Presencia en vivo · BiEx"), h("div", { class: "jg-pres-mod" }, ...bloques)));
   }
 
@@ -11314,14 +11542,15 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
             h("b", { text: fmt(poder) + " poder" })),
           h("div", { class: "jg-jp-bar", "aria-hidden": "true" }, h("i", { style: "width:" + pctEt + "%" })),
           h("div", { class: "jg-jp-pasos", "aria-hidden": "true" }, ET_PUB.map(([n, rom]) => h("span", { class: n <= etN ? "on" : "", text: rom })))));
+      const destVivo = j.lc ? "#/" + j.lc.replace(".", "/") : "";
       const vivo = j.act || j.lc ? h("div", { class: "jg-jp-vivo" },
         h("span", { class: "jg-jp-dot", "aria-hidden": "true" }),
         h("span", {}, h("b", { text: j.act || "En línea" }), j.lc ? " · " + nombreLC(j.lc) : ""),
-        j.lc ? h("a", { class: "btn chico", href: "#/" + j.lc.replace(".", "/"), onclick: () => A.cerrarModal() }, h("span", { text: "Ir" })) : null) : null;
-      const ultTxt = !vivo ? ultimaConexionTexto(j, false) : "";
+        destVivo ? h("a", { class: "btn chico", href: destVivo, onclick: irCitaModal(destVivo) }, h("span", { text: "Ir" })) : null) : null;
+      const ultTxt = ultimaConexionTexto(Object.assign({ apodo: ap }, j), false);
       const ultEl = ultTxt ? h("div", { class: "jg-jp-ult" },
         h("i", { "aria-hidden": "true" }),
-        h("span", {}, "Última conexión aproximada: ", h("b", { text: ultTxt }))) : null;
+        h("span", {}, "Última conexión: ", h("b", { text: ultTxt }))) : null;
       const lauros = j.lauros || {}, piedrasN = Math.max(0, Math.min(12, j.piedrasN | 0));
       const tiles = [
         ["arbol", fmt(poder), "Poder", "Etapa " + et[1] + " · " + et[2], null],
@@ -11385,11 +11614,13 @@ ${y.fundador && y.n ? '<p class="primicia">Primicia n.º <b class="num">0</b> de
 
   // ------------------------------------------------------------------ interfaz pública del módulo
   // solo para las pruebas automáticas (navegador controlado): efectos a demanda
-  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, resaltarZona, presenciaPill: (p, s) => pintarPildoraPresencia(p, s), ajedrez: { AJ_ENG, AJ_FIGURAS, AJ_ENIGMAS }, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
+  if (navigator.webdriver) window.__biexJg = { chispas, celebracion, fanfarria, celebrarReparto, verPiedra, verLauro, contarRapido, pulsoMedidor, recibir, abrirJugadorPublico, abrirPrueba, abrirSala, entrarSala, resaltarZona, presenciaPill: (p, s) => pintarPildoraPresencia(p, s), ajedrez: { AJ_ENG, AJ_FIGURAS, AJ_ENIGMAS }, lb: () => ({ v: LB.v, m: LB.m, pend: [...R.pend.keys()], vis: [...(LB.vis || [])], T: topeBarras(), Z: zonaLectura(), vf: R.vf, marc: [...(LB.vis || [])].map((x) => [x, marcable(x), Math.round(rectNum(document.getElementById("v" + x)).top)]) }) };
   window.BiExJuego = {
     iniciar(api) { A = api; if (!S.token) S.token = A.store.get("jg:t", null); if (!S.yo && S.token) S.yo = A.store.get("jg:yo", null); enPieJg = !!(A && A.enPieActual && A.enPieActual()); limpiarMarcasAuto(); iniciarPresencia(); if (S.token) setTimeout(() => latirPresencia(false), 1800); },
     vista, capitulo, salir, franja, guardarInvitacion, marcarVerso: marcarVersoDesdeLector, activo: () => !!S.token,
     abrirJugador: abrirJugadorPublico,
+    guardarVista() { if (MV.k) { const p = MV.pend; MV.pend = null; anotarVista(); MV.pend = p; } },
+    cancelarRestauracion() { terminarVista(); },
     fijarVersoFoco(c, cap, v) {
       if (!c || !cap || !(v > 0)) return;
       R.focoCita = { lc: c + "." + cap, v: +v, t: performance.now(), y: window.scrollY };
