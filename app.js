@@ -418,12 +418,15 @@
   const guardarPrefs = () => store.set("prefs", prefs);
   const aplicarEd = () => document.documentElement.classList.toggle("ed", !!prefs.ed);
   aplicarEd();
-  const AP0 = { tam: 3, letra: "clasica", inter: "normal", mov: "si", dal: "", v: 9 };
+  const AP0 = { tam: 4, letra: "clara", inter: "normal", mov: "si", dal: "", v: 9 };
   // nueve tamaños (antes cinco: 1–5 pasan a 1, 3, 5, 7, 9)
   const K_TAM = [.9, .95, 1, 1.06, 1.12, 1.19, 1.26, 1.34, 1.42];
   let ap = Object.assign({}, AP0, store.get("ap", {}));
   if (ap.v !== 9) { ap.tam = [1, 3, 5, 7, 9][Math.min(5, Math.max(1, ap.tam | 0 || 2)) - 1]; ap.v = 9; store.set("ap", ap); }
-  ap.tam = Math.min(9, Math.max(1, ap.tam | 0 || 3));
+  ap.tam = Math.min(9, Math.max(1, ap.tam | 0 || 4));
+  // Restablecimiento único (BiEx, 27-nov-2026): «Lectura clara» y «Entre normal y grande» para todos. Desde aquí se respeta lo que
+  // cada lector elija a mano: la marca «rst» queda guardada en este dispositivo y el restablecimiento no se repite
+  if (ap.rst !== 1) { ap.letra = "clara"; ap.tam = 4; ap.rst = 1; store.set("ap", ap); }
   function aplicarAp() {
     const r = document.documentElement;
     r.setAttribute("data-tam", String(ap.tam));
@@ -1891,6 +1894,7 @@
         h("div", { class: "autoria" },
           h("span", { text: "Traducción, transliteración y análisis:" }),
           h("strong", { text: "BiEx – Biblia Exacta ©™." }),
+          h("span", { class: "pie-ed", text: "Edición Crítica de Estudio" }),
           h("span", {}, h("a", { href: "https://bibliaexacta.wixsite.com/biex", target: "_blank", rel: "noopener", text: "Sitio oficial" }), h("span", { id: "actualizado" })),
           h("span", { class: "pie-jer", id: "fecha-jerusalen" })),
         // AF23 (BiEx, 21-nov-2026): cuenta atrás misteriosa hasta el 16 de julio de 2027 (sin explicación), discreta, solo en la
@@ -4452,7 +4456,7 @@
       for (let v = a; v <= b && v <= vs.length; v++) if (vs[v - 1]) piezas.push(h("sup", { text: (c !== c1 ? c + ":" : "") + v }), vs[v - 1] + " ");
     }
     return [h("p", { class: "rx-av-t" }, ...(piezas.length ? piezas : ["Este verso no está en esta traducción."])),
-      h("p", { class: "nota-ui rx-av-f", text: "Cita de otra traducción: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (1928, dominio público), mientras BiEx traduce la Antigua Voluntad." })];
+      h("p", { class: "nota-ui rx-av-f", text: "Cita de otra traducción: Septuaginta en español de Wilhelm [Guillermo] Jünemann Beckschäfer (1928, dominio público), mientras BiEx traduce la Antigua Voluntad. Única modificación de BiEx (27-nov-2026): en שְׁמוֹת [Éxodo] 6:3, «Jehová» pasa a יהוה [YHVH], porque «Jehová» es una forma espuria inventada por hombres: une las consonantes del Nombre con las vocales de otra palabra." })];
   }
   function etRef(r) {
     const [li, c1, v1, fin] = r, cola = c1 + ":" + v1 + (fin > 0 ? "-" + fin : fin < 0 ? "–" + Math.floor(-fin / 1000) + ":" + (-fin % 1000) : "");
