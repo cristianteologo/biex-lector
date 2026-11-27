@@ -28,8 +28,8 @@ bibliaexacta.pages.dev en alrededor de un minuto y el sitio oficial lo muestra. 
   `--admin` ni otra manera de saltar la regla. Un tema por propuesta y propuestas pequeñas.
 - Las bitácoras, los aprendizajes, las continuaciones, las respuestas a auditorías y las propuestas de diseño van al repositorio
   privado `biex-equipo`, nunca a este (es público y Cloudflare publica su raíz). La revisión automática lo comprueba.
-- La descripción de cada propuesta también es pública: dice solo qué cambia y cómo se probó; el porqué interno, los nombres de
-  los modelos y todo lo que hable del método van a `biex-equipo`.
+- La descripción de cada propuesta también es pública: dice solo qué cambia y cómo se probó; el porqué interno y todo lo
+  que hable del método van a `biex-equipo`.
 - Todo dato que la página lee del servidor existe con ese nombre exacto en el servidor (contrato de datos); si no se puede
   comprobar, no se usa ni se muestra.
 
