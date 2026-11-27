@@ -3995,6 +3995,8 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
     return el;
   }
   // B4 + B5 · El Coloso de la Tradición (Neon, 23-nov-2026): incursión cooperativa semanal en vivo (GET /coloso + POST /coloso/accion)
+  // Apertura oficial (BiEx, 23 y 27-nov-2026): sábado 28-nov a las 18:00 UTC, hora cómoda para casi todos los países de habla
+  // hispana; el servidor (biex-juego, coloso.js: COLOSO_APERTURA) abre a esa misma hora la primera incursión oficial
   const COLOSO_MS = Date.UTC(2026, 10, 28, 18, 0, 0);
   const COLOSO_CACHE = { d: null, t: 0 };
   const COLOSO_IMG = (window.BIEX_BASE || "") + "img/coloso-velo.webp";
@@ -4277,16 +4279,22 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
     requestAnimationFrame(arrancar);
     return { golpear: lanzarFx };
   }
+  // Semana de apertura (BiEx, 27-nov-2026): hasta la incursión oficial, lo ganado contra El Coloso ya es real y entero; el
+  // servidor no recorta nada (el 0,72–40 % se aplicó una sola vez, al lanzar el juego el 15-nov). El aviso anterior dependía de
+  // un dato que el servidor nunca envía («lanzado») y anunciaba un recorte inexistente. El premio repite las condiciones del
+  // servidor (biex-juego, coloso.js: COLOSO_MIN_APORTE y COLOSO_PREMIO); si cambian allí, se cambian aquí.
+  const DIAS_UTC = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const horaColosoUTC = (ms) => { const d = new Date(ms); return DIAS_UTC[d.getUTCDay()] + " " + d.getUTCDate() + " a las " + String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0") + "\u00a0UTC"; };
   function avisoPrelanzamientoColoso(compacto) {
-    if (S.yo && S.yo.lanzado) return null;
+    const ms = (S.cfg && S.cfg.colosoEn) || COLOSO_MS;
+    if (Date.now() >= ms) return null;
     const gemSvg = A.svg('<polygon points="12,3 20,12 12,21 4,12" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2" fill="currentColor"/>', "0 0 24 24");
     return h("div", { class: "jg-col-pre", role: "note" },
       h("span", { class: "jg-col-pre-ico", "aria-hidden": "true" }, gemSvg),
       h("div", {},
-        h("b", { text: "Prelanzamiento activo · " }),
-        compacto
-          ? "Quienes participen ya suman recompensas reales y conservarán de forma aleatoria " + textoConserva() + " al abrir el juego oficial."
-          : "Quienes participen desde ahora contra El Coloso ya ganan experiencia, dracmas y aporte real; al empezar el juego oficial conservarán, de forma aleatoria, " + textoConserva() + " de estas recompensas, igual que en el resto de la práctica."));
+        h("b", { text: "Semana de apertura · " }),
+        "Lo que ganes contra El Coloso ya es tuyo por completo, sin recortes. La incursión oficial abre el " + horaColosoUTC(ms) + "." +
+          (compacto ? "" : " Si aportas al menos 200, tienes premio: 2 h de experiencia doble y 15 dracmas si cae; si no cae, media hora y 3 dracmas al abrirse la incursión oficial.")));
   }
   function parseCitaColoso(cita) {
     const m = /^([1-3A-Z]{3})\s+(\d{1,3}):(\d{1,3})(?:-(\d{1,3}))?/.exec(String(cita || "").trim());
