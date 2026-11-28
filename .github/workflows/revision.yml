@@ -47,8 +47,15 @@ jobs:
         run: python3 wix/sellar.py && git diff --exit-code --stat
       - name: Prueba de humo en el navegador
         run: |
-          npm i --no-save --no-audit --no-fund playwright@1 > /dev/null 2>&1
+          npm i --no-save --no-audit --no-fund playwright@1 acorn@8 acorn-walk@8 > /dev/null 2>&1
           npx playwright install --with-deps chromium > /dev/null 2>&1
           (python3 -m http.server 8766 > /dev/null 2>&1 &)
           sleep 1
           node .github/pruebas/humo.js
+      - name: Contrato de datos (todo lo que la página lee existe de verdad)
+        # AM5 (BiEx, 27-nov-2026): un nombre que la página lee y que no existe en su código, en los datos, en el navegador ni en
+        # el servidor del juego (.github/contrato/servidor.json, generado del código real) hace fallar la revisión.
+        run: |
+          (python3 -m http.server 8767 > /dev/null 2>&1 &)
+          sleep 1
+          node .github/pruebas/contrato.js http://127.0.0.1:8767/404.html

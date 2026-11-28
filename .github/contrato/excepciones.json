@@ -1,0 +1,32 @@
+{
+ "nota": "Nombres que la página lee y que no salen de su código, de los datos, del navegador de la revisión ni del servidor, con su motivo. Solo nombres del navegador o del entorno: un dato del servidor nunca va aquí (va en servidor.json, generado del código real).",
+ "nombres": {
+  "BIEX_BASE": "variable global que pone la inserción del sitio oficial (wix/)",
+  "BIEX_BASES": "variable global que pone la inserción del sitio oficial (wix/)",
+  "BIEX_EMBED": "variable global que pone la inserción del sitio oficial (wix/)",
+  "BIEX_JUEGO_API": "variable global para probar con otro servidor del juego (pruebas locales)",
+  "BIEX_JUEGO_CADA": "variable global para las pruebas del juego",
+  "__biexKoineAudioUrl": "variable global opcional del audio koiné (pruebas)",
+  "clips": "manifiesto opcional de audio (datos/koine-audio.json) que aún no existe; la página no lo pide mientras neuralDisponible sea falso",
+  "mozConnection": "Network Information API con prefijo (Firefox)",
+  "webkitConnection": "Network Information API con prefijo (Safari antiguo)",
+  "webkitBackdropFilter": "propiedad CSS con prefijo (Safari)",
+  "webkitAudioContext": "AudioContext con prefijo (Safari antiguo)",
+  "share": "Web Share API (teléfonos; no existe en el navegador de la revisión)",
+  "canShare": "Web Share API (teléfonos; no existe en el navegador de la revisión)",
+  "standalone": "navigator.standalone (iPhone con la app instalada)",
+  "audioSession": "navigator.audioSession (iPhone)",
+  "outcome": "resultado de beforeinstallprompt (userChoice.outcome)",
+  "registration": "ServiceWorkerGlobalScope (sw.js)",
+  "clients": "ServiceWorkerGlobalScope (sw.js)",
+  "skipWaiting": "ServiceWorkerGlobalScope (sw.js)",
+  "claim": "Clients.claim (sw.js)",
+  "respondWith": "FetchEvent (sw.js)",
+  "openWindow": "Clients.openWindow (sw.js)",
+  "notification": "NotificationEvent.notification (sw.js)",
+  "updateByTag": "widgets de Windows (sw.js, Edge)",
+  "widget": "widgets de Windows (sw.js, Edge)",
+  "definition": "widgets de Windows (sw.js, Edge)",
+  "stack": "pila de llamadas de un Error: en Chromium es una propiedad propia de cada error, no del prototipo que la revisión enumera"
+ }
+}
