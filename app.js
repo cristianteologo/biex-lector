@@ -4732,7 +4732,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "90402b5c3e", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "7ae44ab276", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -12260,26 +12260,41 @@
   // con × o deslizando. Poco gasto: lo vivo se consulta como mucho cada 4 min (público y en caché) y el resto es texto fijo.
   // Nunca con una ventana abierta, la pestaña oculta, escribiendo o durante la presentación; en un capítulo, más espaciados.
   const API_JG = String(window.BIEX_JUEGO_API || (/(^|\.)bibliaexacta\.pages\.dev$/.test(location.hostname) ? "/api/juego" : "https://bibliaexacta.pages.dev/api/juego")).replace(/\/$/, "");
-  // PR #17 · Telemetría ligera de errores en producción hacia POST /error (Opus 28842cf · máx. 2 envíos por sesión, sin bloquear nada)
+  // Avisos de errores reales hacia POST /error (máx. 2 por visita, sin bloquear nada). AM6 (27-nov-2026): con la versión real de
+  // app.js (su ?v=), la pila, la vista sin parámetros y el dispositivo (sistema, navegador y si es móvil; nada personal), para
+  // saber en qué teléfonos falla y desde cuándo. El servidor los agrupa por mensaje, archivo y línea (registro.js, errorJs).
   (() => {
     let enviados = 0;
-    const mandar = (m, a, l) => {
+    const VER = (() => { try { const s = document.currentScript || document.querySelector('script[src*="app.js"]'); return (s && new URL(s.src, location.href).searchParams.get("v")) || ""; } catch (e) { return ""; } })();
+    const disp = () => {
+      const u = navigator.userAgent || "", ud = navigator.userAgentData, x = (re) => re.exec(u);
+      let k;
+      const so = (k = x(/Android (\d+)/)) ? "Android " + k[1] : (k = x(/(iPhone|iPad); CPU (?:iPhone )?OS (\d+)/)) ? k[1] + " iOS " + k[2]
+        : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "macOS" : /Linux/.test(u) ? "Linux" : "otro";
+      const nav = (k = x(/SamsungBrowser\/(\d+)/)) ? "Samsung " + k[1] : (k = x(/Edg\/(\d+)/)) ? "Edge " + k[1] : (k = x(/OPR\/(\d+)/)) ? "Opera " + k[1]
+        : (k = x(/Firefox\/(\d+)/)) ? "Firefox " + k[1] : (k = x(/Chrome\/(\d+)/)) ? "Chrome " + k[1] : (k = x(/Version\/(\d+).*Safari/)) ? "Safari " + k[1] : "otro";
+      const movil = ud && typeof ud.mobile === "boolean" ? ud.mobile : /Mobi|Android|iPhone/.test(u);
+      const app = window.matchMedia && matchMedia("(display-mode: standalone)").matches ? " · app" : "";
+      return (so + " · " + nav + " · " + (movil ? "móvil" : "escritorio") + app).slice(0, 80);
+    };
+    const mandar = (m, a, l, pila) => {
       if (enviados >= 2 || !navigator.onLine || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
       const msg = String(m || "").trim().slice(0, 260);
       if (!msg || /ResizeObserver|Script error/i.test(msg)) return;
       enviados++;
       try {
+        const arch = String(a || "").replace(/^https?:\/\/[^/]+/, "").replace(/[?#].*$/, "").slice(0, 120);
         fetch(API_JG + "/error", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ m: msg, a: String(a || "").slice(0, 120), l: +l || 0, v: "pr18" }),
+          body: JSON.stringify({ m: msg, a: arch, l: +l || 0, v: VER, s: String(pila || "").slice(0, 400), d: disp(), r: String(location.hash || "#/").split("?")[0].slice(0, 60) }),
           credentials: "omit",
           keepalive: true,
         }).catch(() => {});
       } catch (e) {}
     };
-    window.addEventListener("error", (e) => mandar(e && (e.message || (e.error && e.error.message)), e && e.filename, e && e.lineno));
-    window.addEventListener("unhandledrejection", (e) => mandar(e && e.reason && (e.reason.message || String(e.reason)), location.hash, 0));
+    window.addEventListener("error", (e) => mandar(e && (e.message || (e.error && e.error.message)), e && e.filename, e && e.lineno, e && e.error && e.error.stack));
+    window.addEventListener("unhandledrejection", (e) => mandar(e && e.reason && (e.reason.message || String(e.reason)), "promesa", 0, e && e.reason && e.reason.stack));
   })();
   const DSL = { reloj: 0, el: null, lado: 0, vivo: null, vivoT: 0, cerr: 0, visDesde: performance.now() };
   const ANUNCIOS = [

@@ -1491,6 +1491,13 @@ html.oculto .jg-sala-p i.on::after{animation-play-state:paused}
 .jg-form textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:96px;font:inherit;font-size:1rem;color:var(--tinta);background:var(--hoja-2);border:1px solid var(--linea-2);border-radius:10px;padding:10px 12px}
 .jg-form textarea:focus{outline:2px solid var(--oro);outline-offset:1px}
 .jg-props{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.jg-adm-zona{display:contents}
+.jg-adm-res{display:grid;gap:10px}
+.jg-adm-bit,.jg-adm-err,.jg-adm-dias{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.jg-adm-bit>li,.jg-adm-err>li{display:grid;gap:4px;padding:10px 12px;border:1px solid var(--linea-2);border-radius:calc(var(--radio) * .7)}
+.jg-adm-dias>li{font:400 .78rem/1.45 var(--f-ui);color:var(--tinta-2)}
+.jg-adm-cmp{display:grid;gap:2px}
+.jg-adm-pila{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:400 .72rem/1.45 ui-monospace,monospace;color:var(--tenue)}
 .jg-prop{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;border:1px solid var(--linea-2)}
 .jg-prop>div{min-width:0;flex:1}
 .jg-prop p{margin:0 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -8338,7 +8345,7 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   async function pintarBuzon(cont) {
     document.title = "Buzón del equipo · Escudriña";
     const clave = h("input", { type: "password", placeholder: "Clave del equipo (ADMIN_CLAVE)", autocomplete: "current-password", "aria-label": "Clave del equipo" });
-    const zona = h("div");
+    const zona = h("div"), zonaAdm = h("div", { class: "jg-adm-zona" });
     const fila = (p, k) => {
       const est = h("select", { "aria-label": "Estado" }, Object.entries(ESTADOS).map(([v, t]) => h("option", { value: v, selected: v === p.estado, text: t })));
       const pub = h("input", { type: "checkbox", checked: !!p.pub }), nota = h("input", { type: "text", value: p.nota || "", placeholder: "Nota pública (opcional)", maxlength: "300" });
@@ -8353,12 +8360,96 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
     const abrirB = async () => {
       const k = A.store.get("jg:admin", ""); if (!k) return zona.replaceChildren(h("p", { class: "jg-mini", text: "Escribe la clave que guardaste en Cloudflare como secreto ADMIN_CLAVE del Worker biex-juego." }));
       const r = await pedir("/buzon", { sin: true, cab: { "x-biex-admin": k } });
-      if (r.error) return zona.replaceChildren(h("p", { text: "La clave no coincide o el buzón no está activo." }));
+      if (r.error) { zonaAdm.replaceChildren(); return zona.replaceChildren(h("p", { text: "La clave no coincide o el buzón no está activo." })); }
       zona.replaceChildren(r.lista.length ? h("ul", { class: "jg-props" }, r.lista.map((p) => fila(p, k))) : h("p", { text: "El buzón está vacío por ahora." }));
+      zonaAdm.replaceChildren(tarjetaRestaurar(k), tarjetaErrores(k));
     };
     marco(cont, cabSub("Buzón del equipo", "Opiniones, errores y propuestas de la comunidad. Las propuestas marcadas «Pública» aparecen para votar.", "#/escudrina/mas"),
-      tarjeta(null, null, h("div", { class: "jg-form" }, clave, h("button", { class: "btn", type: "button", onclick: () => { A.store.set("jg:admin", clave.value.trim()); abrirB(); } }, h("span", { text: "Abrir" })))), tarjeta(null, null, zona));
+      tarjeta(null, null, h("div", { class: "jg-form" }, clave, h("button", { class: "btn", type: "button", onclick: () => { A.store.set("jg:admin", clave.value.trim()); abrirB(); } }, h("span", { text: "Abrir" })))), tarjeta(null, null, zona), zonaAdm);
     abrirB();
+  }
+  // AM2 (BiEx, 27-nov-2026): restaurar una cuenta a un momento de los últimos 30 días con el PITR de Cloudflare, y deshacerlo.
+  // Contrato con el servidor (biex-juego, index.js y registro.js): GET /admin/cuenta → { j, n, apodo, creada, restauraciones[{ id, tipo,
+  // ref, t, estado, creada, fin, antes, despues }], resumen{ apodo, nivel, xp, dr, vc, pers, persMejor, ultDia, cte, asegurada,
+  // hist[[f, xp, v, m]] }, dias, ahora }; POST /admin/cuenta/restaurar { j, t } y /admin/cuenta/deshacer { id } → { ok, id, antes, despues }.
+  // El servidor no deja volver a antes de crearse la cuenta (la vaciaría) ni a más de 30 días.
+  function tarjetaRestaurar(k) {
+    const ap = h("input", { type: "text", placeholder: "Apodo de la cuenta", maxlength: "40", autocomplete: "off", "aria-label": "Apodo de la cuenta",
+      onkeydown: (ev) => { if (ev.key === "Enter") { ev.preventDefault(); buscar(); } } });
+    const buscar = () => { const v = ap.value.trim(); if (v) pintar("a=" + encodeURIComponent(v)); };
+    const res = h("div", { class: "jg-adm-res" });
+    const fecha = (ms) => new Date(ms).toLocaleString("es", { dateStyle: "medium", timeStyle: "short" });
+    const aLocal = (ms) => new Date(ms - new Date(ms).getTimezoneOffset() * 60e3).toISOString().slice(0, 16);
+    const lineaRes = (r) => !r ? "—" : "nivel " + r.nivel + " · " + fmt(r.xp) + " de experiencia · " + fmt(r.dr) + " dracmas · " + plural(r.vc, "verso", "versos") +
+      " · perseverancia " + fmt(r.pers) + " (mejor " + fmt(r.persMejor) + ")" + (r.ultDia ? " · último día con lectura " + r.ultDia : "") + (r.asegurada ? " · asegurada" : " · sin asegurar");
+    const comparar = (a, d) => h("div", { class: "jg-adm-cmp" }, h("p", { class: "jg-mini", text: "Antes: " + lineaRes(a) }), h("p", { class: "jg-mini", text: "Después: " + lineaRes(d) }));
+    const ESTADO_R = { hecha: "hecha", deshecha: "deshecha", preparada: "en curso", sin_confirmar: "sin confirmar" };
+    const pintar = async (q) => {
+      res.replaceChildren(h("p", { class: "jg-mini", text: "Buscando…" }));
+      const r = await pedir("/admin/cuenta?" + q, { sin: true, cab: { "x-biex-admin": k } });
+      if (r.error) return res.replaceChildren(h("p", { text: r.error === "no_existe" ? "No hay ninguna cuenta con ese apodo." : "No se pudo abrir la cuenta (" + r.error + ")." }));
+      const dias = r.dias || 30, ahora = r.ahora || Date.now();
+      const min = Math.max(r.creada + 3 * 60e3, ahora - dias * 864e5 + 10 * 60e3), max = ahora - 2 * 60e3;
+      const cab = h("p", { text: r.apodo + " · cuenta n.º " + fmt(r.n) + " · creada el " + fecha(r.creada) });
+      if (min > max) return res.replaceChildren(cab, h("p", { class: "jg-mini", text: "Se creó hace muy poco: aún no hay un momento anterior al que volver." }));
+      const cuando = h("input", { type: "datetime-local", min: aLocal(min), max: aLocal(max), value: aLocal(Math.max(min, ahora - 864e5)), "aria-label": "Momento al que vuelve la cuenta" });
+      const btn = h("button", { class: "btn oro", type: "button", onclick: async () => {
+        const t = new Date(cuando.value).getTime();
+        if (!(t >= min && t <= max)) return A.avisar("Elige un momento entre el " + fecha(min) + " y el " + fecha(max));
+        if (!(await confirmar("¿Restaurar la cuenta de " + r.apodo + "?", "Toda la cuenta vuelve a como estaba el " + fecha(t) + ": lo que hizo después (lecturas, compras, notas) se quita. Se conservan su apodo y sus formas de entrar. Podrás deshacerlo durante 30 días.", "Restaurar"))) return;
+        btn.disabled = true; A.avisar("Restaurando…");
+        const x = await pedir("/admin/cuenta/restaurar", { metodo: "POST", sin: true, cab: { "x-biex-admin": k }, cuerpo: { j: r.j, t }, timeout: 30000 });
+        btn.disabled = false;
+        if (x.error) return A.avisar(x.error === "pitr_no_disponible" ? "Cloudflare no dejó restaurar: " + (x.detalle || "sin detalle") : "No se pudo restaurar (" + x.error + ")");
+        A.avisar(x.ok ? "Cuenta restaurada" : "Restaurada, pero no se pudo confirmar el resultado: vuelve a abrirla");
+        pintar("j=" + encodeURIComponent(r.j));
+      } }, h("span", { text: "Restaurar a este momento" }));
+      const ult = ((r.resumen && r.resumen.hist) || []).slice(-14).reverse()
+        .map(([f, xp, v, m]) => h("li", { text: f + " · " + fmt(xp) + " de experiencia · " + plural(v, "verso", "versos") + " · " + fmt(m) + " min" }));
+      const bit = (r.restauraciones || []).map((x) => {
+        const puede = x.tipo === "restaurar" && x.estado === "hecha" && Date.now() - (x.fin || x.creada) < dias * 864e5 - 15 * 60e3;
+        const des = puede ? h("button", { class: "btn chico", type: "button", onclick: async () => {
+          if (!(await confirmar("¿Deshacer la restauración n.º " + x.id + "?", "La cuenta vuelve a como estaba justo antes de restaurarla. Lo que haya hecho desde entonces se quita.", "Deshacer"))) return;
+          const y = await pedir("/admin/cuenta/deshacer", { metodo: "POST", sin: true, cab: { "x-biex-admin": k }, cuerpo: { id: x.id }, timeout: 30000 });
+          A.avisar(y.error ? "No se pudo deshacer (" + y.error + ")" : "Restauración deshecha"); pintar("j=" + encodeURIComponent(r.j));
+        } }, h("span", { text: "Deshacer" })) : null;
+        const que = x.tipo === "deshacer" ? "deshizo la n.º " + x.ref : "volvió al " + fecha(x.t);
+        return h("li", {}, h("p", { text: "N.º " + x.id + " · " + que + " · " + (ESTADO_R[x.estado] || x.estado) + " el " + fecha(x.fin || x.creada) }), x.antes || x.despues ? comparar(x.antes, x.despues) : null, des);
+      });
+      res.replaceChildren(cab,
+        h("p", { class: "jg-mini", text: "Hoy: " + lineaRes(r.resumen) }),
+        ult.length ? h("details", {}, h("summary", { text: "Sus últimos días" }), h("ul", { class: "jg-adm-dias" }, ult)) : null,
+        h("p", { class: "jg-mini", text: "Momento al que vuelve (tu hora local):" }), h("div", { class: "jg-form" }, cuando, btn),
+        bit.length ? h("p", { class: "jg-mini", text: "Restauraciones de esta cuenta:" }) : null, bit.length ? h("ul", { class: "jg-adm-bit" }, bit) : null);
+    };
+    return tarjeta("Restaurar una cuenta", null,
+      h("p", { class: "jg-mini", text: "Devuelve una cuenta a como estaba en un momento de los últimos 30 días (Cloudflare guarda esa historia de cada cuenta). Se conservan su apodo y sus formas de entrar; lo demás vuelve a ese momento. Cada paso queda anotado y se puede deshacer." }),
+      h("div", { class: "jg-form" }, ap, h("button", { class: "btn chico", type: "button", onclick: buscar }, h("span", { text: "Buscar la cuenta" }))), res);
+  }
+  // AM6 (27-nov-2026): los errores reales que mandan los navegadores, agrupados por mensaje, archivo y línea, con «Copiar informe».
+  // Contrato (registro.js, erroresJs): GET /admin/errores → { errores[{ m, a, l, v, s, d, r, n, t1, t2 }] }.
+  function tarjetaErrores(k) {
+    const zona = h("div", { class: "jg-adm-res" });
+    const fecha = (ms) => new Date(ms).toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
+    const informe = (l) => "Errores de los teléfonos · " + new Date().toLocaleString("es") + "\n" + l.map((e, i) => (i + 1) + ". " + e.m +
+      "\n   " + (e.a || "?") + ":" + (e.l | 0) + " · versión " + (e.v || "?") + " · " + (e.d || "sin dispositivo") + " · vista " + (e.r || "?") +
+      "\n   " + plural(e.n, "vez", "veces") + " · primera " + fecha(e.t1) + " · última " + fecha(e.t2) + (e.s ? "\n   pila: " + String(e.s).replace(/\s+/g, " ").slice(0, 300) : "")).join("\n");
+    const ver = async () => {
+      zona.replaceChildren(h("p", { class: "jg-mini", text: "Cargando…" }));
+      const r = await pedir("/admin/errores", { sin: true, cab: { "x-biex-admin": k } });
+      if (r.error) return zona.replaceChildren(h("p", { text: "No se pudo abrir el registro (" + r.error + ")." }));
+      const l = r.errores || [];
+      if (!l.length) return zona.replaceChildren(h("p", { text: "No hay errores registrados." }));
+      zona.replaceChildren(
+        h("button", { class: "btn chico", type: "button", onclick: () => copiar(informe(l), "Informe copiado") }, h("span", { text: "Copiar informe (" + fmt(l.length) + ")" })),
+        h("ul", { class: "jg-adm-err" }, l.map((e) => h("li", {}, h("p", { text: e.m }),
+          h("p", { class: "jg-mini", text: (e.a || "?") + ":" + (e.l | 0) + " · versión " + (e.v || "?") + (e.d ? " · " + e.d : "") + (e.r ? " · " + e.r : "") }),
+          h("p", { class: "jg-mini", text: plural(e.n, "vez", "veces") + " · primera " + fecha(e.t1) + " · última " + fecha(e.t2) }),
+          e.s ? h("details", {}, h("summary", { text: "Pila" }), h("pre", { class: "jg-adm-pila", text: e.s })) : null))));
+    };
+    return tarjeta("Errores de los teléfonos", null,
+      h("p", { class: "jg-mini", text: "Los errores reales que mandan los navegadores (como mucho 2 por visita y sin datos personales), agrupados por mensaje y lugar." }),
+      h("button", { class: "btn chico", type: "button", onclick: ver }, h("span", { text: "Ver errores" })), zona);
   }
 
   // --- «Tu ciudad y tu hora» (P31, P28, X1; BiEx, 11 y 13-nov-2026): la ciudad la elige cada quien (la conexión puede ubicar
