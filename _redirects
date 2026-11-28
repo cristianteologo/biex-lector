@@ -1,0 +1,6 @@
+# Archivos del repositorio que no son del sitio (AM4, 27-nov-2026): Cloudflare Pages publica la raíz entera, así que estas
+# instrucciones para quienes trabajan en el código no deben abrirse en bibliaexacta.pages.dev. Las redirecciones van antes que
+# los archivos (aunque existan) y no tocan las funciones de /api/*.
+/CLAUDE.md / 301
+/README.md / 301
+/.github/* / 301

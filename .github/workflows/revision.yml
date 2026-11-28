@@ -17,6 +17,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Documentos internos fuera del repositorio público
+        # AM4 (BiEx, 27-nov-2026): bitácoras, aprendizajes, continuaciones y propuestas van al repositorio privado biex-equipo,
+        # nunca aquí (este repositorio es público y Cloudflare publica la raíz). Solo se admiten README.md, CLAUDE.md y los
+        # documentos de .github/.
+        run: |
+          malos=$(git ls-files | grep -Ei '(bitacora|bitácora|aprendizaje|continuacion|continuación|propuesta_|auditoria|auditoría|notas_internas)' || true)
+          md=$(git ls-files '*.md' | grep -Ev '^(README\.md|CLAUDE\.md|\.github/.*\.md)$' || true)
+          if [ -n "$malos$md" ]; then echo "Documentos internos en el repositorio público (llévalos a biex-equipo):"; echo "$malos"; echo "$md"; exit 1; fi
+          echo "sin documentos internos"
       - name: Sintaxis de los scripts
         run: |
           for f in app.js juego.js busqueda.js intro.js intro-cargador.js sw.js $(git ls-files 'functions/*.js'); do node --check "$f" || exit 1; done

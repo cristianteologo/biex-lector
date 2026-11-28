@@ -23,6 +23,16 @@ bibliaexacta.pages.dev en alrededor de un minuto y el sitio oficial lo muestra. 
 8. Si `main` cambió: `git fetch origin && git rebase origin/main`. Nunca `push --force` en ramas ajenas; en la propia,
    `--force-with-lease`.
 
+## Reglas de publicación (desde el 27-nov-2026)
+- Nada entra en `main` sin la revisión automática en verde, para nadie: ni BiEx, ni Neon, ni las sesiones de Claude. Nunca
+  `--admin` ni otra manera de saltar la regla. Un tema por propuesta y propuestas pequeñas.
+- Las bitácoras, los aprendizajes, las continuaciones, las respuestas a auditorías y las propuestas de diseño van al repositorio
+  privado `biex-equipo`, nunca a este (es público y Cloudflare publica su raíz). La revisión automática lo comprueba.
+- La descripción de cada propuesta también es pública: dice solo qué cambia y cómo se probó; el porqué interno y todo lo
+  que hable del método van a `biex-equipo`.
+- Todo dato que la página lee del servidor existe con ese nombre exacto en el servidor (contrato de datos); si no se puede
+  comprobar, no se usa ni se muestra.
+
 ## Lo que no se toca sin acordarlo con BiEx
 - `datos/` (se genera con las herramientas privadas del Taller; nunca a mano).
 - `wix/`, `sw.js`, `_headers`, `functions/`, `.github/` y la política de seguridad de `index.html`.
