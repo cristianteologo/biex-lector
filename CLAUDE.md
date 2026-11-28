@@ -65,7 +65,13 @@ bibliaexacta.pages.dev en alrededor de un minuto y el sitio oficial lo muestra. 
 ## Herramientas
 - `python3 wix/sellar.py`: sella versiones y la política de seguridad (siempre después del último cambio).
 - `node .github/pruebas/humo.js`: prueba de humo (vistas principales sin errores de consola ni desplazamiento lateral).
-- `.github/workflows/revision.yml`: la revisión automática de cada propuesta (sintaxis, JSON, sello y prueba de humo).
+- `.github/workflows/revision.yml`: la revisión automática de cada propuesta (sintaxis, JSON, sello, prueba de humo y contrato de
+  datos).
+- `node .github/pruebas/contrato.js`: contrato de datos (necesita `acorn`, `acorn-walk` y `playwright`, y el sitio servido en
+  127.0.0.1:8766). Falla si la página lee un nombre que no existe en ninguna parte. Si la página va a leer un dato nuevo del
+  servidor, el nombre se comprueba en el código real del servidor y se rehace `.github/contrato/servidor.json` con
+  `node .github/pruebas/contrato.js --servidor <carpeta de biex-juego>` (lo hace BiEx con su Claude: los colaboradores no tienen
+  el servidor; lo piden por escrito). Un nombre del navegador se suma con su motivo a `.github/contrato/excepciones.json`.
 
 ---
 

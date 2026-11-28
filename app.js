@@ -4732,7 +4732,7 @@
   // ------------------------------------------------------------------ buscador inteligente (ventana)
   // Entiende citas, libros, escenas descritas con palabras propias, nombres, palabras griegas (también con letras latinas),
   // las palabras con que se recuerdan los versos en otras traducciones y preguntas sobre el uso de la página.
-  const VERSIONES = { busqueda: "3bb45c2d30", juego: "7ae44ab276", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
+  const VERSIONES = { busqueda: "3bb45c2d30", juego: "449ecd1e7e", voz: "87ff475d00" }; // la huella de cada archivo la pone wix/sellar.py
   const scripts = {};
   function cargarScript(nombre) {
     if (scripts[nombre]) return scripts[nombre];
@@ -6036,7 +6036,9 @@
       })));
   };
 
-  const TXT_PRON = "El audio koiné del siglo I reproduce la palabra completa según el consenso histórico-filológico (W. S. Allen, R. Buth, G. Horrocks y F. Gignac): conserva el espíritu áspero inicial /h/, η cerrada /e̝/, υ y οι como /y/, β bilabial /β/, φ /ɸ/ y el acento dinámico de la época. Cada reproducción suena 2 veces con 1 s de pausa para facilitar su escucha.";
+  // AM5 (BiEx, 27-nov-2026; regla de rigor 8 de la guía del colaborador): lo que es reconstrucción no se presenta como consenso.
+  // Los rasgos son los de esta voz (KOINE_S1); a cada autor se le atribuye solo lo suyo.
+  const TXT_PRON = "El audio koiné es una reconstrucción probable del griego del siglo I d.H.D., no una grabación de la época. Se apoya en las faltas de ortografía de los papiros (F. T. Gignac), en la historia de la lengua (G. Horrocks) y en la propuesta de R. Buth para el koiné; W. S. Allen describe el ático clásico, anterior. En esta voz, η suena como una e cerrada; υ y οι, como la ü alemana; β, suave y sin cerrar del todo los labios (como la b de «haba»); φ, soplada entre los labios; y el acento es de intensidad. La «h» inicial (espíritu áspero) se conserva, aunque sigue en discusión para el siglo I. Cada reproducción suena 2 veces con 1 s de pausa para facilitar su escucha.";
   const lineaPron = (forma, tl) => {
     const p = pronunciar(forma), sil = (() => { try { const x = tl || tlDe(forma); return x ? silabasBiEx(x) : null; } catch (e) { return null; } })();
     const info = h("p", { class: "fp-pron-info", hidden: true, text: TXT_PRON });
@@ -10809,7 +10811,7 @@
                 col: "#7eb8f0",
               });
             }
-            const libres = yo.av ? ((yo.av.pts | 0) || (yo.av.libres | 0)) : 0;
+            const libres = yo.av ? yo.av.pts | 0 : 0; // contrato: el servidor manda av.pts (poder.js, publicoAv)
             if (libres > 0) {
               out.push({
                 t: libres === 1 ? "Tienes 1 punto de atributo libre" : "Tienes " + libres + " puntos de atributo libres",
@@ -12337,13 +12339,14 @@
   }
   // eventos anunciados por el servidor (cuando existan): [{ id, t (ms), tx, txi, a, r }]
   function dslEvento() {
+    // Contrato (AM5): /presentes todavía no manda «eventos»; mientras no exista, esta parte no muestra nada
     const v = DSL.vivo, x = dslEst(); if (!v || !Array.isArray(v.eventos)) return null;
     const ahora = Date.now();
     for (const e of v.eventos) {
       if (!e || !e.id || !e.t) continue;
       const d = e.t - ahora, pre = "p:" + e.id, ini = "i:" + e.id;
       if (d > 0 && d <= 5 * DSL_MIN && !x.ev.includes(pre) && !x.ev.includes(ini)) return [pre, [e.tx || "Empieza en unos minutos."], e.a || "Ir", e.r || "#/escudrina", ICO.juego];
-      if (d <= 0 && d > -3 * DSL_MIN && !x.ev.includes(ini)) return [ini, [e.txi || e.tx || "Ya empezó."], e.a || "Ir", e.r || "#/escudrina", ICO.juego];
+      if (d <= 0 && d > -3 * DSL_MIN && !x.ev.includes(ini)) return [ini, [e.tx || "Ya empezó."], e.a || "Ir", e.r || "#/escudrina", ICO.juego];
     }
     return null;
   }

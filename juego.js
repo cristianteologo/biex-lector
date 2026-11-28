@@ -242,14 +242,15 @@
     if (ks.length > 160) delete m[ks[0]];
     try { if (A && A.store) A.store.set("jg:ultDia", m); } catch (e) {}
   }
+  // AM5 (27-nov-2026, contrato de datos): la última conexión sale solo de lo que el servidor envía de verdad: «ultDia» (la
+  // fecha «AAAA-MM-DD» del último día con lectura, en la ficha pública: biex-juego, jugador.js, perfilPublico) o la presencia
+  // en vivo de este momento («act» y «lc» de /jugador y /presentes). Antes se probaban 8 nombres que el servidor nunca manda.
   function diaConexionDe(x) {
     if (!x) return "";
     const ap = x.apodo || x.a || "";
-    const raw = String(x.ultDia || x.ultimoDia || x.dia || x.ultimaConexion || "").slice(0, 10);
+    const raw = String(x.ultDia || "").slice(0, 10);
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) { registrarUltDia(ap, raw); return raw; }
-    const tsIso = isoDesdeTs(x.ultTs || x.vistoEn || x.ultVisto || x.ultimoEn || x.visto || 0);
-    if (tsIso) { registrarUltDia(ap, tsIso); return tsIso; }
-    if (x.enLinea || x.vivo || x.act || x.lc || (S.yo && S.yo.apodo && ap && ap === S.yo.apodo)) {
+    if (x.act || x.lc || (S.yo && S.yo.apodo && ap && ap === S.yo.apodo)) {
       const h = hoyISO();
       registrarUltDia(ap, h);
       return h;
@@ -4792,9 +4793,10 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
         resRaf = requestAnimationFrame(tick);
       };
 
-      const habsFuente = Array.isArray(c.habilidades) && c.habilidades.length
-        ? c.habilidades.map((x) => [x.id || x.hab, x.nombre || x.id, x.cargas || x.costo || 1, x.dano || x.base || 100, x.desc || ""])
-        : COLOSO_HABS;
+      // AM5 (contrato): el servidor manda las habilidades como objeto por id, { golpe: { cargas, dano }, … } (biex-juego, coloso.js:
+      // COLOSO_HAB); los nombres y las descripciones son de la página. Antes se esperaba una lista y siempre quedaban los números fijos.
+      const hs = c.habilidades && typeof c.habilidades === "object" && !Array.isArray(c.habilidades) ? c.habilidades : null;
+      const habsFuente = COLOSO_HABS.map(([id, nom, cg, dn, desc]) => hs && hs[id] ? [id, nom, hs[id].cargas | 0 || cg, hs[id].dano | 0 || dn, desc] : [id, nom, cg, dn, desc]);
       const comb = !derrotado ? h("div", { class: "jg-col-comb" },
         h("div", { class: "jg-col-cg-cab" },
           h("div", { class: "jg-col-cg-tit" },
@@ -5971,7 +5973,9 @@ html[data-mov="no"] .ap-gr-b{transform:translate(-50%,-50%)!important}
   function tarjetaColeccion(y, plegable) {
     const ico0 = () => h("span", { class: "jg-col-ico", "aria-hidden": "true" }, A.svg('<path d="M6 4.5h10.5a2.5 2.5 0 0 1 0 5H8.5v10a2 2 0 0 1-4 0V6.5a2 2 0 0 1 1.5-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 9.5h9v8.5a2 2 0 0 1-2 2H6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 13h4.5M11 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'));
     const texto = "En cada Designación se entregan dos Rollos: PDF exclusivos y numerados de un libro de la Nueva Voluntad, a nombre de quien los recibe y con firma criptográfica. «La Designación» los asigna aleatoriamente, con un método que cualquiera puede comprobar y que nadie puede inclinar: uno entre los 24 primeros de cada rango del período y otro para cualquiera desde el puesto 25 (con cuenta asegurada y al menos 14 días de lectura en el período).";
-    const regla = "La primera Designación se abre al llegar a 120 lectores constantes y después hay una por cada 120 lectores constantes nuevos, con al menos 60 días entre una y otra. Lector constante: cuenta asegurada y 14 días con lectura dentro de 60 días seguidos; una vez alcanzado, cuenta para siempre.";
+    // Condición del servidor (AM10, BiEx, 27-nov-2026): biex-juego, comun.js (CTE_DIAS 14, CTE_VENTANA 60, CTE_MIN 5) y jugador.js
+    // (diasConLectura): un día cuenta con al menos un verso marcado como leído o 5 minutos de lectura. Si cambia allí, se cambia aquí.
+    const regla = "La primera Designación se abre al llegar a 120 lectores constantes y después hay una por cada 120 lectores constantes nuevos, con al menos 60 días entre una y otra. Lector constante: cuenta asegurada y 14 días con lectura dentro de 60 días seguidos (cuenta el día en que marcas al menos un verso como leído o lees 5 minutos); una vez alcanzado, cuenta para siempre.";
     if (plegable) {
       const res = h("small", { text: "Dos PDF exclusivos por cada 120 lectores constantes" });
       return h("details", { class: "jg-coleccion plegable" }, h("summary", {}, ico0(), h("span", {}, h("b", { text: "Rollos de colección" }), res), h("i", { class: "jg-col-v", "aria-hidden": "true" })),
