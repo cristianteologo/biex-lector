@@ -26,6 +26,7 @@
   "notification": "NotificationEvent.notification (sw.js)",
   "updateByTag": "widgets de Windows (sw.js, Edge)",
   "widget": "widgets de Windows (sw.js, Edge)",
-  "definition": "widgets de Windows (sw.js, Edge)"
+  "definition": "widgets de Windows (sw.js, Edge)",
+  "stack": "pila de llamadas de un Error: en Chromium es una propiedad propia de cada error, no del prototipo que la revisión enumera"
  }
 }
